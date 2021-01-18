@@ -47,6 +47,9 @@ Debug/
 *.hm
 *.exp
 *.res
+*.bsc
+*.cnt
+*.p
 
 # Generated configuration files
 *.plr
@@ -85,7 +88,9 @@ Sources/SeriousSkaStudio/Parser.cpp
 Sources/SeriousSkaStudio/Parser.h
 Sources/SeriousSkaStudio/Scanner.cpp
 
+# Ignore levels and custom content
+Levels/
+!Levels/empty
+__*.gro
 
-
-
-
+Sources/__*
