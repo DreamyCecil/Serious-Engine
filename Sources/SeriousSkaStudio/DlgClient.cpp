@@ -676,16 +676,16 @@ void CDlgClient::OnBtCalcAllframesBbox()
       pmi->NewClearState(0.0f);
       pmi->AddAnimation(an.an_iID,AN_NOGROUP_SORT,1,0);
       ASSERT(aq.aq_Lists.Count()==1);
-      FLOAT fNow = aq.aq_Lists[0].al_fStartTime - fSecPerFrame*ctFrames;
+      FLOAT fNow = CTimer::InSeconds(aq.aq_Lists[0].al_llStartTime) - fSecPerFrame*ctFrames;
 
       // for each frame in animation
-      for(INDEX ifr=0;ifr<ctFrames;ifr++) {
+      for (INDEX ifr=0;ifr<ctFrames;ifr++) {
         AnimList &an = aq.aq_Lists[0];
         ASSERT(an.al_PlayedAnims.Count()==1);
         PlayedAnim &pa = an.al_PlayedAnims[0];
-        an.al_fStartTime=fNow;
-        pa.pa_fStartTime=fNow;
-        fNow+=fSecPerFrame;
+        an.al_llStartTime = CTimer::InTicks(fNow);
+        pa.pa_llStartTime = CTimer::InTicks(fNow);
+        fNow += fSecPerFrame;
         bbox |= AddAllVerticesToBBox(*pmi);
       }
     }

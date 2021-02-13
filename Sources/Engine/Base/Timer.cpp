@@ -44,7 +44,7 @@ static inline __int64 ReadTSC(void)
 #pragma comment(lib, "winmm.lib")
 
 // current game time always valid for the currently active task
-static _declspec(thread) TIME _CurrentTickTimer = 0.0f;
+static _declspec(thread) TICK _llCurrentTickTimer = 0;
 
 // CTimer implementation
 
@@ -90,14 +90,12 @@ void CTimer_TimerFunc_internal(void)
 //  CTSTREAM_BEGIN {
 
     // increment the 'real time' timer
-    _pTimer->tm_RealTimeTimer += _pTimer->TickQuantum;
+    _pTimer->tm_llRealTime += 1; //_pTimer->TickQuantum;
 
     // get the current time for real and in ticks
     CTimerValue tvTimeNow = _pTimer->GetHighPrecisionTimer();
-    TIME        tmTickNow = _pTimer->tm_RealTimeTimer;
     // calculate how long has passed since we have last been on time
     TIME tmTimeDelay = (TIME)(tvTimeNow - _pTimer->tm_tvLastTimeOnTime).GetSeconds();
-    TIME tmTickDelay =       (tmTickNow - _pTimer->tm_tmLastTickOnTime);
 
     _sfStats.StartTimer(CStatForm::STI_TIMER);
     // if we are keeping up to time (more or less)
@@ -113,7 +111,6 @@ void CTimer_TimerFunc_internal(void)
 
     // remember that we have been on time now
     _pTimer->tm_tvLastTimeOnTime = tvTimeNow;
-    _pTimer->tm_tmLastTickOnTime = tmTickNow;
 
 //  } CTSTREAM_END;
 }
@@ -239,10 +236,9 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   }
 
   // clear counters
-  _CurrentTickTimer = TIME(0);
-  tm_RealTimeTimer = TIME(0);
+  _llCurrentTickTimer = 0;
+  tm_llRealTime = 0;
 
-  tm_tmLastTickOnTime = TIME(0);
   tm_tvLastTimeOnTime = GetHighPrecisionTimer();
   // disable lerping by default
   tm_fLerpFactor = 1.0f;
@@ -264,10 +260,10 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
     // make sure that timer interrupt is ticking
     INDEX iTry=1;
     for( ; iTry<=3; iTry++) {
-      const TIME tmTickBefore = GetRealTimeTick();
+      const TICK llTickBefore = GetTimeTick();
       Sleep(1000* iTry*3 *TickQuantum);
-      const TIME tmTickAfter = GetRealTimeTick();
-      if( tmTickBefore!=tmTickAfter) break;
+      const TICK llTickAfter = GetTimeTick();
+      if (llTickBefore != llTickAfter) break;
       Sleep(1000*iTry);
     }
     // report fatal
@@ -328,43 +324,33 @@ void CTimer::HandleTimerHandlers(void)
   CTimer_TimerFunc_internal();
 }
 
-
-/*
- * Set the real time tick value.
- */
-void CTimer::SetRealTimeTick(TIME tNewRealTimeTick)
-{
-  ASSERT(this!=NULL);
-  tm_RealTimeTimer = tNewRealTimeTick;
-}
-
 /*
  * Get the real time tick value.
  */
-TIME CTimer::GetRealTimeTick(void) const
+TICK CTimer::GetTimeTick(void) const
 {
   ASSERT(this!=NULL);
-  return tm_RealTimeTimer;
+  return tm_llRealTime;
 }
 
 /*
  * Set the current game tick used for time dependent tasks (animations etc.).
  */
-void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
+void CTimer::SetGameTick(TICK llTick) {
   ASSERT(this!=NULL);
-  _CurrentTickTimer = tNewCurrentTick;
+  _llCurrentTickTimer = llTick;
 }
 
 /*
  * Get current game time, always valid for the currently active task.
  */
-const TIME CTimer::CurrentTick(void) const {
+TICK CTimer::GetGameTick(void) const {
   ASSERT(this!=NULL);
-  return _CurrentTickTimer;
+  return _llCurrentTickTimer;
 }
-const TIME CTimer::GetLerpedCurrentTick(void) const {
+FTICK CTimer::LerpedGameTick(void) const {
   ASSERT(this!=NULL);
-  return _CurrentTickTimer+tm_fLerpFactor*TickQuantum;
+  return FTICK(_llCurrentTickTimer, tm_fLerpFactor*TickQuantum);
 }
 // Set factor for lerping between ticks.
 void CTimer::SetLerp(FLOAT fFactor) // sets both primary and secondary
@@ -387,8 +373,7 @@ void CTimer::DisableLerp(void)
 }
 
 // convert a time value to a printable string (hh:mm:ss)
-CTString TimeToString(FLOAT fTime)
-{
+CTString TimeToString(FLOAT fTime) {
   CTString strTime;
   int iSec = floor(fTime);
   int iMin = iSec/60;
@@ -398,3 +383,13 @@ CTString TimeToString(FLOAT fTime)
   strTime.PrintF("%02d:%02d:%02d", iHou, iMin, iSec);
   return strTime;
 }
+
+// [Cecil] New timer: Seconds to ticks
+inline TICK CTimer::InTicks(FLOAT fTime) {
+  return round(fTime / _pTimer->TickQuantum);
+};
+
+// [Cecil] New timer: Ticks to seconds
+inline FLOAT CTimer::InSeconds(FTICK ftTime) {
+  return (TICK(ftTime) * _pTimer->TickQuantum + ftTime.fFrac);
+};

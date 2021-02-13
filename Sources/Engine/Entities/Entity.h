@@ -424,9 +424,12 @@ public:
   // print stack to debug output
   virtual const char *PrintStackDebug(void);
 
-  void SetTimerAt(TIME timeAbsolute) {};
-  void SetTimerAfter(TIME timeDelta) {};
+  void TimerAt(TICK llAbsolute) {};
+  void TimerAfter(TICK llDelta) {};
   void UnsetTimer(void) {};
+
+  // [Cecil] New timer: Entity source compatibility
+  void SetTimerAfter(TIME tmDelta) {};
 
   // return opacity of the entity (1 is default)
   virtual FLOAT GetOpacity(void) { return 1.0f; };
@@ -630,9 +633,9 @@ public:
   // add this entity to prediction
   void AddToPrediction(void);
   // called by other entities to set time prediction parameter
-  virtual void SetPredictionTime(TIME tmAdvance);   // give time interval in advance to set
+  virtual void SetPredictionTime(TICK llAdvance);   // give time interval in advance to set
   // called by engine to get the upper time limit 
-  virtual TIME GetPredictionTime(void);   // return moment in time up to which to predict this entity
+  virtual TICK GetPredictionTime(void);   // return moment in time up to which to predict this entity
   // get maximum allowed range for predicting this entity
   virtual FLOAT GetPredictionRange(void);
   // add to prediction entities that this entity depends on
@@ -743,7 +746,9 @@ public:
 };
 
 // flag for entities that are not waiting for thinking
-#define THINKTIME_NEVER (-1.f)
+#define THINKTIME_NEVER (-100.0f) //(-1.f)
+// [Cecil] New timer: Think time in ticks
+#define THINKTICK_NEVER (-100) //(-9223372036854775807)
 
 /*
  * Entity that can percept things and make decisions (one that has its own AI).
@@ -752,7 +757,7 @@ class ENGINE_API CRationalEntity : public CLiveEntity {
 public:
   CListNode en_lnInTimers;    // node in list of waiting timers - sorted by wait time
 public:
-  TIME en_timeTimer;          // moment in time this entity waits for timer
+  TICK en_llTimer;          // moment in time this entity waits for timer
 
   CStaticStackArray<SLONG> en_stslStateStack; // stack of states for entity AI
 
@@ -788,9 +793,10 @@ public:
   const char *PrintStackDebug(void);
 
   /* Set next timer event to occur at given moment time. */
-  void SetTimerAt(TIME timeAbsolute);
+  void TimerAt(TICK llAbsolute);
   /* Set next timer event to occur after given time has elapsed. */
-  void SetTimerAfter(TIME timeDelta);
+  void TimerAfter(TICK llDelta);
+  void SetTimerAfter(TIME tmDelta);
   /* Cancel eventual pending timer. */
   void UnsetTimer(void);
 

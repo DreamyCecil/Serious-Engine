@@ -28,7 +28,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CDlgCreateSpecularTexture dialog
 
-static TIME timeLastTick=TIME(0);
+static TICK _llLastTick = 0;
 
 static ANGLE3D a3dObjectRotation = ANGLE3D( 0, 0, 0);
 static ANGLE3D a3dLightRotation = ANGLE3D( 0, 0, 0);
@@ -397,11 +397,11 @@ void CDlgCreateSpecularTexture::OnTimer(UINT nIDEvent)
 	// on our timer discard preview window
   if( nIDEvent == 1)
   {
-    TIME timeCurrentTick = _pTimer->GetRealTimeTick();
-    if( timeCurrentTick > timeLastTick )
+    TICK llCurrentTick = _pTimer->GetTimeTick();
+    if (llCurrentTick > _llLastTick)
     {
-      _pTimer->SetCurrentTick( timeCurrentTick);
-      timeLastTick = timeCurrentTick;
+      _pTimer->SetGameTick(llCurrentTick);
+      _llLastTick = llCurrentTick;
     }
     RenderPreview();	
   }
@@ -418,7 +418,7 @@ void CDlgCreateSpecularTexture::OnDestroy()
   }
 
   KillTimer( m_iTimerID);
-  _pTimer->SetCurrentTick( 0.0f);
+  _pTimer->SetGameTick(0);
 	CDialog::OnDestroy();
 }
 

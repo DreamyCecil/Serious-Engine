@@ -32,15 +32,13 @@ static FLOAT _fSpeed = 2.0f;
 
 static BOOL _bUseRealTime = FALSE;
 static CTimerValue _tvStart;
-static FLOAT _tmStart;
+static FTICK _ftStart;
 
-FLOAT GetTime(void)
-{
-  if(!_bUseRealTime) {
-    return  _pTimer->GetLerpedCurrentTick()-_tmStart;
-  } else {
-    return (_pTimer->GetHighPrecisionTimer()-_tvStart).GetSeconds();;
+FLOAT GetTime(void) {
+  if (!_bUseRealTime) {
+    return  CTimer::InSeconds(_pTimer->LerpedGameTick() - _ftStart);
   }
+  return (_pTimer->GetHighPrecisionTimer() - _tvStart).GetSeconds();
 }
 
 void PrintOneLine(CDrawPort *pdp, const CTString &strText) 
@@ -109,9 +107,10 @@ void Credits_On(INDEX iType)
   // if some file was loaded
   if (_bCreditsOn) {
     // remember start time
-    if (iType==1 || iType==2) {
+    if (iType == 1 || iType == 2) {
       _bUseRealTime = FALSE;
-      _tmStart = _pTimer->GetLerpedCurrentTick();
+      _ftStart = _pTimer->LerpedGameTick();
+
     } else {
       _bUseRealTime = TRUE;
       _tvStart = _pTimer->GetHighPrecisionTimer();

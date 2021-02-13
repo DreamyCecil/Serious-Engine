@@ -938,8 +938,8 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
   FLOAT fBombCount = penPlayerCurrent->m_iSeriousBombCount;
   BOOL  bBombFiring = FALSE;
   // draw serious bomb
-#define BOMB_FIRE_TIME 1.5f
-  if (penPlayerCurrent->m_tmSeriousBombFired+BOMB_FIRE_TIME>_pTimer->GetLerpedCurrentTick()) {
+#define BOMB_FIRE_TIME CTimer::InTicks(1.5f)
+  if (FTICK(penPlayerCurrent->m_llSeriousBombFired + BOMB_FIRE_TIME) > _pTimer->LerpedGameTick()) {
     fBombCount++;
     if (fBombCount>3) { fBombCount = 3; }
     bBombFiring = TRUE;
@@ -950,7 +950,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     COLOR colBombIcon = C_WHITE;
     COLOR colBombBar = _colHUDText; if (fBombCount==1) { colBombBar = C_RED; }
     if (bBombFiring) { 
-      FLOAT fFactor = (_pTimer->GetLerpedCurrentTick() - penPlayerCurrent->m_tmSeriousBombFired)/BOMB_FIRE_TIME;
+      FLOAT fFactor = CTimer::InSeconds((_pTimer->LerpedGameTick() - penPlayerCurrent->m_llSeriousBombFired) / BOMB_FIRE_TIME);
       colBombBorder = LerpColor(colBombBorder, C_RED, fFactor);
       colBombIcon = LerpColor(colBombIcon, C_RED, fFactor);
       colBombBar = LerpColor(colBombBar, C_RED, fFactor);
@@ -986,16 +986,16 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
 
   // draw powerup(s) if needed
   PrepareColorTransitions( colMax, colTop, colMid, C_RED, 0.66f, 0.33f, FALSE);
-  TIME *ptmPowerups = (TIME*)&_penPlayer->m_tmInvisibility;
+  TICK *pllPowerups = (TICK*)&_penPlayer->m_llInvisibility;
   TIME *ptmPowerupsMax = (TIME*)&_penPlayer->m_tmInvisibilityMax;
   fRow = pixBottomBound-fOneUnitS-fAdvUnitS;
   fCol = pixRightBound -fHalfUnitS;
   for( i=0; i<MAX_POWERUPS; i++)
   {
     // skip if not active
-    const TIME tmDelta = ptmPowerups[i] - _tmNow;
-    if( tmDelta<=0) continue;
-    fNormValue = tmDelta / ptmPowerupsMax[i];
+    const TICK llDelta = pllPowerups[i] - _pTimer->GetGameTick();
+    if (llDelta <= 0) continue;
+    fNormValue = CTimer::InSeconds(llDelta) / ptmPowerupsMax[i];
     // draw icon and a little bar
     HUD_DrawBorder( fCol,         fRow, fOneUnitS, fOneUnitS, colBorder);
     HUD_DrawIcon(   fCol,         fRow, _atoPowerups[i], C_WHITE /*_colHUD*/, fNormValue, TRUE);
@@ -1068,8 +1068,9 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
 
   // draw oxygen info if needed
   BOOL bOxygenOnScreen = FALSE;
-  fValue = _penPlayer->en_tmMaxHoldBreath - (_pTimer->CurrentTick() - _penPlayer->en_tmLastBreathed);
-  if( _penPlayer->IsConnected() && (_penPlayer->GetFlags()&ENF_ALIVE) && fValue<30.0f) { 
+  fValue = _penPlayer->en_tmMaxHoldBreath - CTimer::InSeconds(_pTimer->GetGameTick() - _penPlayer->en_llLastBreathed);
+
+  if (_penPlayer->IsConnected() && (_penPlayer->GetFlags()&ENF_ALIVE) && fValue < 30.0f) { 
     // prepare and draw oxygen info
     fRow = pixTopBound + fOneUnit + fNextUnit;
     fCol = 280.0f;
@@ -1206,7 +1207,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
     if ((bScoreMatch || bFragMatch) && hud_bShowMatchInfo){
       CTString strLimitsInfo="";  
       if (GetSP()->sp_iTimeLimit>0) {
-        FLOAT fTimeLeft = ClampDn(GetSP()->sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
+        FLOAT fTimeLeft = ClampDn(GetSP()->sp_iTimeLimit*60.0f - CTimer::InSeconds(_pNetwork->NetworkGameTime()), 0.0f);
         strLimitsInfo.PrintF("%s^cFFFFFF%s: %s\n", strLimitsInfo, TRANS("TIME LEFT"), TimeToString(fTimeLeft));
       }
       extern INDEX SetAllPlayersStats( INDEX iSortKey);
@@ -1316,7 +1317,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
       const FLOAT tmIn = 0.5f;
       const FLOAT tmOut = 0.5f;
       const FLOAT tmStay = 2.0f;
-      FLOAT tmDelta = _pTimer->GetLerpedCurrentTick()-_penPlayer->m_tmAnimateInbox;
+      FLOAT tmDelta = CTimer::InSeconds(_pTimer->LerpedGameTick() - _penPlayer->m_llAnimateInbox);
       COLOR col = _colHUD;
       if (tmDelta>0 && tmDelta<(tmIn+tmStay+tmOut) && bSinglePlay) {
         FLOAT fRatio = 0.0f;

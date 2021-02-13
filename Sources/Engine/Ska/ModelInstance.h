@@ -103,16 +103,15 @@ struct AnimQueue
   CStaticStackArray<struct AnimList> aq_Lists;  // Array of currently playing anim lists
 };
 
-struct AnimList
-{
-  FLOAT al_fStartTime;  // Time when this list was created
+struct AnimList {
+  TICK al_llStartTime;  // Time when this list was created
   FLOAT al_fFadeTime;   // Time when this list will fade in
   CStaticStackArray<struct PlayedAnim> al_PlayedAnims;  // Array of currently playing anims in this list
 };
 
 struct PlayedAnim
 {
-  FLOAT pa_fStartTime; // Time when this animation was started
+  TICK pa_llStartTime; // Time when this animation was started
   FLOAT pa_fSpeedMul;  // Speed multiplier
   INDEX pa_iAnimID;    // Animation id
   ULONG pa_ulFlags;    // Animation flags

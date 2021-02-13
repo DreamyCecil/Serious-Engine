@@ -181,6 +181,10 @@ public:
   inline CTStream &operator<<(const SBYTE &sb) { Write_t(&sb, sizeof(sb)); return *this; } // throw char *
   inline CTStream &operator<<(const BOOL   &b) { Write_t( &b, sizeof( b)); return *this; } // throw char *
 
+  // [Cecil] New timer: Ticks
+  inline CTStream &operator>>(TICK &ll) { Read_t(&ll, sizeof(ll)); return *this; } // throw char *
+  inline CTStream &operator<<(const TICK &ll) { Write_t(&ll, sizeof(ll)); return *this; } // throw char *
+
   // CTFileName reading/writing
   ENGINE_API friend CTStream &operator>>(CTStream &strmStream, CTFileName &fnmFileName);
   ENGINE_API friend CTStream &operator<<(CTStream &strmStream, const CTFileName &fnmFileName);

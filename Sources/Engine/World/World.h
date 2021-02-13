@@ -124,7 +124,7 @@ public:
   /* Add an entity to list of timers. */
   void AddTimer(CRationalEntity *penTimer);
   // set overdue timers to be due in current time
-  void AdjustLateTimers(TIME tmCurrentTime);
+  void AdjustLateTimers(TICK llCurrentTime);
 
   // CSG operations for editing a world
   /* Get a valid brush mip of brush for use in CSG operations. */

@@ -26,6 +26,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Synchronization.h>
 
+// [Cecil] New timer: Tick types
+#include <Engine/Base/TimerTick.h>
+
 /*
  * Class that holds and manipulates with high-precision timer values.
  */
@@ -76,9 +79,8 @@ public:
   __int64 tm_llCPUSpeedHZ;  // CPU speed in HZ
 
   CTimerValue tm_tvLastTimeOnTime;  // last time when timer was on time
-  TIME        tm_tmLastTickOnTime;  // last tick when timer was on time
 
-  TIME tm_RealTimeTimer;  // this really ticks at 1/TickQuantum frequency
+  TICK tm_llRealTime;  // this really ticks at 1/TickQuantum frequency
   FLOAT tm_fLerpFactor;   // factor used for lerping between frames
   FLOAT tm_fLerpFactor2;  // secondary lerp-factor used for unpredicted movement
 
@@ -104,21 +106,19 @@ public:
   /* Handle timer handlers manually. */
   void HandleTimerHandlers(void);
 
-  /* Set the real time tick value. */
-  void SetRealTimeTick(TIME tNewRealTimeTick);
-  /* Get the real time tick value. */
-  TIME GetRealTimeTick(void) const;
+  // Get the real time tick value.
+  TICK GetTimeTick(void) const;
 
   /* NOTE: CurrentTick is local to each thread, and every thread must take
      care to increment the current tick or copy it from real time tick if
      it wants to make animations and similar to work. */
 
-  /* Set the current game tick used for time dependent tasks (animations etc.). */
-  void SetCurrentTick(TIME tNewCurrentTick);
-  /* Get current game time, always valid for the currently active task. */
-  const TIME CurrentTick(void) const;
-  /* Get lerped game time. */
-  const TIME GetLerpedCurrentTick(void) const;
+  // Set the current game tick used for time dependent tasks (animations etc.).
+  void SetGameTick(TICK llTick);
+  // Get current game time, always valid for the currently active task.
+  TICK GetGameTick(void) const;
+  // Get lerped game time.
+  FTICK LerpedGameTick(void) const;
 
   // Set factor for lerping between ticks.
   void SetLerp(FLOAT fLerp);    // sets both primary and secondary
@@ -137,6 +137,22 @@ public:
     _asm mov dword ptr [mmRet+0],eax
     _asm mov dword ptr [mmRet+4],edx
     return mmRet;
+  };
+
+  // [Cecil] New timer: Seconds to ticks
+  static TICK InTicks(FLOAT fTime);
+
+  // [Cecil] New timer: Ticks to seconds
+  static FLOAT InSeconds(FTICK ftTime);
+
+  // [Cecil] TEMP: Game tick in seconds
+  inline TIME CurrentTick(void) {
+    return CTimer::InSeconds(GetGameTick());
+  };
+
+  // [Cecil] TEMP: Lerped game tick in seconds
+  inline TIME GetLerpedCurrentTick(void) {
+    return CTimer::InSeconds(LerpedGameTick());
   };
 };
 

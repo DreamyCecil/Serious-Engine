@@ -1235,7 +1235,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     }
     // if current frame size differs from the previous one
     SLONG slFrameSize = GetMipmapOffset( 15, pixWidth, pixHeight) *BYTES_PER_TEXEL;
-    if( td_pulFrames==NULL || td_slFrameSize!=slFrameSize) {
+    if (td_pulFrames==NULL || td_slFrameSize!=slFrameSize) {
       // (re)allocate the frame buffer
       if( td_pulFrames!=NULL) FreeMemory( td_pulFrames);
       td_pulFrames = (ULONG*)AllocMemory( slFrameSize);
@@ -1244,7 +1244,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     }
 
     // if not calculated for this tick (must be != to test for time rewinding)
-    if( td_ptegEffect->teg_updTexture.LastUpdateTime() != _pTimer->CurrentTick()) {
+    if (td_ptegEffect->teg_updTexture.LastUpdateTime() != _pTimer->GetGameTick()) {
       // discard eventual cached frame and calculate new frame
       MarkChanged();
       td_ptegEffect->Animate();

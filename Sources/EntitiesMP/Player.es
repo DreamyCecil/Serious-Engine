@@ -275,7 +275,7 @@ static void KillAllEnemies(CEntity *penKiller)
                                      
 #define MAX_WEAPONS 30
 
-#define PICKEDREPORT_TIME   (2.0f)  // how long (picked-up) message stays on screen
+#define PICKEDREPORT_TIME CTimer::InTicks(2.0f)  // how long (picked-up) message stays on screen
 
 // is player spying another player
 //extern TIME _tmSnoopingStarted;
@@ -417,7 +417,7 @@ static FLOAT plr_fWalkSoundDelay = 0.5f;
 static FLOAT plr_fRunSoundDelay  = 0.3f;
 
 static FLOAT ctl_tmComputerDoubleClick = 0.5f; // double click delay for calling computer
-static FLOAT _tmLastUseOrCompPressed = -10.0f;  // for computer doubleclick
+static TICK _llLastUseOrCompPressed = -10;  // for computer doubleclick
 
 // speeds for button rotation
 static FLOAT ctl_fButtonRotationSpeedH = 300.0f;
@@ -568,7 +568,7 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
     // if double-click is on
     } else {
       // if double click
-      if (_pTimer->GetRealTimeTick()<=_tmLastUseOrCompPressed+ctl_tmComputerDoubleClick) {
+      if (_pTimer->GetTimeTick() <= _llLastUseOrCompPressed + CTimer::InTicks(ctl_tmComputerDoubleClick)) {
         // computer pressed
         paAction.pa_ulButtons |= PLACT_COMPUTER;
       // if single click
@@ -577,7 +577,7 @@ DECL_DLL void ctl_ComposeActionPacket(const CPlayerCharacter &pc, CPlayerAction 
         paAction.pa_ulButtons |= PLACT_USE;
       }
     }
-    _tmLastUseOrCompPressed = _pTimer->GetRealTimeTick();
+    _llLastUseOrCompPressed = _pTimer->GetTimeTick();
   }
   // remember old userorcomp pressed state
   pctlCurrent.bUseOrComputerLast = pctlCurrent.bUseOrComputer;
@@ -1022,34 +1022,34 @@ properties:
 
  26 CAnimObject m_aoLightAnimation,           // light animation object
  27 FLOAT m_fDamageAmmount = 0.0f,            // how much was last wound
- 28 FLOAT m_tmWoundedTime  = 0.0f,            // when was last wound
- 29 FLOAT m_tmScreamTime   = 0.0f,            // when was last wound sound played
+ 28 TICK m_llWoundedTime  = 0.0f,             // when was last wound
+ 29 TICK m_llScreamTime   = 0.0f,             // when was last wound sound played
 
  33 INDEX m_iGender = GENDER_MALE,            // male/female offset in various tables
  34 enum PlayerState m_pstState = PST_STAND,  // current player state
- 35 FLOAT m_fFallTime = 0.0f,                 // time passed when falling
- 36 FLOAT m_fSwimTime = 0.0f,                 // time when started swimming
- 45 FLOAT m_tmOutOfWater = 0.0f,              // time when got out of water last time
- 37 FLOAT m_tmMoveSound = 0.0f,           // last time move sound was played
+ 35 TICK m_llFallTime = 0.0f,                 // time passed when falling
+ 36 TICK m_llSwimTime = 0.0f,                 // time when started swimming
+ 45 TICK m_llOutOfWater = 0.0f,               // time when got out of water last time
+ 37 TICK  m_llMoveSound = 0,              // last time move sound was played
  38 BOOL  m_bMoveSoundLeft = TRUE,        // left or right walk channel is current
- 39 FLOAT m_tmNextAmbientOnce = 0.0f,     // next time to play local ambient sound
- 43 FLOAT m_tmMouthSoundLast = 0.0f,      // time last played some repeating mouth sound
+ 39 TICK m_llNextAmbientOnce = 0.0f,      // next time to play local ambient sound
+ 43 TICK m_llMouthSoundLast = 0.0f,       // time last played some repeating mouth sound
 
  40 CEntityPointer m_penCamera,           // camera for current cinematic sequence, or null
  41 CTString m_strCenterMessage="",       // center message
- 42 FLOAT m_tmCenterMessageEnd = 0.0f,    // last time to show centered message
+ 42 TICK m_llCenterMessageEnd = 0.0f,     // last time to show centered message
  48 BOOL m_bPendingMessage = FALSE,   // message sound pending to be played
- 47 FLOAT m_tmMessagePlay = 0.0f,     // when to play the message sound
- 49 FLOAT m_tmAnalyseEnd = 0.0f,      // last time to show analysation
+ 47 TICK m_llMessagePlay = 0.0f,      // when to play the message sound
+ 49 TICK m_llAnalyseEnd = 0.0f,       // last time to show analysation
  50 BOOL m_bComputerInvoked = FALSE,  // set if computer was invoked at least once
- 57 FLOAT m_tmAnimateInbox = -100.0f,      // show animation of inbox icon animation
+ 57 TICK m_llAnimateInbox = -100.0f,  // show animation of inbox icon animation
  
  44 CEntityPointer m_penMainMusicHolder,
 
- 51 FLOAT m_tmLastDamage = -1.0f,
+ 51 TICK m_llLastDamage = -1.0f,
  52 FLOAT m_fMaxDamageAmmount = 0.0f,
  53 FLOAT3D m_vDamage = FLOAT3D(0,0,0),
- 54 FLOAT m_tmSpraySpawned = -1.0f,
+ 54 TICK m_llSpraySpawned = -1.0f,
  55 FLOAT m_fSprayDamage = 0.0f,
  56 CEntityPointer m_penSpray,
 
@@ -1085,7 +1085,7 @@ properties:
  96 BOOL  m_bEndOfLevel = FALSE,
  97 BOOL  m_bEndOfGame  = FALSE,
  98 INDEX m_iMayRespawn = 0,     // must get to 2 to be able to respawn
- 99 FLOAT m_tmSpawned = 0.0f,   // when player was spawned
+ 99 TICK m_llSpawned = 0.0f,   // when player was spawned
  100 FLOAT3D m_vDied = FLOAT3D(0,0,0),  // where player died (for respawn in-place)
  101 FLOAT3D m_aDied = FLOAT3D(0,0,0),
 
@@ -1094,7 +1094,7 @@ properties:
  105 INDEX m_iTimeScore = 0,
  106 INDEX m_iStartTime = 0,      // game start time (ansi c time_t type)
  107 INDEX m_iEndTime   = 0,      // game end time (ansi c time_t type)
- 108 FLOAT m_tmLevelStarted = 0.0f,  // game time when level started
+ 108 TICK m_llLevelStarted = 0,   // game time when level started
  93 CTString m_strLevelStats = "",  // detailed statistics for each level
 
  // auto action vars
@@ -1106,7 +1106,7 @@ properties:
  115 FLOAT m_tmFadeStart = 0.0f,
 
  // 'picked up' display vars
- 120 FLOAT m_tmLastPicked = -10000.0f,  // when something was last picked up
+ 120 TICK m_llLastPicked = -10000,      // when something was last picked up
  121 CTString m_strPickedName = "",     // name of item picked
  122 FLOAT m_fPickedAmmount = 0.0f,     // total picked ammount
  123 FLOAT m_fPickedMana = 0.0f,        // total picked mana
@@ -1132,16 +1132,16 @@ properties:
  156 FLOAT3D m_vLocalTranslation = FLOAT3D(0,0,0),
 
  // powerups (DO NOT CHANGE ORDER!) - needed by HUD.cpp
- 160 FLOAT m_tmInvisibility    = 0.0f, 
- 161 FLOAT m_tmInvulnerability = 0.0f, 
- 162 FLOAT m_tmSeriousDamage   = 0.0f, 
- 163 FLOAT m_tmSeriousSpeed    = 0.0f, 
+ 160 TICK m_llInvisibility    = 0,
+ 161 TICK m_llInvulnerability = 0,
+ 162 TICK m_llSeriousDamage   = 0,
+ 163 TICK m_llSeriousSpeed    = 0,
  166 FLOAT m_tmInvisibilityMax    = 30.0f,
  167 FLOAT m_tmInvulnerabilityMax = 30.0f,
  168 FLOAT m_tmSeriousDamageMax   = 40.0f,
  169 FLOAT m_tmSeriousSpeedMax    = 20.0f,
 
- 180 FLOAT m_tmChainShakeEnd = 0.0f, // used to determine when to stop shaking due to chainsaw damage
+ 180 TICK m_llChainShakeEnd = 0, // used to determine when to stop shaking due to chainsaw damage
  181 FLOAT m_fChainShakeStrength = 1.0f, // strength of shaking
  182 FLOAT m_fChainShakeFreqMod = 1.0f,  // shaking frequency modifier
  183 FLOAT m_fChainsawShakeDX = 0.0f, 
@@ -1149,7 +1149,7 @@ properties:
 
  190 INDEX m_iSeriousBombCount = 0,      // ammount of serious bombs player owns
  191 INDEX m_iLastSeriousBombCount = 0,  // ammount of serious bombs player had before firing
- 192 FLOAT m_tmSeriousBombFired = -10.0f,  // when the bomb was last fired
+ 192 TICK m_llSeriousBombFired = -10000, // when the bomb was last fired
 
 {
   ShellLaunchData ShellLaunchData_array;  // array of data describing flying empty shells
@@ -1172,7 +1172,7 @@ properties:
   // light
   CLightSource m_lsLightSource;
 
-  TIME m_tmPredict;  // time to predict the entity to
+  TICK m_llPredict;  // time to predict the entity to
 
   // all messages in the inbox
   CDynamicStackArray<CCompMessageID> m_acmiMessages;
@@ -1379,7 +1379,7 @@ functions:
     ClearShellLaunchData();
     ClearBulletSprayLaunchData();
     ClearGoreSprayLaunchData();
-    m_tmPredict = 0;
+    m_llPredict = 0;
 
     // add all messages from First Encounter
     //CheatAllMessagesDir("Data\\Messages\\weapons\\", CMF_READ);
@@ -1583,15 +1583,15 @@ functions:
   };
 
   // called by other entities to set time prediction parameter
-  void SetPredictionTime(TIME tmAdvance)   // give time interval in advance to set
+  void SetPredictionTime(TICK llAdvance)   // give time interval in advance to set
   {
-    m_tmPredict = _pTimer->CurrentTick()+tmAdvance;
+    m_llPredict = _pTimer->GetGameTick()+llAdvance;
   }
 
   // called by engine to get the upper time limit 
-  TIME GetPredictionTime(void)   // return moment in time up to which to predict this entity
+  TICK GetPredictionTime(void)   // return moment in time up to which to predict this entity
   {
-    return m_tmPredict;
+    return m_llPredict;
   }
 
   // get maximum allowed range for predicting this entity
@@ -1615,7 +1615,7 @@ functions:
     if(m_bEndOfLevel) {
       return m_psLevelStats.ps_tmTime;
     } else {
-      return _pNetwork->GetGameTime()-m_tmLevelStarted;
+      return CTimer::InSeconds(_pNetwork->NetworkGameTime() - m_llLevelStarted);
     }
   }
   TIME GetStatsInGameTimeGame(void)
@@ -1623,7 +1623,7 @@ functions:
     if(m_bEndOfLevel) {
       return m_psGameStats.ps_tmTime;
     } else {
-      return m_psGameStats.ps_tmTime + (_pNetwork->GetGameTime()-m_tmLevelStarted);
+      return m_psGameStats.ps_tmTime + CTimer::InSeconds(_pNetwork->NetworkGameTime() - m_llLevelStarted);
     }
   }
 
@@ -1697,7 +1697,7 @@ functions:
     const INDEX ctPlayers = SetAllPlayersStats(bFragMatch?5:3); // sort by frags or by score
 
     // get time elapsed since the game start
-    strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME"), TimeToString(_pNetwork->GetGameTime())));
+    strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME"), TimeToString(CTimer::InSeconds(_pNetwork->NetworkGameTime()))));
     strStats+="\n";
 
     // find maximum frags/score that one player has
@@ -1712,7 +1712,7 @@ functions:
     // print game limits
     const CSessionProperties &sp = *GetSP();
     if (sp.sp_iTimeLimit>0) {
-      FLOAT fTimeLeft = ClampDn(sp.sp_iTimeLimit*60.0f - _pNetwork->GetGameTime(), 0.0f);
+      FLOAT fTimeLeft = ClampDn(sp.sp_iTimeLimit*60.0f - CTimer::InSeconds(_pNetwork->NetworkGameTime()), 0.0f);
       strStats+=AlignString(CTString(0, "^cFFFFFF%s:^r\n%s", TRANS("TIME LEFT"), TimeToString(fTimeLeft)));
       strStats+="\n";
     }
@@ -2005,7 +2005,7 @@ functions:
       cmp_bUpdateInBackground = TRUE;
     }
     if (!(ulFlags&CMF_READ) && (ulFlags&CMF_ANALYZE)) {
-      m_tmAnalyseEnd = _pTimer->CurrentTick()+2.0f;
+      m_llAnalyseEnd = _pTimer->GetGameTick() + CTimer::InTicks(2.0f);
       m_soMessage.Set3DParameters(25.0f, 5.0f, 1.0f, 1.0f);
       PlaySound(m_soMessage, SOUND_INFO, SOF_3D|SOF_VOLUMETRIC|SOF_LOCAL);
     }
@@ -2054,7 +2054,7 @@ functions:
   void ItemPicked(const CTString &strName, FLOAT fAmmount)
   {
     // if nothing picked too long
-    if (_pTimer->CurrentTick() > m_tmLastPicked+PICKEDREPORT_TIME) {
+    if (_pTimer->GetGameTick() > m_llLastPicked+PICKEDREPORT_TIME) {
       // kill the name
       m_strPickedName = "";
       // reset picked mana
@@ -2069,7 +2069,7 @@ functions:
     }
     // increase ammount
     m_fPickedAmmount+=fAmmount;
-    m_tmLastPicked = _pTimer->CurrentTick();
+    m_llLastPicked = _pTimer->GetGameTick();
   }
 
   // Setup light source
@@ -2147,6 +2147,7 @@ functions:
     }
 
     FLOAT tmNow = _pTimer->GetLerpedCurrentTick();
+    FTICK ftNow = _pTimer->LerpedGameTick();
 
     FLOAT fFading = 1.0f;
     if (m_tmFadeStart!=0) {
@@ -2157,9 +2158,9 @@ functions:
 
     // if invunerable after spawning
     FLOAT tmSpawnInvulnerability = GetSP()->sp_tmSpawnInvulnerability;
-    if (tmSpawnInvulnerability>0 && tmNow-m_tmSpawned<tmSpawnInvulnerability) {
+    if (tmSpawnInvulnerability > 0.0f && CTimer::InSeconds(ftNow - m_llSpawned) < tmSpawnInvulnerability) {
       // blink fast
-      FLOAT fDelta = tmNow-m_tmSpawned;
+      FLOAT fDelta = CTimer::InSeconds(ftNow - m_llSpawned);
       fFading *= 0.75f+0.25f*Sin(fDelta/0.5f*360);
     }
 
@@ -2172,18 +2173,19 @@ functions:
       // pulse slowly
       fFading *= 0.25f+0.25f*Sin(tmNow/2.0f*360);
     // if invisible
-    } else if (m_tmInvisibility>tmNow) {
-      FLOAT fIntensity=0.0f;
-      if((m_tmInvisibility-tmNow)<3.0f)
-      {
-        fIntensity = 0.5f-0.5f*cos((m_tmInvisibility-tmNow)*(6.0f*3.1415927f/3.0f));
+    } else if (FTICK(m_llInvisibility) > ftNow) {
+      FLOAT fIntensity = 0.0f;
+      if (CTimer::InSeconds(FTICK(m_llInvisibility) - ftNow) < 3.0f) {
+        fIntensity = 0.5f-0.5f*cos((CTimer::InSeconds(m_llInvisibility) - tmNow)*(6.0f*3.1415927f/3.0f));
       }
+
       if (_ulPlayerRenderingMask == 1<<GetMyPlayerIndex()) {
         colAlpha = (colAlpha&0xffffff00)|(INDEX)(INVISIBILITY_ALPHA_LOCAL+(FLOAT)(254-INVISIBILITY_ALPHA_LOCAL)*fIntensity);
-      } else if (TRUE) {
-        if ((m_tmInvisibility-tmNow)<1.28f) {
+
+      } else {
+        if (CTimer::InSeconds(FTICK(m_llInvisibility) - ftNow) < 1.28f) {
           colAlpha = (colAlpha&0xffffff00)|(INDEX)(INVISIBILITY_ALPHA_REMOTE+(FLOAT)(254-INVISIBILITY_ALPHA_REMOTE)*fIntensity);
-        } else if (TRUE) {
+        } else {
           colAlpha = (colAlpha&0xffffff00)|INVISIBILITY_ALPHA_REMOTE;
         }
       }
@@ -2260,8 +2262,8 @@ functions:
   {
     // chainsaw shaking
     FLOAT fT = _pTimer->GetLerpedCurrentTick();
-    if (fT<m_tmChainShakeEnd)
-    {
+
+    if (CTimer::InTicks(fT) < m_llChainShakeEnd) {
       m_fChainsawShakeDX = 0.03f*m_fChainShakeStrength*SinFast(fT*m_fChainShakeFreqMod*3300.0f);
       m_fChainsawShakeDY = 0.03f*m_fChainShakeStrength*SinFast(fT*m_fChainShakeFreqMod*2900.0f);
       
@@ -2544,13 +2546,13 @@ functions:
     FLOAT fScale = (FLOAT)pixDPWidth/640.0f;
 
     // print center message
-    if (_pTimer->CurrentTick()<m_tmCenterMessageEnd) {
+    if (_pTimer->GetGameTick() < m_llCenterMessageEnd) {
       pdp->SetFont( _pfdDisplayFont);
       pdp->SetTextScaling( fScale);
       pdp->SetTextAspect( 1.0f);
       pdp->PutTextCXY( m_strCenterMessage, pixDPWidth*0.5f, pixDPHeight*0.85f, C_WHITE|0xDD);
     // print picked item
-    } else if (_pTimer->CurrentTick()<m_tmLastPicked+PICKEDREPORT_TIME) {
+    } else if (_pTimer->GetGameTick() < m_llLastPicked+PICKEDREPORT_TIME) {
       pdp->SetFont( _pfdDisplayFont);
       pdp->SetTextScaling( fScale);
       pdp->SetTextAspect( 1.0f);
@@ -2568,7 +2570,7 @@ functions:
       }
     }
 
-    if (_pTimer->CurrentTick()<m_tmAnalyseEnd) {
+    if (_pTimer->GetGameTick() < m_llAnalyseEnd) {
       pdp->SetFont( _pfdDisplayFont);
       pdp->SetTextScaling( fScale);
       pdp->SetTextAspect( 1.0f);
@@ -2647,7 +2649,7 @@ functions:
     }
 
     // print center message
-    if (_pTimer->CurrentTick()<m_tmCenterMessageEnd) {
+    if (_pTimer->GetGameTick() < m_llCenterMessageEnd) {
       PIX pixDPWidth  = pdp->GetWidth();
       PIX pixDPHeight = pdp->GetHeight();
       FLOAT fScale = (FLOAT)pixDPWidth/640.0f;
@@ -2943,14 +2945,15 @@ functions:
     }
 
     // get passed time since last damage
-    TIME tmNow = _pTimer->CurrentTick();
-    TIME tmDelta = tmNow-m_tmLastDamage;
-    m_tmLastDamage = tmNow;
+    TICK llNow = _pTimer->GetGameTick();
+    TICK llDelta = llNow - m_llLastDamage;
+    m_llLastDamage = llNow;
 
     // fade damage out
-    if (tmDelta>=_pTimer->TickQuantum*3) {
+    if (llDelta >= 3/*_pTimer->TickQuantum*3*/) {
       m_vDamage=FLOAT3D(0,0,0);
     }
+
     // add new damage
     FLOAT3D vDirectionFixed;
     if (vDirection.ManhattanNorm()>0.5f) {
@@ -3006,8 +3009,8 @@ functions:
       m_fMaxDamageAmmount = fDamageAmmount;
     }
     // if it has no spray, or if this damage overflows it
-    if ((m_tmSpraySpawned<=_pTimer->CurrentTick()-_pTimer->TickQuantum*8 || 
-      m_fSprayDamage+fDamageAmmount>50.0f)) {
+    if ((m_llSpraySpawned <= _pTimer->GetGameTick() - 8/*_pTimer->TickQuantum*8*/ || 
+      m_fSprayDamage + fDamageAmmount > 50.0f)) {
 
       // spawn blood spray
       CPlacement3D plSpray = CPlacement3D( vHitPoint, ANGLE3D(0, 0, 0));
@@ -3048,7 +3051,7 @@ functions:
     
       // initialize spray
       m_penSpray->Initialize( eSpawnSpray);
-      m_tmSpraySpawned = _pTimer->CurrentTick();
+      m_llSpraySpawned = _pTimer->GetGameTick();
       m_fSprayDamage = 0.0f;
       m_fMaxDamageAmmount = 0.0f;
     }
@@ -3077,12 +3080,12 @@ functions:
     if( cht_bGod && CheatsEnabled() ) { return; }
 
     // if invulnerable, nothing can harm you except telefrag or abyss
-    const TIME tmDelta = m_tmInvulnerability - _pTimer->CurrentTick();
-    if( tmDelta>0 && dmtType!=DMT_ABYSS && dmtType!=DMT_TELEPORT) { return; }
+    const TICK llDelta = m_llInvulnerability - _pTimer->GetGameTick();
+    if (llDelta > 0 && dmtType != DMT_ABYSS && dmtType != DMT_TELEPORT) { return; }
 
     // if invunerable after spawning
     FLOAT tmSpawnInvulnerability = GetSP()->sp_tmSpawnInvulnerability;
-    if (tmSpawnInvulnerability>0 && _pTimer->CurrentTick()-m_tmSpawned<tmSpawnInvulnerability) {
+    if (tmSpawnInvulnerability > 0 && CTimer::InSeconds(_pTimer->GetGameTick() - m_llSpawned) < tmSpawnInvulnerability) {
       // ignore damage
       return;
     }
@@ -3165,7 +3168,7 @@ functions:
       }
       if( GetFlags()&ENF_ALIVE) {
         m_fDamageAmmount += fDamageAmmount;
-        m_tmWoundedTime   = _pTimer->CurrentTick();
+        m_llWoundedTime = _pTimer->GetGameTick();
       }
     }
 
@@ -3180,7 +3183,7 @@ functions:
       SetRandomMouthPitch( 0.9f, 1.1f);
       PlaySound( m_soMouth, GenderSound(SOUND_DROWN), SOF_3D);
       if(_pNetwork->IsPlayerLocal(this)) {IFeel_PlayEffect("WoundWater");}
-      m_tmMouthSoundLast = _pTimer->CurrentTick();
+      m_llMouthSoundLast = _pTimer->GetGameTick();
       PlaySound( m_soLocalAmbientOnce, SOUND_WATERBUBBLES, SOF_3D|SOF_VOLUMETRIC|SOF_LOCAL);
       m_soLocalAmbientOnce.Set3DParameters( 25.0f, 5.0f, 2.0f, Lerp(0.5f, 1.5f, FRnd()) );
       SpawnBubbles( 10+INDEX(FRnd()*10));
@@ -3208,9 +3211,9 @@ functions:
         } // override for diving
         SetRandomMouthPitch( 0.9f, 1.1f);
         // give some pause inbetween screaming
-        TIME tmNow = _pTimer->CurrentTick();
-        if( (tmNow-m_tmScreamTime) > 1.0f) {
-          m_tmScreamTime = tmNow;
+        TICK llNow = _pTimer->GetGameTick();
+        if (llNow - m_llScreamTime > CTimer::InTicks(1.0f)) {
+          m_llScreamTime = llNow;
           PlaySound( m_soMouth, iSound, SOF_3D);
           if(_pNetwork->IsPlayerLocal(this)) {IFeel_PlayEffect(strIFeel);}
         }
@@ -3409,18 +3412,18 @@ functions:
 
     // *********** POWERUPS ***********
     else if( ee.ee_slEvent == EVENTCODE_EPowerUp) {
-      const FLOAT tmNow = _pTimer->CurrentTick();
+      const TICK llNow = _pTimer->GetGameTick();
       switch( ((EPowerUp&)ee).puitType) {
-      case PUIT_INVISIB :  m_tmInvisibility    = tmNow + m_tmInvisibilityMax;
+      case PUIT_INVISIB :  m_llInvisibility    = llNow + CTimer::InTicks(m_tmInvisibilityMax);
         ItemPicked(TRANS("^cABE3FFInvisibility"), 0);
         return TRUE;
-      case PUIT_INVULNER:  m_tmInvulnerability = tmNow + m_tmInvulnerabilityMax;
+      case PUIT_INVULNER:  m_llInvulnerability = llNow + CTimer::InTicks(m_tmInvulnerabilityMax);
         ItemPicked(TRANS("^c00B440Invulnerability"), 0);
         return TRUE;
-      case PUIT_DAMAGE  :  m_tmSeriousDamage   = tmNow + m_tmSeriousDamageMax;
+      case PUIT_DAMAGE  :  m_llSeriousDamage   = llNow + CTimer::InTicks(m_tmSeriousDamageMax);
         ItemPicked(TRANS("^cFF0000Serious Damage!"), 0);
         return TRUE;
-      case PUIT_SPEED   :  m_tmSeriousSpeed    = tmNow + m_tmSeriousSpeedMax;
+      case PUIT_SPEED   :  m_llSeriousSpeed    = llNow + CTimer::InTicks(m_tmSeriousSpeedMax);
         ItemPicked(TRANS("^cFF9400Serious Speed"), 0);
         return TRUE;
       case PUIT_BOMB    :
@@ -3484,9 +3487,9 @@ functions:
       }
       m_bComputerInvoked = TRUE;
       // clear analyses message
-      m_tmAnalyseEnd = 0;
+      m_llAnalyseEnd = 0;
       m_bPendingMessage = FALSE;
-      m_tmMessagePlay = 0;
+      m_llMessagePlay = 0;
 //    }
   }
 
@@ -3736,19 +3739,21 @@ functions:
       DeathActions(paAction);
     }
 
-    if (Abs(_pTimer->CurrentTick()-m_tmAnalyseEnd)<_pTimer->TickQuantum*2) {
-      m_tmAnalyseEnd = 0;
+    if (Abs(_pTimer->GetGameTick() - m_llAnalyseEnd) < 2/*_pTimer->TickQuantum*2*/) {
+      m_llAnalyseEnd = 0;
       m_bPendingMessage = TRUE;
-      m_tmMessagePlay = 0;
+      m_llMessagePlay = 0;
     }
+
     if (m_bPendingMessage && !IsFuss()) {
       m_bPendingMessage = FALSE;
-      m_tmMessagePlay = _pTimer->CurrentTick()+1.0f;
-      m_tmAnimateInbox = _pTimer->CurrentTick();
+      m_llMessagePlay = _pTimer->GetGameTick() + CTimer::InTicks(1.0f);
+      m_llAnimateInbox = _pTimer->GetGameTick();
     }
-    if (Abs(_pTimer->CurrentTick()-m_tmMessagePlay)<_pTimer->TickQuantum*2) {
+
+    if (Abs(_pTimer->GetGameTick() - m_llMessagePlay) < 2/*_pTimer->TickQuantum*2*/) {
       m_bPendingMessage = FALSE;
-      m_tmAnalyseEnd = 0;
+      m_llAnalyseEnd = 0;
 
       if (!m_bComputerInvoked && GetSP()->sp_bSinglePlayer) {
         PrintCenterMessage(this, this, 
@@ -3867,10 +3872,10 @@ functions:
     ActiveActions(paAction);
 
     // if less than few seconds elapsed since last damage
-    FLOAT tmSinceWounding = _pTimer->CurrentTick() - m_tmWoundedTime;
-    if( tmSinceWounding<4.0f) {
+    TICK llSinceWounding = _pTimer->GetGameTick() - m_llWoundedTime;
+    if (llSinceWounding < CTimer::InTicks(4.0f)) {
       // decrease damage ammount
-      m_fDamageAmmount *= 1.0f - tmSinceWounding/4.0f;
+      m_fDamageAmmount *= 1.0f - CTimer::InSeconds(llSinceWounding) / 4.0f;
     } else {
       // reset damage ammount
       m_fDamageAmmount = 0.0f;
@@ -4009,8 +4014,8 @@ functions:
     }
 
     // enable faster moving (but not higher jumping!) if having SerousSpeed powerup
-    const TIME tmDelta = m_tmSeriousSpeed - _pTimer->CurrentTick();
-    if( tmDelta>0 && m_fAutoSpeed==0.0f) { 
+    const TICK llDelta = m_llSeriousSpeed - _pTimer->GetGameTick();
+    if (llDelta > 0 && m_fAutoSpeed == 0.0f) { 
       vTranslation(1) *= 2.0f;
       vTranslation(3) *= 2.0f;
     }
@@ -4049,12 +4054,12 @@ functions:
       // if has reference
       if (en_penReference!=NULL) {
         // reset fall timer
-        m_fFallTime = 0.0f;
+        m_llFallTime = 0;
 
       // if no reference
       } else {
         // increase fall time
-        m_fFallTime += _pTimer->TickQuantum;
+        m_llFallTime += 1; //_pTimer->TickQuantum;
       }
       // if not wanting to jump
       if (vTranslation(2)<0.1f) {
@@ -4063,7 +4068,7 @@ functions:
       }
 
       // if falling
-      if (m_fFallTime >= 0.5f) {
+      if (m_llFallTime >= CTimer::InTicks(0.5f)) {
         // wants to fall
         pstWanted = PST_FALL;
       // if not falling
@@ -4124,7 +4129,7 @@ functions:
             m_pstState = PST_SWIM;
             en_plViewpoint.pl_PositionVector(2) = plr_fViewHeightSwim;
             ((CPlayerAnimator&)*m_penAnimator).Swim();                   
-            m_fSwimTime = _pTimer->CurrentTick();
+            m_llSwimTime = _pTimer->GetGameTick();
           }
                         } break;
         // if wanting to dive
@@ -4160,7 +4165,7 @@ functions:
         // if left water
         } else if (!bIsInWater && bWasInWater) {
           PlaySound(m_soBody, GenderSound(SOUND_WATER_LEAVE), SOF_3D);
-          m_tmOutOfWater = _pTimer->CurrentTick();
+          m_llOutOfWater = _pTimer->GetGameTick();
           //CPrintF("gotout ");
         // if in water
         } else if (bIsInWater) {
@@ -4169,12 +4174,12 @@ functions:
             PlaySound(m_soFootL, GenderSound(SOUND_DIVEIN), SOF_3D);
             if(_pNetwork->IsPlayerLocal(this)) {IFeel_PlayEffect("DiveIn");}
             m_bMoveSoundLeft = TRUE;
-            m_tmMoveSound = _pTimer->CurrentTick();
+            m_llMoveSound = _pTimer->GetGameTick();
           // if dived out
           } else if (m_pstState==PST_SWIM && pstOld==PST_DIVE) {
             PlaySound(m_soFootL, GenderSound(SOUND_DIVEOUT), SOF_3D);
             m_bMoveSoundLeft = TRUE;
-            m_tmMoveSound = _pTimer->CurrentTick();
+            m_llMoveSound = _pTimer->GetGameTick();
           }
         }
         // if just fell to ground
@@ -4192,8 +4197,8 @@ functions:
         }
       }
       // if just jumped
-      if (en_tmJumped+_pTimer->TickQuantum>=_pTimer->CurrentTick() &&
-          en_tmJumped<=_pTimer->CurrentTick() && en_penReference==NULL) {
+      if (en_llJumped + 1/*_pTimer->TickQuantum*/ >= _pTimer->GetGameTick() &&
+          en_llJumped <= _pTimer->GetGameTick() && en_penReference == NULL) {
         // play jump sound
         SetDefaultMouthPitch();
         PlaySound(m_soMouth, GenderSound(SOUND_JUMP), SOF_3D);
@@ -4210,7 +4215,7 @@ functions:
         en_fDensity = 1000.0f; // same density as water
       }
 
-      if (_pTimer->CurrentTick()>=m_tmNextAmbientOnce)
+      if (_pTimer->GetGameTick() >= m_llNextAmbientOnce)
       {
         if (m_pstState == PST_DIVE)
         {
@@ -4219,7 +4224,7 @@ functions:
           m_soLocalAmbientOnce.Set3DParameters(25.0f, 5.0f, 2.0f, Lerp(0.5f, 1.5f, FRnd()) );
           SpawnBubbles( 5+INDEX(FRnd()*5));
         }
-        m_tmNextAmbientOnce = _pTimer->CurrentTick()+5.0f+FRnd();
+        m_llNextAmbientOnce = _pTimer->GetGameTick() + CTimer::InTicks(5.0f+FRnd());
       }
 
 
@@ -4260,8 +4265,8 @@ functions:
       }
 
       // if just started swimming
-      if (m_pstState == PST_SWIM && _pTimer->CurrentTick()<m_fSwimTime+0.5f
-        ||_pTimer->CurrentTick()<m_tmOutOfWater+0.5f) {
+      if (m_pstState == PST_SWIM && _pTimer->GetGameTick() < m_llSwimTime + CTimer::InTicks(0.5f)
+       || _pTimer->GetGameTick() < m_llOutOfWater + CTimer::InTicks(0.5f)) {
         // no up/down change
         vTranslation(2)=0;
         //CPrintF(" noup");
@@ -4321,9 +4326,12 @@ functions:
       BOOL bWalking = bOnGround && !bRunning && fWantSpeed>2.0f && fGoesSpeed>2.0f;
       BOOL bSwimming = (m_pstState == PST_SWIM) && fWantSpeed>2.0f && fGoesSpeed>2.0f;
       BOOL bDiving = (m_pstState == PST_DIVE) && fWantSpeed>2.0f && fGoesSpeed>2.0f;
-      TIME tmNow = _pTimer->CurrentTick();
+
+      TICK llTickNow = _pTimer->GetGameTick();
+
       INDEX iSoundWalkL = SOUND_WALK_L;
       INDEX iSoundWalkR = SOUND_WALK_R;
+
       if ((ctDn.ct_ulFlags&CTF_SWIMABLE) && en_fImmersionFactor>=0.1f) {
         iSoundWalkL = SOUND_WATERWALK_L;
         iSoundWalkR = SOUND_WATERWALK_R;
@@ -4355,8 +4363,8 @@ functions:
       iSoundWalkL+=m_iGender*GENDEROFFSET;
       iSoundWalkR+=m_iGender*GENDEROFFSET;
       if (bRunning) {
-        if (tmNow>m_tmMoveSound+plr_fRunSoundDelay) {
-          m_tmMoveSound = tmNow;
+        if (llTickNow > m_llMoveSound + CTimer::InTicks(plr_fRunSoundDelay)) {
+          m_llMoveSound = llTickNow;
           m_bMoveSoundLeft = !m_bMoveSoundLeft;
           if (m_bMoveSoundLeft) {
             PlaySound(m_soFootL, iSoundWalkL, SOF_3D);
@@ -4365,8 +4373,8 @@ functions:
           }
         }
       } else if (bWalking) {
-        if (tmNow>m_tmMoveSound+plr_fWalkSoundDelay) {
-          m_tmMoveSound = tmNow;
+        if (llTickNow > m_llMoveSound + CTimer::InTicks(plr_fWalkSoundDelay)) {
+          m_llMoveSound = llTickNow;
           m_bMoveSoundLeft = !m_bMoveSoundLeft;
           if (m_bMoveSoundLeft) {
             PlaySound(m_soFootL, iSoundWalkL, SOF_3D);
@@ -4375,8 +4383,8 @@ functions:
           }
         }
       } else if (bDiving) {
-        if (tmNow>m_tmMoveSound+plr_fDiveSoundDelay) {
-          m_tmMoveSound = tmNow;
+        if (llTickNow > m_llMoveSound + CTimer::InTicks(plr_fDiveSoundDelay)) {
+          m_llMoveSound = llTickNow;
           m_bMoveSoundLeft = !m_bMoveSoundLeft;
           if (m_bMoveSoundLeft) {
             PlaySound(m_soFootL, GenderSound(SOUND_DIVE_L), SOF_3D);
@@ -4385,8 +4393,8 @@ functions:
           }
         }
       } else if (bSwimming) {
-        if (tmNow>m_tmMoveSound+plr_fSwimSoundDelay) {
-          m_tmMoveSound = tmNow;
+        if (llTickNow > m_llMoveSound + CTimer::InTicks(plr_fSwimSoundDelay)) {
+          m_llMoveSound = llTickNow;
           m_bMoveSoundLeft = !m_bMoveSoundLeft;
           if (m_bMoveSoundLeft) {
             PlaySound(m_soFootL, GenderSound(SOUND_SWIM_L), SOF_3D);
@@ -4397,11 +4405,11 @@ functions:
       }
     
       // if player is almost out of air
-      TIME tmBreathDelay = tmNow-en_tmLastBreathed;
-      if (en_tmMaxHoldBreath-tmBreathDelay<20.0f) {
+      TICK llBreathDelay = llTickNow-en_llLastBreathed;
+      if (CTimer::InTicks(en_tmMaxHoldBreath) - llBreathDelay < CTimer::InTicks(20.0f)) {
         // play drowning sound once in a while
-        if (m_tmMouthSoundLast+2.0f<tmNow) {
-          m_tmMouthSoundLast = tmNow;
+        if (m_llMouthSoundLast + CTimer::InTicks(2.0f) < llTickNow) {
+          m_llMouthSoundLast = llTickNow;
           SetRandomMouthPitch(0.9f, 1.1f);
           PlaySound(m_soMouth, GenderSound(SOUND_DROWN), SOF_3D);
         }
@@ -4538,10 +4546,10 @@ functions:
     }
     // if fire bomb is pressed
     if (ulNewButtons&PLACT_FIREBOMB) {
-      if (m_iSeriousBombCount>0 && m_tmSeriousBombFired+4.0f<_pTimer->CurrentTick()) {
+      if (m_iSeriousBombCount > 0 && m_llSeriousBombFired + CTimer::InTicks(4.0f) < _pTimer->GetGameTick()) {
         m_iLastSeriousBombCount = m_iSeriousBombCount;
         m_iSeriousBombCount--;
-        m_tmSeriousBombFired = _pTimer->CurrentTick();
+        m_llSeriousBombFired = _pTimer->GetGameTick();
         
         ESeriousBomb esb;
         esb.penOwner = this;
@@ -4650,8 +4658,8 @@ functions:
     }
 
     // invisible mode
-    const TIME tmDelta = m_tmInvisibility - _pTimer->CurrentTick();
-    if (cht_bInvisible || tmDelta>0) {
+    const TICK llDelta = m_llInvisibility - _pTimer->GetGameTick();
+    if (cht_bInvisible || llDelta > 0) {
       SetFlags(GetFlags() | ENF_INVISIBLE);
     } else {
       SetFlags(GetFlags() & ~ENF_INVISIBLE);
@@ -4880,7 +4888,7 @@ functions:
     ULONG ulA = pen->m_fDamageAmmount*5.0f;
     
     // if less than few seconds elapsed since last damage
-    FLOAT tmSinceWounding = _pTimer->CurrentTick() - pen->m_tmWoundedTime;
+    FLOAT tmSinceWounding = CTimer::InSeconds(_pTimer->GetGameTick() - pen->m_llWoundedTime);
     if( tmSinceWounding<4.0f) {
       // decrease damage ammount
       if( tmSinceWounding<0.001f) { ulA = (ulA+64)/2; }
@@ -5017,14 +5025,14 @@ functions:
 
     // clear properties
     m_ulFlags &= PLF_INITIALIZED|PLF_LEVELSTARTED|PLF_RESPAWNINPLACE;  // must not clear initialized flag
-    m_fFallTime = 0.0f;
+    m_llFallTime = 0;
     m_pstState = PST_STAND;
     m_fDamageAmmount = 0.0f;
-    m_tmWoundedTime  = 0.0f;
-    m_tmInvisibility    = 0.0f, 
-    m_tmInvulnerability = 0.0f, 
-    m_tmSeriousDamage   = 0.0f, 
-    m_tmSeriousSpeed    = 0.0f, 
+    m_llWoundedTime  = 0;
+    m_llInvisibility    = 0;
+    m_llInvulnerability = 0;
+    m_llSeriousDamage   = 0;
+    m_llSeriousSpeed    = 0;
 
     // initialize animator
     ((CPlayerAnimator&)*m_penAnimator).Initialize();
@@ -5335,7 +5343,7 @@ functions:
     // remember level start time
     if (!(m_ulFlags&PLF_LEVELSTARTED)) {
       m_ulFlags |= PLF_LEVELSTARTED;
-      m_tmLevelStarted = _pNetwork->GetGameTime();
+      m_llLevelStarted = _pNetwork->NetworkGameTime();
     }
     // reset model appearance
     CTString strDummy;
@@ -5350,9 +5358,10 @@ functions:
     SpawnTeleport();
     // return from editor model (if was fragged into pieces)
     SwitchToModel();
-    m_tmSpawned = _pTimer->CurrentTick();
+    m_llSpawned = _pTimer->GetGameTick();
 
-    en_tmLastBreathed = _pTimer->CurrentTick()+0.1f;  // do not take breath when spawned in air
+    // do not take breath when spawned in air
+    en_llLastBreathed = _pTimer->GetGameTick()+2; //_pTimer->TickQuantum*2;
   };
 
   // note: set estimated time in advance
@@ -5361,16 +5370,16 @@ functions:
     // must not be called multiple times
     ASSERT(!m_bEndOfLevel);
     // clear analyses message
-    m_tmAnalyseEnd = 0;
+    m_llAnalyseEnd = 0;
     m_bPendingMessage = FALSE;
-    m_tmMessagePlay = 0;
+    m_llMessagePlay = 0;
     // mark end of level
     m_iMayRespawn = 0;
     m_bEndOfLevel = TRUE;
     // remember end time
     time((time_t*)&m_iEndTime);
     // add time score
-    TIME tmLevelTime = _pTimer->CurrentTick()-m_tmLevelStarted;
+    TIME tmLevelTime = CTimer::InSeconds(_pTimer->GetGameTick() - m_llLevelStarted);
     m_psLevelStats.ps_tmTime = tmLevelTime;
     m_psGameStats.ps_tmTime += tmLevelTime;
     FLOAT fTimeDelta = ClampDn((FLOAT)(floor(m_tmEstTime)-floor(tmLevelTime)), 0.0f);
@@ -5413,7 +5422,7 @@ functions:
   // render particles
   void RenderParticles(void)
   {
-    FLOAT tmNow = _pTimer->GetLerpedCurrentTick();
+    FTICK ftNow = _pTimer->LerpedGameTick();
     
     // render empty shells
     Particles_EmptyShells( this, m_asldData);
@@ -5427,15 +5436,15 @@ functions:
       RenderChainsawParticles(TRUE);
       // glowing powerups
       if (GetFlags()&ENF_ALIVE){
-        if (m_tmSeriousDamage>tmNow && m_tmInvulnerability>tmNow) {
-          Particles_ModelGlow(this, Max(m_tmSeriousDamage,m_tmInvulnerability),PT_STAR08, 0.15f, 2, 0.03f, 0xff00ff00);
-        } else if (m_tmInvulnerability>tmNow) {
-          Particles_ModelGlow(this, m_tmInvulnerability, PT_STAR05, 0.15f, 2, 0.03f, 0x3333ff00);
-        } else if (m_tmSeriousDamage>tmNow) {
-          Particles_ModelGlow(this, m_tmSeriousDamage, PT_STAR08, 0.15f, 2, 0.03f, 0xff777700);
+        if (FTICK(m_llSeriousDamage) > ftNow && FTICK(m_llInvulnerability) > ftNow) {
+          Particles_ModelGlow(this, CTimer::InSeconds(Max(m_llSeriousDamage, m_llInvulnerability)), PT_STAR08, 0.15f, 2, 0.03f, 0xff00ff00);
+        } else if (FTICK(m_llInvulnerability) > ftNow) {
+          Particles_ModelGlow(this, CTimer::InSeconds(m_llInvulnerability), PT_STAR05, 0.15f, 2, 0.03f, 0x3333ff00);
+        } else if (FTICK(m_llSeriousDamage) > ftNow) {
+          Particles_ModelGlow(this, CTimer::InSeconds(m_llSeriousDamage), PT_STAR08, 0.15f, 2, 0.03f, 0xff777700);
         }
-        if (m_tmSeriousSpeed>tmNow) {
-          Particles_RunAfterBurner(this, m_tmSeriousSpeed, 0.3f, 0);
+        if (FTICK(m_llSeriousSpeed) > ftNow) {
+          Particles_RunAfterBurner(this, CTimer::InSeconds(m_llSeriousSpeed), 0.3f, 0);
         }
         if (!GetSP()->sp_bCooperative) {
           CPlayerWeapons *wpn = GetPlayerWeapons();
@@ -6651,9 +6660,9 @@ procedures:
       }
       on (ETakingBreath eTakingBreath ) : {
         SetDefaultMouthPitch();
-        if (eTakingBreath.fBreathDelay<0.2f) {
+        if (eTakingBreath.llBreathDelay < CTimer::InTicks(0.2f)) {
           PlaySound(m_soMouth, GenderSound(SOUND_INHALE0), SOF_3D);
-        } else if (eTakingBreath.fBreathDelay<0.8f) {
+        } else if (eTakingBreath.llBreathDelay < CTimer::InTicks(0.8f)) {
           PlaySound(m_soMouth, GenderSound(SOUND_INHALE1), SOF_3D);
         } else {
           PlaySound(m_soMouth, GenderSound(SOUND_INHALE2), SOF_3D);
@@ -6679,7 +6688,7 @@ procedures:
       }
       on (ECenterMessage eMsg) : {
         m_strCenterMessage = eMsg.strMessage;
-        m_tmCenterMessageEnd = _pTimer->CurrentTick()+eMsg.tmLength;
+        m_llCenterMessageEnd = _pTimer->GetGameTick() + CTimer::InTicks(eMsg.tmLength);
         if (eMsg.mssSound==MSS_INFO) {
           m_soMessage.Set3DParameters(25.0f, 5.0f, 1.0f, 1.0f);
           PlaySound(m_soMessage, SOUND_INFO, SOF_3D|SOF_VOLUMETRIC|SOF_LOCAL);

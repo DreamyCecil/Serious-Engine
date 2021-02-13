@@ -217,8 +217,8 @@ void CreateCurrentAnimationList(CModelInstance *pmi,CTString &strAnimations)
     
     INDEX ctpa = alList.al_PlayedAnims.Count();
     // for each played anim in played anim list
-    for(int ipa=0;ipa<ctpa;ipa++) {
-      FLOAT fTime = _pTimer->GetLerpedCurrentTick();
+    for (int ipa=0;ipa<ctpa;ipa++) {
+      FTICK ftTime = _pTimer->LerpedGameTick();
       PlayedAnim &pa = alList.al_PlayedAnims[ipa];
 
       strText.PrintF(MAKESPACE(ctChildLevel+1));
@@ -234,14 +234,20 @@ void CreateCurrentAnimationList(CModelInstance *pmi,CTString &strAnimations)
         Animation &an = pmi->mi_aAnimSet[iAnimSetIndex].as_Anims[iAnimIndex];
         
         // calculate end time for this animation list
-        FLOAT fEndTime = alList.al_fStartTime + alList.al_fFadeTime;
+        FTICK ftEndTime = FTICK(alList.al_llStartTime) + alList.al_fFadeTime;
+
         // calculate curent and next frame in animation
-        if(palListNext!=NULL) {
-          if(fTime > palListNext->al_fStartTime) fTime = palListNext->al_fStartTime;
+        if (palListNext != NULL) {
+          if (ftTime > palListNext->al_llStartTime) {
+            ftTime = palListNext->al_llStartTime;
+          }
         }
 
-        if(fTime < fEndTime) fTime = fEndTime;
-        FLOAT f = (fTime - fEndTime) / (TIME)an.an_fSecPerFrame;
+        if (ftTime < ftEndTime) {
+          ftTime = ftEndTime;
+        }
+
+        FLOAT f = CTimer::InSeconds(ftTime - ftEndTime) / an.an_fSecPerFrame;
 
         INDEX iCurentFrame;
         INDEX iAnimFrame,iNextAnimFrame;
@@ -414,7 +420,7 @@ void CSeriousSkaStudioView::RenderView(CDrawPort *pdp)
     // set placement of model
     CPlacement3D pl;
     pl.pl_OrientationAngle = m_angModelAngle;
-    FLOAT fZPos = pDoc->m_fSpeedZ*fmod(_pTimer->GetLerpedCurrentTick(),pDoc->m_fLoopSecends);
+    FLOAT fZPos = pDoc->m_fSpeedZ * fmod(CTimer::InSeconds(_pTimer->LerpedGameTick()), pDoc->m_fLoopSecends);
     pl.pl_PositionVector   = FLOAT3D(0.0f, 0.0f, -fZPos);
     RM_SetObjectPlacement(pl);
 
@@ -1912,8 +1918,7 @@ void CSeriousSkaStudioView::OnActivateView(BOOL bActivate, CView* pActivateView,
 	CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
 
-void SyncModelInstance(CModelInstance *pmi,FLOAT fTime)
-{
+void SyncModelInstance(CModelInstance *pmi, TICK llTime) {
   CSeriousSkaStudioDoc *pDoc = theApp.GetDocument();
 
   AnimQueue &anq = pmi->mi_aqAnims;
@@ -1922,14 +1927,14 @@ void SyncModelInstance(CModelInstance *pmi,FLOAT fTime)
   for(INDEX ial=0;ial<ctal;ial++)
   {
     AnimList &al = anq.aq_Lists[ial];
-    al.al_fStartTime = fTime;
+    al.al_llStartTime = llTime;
     
     // for each played anim
     INDEX ctpa=al.al_PlayedAnims.Count();
     for(INDEX ipa=0;ipa<ctpa;ipa++)
     {
       PlayedAnim &pa = al.al_PlayedAnims[ipa];
-      pa.pa_fStartTime = fTime;
+      pa.pa_llStartTime = llTime;
 
       if(pDoc->bAnimLoop) {
         pa.pa_ulFlags |= AN_LOOPING;
@@ -1944,20 +1949,18 @@ void SyncModelInstance(CModelInstance *pmi,FLOAT fTime)
   for(INDEX imi=0;imi<ctmi;imi++)
   {
     CModelInstance &cmi = pmi->mi_cmiChildren[imi];
-    SyncModelInstance(&cmi,fTime);
+    SyncModelInstance(&cmi, llTime);
   }
 }
 
-void CSeriousSkaStudioView::OnAnimSync() 
-{
-  SyncModelInstance(theApp.GetDocument()->m_ModelInstance,_pTimer->CurrentTick());
+void CSeriousSkaStudioView::OnAnimSync() {
+  SyncModelInstance(theApp.GetDocument()->m_ModelInstance, _pTimer->GetGameTick());
 }
 
-void CSeriousSkaStudioView::OnAnimLoop() 
-{
+void CSeriousSkaStudioView::OnAnimLoop() {
   CSeriousSkaStudioDoc *pDoc = theApp.GetDocument();
   pDoc->bAnimLoop=!pDoc->bAnimLoop;
-  SyncModelInstance(theApp.GetDocument()->m_ModelInstance,_pTimer->CurrentTick());
+  SyncModelInstance(theApp.GetDocument()->m_ModelInstance, _pTimer->GetGameTick());
 }
 
 void CSeriousSkaStudioView::OnUpdateAnimLoop(CCmdUI* pCmdUI) 

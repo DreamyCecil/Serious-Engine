@@ -476,32 +476,35 @@ functions:
     FLOAT tmWalkLen = mo.GetAnimLength(DEVIL_ANIM_WALK);
     FLOAT tmLeftFootOffset = 0.4f;
     FLOAT tmRightFootOffset = 2.05f;
+
+    // [Cecil] New timer: Anim time in seconds
+    const TIME tmAnimStart = CTimer::InSeconds(mo.ao_llAnimStart);
     
     // if we are now playing walk anim, but another anim is scheduled to happen after walk
-    if (mo.ao_iLastAnim==DEVIL_ANIM_WALK && mo.ao_tmAnimStart>tmNow)
+    if (mo.ao_iLastAnim==DEVIL_ANIM_WALK && tmAnimStart > tmNow)
     {
       // we started one anim time back from anim start time
-      tmAnim = mo.ao_tmAnimStart-tmWalkLen;
+      tmAnim = tmAnimStart - tmWalkLen;
     }
-    else if (mo.ao_iCurrentAnim==DEVIL_ANIM_WALK && mo.ao_tmAnimStart<=tmNow)
+    else if (mo.ao_iCurrentAnim==DEVIL_ANIM_WALK && tmAnimStart <= tmNow)
     {
-      tmAnim = mo.ao_tmAnimStart;
+      tmAnim = tmAnimStart;
     }
     // if we are now playing walk wo idle anim, but another anim is scheduled to happen after walk to idle
-    else if (mo.ao_iLastAnim==DEVIL_ANIM_FROMWALKTOIDLE && mo.ao_tmAnimStart>tmNow)
+    else if (mo.ao_iLastAnim==DEVIL_ANIM_FROMWALKTOIDLE && tmAnimStart > tmNow)
     {
       // we started one anim time back from anim start time
-      tmAnim = mo.ao_tmAnimStart-tmWalkLen;
+      tmAnim = tmAnimStart - tmWalkLen;
       tmLeftFootOffset = 0.6f;
       tmRightFootOffset = 1.7f;
     }
-    else if (mo.ao_iCurrentAnim==DEVIL_ANIM_FROMWALKTOIDLE && mo.ao_tmAnimStart<=tmNow)
+    else if (mo.ao_iCurrentAnim==DEVIL_ANIM_FROMWALKTOIDLE && tmAnimStart <= tmNow)
     {
-      tmAnim = mo.ao_tmAnimStart;
+      tmAnim = tmAnimStart;
       tmLeftFootOffset = 0.6f;
       tmRightFootOffset = 1.7f;
     }
-    
+
     // WARNING !!! foot variable names are switched
     if( tmAnim!=-1)
     {
@@ -511,7 +514,7 @@ functions:
       CWorldSettingsController *pwsc = GetWSC(this);
       if( pwsc!=NULL)
       {
-        if( tmNow>=tmRightFootDown && pwsc->m_tmShakeStarted<tmRightFootDown-0.1f)
+        if (tmNow>=tmRightFootDown && pwsc->m_tmShakeStarted<tmRightFootDown-0.1f)
         {
           // apply range damage for right foot
           InflictHoofDamage( DEVIL_WALK_HOOF_LEFT_OFFSET);
@@ -519,7 +522,7 @@ functions:
           ShakeItBaby(tmRightFootDown, 1.0f);
           PlaySound(m_soRight, SOUND_WALK_RIGHT, SOF_3D);
         }
-        else if(tmNow>=tmLeftFootDown && pwsc->m_tmShakeStarted<tmLeftFootDown-0.1f)
+        else if (tmNow>=tmLeftFootDown && pwsc->m_tmShakeStarted<tmLeftFootDown-0.1f)
         {
           // apply range damage for left foot
           InflictHoofDamage( DEVIL_WALK_HOOF_RIGHT_OFFSET);
@@ -784,11 +787,10 @@ functions:
 
     if(cht_bDebugFinalBossAnimations)
     {
-      TIME tmNow = _pTimer->CurrentTick();
       CModelObject &mo = *GetModelObject();
       // obtain current and scheduled animation
       INDEX iCurrentAnim, iScheduledAnim;
-      if (mo.ao_tmAnimStart>tmNow)
+      if (mo.ao_llAnimStart > _pTimer->GetGameTick())
       {
         iCurrentAnim = mo.ao_iLastAnim;
         iScheduledAnim = mo.ao_iCurrentAnim;

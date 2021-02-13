@@ -114,7 +114,7 @@ void CBrushPaletteWnd::OnPaint()
       PIXaabbox2D boxBrush = GetBrushBBox( iBrush);
       RenderBrushShape( iBrush, boxBrush, m_pDrawPort);
 
-      TIME tm=_pTimer->GetRealTimeTick();
+      TIME tm = CTimer::InSeconds(_pTimer->GetTimeTick());
       // if we are drawing selected brush
       if(iBrush==theApp.m_fCurrentTerrainBrush)
       {

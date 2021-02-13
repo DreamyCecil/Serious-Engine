@@ -230,7 +230,7 @@ public:
   FLOAT lfi_fI, lfi_fJ;    // position of light source on screen in this frame
   FLOAT lfi_fDistance;     // distance of light source from viewer in this frame
   FLOAT lfi_fOoK;          // depth of light source in this frame
-  TIME  lfi_tmLastFrame;   // last time it was animated
+  TICK  lfi_llLastFrame;   // last time it was animated
   INDEX lfi_iMirrorLevel;  // mirror recursion level in which the flare is
   FLOAT lfi_fFadeFactor;   // current fade ratio (0..1)
   ULONG lfi_ulFlags;       // various flags

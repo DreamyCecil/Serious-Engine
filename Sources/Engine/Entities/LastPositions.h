@@ -28,7 +28,7 @@ public:
   CStaticArray<FLOAT3D> lp_avPositions;
   INDEX lp_iLast;   // where entity was last placed
   INDEX lp_ctUsed;  // how many positions are actually used
-  TIME lp_tmLastAdded;  // time when last updated
+  TICK lp_llLastAdded;  // time when last updated
   
   CLastPositions() {};
   CLastPositions(const CLastPositions &lpOrg);

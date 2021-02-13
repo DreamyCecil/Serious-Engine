@@ -184,7 +184,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     SetHealth(1.0f);
     m_fMaxHealth = 1.0f;
-    en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
     m_fBlowUpSize = 2.0f;
 

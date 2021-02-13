@@ -25,7 +25,7 @@ ENGINE_API extern void CPrintF(const char *strFormat, ...);
 ENGINE_API void CPutString(const char *strString);
 
 // Get number of lines newer than given time
-ENGINE_API INDEX CON_NumberOfLinesAfter(TIME tmLast);
+ENGINE_API INDEX CON_NumberOfLinesAfter(TICK llLast);
 // Get one of last lines
 ENGINE_API CTString CON_GetLastLine(INDEX iLine);
 // Discard timing info for last lines

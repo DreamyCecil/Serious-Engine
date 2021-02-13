@@ -95,7 +95,8 @@ public:
     EPT_FLOATMATRIX3D = 24,     // FLOATmatrix3D
     EPT_FLAGS = 25,             // flags - ULONG bitfield with names for each field
     EPT_MODELINSTANCE = 26,
-    // next free number: 27
+    EPT_TICK = 27, // [Cecil] New timer: 64-bit integer
+    // next free number: 28
   } ep_eptType;               // type of property
   CEntityPropertyEnumType *ep_pepetEnumType;   // if the type is EPT_ENUM or EPT_FLAGS
 
@@ -278,6 +279,9 @@ inline ENGINE_API void ClearToDefault(FLOAT3D &v) { v = FLOAT3D(0,1,0); };
 inline ENGINE_API void ClearToDefault(COLOR &c) { c = 0xFFFFFFFF; };
 inline ENGINE_API void ClearToDefault(CModelData *&pmd) { pmd = NULL; };
 inline ENGINE_API void ClearToDefault(CTextureData *&pmt) { pmt = NULL; };
+
+// [Cecil] New timer: Clear tick value
+inline ENGINE_API void ClearToDefault(TICK &ll) { ll = 0; };
 
 
 #endif  /* include-once check. */

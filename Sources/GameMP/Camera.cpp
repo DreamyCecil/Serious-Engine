@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class CCameraPos {
 public:
-  TIME cp_tmTick;
+  FTICK cp_ftTick;
   FLOAT cp_fSpeed;
   FLOAT3D cp_vPos;
   ANGLE3D cp_aRot;
@@ -28,7 +28,7 @@ public:
 BOOL _bCameraOn=FALSE;
 CTFileStream _strScript;
 BOOL _bInitialized;
-FLOAT _fStartTime;
+FTICK _ftStartTime;
 CCameraPos _cp0;
 CCameraPos _cp1;
 CCameraPos _cp;
@@ -75,29 +75,36 @@ BOOL CAM_IsOn(void)
   return _bCameraOn;
 }
 
-void ReadPos(CCameraPos &cp)
-{
+void ReadPos(CCameraPos &cp) {
   try {
+    // [Cecil] New timer: Separate ticks from the fraction
+    TICK llTick;
+    FLOAT fTick;
+
     CTString strLine;
     _strScript.GetLine_t(strLine);
-    strLine.ScanF("%g: %g: %g %g %g:%g %g %g:%g", 
-      &cp.cp_tmTick,
-      &cp.cp_fSpeed,
+    strLine.ScanF("%g, %g: %g: %g %g %g:%g %g %g:%g", 
+      &llTick, &fTick, &cp.cp_fSpeed,
       &cp.cp_vPos(1), &cp.cp_vPos(2), &cp.cp_vPos(3),
       &cp.cp_aRot(1), &cp.cp_aRot(2), &cp.cp_aRot(3),
       &cp.cp_aFOV);
+
+    cp.cp_ftTick = FTICK(llTick, fTick);
 
   } catch (char *strError) {
     CPrintF("Camera: %s\n", strError);
   }
 }
-void WritePos(CCameraPos &cp)
-{
+
+void WritePos(CCameraPos &cp) {
   try {
+    // [Cecil] New timer: Separate ticks from the fraction
+    TICK llTick = (_pTimer->LerpedGameTick() - _ftStartTime).llTick;
+    FLOAT fTick = (_pTimer->LerpedGameTick() - _ftStartTime).fFrac;
+
     CTString strLine;
-    strLine.PrintF("%g: %g: %g %g %g:%g %g %g:%g", 
-      _pTimer->GetLerpedCurrentTick()-_fStartTime,
-      1.0f,
+    strLine.PrintF("%g, %g: %g: %g %g %g:%g %g %g:%g", 
+      llTick, fTick, 1.0f,
       cp.cp_vPos(1), cp.cp_vPos(2), cp.cp_vPos(3),
       cp.cp_aRot(1), cp.cp_aRot(2), cp.cp_aRot(3),
       cp.cp_aFOV);
@@ -107,8 +114,8 @@ void WritePos(CCameraPos &cp)
     CPrintF("Camera: %s\n", strError);
   }
 }
-void SetSpeed(FLOAT fSpeed)
-{
+
+void SetSpeed(FLOAT fSpeed) {
   CTString str;
   str.PrintF("dem_fRealTimeFactor = %g;", fSpeed);
   _pShell->Execute(str);
@@ -129,7 +136,7 @@ void CAM_Start(const CTFileName &fnmDemo)
     _cp.cp_aRot = ANGLE3D(0,0,0);
     _cp.cp_aFOV = 90.0f;
     _cp.cp_fSpeed = 1;
-    _cp.cp_tmTick = 0.0f;
+    _cp.cp_ftTick = 0;
   } else {
     try {
       _strScript.Open_t(fnmScript);
@@ -151,11 +158,11 @@ void CAM_Stop(void)
 
 void CAM_Render(CEntity *pen, CDrawPort *pdp)
 {
-  if( cam_bRecord) {
+  if (cam_bRecord) {
     if (!_bInitialized) {
       _bInitialized = TRUE;
       SetSpeed(1.0f);
-      _fStartTime = _pTimer->CurrentTick();
+      _ftStartTime = _pTimer->GetGameTick();
     }
     FLOATmatrix3D m;
     MakeRotationMatrixFast(m, _cp.cp_aRot);
@@ -196,15 +203,17 @@ void CAM_Render(CEntity *pen, CDrawPort *pdp)
       ReadPos(_cp0);
       ReadPos(_cp1);
       SetSpeed(_cp0.cp_fSpeed);
-      _fStartTime = _pTimer->CurrentTick();
+      _ftStartTime = _pTimer->GetGameTick();
     }
-    TIME tmNow = _pTimer->GetLerpedCurrentTick()-_fStartTime;
-    if (tmNow>_cp1.cp_tmTick) {
+
+    FTICK ftNow = _pTimer->LerpedGameTick() - _ftStartTime;
+    if (ftNow > _cp1.cp_ftTick) {
       _cp0 = _cp1;
       ReadPos(_cp1);
       SetSpeed(_cp0.cp_fSpeed);
     }
-    FLOAT fRatio = (tmNow-_cp0.cp_tmTick)/(_cp1.cp_tmTick-_cp0.cp_tmTick);
+
+    FLOAT fRatio = CTimer::InSeconds(ftNow - _cp0.cp_ftTick) / CTimer::InSeconds(_cp1.cp_ftTick - _cp0.cp_ftTick);
 
     _cp.cp_vPos = Lerp(_cp0.cp_vPos, _cp1.cp_vPos, fRatio);
     _cp.cp_aRot = Lerp(_cp0.cp_aRot, _cp1.cp_aRot, fRatio);

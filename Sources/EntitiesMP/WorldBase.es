@@ -467,7 +467,7 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_astSurfaceTypes[8].st_fClimbSlopeCos = Cos(45.0f);
   pwo->wo_astSurfaceTypes[8].st_iWalkDamageType = DMT_BURNING;
   pwo->wo_astSurfaceTypes[8].st_fWalkDamageAmount = 2.0f;
-  pwo->wo_astSurfaceTypes[8].st_tmWalkDamageFrequency = 0.5f;
+  pwo->wo_astSurfaceTypes[8].st_llWalkDamageFrequency = CTimer::InTicks(0.5f);
   
   ASSERT(9==SURFACE_SAND);
   pwo->wo_astSurfaceTypes[9].st_strName = "Sand";
@@ -568,7 +568,7 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[0].ct_fControlMultiplier = 1.0f;
   pwo->wo_actContentTypes[0].ct_fSpeedMultiplier = 1.0f;
   pwo->wo_actContentTypes[0].ct_fDrowningDamageAmount = 10.0f;
-  pwo->wo_actContentTypes[0].ct_tmDrowningDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[0].ct_llDrowningDamageDelay = CTimer::InTicks(1.0f);
   pwo->wo_actContentTypes[0].ct_ulFlags = CTF_FLYABLE|CTF_BREATHABLE_LUNGS;
 
   pwo->wo_actContentTypes[1].ct_strName = "Water";
@@ -577,7 +577,7 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[1].ct_fControlMultiplier = 2.0f;
   pwo->wo_actContentTypes[1].ct_fSpeedMultiplier = 0.75f;
   pwo->wo_actContentTypes[1].ct_fDrowningDamageAmount = 10.0f;
-  pwo->wo_actContentTypes[1].ct_tmDrowningDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[1].ct_llDrowningDamageDelay = CTimer::InTicks(1.0f);
   pwo->wo_actContentTypes[1].ct_ulFlags = CTF_BREATHABLE_GILLS|CTF_SWIMABLE|CTF_FADESPINNING;
 
   pwo->wo_actContentTypes[2].ct_strName = "Lava";
@@ -586,10 +586,10 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[2].ct_fControlMultiplier = 2.0f;
   pwo->wo_actContentTypes[2].ct_fSpeedMultiplier = 0.5f;
   pwo->wo_actContentTypes[2].ct_fDrowningDamageAmount = 0.0f;
-  pwo->wo_actContentTypes[2].ct_tmDrowningDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[2].ct_llDrowningDamageDelay = CTimer::InTicks(1.0f);
   pwo->wo_actContentTypes[2].ct_iSwimDamageType = DMT_BURNING;
   pwo->wo_actContentTypes[2].ct_fSwimDamageAmount = 50.0f;
-  pwo->wo_actContentTypes[2].ct_tmSwimDamageFrequency = 0.25f;
+  pwo->wo_actContentTypes[2].ct_llSwimDamageFrequency = CTimer::InTicks(0.25f);
   pwo->wo_actContentTypes[2].ct_ulFlags = CTF_FADESPINNING;
 
   pwo->wo_actContentTypes[3].ct_strName = "Cold Water";
@@ -598,11 +598,11 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[3].ct_fControlMultiplier = 2.0f;
   pwo->wo_actContentTypes[3].ct_fSpeedMultiplier = 0.75f;
   pwo->wo_actContentTypes[3].ct_fDrowningDamageAmount = 10.0f;
-  pwo->wo_actContentTypes[3].ct_tmDrowningDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[3].ct_llDrowningDamageDelay = CTimer::InTicks(1.0f);
   pwo->wo_actContentTypes[3].ct_iSwimDamageType = DMT_FREEZING;
   pwo->wo_actContentTypes[3].ct_fSwimDamageAmount = 1.0f;
-  pwo->wo_actContentTypes[3].ct_tmSwimDamageDelay = 5.0f;
-  pwo->wo_actContentTypes[3].ct_tmSwimDamageFrequency = 1.0f;
+  pwo->wo_actContentTypes[3].ct_llSwimDamageDelay = CTimer::InTicks(5.0f);
+  pwo->wo_actContentTypes[3].ct_llSwimDamageFrequency = CTimer::InTicks(1.0f);
   pwo->wo_actContentTypes[3].ct_ulFlags = CTF_BREATHABLE_GILLS|CTF_SWIMABLE|CTF_FADESPINNING;
 
   pwo->wo_actContentTypes[4].ct_strName = "Spikes";
@@ -621,8 +621,8 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[5].ct_fSpeedMultiplier = 1.0f;
   pwo->wo_actContentTypes[5].ct_iSwimDamageType = DMT_HEAT;
   pwo->wo_actContentTypes[5].ct_fSwimDamageAmount = 10.0f;
-  pwo->wo_actContentTypes[5].ct_tmSwimDamageDelay = 10.0f;
-  pwo->wo_actContentTypes[5].ct_tmSwimDamageFrequency = 2.0f;
+  pwo->wo_actContentTypes[5].ct_llSwimDamageDelay = CTimer::InTicks(10.0f);
+  pwo->wo_actContentTypes[5].ct_llSwimDamageFrequency = CTimer::InTicks(2.0f);
   pwo->wo_actContentTypes[5].ct_ulFlags = CTF_FLYABLE|CTF_BREATHABLE_LUNGS;
 
   pwo->wo_actContentTypes[6].ct_strName = "Lava (-10HP/SEC)";
@@ -631,10 +631,10 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
   pwo->wo_actContentTypes[6].ct_fControlMultiplier = 2.0f;
   pwo->wo_actContentTypes[6].ct_fSpeedMultiplier = 0.75f;
   pwo->wo_actContentTypes[6].ct_fDrowningDamageAmount = 0.0f;
-  pwo->wo_actContentTypes[6].ct_tmDrowningDamageDelay = 1.0f;
+  pwo->wo_actContentTypes[6].ct_llDrowningDamageDelay = CTimer::InTicks(1.0f);
   pwo->wo_actContentTypes[6].ct_iSwimDamageType = DMT_BURNING;
   pwo->wo_actContentTypes[6].ct_fSwimDamageAmount = 5.0f;
-  pwo->wo_actContentTypes[6].ct_tmSwimDamageFrequency = 0.5f;
+  pwo->wo_actContentTypes[6].ct_llSwimDamageFrequency = CTimer::InTicks(0.5f);
   pwo->wo_actContentTypes[6].ct_ulFlags = CTF_SWIMABLE|CTF_FADESPINNING;
 
   // environments
@@ -703,7 +703,7 @@ void CWorldBase_OnWorldInit(CWorld *pwo)
 void CWorldBase_OnWorldRender(CWorld *pwo)
 {
   // get current tick
-  TIME tmNow = _pTimer->GetLerpedCurrentTick();
+  TIME tmNow = CTimer::InSeconds(_pTimer->LerpedGameTick());
   // wrap time to prevent texture coordinates to get unprecise
   tmNow = fmod(tmNow, 600.0f); // (wrap every 10 minutes)
 
@@ -836,7 +836,7 @@ void CWorldBase_OnWorldRender(CWorld *pwo)
     if( pwsc->m_tmLightningStart != -1)
     {
       FLOAT tmLightningLife = tmNow-pwsc->m_tmLightningStart;
-      _aoLightningColor.ao_tmAnimStart = pwsc->m_tmLightningStart;
+      _aoLightningColor.ao_llAnimStart = CTimer::InTicks(pwsc->m_tmLightningStart);
       COLOR colLightning = _aoLightningColor.GetFrame();
       // calculate lightning power factor
       UBYTE ub = UBYTE( pwsc->m_fLightningPower*255);

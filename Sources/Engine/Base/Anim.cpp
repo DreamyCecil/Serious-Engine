@@ -580,37 +580,34 @@ void CAnimData::Read_t( CTStream *istrFile) // throw char *
 /*
  * Default constructor.
  */
-CAnimObject::CAnimObject(void)
-{
+CAnimObject::CAnimObject(void) {
   // set invalid data for validation check
 	ao_AnimData = NULL;
-  ao_tmAnimStart = 0.0f;
+  ao_llAnimStart = 0;
 	ao_iCurrentAnim = -1;
 	ao_iLastAnim = -1;
   ao_ulFlags = AOF_PAUSED;
 };
 
 /* Destructor. */
-CAnimObject::~CAnimObject(void)
-{
+CAnimObject::~CAnimObject(void) {
   ao_AnimData->RemReference();
 };
 
 // copy from another object of same class
-ENGINE_API void CAnimObject::Copy(CAnimObject &aoOther)
-{
+ENGINE_API void CAnimObject::Copy(CAnimObject &aoOther) {
   SetData(aoOther.GetData());
-  ao_tmAnimStart  = aoOther.ao_tmAnimStart;
+  ao_llAnimStart  = aoOther.ao_llAnimStart;
   ao_iCurrentAnim = aoOther.ao_iCurrentAnim;
 	ao_iLastAnim    = aoOther.ao_iLastAnim;
   ao_ulFlags      = aoOther.ao_ulFlags;
 }
+
 // synchronize with another animation object (set same anim and frames)
-ENGINE_API void CAnimObject::Synchronize(CAnimObject &aoOther)
-{
+ENGINE_API void CAnimObject::Synchronize(CAnimObject &aoOther) {
   // copy animations, time and flags
   INDEX ctAnims = GetAnimsCt();
-  ao_tmAnimStart  = aoOther.ao_tmAnimStart;
+  ao_llAnimStart  = aoOther.ao_llAnimStart;
   ao_iCurrentAnim = ClampUp(aoOther.ao_iCurrentAnim, ctAnims-1L);
 	ao_iLastAnim    = ClampUp(aoOther.ao_iLastAnim, ctAnims-1L);
   ao_ulFlags      = aoOther.ao_ulFlags;
@@ -646,13 +643,16 @@ INDEX CAnimObject::FrameInTime(TIME time) const
 	ASSERT( (ao_iCurrentAnim >= 0) && (ao_iCurrentAnim < ao_AnimData->ad_NumberOfAnims) );
   INDEX iFrameInAnim;
 
+  // [Cecil] New timer: Anim time in seconds
+  TIME tmAnim = CTimer::InSeconds(ao_llAnimStart);
+
 	COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
-  if( ao_ulFlags&AOF_PAUSED) {
+  if (ao_ulFlags&AOF_PAUSED) {
     // return index of paused frame inside global frame array
-    iFrameInAnim = ClipFrame(pCOA->oa_NumberOfFrames + ClipFrame( FloatToInt(ao_tmAnimStart/pCOA->oa_SecsPerFrame)));
+    iFrameInAnim = ClipFrame(pCOA->oa_NumberOfFrames + ClipFrame(FloatToInt(tmAnim / pCOA->oa_SecsPerFrame)));
   } else {
     // return index of frame inside global frame array of frames in given moment
-	  iFrameInAnim = ClipFrame( FloatToInt((time - ao_tmAnimStart)/pCOA->oa_SecsPerFrame));
+	  iFrameInAnim = ClipFrame( FloatToInt((time - tmAnim)/pCOA->oa_SecsPerFrame));
   }
   return pCOA->oa_FrameIndices[iFrameInAnim];
 }
@@ -661,12 +661,14 @@ INDEX CAnimObject::FrameInTime(TIME time) const
 /*
  * Pauses animation
  */
-void CAnimObject::PauseAnim(void)
-{
-  if( ao_ulFlags&AOF_PAUSED) return;                          // dont pause twice
+void CAnimObject::PauseAnim(void) {
+  // dont pause twice
+  if (ao_ulFlags&AOF_PAUSED) {
+    return;
+  }
   ao_ulFlags |= AOF_PAUSED;
-  ao_tmAnimStart = _pTimer->CurrentTick() - ao_tmAnimStart;  // set difference from current time as start time,
-  MarkChanged();                                  // so get frame will get correct current frame
+  ao_llAnimStart = _pTimer->GetGameTick() - ao_llAnimStart; // set difference from current time as start time,
+  MarkChanged(); // so get frame will get correct current frame
 }
 
 /*
@@ -679,10 +681,10 @@ void CAnimObject::ContinueAnim(void){
   if (pCOA->oa_NumberOfFrames<=0) {
     return;
   }
-  INDEX iStoppedFrame = (pCOA->oa_NumberOfFrames + (SLONG)(ao_tmAnimStart/pCOA->oa_SecsPerFrame)
+  INDEX iStoppedFrame = (pCOA->oa_NumberOfFrames + (SLONG)(CTimer::InSeconds(ao_llAnimStart) / pCOA->oa_SecsPerFrame)
                          % pCOA->oa_NumberOfFrames) % pCOA->oa_NumberOfFrames;
   // using current frame index calculate time so animation continues from same frame
-  ao_tmAnimStart = _pTimer->CurrentTick() - pCOA->oa_SecsPerFrame * iStoppedFrame;
+  ao_llAnimStart = _pTimer->GetGameTick() - CTimer::InTicks(pCOA->oa_SecsPerFrame) * iStoppedFrame;
   ao_ulFlags &= ~AOF_PAUSED;
   MarkChanged();
 }
@@ -691,9 +693,8 @@ void CAnimObject::ContinueAnim(void){
  * Offsets the animation phase
  */
 void CAnimObject::OffsetPhase(TIME tm){
-  ao_tmAnimStart += tm;
+  ao_llAnimStart += CTimer::InTicks(tm);
 }
-
 
 /*
  * Loop anims forward
@@ -703,7 +704,7 @@ void CAnimObject::NextAnim(){
 	ASSERT( ao_AnimData != NULL);
 	ao_iCurrentAnim = (ao_iCurrentAnim + 1) % ao_AnimData->ad_NumberOfAnims;
   ao_iLastAnim = ao_iCurrentAnim;
-	ao_tmAnimStart = _pTimer->CurrentTick();
+	ao_llAnimStart = _pTimer->GetGameTick();
   MarkChanged();
 };
 
@@ -716,16 +717,15 @@ void CAnimObject::PrevAnim(){
 	ao_iCurrentAnim = (ao_AnimData->ad_NumberOfAnims + ao_iCurrentAnim - 1) %
                    ao_AnimData->ad_NumberOfAnims;
   ao_iLastAnim = ao_iCurrentAnim;
-	ao_tmAnimStart = _pTimer->CurrentTick();
+	ao_llAnimStart = _pTimer->GetGameTick();
   MarkChanged();
 };
 
 /*
  * Selects frame for given time offset from animation start (0)
  */
-void CAnimObject::SelectFrameInTime(TIME tmOffset)
-{
-  ao_tmAnimStart = tmOffset;  // set fixed start time
+void CAnimObject::SelectFrameInTime(TIME tmOffset) {
+  ao_llAnimStart = CTimer::InTicks(tmOffset); // set fixed start time
   MarkChanged();
 }
 
@@ -744,10 +744,10 @@ void CAnimObject::LastFrame(void)
  * Loop frames forward
  */
 void CAnimObject::NextFrame(){
-	ASSERT( ao_iCurrentAnim != -1);
-	ASSERT( ao_AnimData != NULL);
-  ASSERT( ao_ulFlags&AOF_PAUSED);
-	ao_tmAnimStart += ao_AnimData->ad_Anims[ ao_iCurrentAnim].oa_SecsPerFrame;
+	ASSERT(ao_iCurrentAnim != -1);
+	ASSERT(ao_AnimData != NULL);
+  ASSERT(ao_ulFlags&AOF_PAUSED);
+	ao_llAnimStart += CTimer::InTicks(ao_AnimData->ad_Anims[ao_iCurrentAnim].oa_SecsPerFrame);
   MarkChanged();
 };
 
@@ -755,10 +755,10 @@ void CAnimObject::NextFrame(){
  * Loop frames backward
  */
 void CAnimObject::PrevFrame(){
-	ASSERT( ao_iCurrentAnim != -1);
-	ASSERT( ao_AnimData != NULL);
-  ASSERT( ao_ulFlags&AOF_PAUSED);
-	ao_tmAnimStart -= ao_AnimData->ad_Anims[ ao_iCurrentAnim].oa_SecsPerFrame;
+	ASSERT(ao_iCurrentAnim != -1);
+	ASSERT(ao_AnimData != NULL);
+  ASSERT(ao_ulFlags&AOF_PAUSED);
+	ao_llAnimStart -= CTimer::InTicks(ao_AnimData->ad_Anims[ao_iCurrentAnim].oa_SecsPerFrame);
   MarkChanged();
 };
 
@@ -832,7 +832,7 @@ void CAnimObject::SetAnim(INDEX iNew) {
   // if new animation
   if (ao_iCurrentAnim!=iNew) {
     // remember starting time
-	  ao_tmAnimStart = _pTimer->CurrentTick();
+	  ao_llAnimStart = _pTimer->GetGameTick();
   }
   // set new animation number
 	ao_iCurrentAnim=iNew;
@@ -868,16 +868,15 @@ void CAnimObject::PlayAnim(INDEX iNew, ULONG ulFlags)
     if (ulFlags&AOF_SMOOTHCHANGE) {
       // calculate time to end of the current anim
     	class COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
-      TIME tmNow = _pTimer->CurrentTick();
       TIME tmLength = GetCurrentAnimLength();
-      FLOAT fFrame = ((_pTimer->CurrentTick() - ao_tmAnimStart)/pCOA->oa_SecsPerFrame);
+      FLOAT fFrame = (CTimer::InSeconds(_pTimer->GetGameTick() - ao_llAnimStart) / pCOA->oa_SecsPerFrame);
       INDEX iFrame = INDEX(fFrame);
       FLOAT fFract = fFrame-iFrame;
       iFrame = ClipFrame(iFrame);
       TIME tmPassed = (iFrame+fFract)*pCOA->oa_SecsPerFrame;
       TIME tmLeft = tmLength-tmPassed;
       // set time ahead to end of the current animation
-	    ao_tmAnimStart = _pTimer->CurrentTick()+tmLeft;
+	    ao_llAnimStart = _pTimer->GetGameTick() + CTimer::InTicks(tmLeft);
       // remember last animation
       ao_iLastAnim = ao_iCurrentAnim;
       // set new animation number
@@ -888,7 +887,7 @@ void CAnimObject::PlayAnim(INDEX iNew, ULONG ulFlags)
       ao_iLastAnim    = iNew;
 	    ao_iCurrentAnim = iNew;
       // remember starting time
-	    ao_tmAnimStart = _pTimer->CurrentTick();
+	    ao_llAnimStart = _pTimer->GetGameTick();
     }
   // if anim doesn't need be reset at start
   } else {
@@ -922,7 +921,7 @@ void CAnimObject::SwitchToAnim(INDEX iNew)
 void CAnimObject::ResetAnim() {
   if(ao_AnimData == NULL) return;
   // remember starting time
-	ao_tmAnimStart = _pTimer->CurrentTick();
+	ao_llAnimStart = _pTimer->GetGameTick();
   // mark that something has changed
   MarkChanged();
 };
@@ -971,12 +970,16 @@ TIME CAnimObject::GetPassedTime(void) const
 {
   if(ao_AnimData == NULL) return 0.0f;
   INDEX iStoppedFrame;
+
+  // [Cecil] New timer: Anim time in seconds
+  TIME tmAnim = CTimer::InSeconds(ao_llAnimStart);
+
 	class COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
   if( !(ao_ulFlags&AOF_PAUSED))
-    iStoppedFrame = ClipFrame((INDEX)((_pTimer->CurrentTick() - ao_tmAnimStart)/pCOA->oa_SecsPerFrame));
+    iStoppedFrame = ClipFrame((INDEX)(CTimer::InSeconds(_pTimer->GetGameTick() - ao_llAnimStart) / pCOA->oa_SecsPerFrame));
   else
-    iStoppedFrame = ClipFrame((INDEX)(ao_tmAnimStart/pCOA->oa_SecsPerFrame));
-  return( iStoppedFrame * pCOA->oa_SecsPerFrame);
+    iStoppedFrame = ClipFrame((INDEX)(tmAnim / pCOA->oa_SecsPerFrame));
+  return (iStoppedFrame * pCOA->oa_SecsPerFrame);
 }
 
 /*
@@ -988,11 +991,15 @@ BOOL CAnimObject::IsAnimFinished(void) const
   if(ao_ulFlags&AOF_LOOPING) return FALSE;
 
   INDEX iStoppedFrame;
+
+  // [Cecil] New timer: Anim time in seconds
+  TIME tmAnim = CTimer::InSeconds(ao_llAnimStart);
+
 	class COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
   if( !(ao_ulFlags&AOF_PAUSED))
-    iStoppedFrame = ClipFrame((INDEX)((_pTimer->CurrentTick() - ao_tmAnimStart)/pCOA->oa_SecsPerFrame));
+    iStoppedFrame = ClipFrame((INDEX)(CTimer::InSeconds(_pTimer->GetGameTick() - ao_llAnimStart)/pCOA->oa_SecsPerFrame));
   else
-    iStoppedFrame = ClipFrame((INDEX)(ao_tmAnimStart/pCOA->oa_SecsPerFrame));
+    iStoppedFrame = ClipFrame((INDEX)(tmAnim / pCOA->oa_SecsPerFrame));
   return( iStoppedFrame == pCOA->oa_NumberOfFrames-1);
 }
 
@@ -1041,23 +1048,22 @@ void CAnimObject::GetFrame( INDEX &iFrame0, INDEX &iFrame1, FLOAT &fRatio) const
   }
 	ASSERT( ao_AnimData != NULL);
 	ASSERT( (ao_iCurrentAnim >= 0) && (ao_iCurrentAnim < ao_AnimData->ad_NumberOfAnims) );
-  TIME tmNow = _pTimer->CurrentTick() + _pTimer->GetLerpFactor()*_pTimer->TickQuantum;
+  FTICK ftNow = _pTimer->LerpedGameTick(); //_pTimer->CurrentTick() + _pTimer->GetLerpFactor()*_pTimer->TickQuantum;
 
   if( ao_ulFlags&AOF_PAUSED)
   {
     // return index of paused frame inside global frame array
 	  class COneAnim *pCOA = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
-    INDEX iStoppedFrame = ClipFrame((SLONG)(ao_tmAnimStart/pCOA->oa_SecsPerFrame));
+    INDEX iStoppedFrame = ClipFrame((SLONG)(CTimer::InSeconds(ao_llAnimStart) / pCOA->oa_SecsPerFrame));
 	  iFrame0 = iFrame1 = pCOA->oa_FrameIndices[ iStoppedFrame];
     fRatio = 0.0f;
-  }
-  else
-  {
+  } else {
     // return index of frame inside global frame array of frames in given moment
-    TIME tmCurrentRelative = tmNow - ao_tmAnimStart;
-    if (tmCurrentRelative>=0) {
+    FTICK ftCurrentRelative = ftNow - ao_llAnimStart;
+
+    if (ftCurrentRelative >= 0) {
   	  class COneAnim *pOA0 = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
-      float fFrameNow = (tmCurrentRelative)/pOA0->oa_SecsPerFrame;
+      float fFrameNow = CTimer::InSeconds(ftCurrentRelative) / pOA0->oa_SecsPerFrame;
 	    iFrame0 = pOA0->oa_FrameIndices[ ClipFrame(ULONG(fFrameNow))];
 	    iFrame1 = pOA0->oa_FrameIndices[ ClipFrame(ULONG(fFrameNow+1))];
       fRatio = fFrameNow - (float)floor(fFrameNow);
@@ -1066,7 +1072,7 @@ void CAnimObject::GetFrame( INDEX &iFrame0, INDEX &iFrame1, FLOAT &fRatio) const
   	  class COneAnim *pOA1 = &ao_AnimData->ad_Anims[ao_iCurrentAnim];
       INDEX iAnim = ao_iCurrentAnim;
       ((CAnimObject*)this)->ao_iCurrentAnim = ao_iLastAnim;
-      float fFrameNow = tmCurrentRelative/pOA0->oa_SecsPerFrame+pOA0->oa_NumberOfFrames;
+      float fFrameNow = CTimer::InSeconds(ftCurrentRelative) / pOA0->oa_SecsPerFrame + pOA0->oa_NumberOfFrames;
 	    iFrame0 = pOA0->oa_FrameIndices[ Clamp(SLONG(fFrameNow),  0L, pOA0->oa_NumberOfFrames-1L)];
       INDEX iFrameNext = SLONG(fFrameNow+1);
       if (iFrameNext>=pOA0->oa_NumberOfFrames) {
@@ -1082,24 +1088,39 @@ void CAnimObject::GetFrame( INDEX &iFrame0, INDEX &iFrame1, FLOAT &fRatio) const
 
 void CAnimObject::Write_t( CTStream *pstr) // throw char *
 {
-  (*pstr).WriteID_t("ANOB");
-	(*pstr).WriteRawChunk_t( &ao_tmAnimStart, sizeof( TIME));
-	(*pstr).WriteRawChunk_t( &ao_iCurrentAnim, sizeof( INDEX));
-	(*pstr).WriteRawChunk_t( &ao_iLastAnim, sizeof( INDEX));
-	(*pstr).WriteRawChunk_t( &ao_ulFlags, sizeof( INDEX));
+  // [Cecil] New timer: 'ANim Object 2'
+  (*pstr).WriteID_t("ANO2");
+	(*pstr).WriteRawChunk_t(&ao_llAnimStart, sizeof(TICK));
+	(*pstr).WriteRawChunk_t(&ao_iCurrentAnim, sizeof(INDEX));
+	(*pstr).WriteRawChunk_t(&ao_iLastAnim, sizeof(INDEX));
+	(*pstr).WriteRawChunk_t(&ao_ulFlags, sizeof(INDEX));
 };
 
 void CAnimObject::Read_t( CTStream *pstr) // throw char *
 {
-  if ((*pstr).PeekID_t()==CChunkID("ANOB")) {
+  // [Cecil] New timer: 'ANim Object 2'
+  if ((*pstr).PeekID_t() == CChunkID("ANO2")) {
+    (*pstr).ExpectID_t("ANO2");
+	  (*pstr).ReadRawChunk_t(&ao_llAnimStart, sizeof(TICK));
+	  (*pstr).ReadRawChunk_t(&ao_iCurrentAnim, sizeof(INDEX));
+	  (*pstr).ReadRawChunk_t(&ao_iLastAnim, sizeof(INDEX));
+	  (*pstr).ReadRawChunk_t(&ao_ulFlags, sizeof(INDEX));
+    
+  } else if ((*pstr).PeekID_t() == CChunkID("ANOB")) {
     (*pstr).ExpectID_t("ANOB");
-	  (*pstr).ReadRawChunk_t( &ao_tmAnimStart, sizeof( TIME));
-	  (*pstr).ReadRawChunk_t( &ao_iCurrentAnim, sizeof( INDEX));
-	  (*pstr).ReadRawChunk_t( &ao_iLastAnim, sizeof( INDEX));
-	  (*pstr).ReadRawChunk_t( &ao_ulFlags, sizeof( INDEX));
+
+    // [Cecil] New timer: Convert to ticks
+    TIME tmAnimStart;
+	  (*pstr).ReadRawChunk_t(&tmAnimStart, sizeof(TIME));
+    ao_llAnimStart = CTimer::InTicks(tmAnimStart);
+
+	  (*pstr).ReadRawChunk_t(&ao_iCurrentAnim, sizeof(INDEX));
+	  (*pstr).ReadRawChunk_t(&ao_iLastAnim, sizeof(INDEX));
+	  (*pstr).ReadRawChunk_t(&ao_ulFlags, sizeof(INDEX));
+
   } else {
-	  (*pstr).ReadRawChunk_t( &ao_tmAnimStart, sizeof( TIME));
-	  (*pstr).ReadRawChunk_t( &ao_iCurrentAnim, sizeof( INDEX));
+	  (*pstr).ReadRawChunk_t(&ao_llAnimStart, sizeof(TICK));
+	  (*pstr).ReadRawChunk_t(&ao_iCurrentAnim, sizeof(INDEX));
     ao_iLastAnim = ao_iCurrentAnim;
     ao_ulFlags = 0;
   }

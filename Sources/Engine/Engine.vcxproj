@@ -733,6 +733,7 @@ copy Release\$(TargetName).lib $(SolutionDir)..\Bin\ &gt;nul</Command>
     <ClInclude Include="Base\Stream.h" />
     <ClInclude Include="Base\Synchronization.h" />
     <ClInclude Include="Base\Timer.h" />
+    <ClInclude Include="Base\TimerTick.h" />
     <ClInclude Include="Base\Translation.h" />
     <ClInclude Include="Base\TranslationPair.h" />
     <ClInclude Include="Base\Types.h" />

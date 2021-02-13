@@ -364,7 +364,7 @@ CPlayerEntity *CWorld::FindEntityWithCharacter(CPlayerCharacter &pcCharacter)
  */
 void CWorld::AddTimer(CRationalEntity *penThinker)
 {
-  ASSERT(penThinker->en_timeTimer>_pTimer->CurrentTick());
+  ASSERT(penThinker->en_llTimer > _pTimer->GetGameTick());
   ASSERT(GetFPUPrecision()==FPT_24BIT);
 
   // if the entity is already in the list
@@ -375,7 +375,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
   // for each entity in the thinker list
   FOREACHINLISTKEEP(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
     // if the entity in list has greater or same think time than the one to add
-    if (iten->en_timeTimer>=penThinker->en_timeTimer) {
+    if (iten->en_llTimer >= penThinker->en_llTimer) {
       // stop searching
       break;
     }
@@ -385,7 +385,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
 }
 
 // set overdue timers to be due in current time
-void CWorld::AdjustLateTimers(TIME tmCurrentTime)
+void CWorld::AdjustLateTimers(TICK llCurrentTime)
 {
   // must be in 24bit mode when managing entities
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
@@ -394,9 +394,9 @@ void CWorld::AdjustLateTimers(TIME tmCurrentTime)
   FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
     CRationalEntity &en = *iten;
     // if the entity in list is overdue
-    if (en.en_timeTimer<tmCurrentTime) {
+    if (en.en_llTimer < llCurrentTime) {
       // set it to current time
-      en.en_timeTimer = tmCurrentTime;
+      en.en_llTimer = llCurrentTime;
     }
   }
 }
@@ -982,7 +982,7 @@ void CWorld::MarkForPrediction(void)
     }
   }
 
-  TIME tmNow = _pNetwork->ga_sesSessionState.ses_tmPredictionHeadTick;
+  TICK llTickNow = _pNetwork->ga_sesSessionState.ses_llPredictionHeadTick;
 
   // for each predictable entity
   {FOREACHINDYNAMICCONTAINER(wo_cenPredictable, CEntity, iten){
@@ -991,9 +991,9 @@ void CWorld::MarkForPrediction(void)
     ASSERT(en.GetRenderType()!=CEntity::RT_VOID);
 
     // get its upper time limit for prediction
-    TIME tmLimit = en.GetPredictionTime();
+    TICK llLimit = en.GetPredictionTime();
     // if now inside time prediction interval
-    if (tmNow<tmLimit) {
+    if (llTickNow < llLimit) {
       // add it to prediction
       iten->AddToPrediction();
       continue;

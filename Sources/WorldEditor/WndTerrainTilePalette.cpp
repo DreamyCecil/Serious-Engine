@@ -187,7 +187,7 @@ void CWndTerrainTilePalette::OnPaint()
       MEX2D(ti.ti_ix*pixTileSize, ti.ti_iy*pixTileSize),
       MEX2D((ti.ti_ix+1)*pixTileSize, (ti.ti_iy+1)*pixTileSize) );
     PIXaabbox2D boxScr=GetTileBBox(ptlLayer->tl_iSelectedTile);
-    TIME tm=_pTimer->GetRealTimeTick();
+    TIME tm = CTimer::InSeconds(_pTimer->GetTimeTick());
     FLOAT fFactor=sin(tm*8)/2.0f+0.5f;
     COLOR colSelected=LerpColor(C_vlGRAY,C_RED,fFactor);
     m_pDrawPort->DrawBorder(boxScr.Min()(1), boxScr.Min()(2), 

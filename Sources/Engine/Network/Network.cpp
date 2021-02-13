@@ -168,7 +168,7 @@ extern FLOAT net_tmLatency = 0.0f;
 
 extern INDEX ent_bReportSpawnInWall = FALSE;
 
-extern FLOAT cmd_tmTick = 0.0f;
+extern TICK cmd_llTick = 0;
 extern CTString cmd_cmdOnTick = "";
 extern CTString cmd_strChatSender = "";
 extern CTString cmd_strChatMessage = "";
@@ -325,7 +325,7 @@ static void NetworkInfo(void)
   CPrintF("Predictor entities existing: %d\n", _ctPredictorEntities);
   CPrintF("Server:\n");
   if (_pNetwork->ga_srvServer.srv_bActive) {
-    CPrintF("  last processed tick: %g\n", _pNetwork->ga_srvServer.srv_tmLastProcessedTick);
+    CPrintF("  last processed tick: %g\n", CTimer::InSeconds(_pNetwork->ga_srvServer.srv_llLastProcessedTick));
     CPrintF("  last processed sequence: %d\n", _pNetwork->ga_srvServer.srv_iLastProcessedSequence);
     CPrintF("  players:\n");
     for(INDEX iplb=0; iplb<_pNetwork->ga_srvServer.srv_aplbPlayers.Count(); iplb++) {
@@ -362,7 +362,7 @@ static void NetworkInfo(void)
   CPrintF("  buffer: (%dblk)%dk\n",
     _pNetwork->ga_sesSessionState.ses_nsGameStream.GetUsedBlocks(),
     _pNetwork->ga_sesSessionState.ses_nsGameStream.GetUsedMemory()/1024);
-  CPrintF("  last processed tick: %g\n", _pNetwork->ga_sesSessionState.ses_tmLastProcessedTick);
+  CPrintF("  last processed tick: %g\n", CTimer::InSeconds(_pNetwork->ga_sesSessionState.ses_llLastProcessedTick));
   CPrintF("  last processed sequence: %d\n", _pNetwork->ga_sesSessionState.ses_iLastProcessedSequence);
   CPrintF("  level change: %d\n", _pNetwork->ga_sesSessionState.ses_iLevel);
   for(INDEX iplt=0; iplt<_pNetwork->ga_sesSessionState.ses_apltPlayers.Count(); iplt++) {
@@ -755,7 +755,7 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   _pShell->DeclareSymbol("user FLOAT gam_fRealTimeFactor;", &ga_fGameRealTimeFactor);
 
   _pShell->DeclareSymbol("user const FLOAT net_tmLatency;", &net_tmLatency);
-  _pShell->DeclareSymbol("user const FLOAT cmd_tmTick;", &cmd_tmTick);
+  //_pShell->DeclareSymbol("user const FLOAT cmd_tmTick;", &cmd_llTick);
   _pShell->DeclareSymbol("persistent user CTString cmd_cmdOnTick;", &cmd_cmdOnTick);
   _pShell->DeclareSymbol("user CTString cmd_strChatSender ;", &cmd_strChatSender );
   _pShell->DeclareSymbol("user CTString cmd_strChatMessage;", &cmd_strChatMessage);
@@ -915,59 +915,6 @@ void CNetworkLibrary::RemoveTimerHandler(void)
 }
 
 /*
-// set settings to prediction-off
-void AdjustPredictionOff(void)
-{
-  if (!cli_bAutoAdjustSettings) {
-    return;
-  }
-  if (cli_bPrediction) {
-    CPrintF("AutoAdjustment: prediction off, buffer 1\n");
-  }
-  cli_bPrediction = 0;
-  cli_iBufferActions = 1;
-}
-// set settings to prediction-on
-void AdjustPredictionOn(void)
-{
-  if (!cli_bAutoAdjustSettings) {
-    return;
-  }
-  if (!cli_bPrediction) {
-    CPrintF("AutoAdjustment: prediction on, buffer 3\n");
-  }
-  cli_bPrediction = 1;
-  cli_iBufferActions = 3;
-}
-
-// automatically adjust network settings
-void CNetworkLibrary::AutoAdjustSettings(void)
-{
-  // if server and not debugging prediction
-  if (IsServer() && !cli_bPredictIfServer) {
-    // just turn it all off
-    AdjustPredictionOff();
-    return;
-  }
-
-  static TIME _tmLastTimeNoPredictionSteps = -1;
-  // get network lag in terms of ticks
-  INDEX ctLagTicks = ga_sesSessionState.GetPredictionStepsCount()-(cli_iBufferActions-1);
-
-  // if no significant lag
-  if (ctLagTicks<=1) {
-    // set settings to prediction-off
-    AdjustPredictionOff();
-    _tmLastTimeNoPredictionSteps = _pTimer->CurrentTick();
-  // if there is lag now for some time
-  } else if (_pTimer->CurrentTick()-_tmLastTimeNoPredictionSteps>=cli_tmAutoAdjustThreshold) {
-    // set settings to prediction-on
-    AdjustPredictionOn();
-  }
-}
-*/
-
-/*
  * Start a peer-to-peer game session.
  *
  * remember to keep this routine up to date with CNetworkLibrary::Read()
@@ -1021,7 +968,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   ga_fnmNextLevel = CTString("");
   try {
     // load the world
-    _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
+    _pTimer->SetGameTick(0);  // must have timer at 0 while loading
     ga_World.Load_t(fnmWorld);
     // delete all entities that don't fit given spawn flags
     ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
@@ -1172,11 +1119,11 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
 
   // set time and pause for server from the saved game
   ga_sesSessionState.ses_iLevel+=1;
-  ga_srvServer.srv_tmLastProcessedTick = ga_sesSessionState.ses_tmLastProcessedTick;
+  ga_srvServer.srv_llLastProcessedTick = ga_sesSessionState.ses_llLastProcessedTick;
   ga_srvServer.srv_iLastProcessedSequence = ga_sesSessionState.ses_iLastProcessedSequence;
   ga_srvServer.srv_bPause = ga_sesSessionState.ses_bPause;
   ga_srvServer.srv_bGameFinished = ga_sesSessionState.ses_bGameFinished;
-  ga_sesSessionState.ses_tmPredictionHeadTick = ga_sesSessionState.ses_tmLastProcessedTick;
+  ga_sesSessionState.ses_llPredictionHeadTick = ga_sesSessionState.ses_llLastProcessedTick;
   // start sending stream to local state
   ga_srvServer.srv_assoSessions[0].sso_bSendStream = TRUE;
   ga_srvServer.srv_assoSessions[0].sso_iLastSentSequence = ga_srvServer.srv_iLastProcessedSequence;
@@ -1553,7 +1500,7 @@ void CNetworkLibrary::StopGame(void)
   _pShell->SetINDEX("pwoCurrentWorld", (INDEX)NULL);
 
   // rewind the timer
-  _pTimer->SetCurrentTick(0.0f);
+  _pTimer->SetGameTick(0);
 }
 
 // initiate level change
@@ -1647,7 +1594,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     // try to
     try {
       // load the new world
-      _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
+      _pTimer->SetGameTick(0);  // must have timer at 0 while loading
       ga_World.Load_t(ga_fnmNextLevel);
       // delete all entities that don't fit given spawn flags
       ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
@@ -1682,7 +1629,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   }
 
   // set overdue timers in just loaded world to be due in current time
-  ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
+  ga_World.AdjustLateTimers(ga_sesSessionState.ses_llLastProcessedTick);
 
   // copy entities from temporary world into new one
   CEntitySelection senCrossed;
@@ -1723,7 +1670,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
       // reset message timer
       sso.sso_tvMessageReceived = -1I64;
       // reset sync timer
-      sso.sso_tmLastSyncReceived = -1.0f;
+      sso.sso_llLastSyncReceived = -1;
     }}
     // for each player
     {for( INDEX iPlayer=0; iPlayer<NET_MAXGAMEPLAYERS; iPlayer++) {
@@ -1873,7 +1820,7 @@ void CNetworkLibrary::MainLoop(void)
   }
 
   // let server process game stream
-  TIME tmBefore = _pTimer->GetRealTimeTick();
+  TICK llBefore = _pTimer->GetTimeTick();
   _pTimer->SetLerp(0.0f);
 
 
@@ -1906,10 +1853,10 @@ void CNetworkLibrary::MainLoop(void)
     ga_World.UnmarkForPrediction();
   }
 
-  ga_sesSessionState.ses_tmLastUpdated = _pTimer->GetRealTimeTick();
+  ga_sesSessionState.ses_llLastUpdated = _pTimer->GetTimeTick();
 
-  TIME tmAfter = _pTimer->GetRealTimeTick();
-  ga_sesSessionState.ses_bKeepingUpWithTime = (tmAfter-tmBefore)<=_pTimer->TickQuantum*2.01f;
+  TICK llAfter = _pTimer->GetTimeTick();
+  ga_sesSessionState.ses_bKeepingUpWithTime = (llAfter-llBefore)<=/*_pTimer->TickQuantum* */2;
 
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
   // set the lerping factor for current frame
@@ -2189,9 +2136,9 @@ CPlayerSource *CNetworkLibrary::GetPlayerSource(CEntity *pen)
 }
 
 // get game time in currently running game
-TIME CNetworkLibrary::GetGameTime(void)
+TICK CNetworkLibrary::NetworkGameTime(void)
 {
-  return ga_sesSessionState.ses_tmLastProcessedTick;
+  return ga_sesSessionState.ses_llLastProcessedTick;
 }
 
 /*
@@ -2368,7 +2315,7 @@ extern void NET_MakeDefaultState_t(
 
     try {
       // load the world
-      _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
+      _pTimer->SetGameTick(0);  // must have timer at 0 while loading
       _pNetwork->ga_World.Load_t(fnmWorld);
       // delete all entities that don't fit given spawn flags
       _pNetwork->ga_World.FilterEntitiesBySpawnFlags(_pNetwork->ga_sesSessionState.ses_ulSpawnFlags);

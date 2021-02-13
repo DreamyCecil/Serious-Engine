@@ -254,12 +254,12 @@ properties:
   7 FLOAT3D en_vReferencePlane = FLOAT3D(0.0f,0.0f,0.0f),   // reference plane (only for standing on)
   8 INDEX en_iReferenceSurface = 0,     // surface on reference entity
   9 CEntityPointer en_penLastValidReference,  // last valid reference entity (for impact damage)
- 14 FLOAT en_tmLastSignificantVerticalMovement = 0.0f,   // last time entity moved significantly up/down
+ 14 TICK en_llLastVerticalMove = 0,   // last time entity moved significantly up/down
   // swimming parameters
- 10 FLOAT en_tmLastBreathed = 0,        // last time when entity took some air
+ 10 TICK en_llLastBreathed = 0,         // last time when entity took some air
  11 FLOAT en_tmMaxHoldBreath = 5.0f,    // how long can entity be without air (adjustable)
  12 FLOAT en_fDensity = 5000.0f,        // density of the body [kg/m3] - defines buoyancy (adjustable)
- 13 FLOAT en_tmLastSwimDamage = 0,      // last time when entity was damaged by swimming
+ 13 TICK en_llLastSwimDamage = 0,       // last time when entity was damaged by swimming
  // content immersion parameters
  20 INDEX en_iUpContent = 0,
  21 INDEX en_iDnContent = 0,
@@ -272,7 +272,7 @@ properties:
  67 FLOAT en_fForceA = 0.0f,
  68 FLOAT en_fForceV = 0.0f,
  // jumping parameters
- 30 FLOAT en_tmJumped = 0,            // time when entity jumped
+ 30 TICK en_llJumped = 0,            // time when entity jumped
  31 FLOAT en_tmMaxJumpControl = 0.5f,  // how long after jump can have control in the air [s] (adjustable)
  32 FLOAT en_fJumpControlMultiplier = 0.5f,  // how good is control when jumping (adjustable)
  // movement parameters
@@ -304,7 +304,7 @@ properties:
   // used for caching near polygons of zoning brushes for fast collision detection
   CStaticStackArray<CBrushPolygon *> en_apbpoNearPolygons;  // cached polygons
 
-  FLOAT en_tmLastPredictionHead;
+  TICK en_llLastPredictionHead;
   FLOAT3D en_vLastHead;
   FLOAT3D en_vPredError;
   FLOAT3D en_vPredErrorLast;
@@ -325,27 +325,20 @@ properties:
 
 components:
 
-
 functions:
-
-
-  void ResetPredictionFilter(void)
-  {
-    en_tmLastPredictionHead = -2;
+  void ResetPredictionFilter(void) {
+    en_llLastPredictionHead = -2;
     en_vLastHead = en_plPlacement.pl_PositionVector;
     en_vPredError = en_vPredErrorLast = FLOAT3D(0,0,0);
   }
 
   /* Constructor. */
-  export void CMovableEntity(void)
-  {
+  export void CMovableEntity(void) {
     en_pbpoStandOn = NULL;
     en_apbpoNearPolygons.SetAllocationStep(5);
     ResetPredictionFilter();
   }
-  export void ~CMovableEntity(void)
-  {
-  }
+  export void ~CMovableEntity(void) {}
 
   /* Initialization. */
   export void OnInitialize(const CEntityEvent &eeInput)
@@ -693,18 +686,12 @@ functions:
     FLOAT fParallelMultiplier, FLOAT fNormalMultiplier, FLOAT fMaxExitSpeed, TIME tmControl)
   {
     // fixup jump time for right control
-    en_tmJumped = _pTimer->CurrentTick()-en_tmMaxJumpControl+tmControl;
+    en_llJumped = _pTimer->GetGameTick() + CTimer::InTicks(en_tmMaxJumpControl + tmControl);
 
     // apply parallel and normal component multipliers
     FLOAT3D vCurrentNormal;
     FLOAT3D vCurrentParallel;
     GetParallelAndNormalComponents(vOrgSpeed, vDirection, vCurrentParallel, vCurrentNormal);
-
-    /*
-    CPrintF( "\nCurrent translation absolute before: %g, %g, %g\n", 
-      vOrgSpeed(1),
-      vOrgSpeed(2),
-      vOrgSpeed(3));*/
 
     // compile translation vector
     en_vCurrentTranslationAbsolute = 
@@ -1000,8 +987,7 @@ functions:
   }
 
   // test entity breathing
-  void TestBreathing(CContentType &ctUp) 
-  {
+  void TestBreathing(CContentType &ctUp) {
     // if this entity doesn't breathe
     if (!(en_ulPhysicsFlags&(EPF_HASLUNGS|EPF_HASGILLS))) {
       // do nothing
@@ -1011,52 +997,54 @@ functions:
     BOOL bCanBreathe = 
       (ctUp.ct_ulFlags&CTF_BREATHABLE_LUNGS) && (en_ulPhysicsFlags&EPF_HASLUNGS) ||
       (ctUp.ct_ulFlags&CTF_BREATHABLE_GILLS) && (en_ulPhysicsFlags&EPF_HASGILLS);
-    TIME tmNow = _pTimer->CurrentTick();
-    TIME tmBreathDelay = tmNow-en_tmLastBreathed;
+
+    TICK llTickNow = _pTimer->GetGameTick();
+    TICK llBreathDelay = llTickNow - en_llLastBreathed;
+
     // if entity can breathe now
     if (bCanBreathe) {
       // update breathing time
-      en_tmLastBreathed = tmNow;
+      en_llLastBreathed = llTickNow;
       // if it was without air for some time
-      if (tmBreathDelay>_pTimer->TickQuantum*2) {
+      if (llBreathDelay > /*_pTimer->TickQuantum* */2) {
         // notify entity that it has take air now
         ETakingBreath eTakingBreath;
-        eTakingBreath.fBreathDelay = tmBreathDelay/en_tmMaxHoldBreath;
+        eTakingBreath.llBreathDelay = llBreathDelay / CTimer::InTicks(en_tmMaxHoldBreath);
         SendEvent(eTakingBreath);
       }
     // if entity can not breathe now
     } else {
       // if it was without air for too long
-      if (tmBreathDelay>en_tmMaxHoldBreath) {
+      if (llBreathDelay > CTimer::InTicks(en_tmMaxHoldBreath)) {
         // inflict drowning damage 
         InflictDirectDamage(this, MiscDamageInflictor(), DMT_DROWNING, ctUp.ct_fDrowningDamageAmount, 
           en_plPlacement.pl_PositionVector, -en_vGravityDir);
         // prolongue breathing a bit, so not to come here every frame
-        en_tmLastBreathed = tmNow-en_tmMaxHoldBreath+ctUp.ct_tmDrowningDamageDelay;
+        en_llLastBreathed = llTickNow - (CTimer::InTicks(en_tmMaxHoldBreath) + ctUp.ct_llDrowningDamageDelay);
       }
     }
   }
-  void TestContentDamage(CContentType &ctDn, FLOAT fImmersion)
-  {
+
+  void TestContentDamage(CContentType &ctDn, FLOAT fImmersion) {
     // if the content can damage by swimming
-    if (ctDn.ct_fSwimDamageAmount>0) {
-      TIME tmNow = _pTimer->CurrentTick();
+    if (ctDn.ct_fSwimDamageAmount > 0) {
+      TICK llTickNow = _pTimer->GetGameTick();
       // if there is a delay
-      if (ctDn.ct_tmSwimDamageDelay>0) {
+      if (ctDn.ct_llSwimDamageDelay > 0) {
         // if not yet delayed
-        if (tmNow-en_tmLastSwimDamage>ctDn.ct_tmSwimDamageDelay+_pTimer->TickQuantum) {
+        if (llTickNow - en_llLastSwimDamage > ctDn.ct_llSwimDamageDelay+1/*_pTimer->TickQuantum*/) {
           // delay
-          en_tmLastSwimDamage = tmNow+ctDn.ct_tmSwimDamageDelay;
+          en_llLastSwimDamage = llTickNow+ctDn.ct_llSwimDamageDelay;
           return;
         }
       }
 
-      if (tmNow-en_tmLastSwimDamage>ctDn.ct_tmSwimDamageFrequency) {
+      if (llTickNow - en_llLastSwimDamage > ctDn.ct_llSwimDamageFrequency) {
         // inflict drowning damage 
         InflictDirectDamage(this, MiscDamageInflictor(),
           (DamageType)ctDn.ct_iSwimDamageType, ctDn.ct_fSwimDamageAmount*fImmersion, 
           en_plPlacement.pl_PositionVector, -en_vGravityDir);
-        en_tmLastSwimDamage = tmNow;
+        en_llLastSwimDamage = llTickNow;
       }
     }
     // if the content kills
@@ -1069,27 +1057,26 @@ functions:
     }
   }
 
-  void TestSurfaceDamage(CSurfaceType &stDn)
-  {
+  void TestSurfaceDamage(CSurfaceType &stDn) {
     // if the surface can damage by walking
     if (stDn.st_fWalkDamageAmount>0) {
-      TIME tmNow = _pTimer->CurrentTick();
+      TICK llTickNow = _pTimer->GetGameTick();
       // if there is a delay
-      if (stDn.st_tmWalkDamageDelay>0) {
+      if (stDn.st_llWalkDamageDelay > 0) {
         // if not yet delayed
-        if (tmNow-en_tmLastSwimDamage>stDn.st_tmWalkDamageDelay+_pTimer->TickQuantum) {
+        if (llTickNow - en_llLastSwimDamage > stDn.st_llWalkDamageDelay+1/*_pTimer->TickQuantum*/) {
           // delay
-          en_tmLastSwimDamage = tmNow+stDn.st_tmWalkDamageDelay;
+          en_llLastSwimDamage = llTickNow+stDn.st_llWalkDamageDelay;
           return;
         }
       }
 
-      if (tmNow-en_tmLastSwimDamage>stDn.st_tmWalkDamageFrequency) {
+      if (llTickNow - en_llLastSwimDamage > stDn.st_llWalkDamageFrequency) {
         // inflict walking damage 
         InflictDirectDamage(this, MiscDamageInflictor(),
           (DamageType)stDn.st_iWalkDamageType, stDn.st_fWalkDamageAmount, 
           en_plPlacement.pl_PositionVector, -en_vGravityDir);
-        en_tmLastSwimDamage = tmNow;
+        en_llLastSwimDamage = llTickNow;
       }
     }
   }
@@ -2346,17 +2333,17 @@ out:;
         }
         // if wants to jump and can jump
         if (fJump<-0.01f && (fPlaneY<-stReference.st_fJumpSlopeCos
-          || _pTimer->CurrentTick()>en_tmLastSignificantVerticalMovement+0.25f) ) {
+          || _pTimer->GetGameTick() > en_llLastVerticalMove + CTimer::InTicks(0.25f)) ) {
           // jump
           vTranslationAbsolute += en_vGravityDir*fJump;
-          en_tmJumped = _pTimer->CurrentTick();
+          en_llJumped = _pTimer->GetGameTick();
           en_pbpoStandOn = NULL;
         }
 
       // if it doesn't have a reference entity
       } else {//if (en_penReference==NULL) 
         // if can control after jump
-        if (_pTimer->CurrentTick()-en_tmJumped<en_tmMaxJumpControl) {
+        if (_pTimer->GetGameTick() - en_llJumped < CTimer::InTicks(en_tmMaxJumpControl)) {
           // accellerate horizontaly, but slower
           AddAccelerationOnPlane(
             vTranslationAbsolute, 
@@ -2368,10 +2355,10 @@ out:;
 
         // if wants to jump and can jump
         if (fJump<-0.01f && 
-          _pTimer->CurrentTick()>en_tmLastSignificantVerticalMovement+0.25f) {
+          _pTimer->GetGameTick() > en_llLastVerticalMove + CTimer::InTicks(0.25f)) {
           // jump
           vTranslationAbsolute += en_vGravityDir*fJump;
-          en_tmJumped = _pTimer->CurrentTick();
+          en_llJumped = _pTimer->GetGameTick();
           en_pbpoStandOn = NULL;
         }
       }
@@ -2761,17 +2748,17 @@ out:;
 /* old */        }
 /* old */        // if wants to jump and can jump
 /* old */        if (fJump<-0.01f && (fPlaneY<-stReference.st_fJumpSlopeCos
-/* old */          || _pTimer->CurrentTick()>en_tmLastSignificantVerticalMovement+0.25f) ) {
+/* old */          || _pTimer->GetGameTick() > en_llLastVerticalMove + CTimer::InTicks(0.25f)) ) {
 /* old */          // jump
 /* old */          vTranslationAbsolute += en_vGravityDir*fJump;
-/* old */          en_tmJumped = _pTimer->CurrentTick();
+/* old */          en_llJumped = _pTimer->GetGameTick();
 /* old */          en_pbpoStandOn = NULL;
 /* old */        }
 /* old */
 /* old */      // if it doesn't have a reference entity
 /* old */      } else {//if (en_penReference==NULL) 
 /* old */        // if can control after jump
-/* old */        if (_pTimer->CurrentTick()-en_tmJumped<en_tmMaxJumpControl) {
+/* old */        if (_pTimer->GetGameTick() - en_llJumped < CTimer::InTicks(en_tmMaxJumpControl)) {
 /* old */          // accellerate horizontaly, but slower
 /* old */          AddAccelerationOnPlane(
 /* old */            vTranslationAbsolute, 
@@ -2783,10 +2770,10 @@ out:;
 /* old */
 /* old */        // if wants to jump and can jump
 /* old */        if (fJump<-0.01f && 
-/* old */          _pTimer->CurrentTick()>en_tmLastSignificantVerticalMovement+0.25f) {
+/* old */          _pTimer->GetGameTick() > en_llLastVerticalMove + CTimer::InTicks(0.25f)) {
 /* old */          // jump
 /* old */          vTranslationAbsolute += en_vGravityDir*fJump;
-/* old */          en_tmJumped = _pTimer->CurrentTick();
+/* old */          en_llJumped = _pTimer->GetGameTick();
 /* old */          en_pbpoStandOn = NULL;
 /* old */        }
 /* old */      }
@@ -2953,13 +2940,13 @@ out:;
 
     // remember original translation
     FLOAT3D vOldTranslation = en_vCurrentTranslationAbsolute;
-    FLOAT fTickQuantum=_pTimer->TickQuantum; // used for normalizing from SI units to game ticks
+    FLOAT fTickQuantum = _pTimer->TickQuantum; // used for normalizing from SI units to game ticks
     // calculate current velocity from movements applied in this tick
     en_vCurrentTranslationAbsolute = en_vAppliedTranslation/fTickQuantum;
 
     // remember significant movements
-    if (Abs(en_vCurrentTranslationAbsolute%en_vGravityDir)>0.1f) {
-      en_tmLastSignificantVerticalMovement = _pTimer->CurrentTick();
+    if (Abs(en_vCurrentTranslationAbsolute % en_vGravityDir) > 0.1f) {
+      en_llLastVerticalMove = _pTimer->GetGameTick();
     }
 
     ClearNextPosition();
@@ -3030,9 +3017,9 @@ out:;
     extern BOOL _bPredictionActive;
     if (_bPredictionActive && (IsPredictable() || IsPredictor())) {
       CMovableEntity *penTail = (CMovableEntity *)GetPredictedSafe(this);
-      TIME tmNow = _pTimer->CurrentTick();
+      TICK llTickNow = _pTimer->GetGameTick();
  
-      if (penTail->en_tmLastPredictionHead<-1) {
+      if (penTail->en_llLastPredictionHead < -1) {
         penTail->en_vLastHead = en_plPlacement.pl_PositionVector;
         penTail->en_vPredError = FLOAT3D(0,0,0);
         penTail->en_vPredErrorLast = FLOAT3D(0,0,0);
@@ -3041,7 +3028,7 @@ out:;
       // if this is a predictor
       if (IsPredictor()) {
         // if a new prediction of old prediction head, or just started prediction
-        if (penTail->en_tmLastPredictionHead==tmNow || penTail->en_tmLastPredictionHead<0) {
+        if (penTail->en_llLastPredictionHead == llTickNow || penTail->en_llLastPredictionHead < 0) {
           // remember error
           penTail->en_vPredErrorLast = penTail->en_vPredError;
           penTail->en_vPredError += 
@@ -3051,20 +3038,20 @@ out:;
           // if this is really head of prediction chain
           if (IsPredictionHead()) {
             // remember the time
-            penTail->en_tmLastPredictionHead = tmNow;
+            penTail->en_llLastPredictionHead = llTickNow;
           }
 
         // if newer than last prediction head
-        } else if (tmNow>penTail->en_tmLastPredictionHead) {
+        } else if (llTickNow > penTail->en_llLastPredictionHead) {
           // just remember head and time
           penTail->en_vLastHead = en_plPlacement.pl_PositionVector;
-          penTail->en_tmLastPredictionHead = tmNow;
+          penTail->en_llLastPredictionHead = llTickNow;
         }
 
       // if prediction is of for this entity
       } else if (!(en_ulFlags&ENF_WILLBEPREDICTED)) {
         // if it was on before
-        if (penTail->en_tmLastPredictionHead>0) {
+        if (penTail->en_llLastPredictionHead > 0) {
           // remember error
           penTail->en_vPredErrorLast = penTail->en_vPredError;
           penTail->en_vPredError += 
@@ -3072,7 +3059,7 @@ out:;
         }
         // remember this as head
         penTail->en_vLastHead = en_plPlacement.pl_PositionVector;
-        penTail->en_tmLastPredictionHead = -1;
+        penTail->en_llLastPredictionHead = -1;
       }
       // if this is head of chain
       if (IsPredictionHead()) {
@@ -3086,7 +3073,6 @@ out:;
       }
     }
 
-    //CPrintF("\n%f", _pTimer->CurrentTick());
     _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_POSTMOVING);
 
 // STREAMDUMP     ExportEntityPlacementAndSpeed(*(CMovableEntity *)this, "Post moving (end of function)");

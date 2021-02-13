@@ -71,7 +71,7 @@ extern CTString sam_strCommandLine = "";
 // 1...all ok
 // 2...automatic fallback
 static INDEX _iDisplayModeChangeFlag = 0;
-static TIME _tmDisplayModeChanged = 100.0f; // when display mode was last changed
+static TICK _llDisplayModeChanged = CTimer::InTicks(100.0f); // when display mode was last changed
 
 // rendering preferences for automatic settings
 extern INDEX sam_iVideoSetup = 1;  // 0==speed, 1==normal, 2==quality, 3==custom
@@ -621,7 +621,7 @@ void End(void)
 void PrintDisplayModeInfo(void)
 {
   // skip if timed out
-  if( _pTimer->GetRealTimeTick() > (_tmDisplayModeChanged+sam_tmDisplayModeReport)) return;
+  if (_pTimer->GetTimeTick() > (_llDisplayModeChanged + CTimer::InTicks(sam_tmDisplayModeReport))) return;
 
   // cache some general vars
   SLONG slDPWidth  = pdp->GetWidth();
@@ -1459,5 +1459,5 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
   ApplyGLSettings(FALSE);
 
   // remember time of mode setting
-  _tmDisplayModeChanged = _pTimer->GetRealTimeTick();
+  _llDisplayModeChanged = _pTimer->GetTimeTick();
 }

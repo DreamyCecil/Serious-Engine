@@ -47,7 +47,7 @@ public:
   BOOL sso_bActive;
   BOOL sso_bSendStream;
   CTimerValue sso_tvMessageReceived;
-  TIME sso_tmLastSyncReceived;
+  TICK sso_llLastSyncReceived;
   INDEX sso_iDisconnectedState;
   INDEX sso_iLastSentSequence;
   INDEX sso_ctBadSyncs;   // counter of bad sync in row

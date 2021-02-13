@@ -98,5 +98,5 @@ event EDeath { // when this entity dies (health reaches zero)
 };
 
 event ETakingBreath { // when this entity takes air after being without it for some time
-  FLOAT fBreathDelay,  // how long it was without air (0=little, 1=drowning)
+  TICK llBreathDelay,  // how long it was without air (0=little, 1=drowning)
 };

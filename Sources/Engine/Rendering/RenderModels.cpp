@@ -788,7 +788,7 @@ void CRenderer::RenderLensFlares(void)
 
   // get count of currently existing flares and time
   INDEX ctFlares   = re_alfiLensFlares.Count();
-  const TIME tmNow = _pTimer->GetRealTimeTick();
+  const TICK llNow = _pTimer->GetTimeTick();
 
   // for each lens flare
   INDEX iFlare=0;
@@ -798,7 +798,7 @@ void CRenderer::RenderLensFlares(void)
     if( lfi.lfi_plsLightSource==NULL || // marked when entity is deleted
        (lfi.lfi_ulDrawPortID==ulDrawPortID && 
      (!(lfi.lfi_ulFlags&LFF_ACTIVE) || lfi.lfi_plsLightSource->ls_plftLensFlare==NULL)) ||
-       (lfi.lfi_ulDrawPortID!=ulDrawPortID && lfi.lfi_tmLastFrame<tmNow-5.0f)) {
+       (lfi.lfi_ulDrawPortID!=ulDrawPortID && lfi.lfi_llLastFrame < llNow - CTimer::InTicks(5.0f))) {
       // delete it by moving the last one on its place
       lfi = re_alfiLensFlares[ctFlares-1];
       re_alfiLensFlares[ctFlares-1].Clear();
@@ -827,14 +827,14 @@ void CRenderer::RenderLensFlares(void)
     #define FLAREINSPEED  (0.2f)
     #define FLAREOUTSPEED (0.1f)
     if( lfi.lfi_ulFlags&LFF_VISIBLE) {
-      lfi.lfi_fFadeFactor += (tmNow-lfi.lfi_tmLastFrame) / FLAREINSPEED;
+      lfi.lfi_fFadeFactor += CTimer::InSeconds(llNow-lfi.lfi_llLastFrame) / FLAREINSPEED;
     } else {
-      lfi.lfi_fFadeFactor -= (tmNow-lfi.lfi_tmLastFrame) / FLAREOUTSPEED;
+      lfi.lfi_fFadeFactor -= CTimer::InSeconds(llNow-lfi.lfi_llLastFrame) / FLAREOUTSPEED;
     }
     lfi.lfi_fFadeFactor = Max( Min(lfi.lfi_fFadeFactor, 1.0f), 0.0f);
 
     // reset timer of flare
-    lfi.lfi_tmLastFrame = tmNow;
+    lfi.lfi_llLastFrame = llNow;
     // skip if the flare is invisible
     if( lfi.lfi_fFadeFactor<0.01f) continue;
 

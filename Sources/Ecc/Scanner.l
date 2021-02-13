@@ -56,6 +56,7 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
 "autowait"  {RETURN(k_autowait);}
 "autocall"  {RETURN(k_autocall);}
 "waitevent" {RETURN(k_waitevent);}
+"tickwait"  {RETURN(k_tickwait);}
 
  /* aditional keywords */
 "event"     {RETURN(k_event);}
@@ -110,6 +111,7 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
 "ANGLE3D"           {RETURN(k_ANGLE3D);};
 "FLOATplane3D"      {RETURN(k_FLOATplane3D);};
 "flags"             {RETURN(k_FLAGS);};
+"TICK"              {RETURN(k_TICK);}
 
  /* single character operators and punctuations */
 ";"|"("|")"|"{"|"}"|"="|"+"|"-"|"<"|">"|"!"|"|"|"&"|"*"|"/"|"%"|"^"|"["|"]"|":"|","|"."|"?"|"~" {

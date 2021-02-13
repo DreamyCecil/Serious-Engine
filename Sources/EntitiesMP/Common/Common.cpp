@@ -1419,9 +1419,9 @@ FLOAT GetGameDamageMultiplier(void)
 FLOAT GetSeriousDamageMultiplier( CEntity *pen)
 {
   if( !IsOfClass(pen,"Player")) return 1.0f;
-  const TIME tmNow = _pTimer->CurrentTick();
-  const TIME tmDamage = ((CPlayer*)pen)->m_tmSeriousDamage;
-  if( tmDamage>tmNow) return 4.0f;
+  const TICK llNow = _pTimer->GetGameTick();
+  const TICK llDamage = ((CPlayer*)pen)->m_llSeriousDamage;
+  if (llDamage > llNow) return 4.0f;
   return 1.0f;
 }
 

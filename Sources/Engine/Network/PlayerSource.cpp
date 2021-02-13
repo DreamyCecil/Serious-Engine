@@ -159,7 +159,6 @@ void CPlayerSource::SetAction(const CPlayerAction &paAction)
   // set action
   pls_paAction = paAction;
   pls_paAction.pa_llCreated = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
-  //CPrintF("%.2f - created: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
 }
 
 // get mask of this player for chat messages
@@ -203,7 +202,6 @@ void CPlayerSource::WriteActionPacket(CNetworkMessage &nm)
   nm.WriteBits(&pls_Index, 4);  // your index
   nm.WriteBits(&iPing, 10);     // your ping
   nm<<pls_paAction;             // action
-  //CPrintF("%.2f - written: %d\n", _pTimer->GetRealTimeTick(), SLONG(pls_paAction.pa_llCreated));
 
   // get sendbehind parameters
   extern INDEX cli_iSendBehind;

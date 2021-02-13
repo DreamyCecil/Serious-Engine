@@ -187,7 +187,7 @@ properties:
 //171 INDEX m_iTacticsRetried = 0,
 
   {
-    TIME m_tmPredict;  // time to predict the entity to
+    TICK m_llPredict;  // time to predict the entity to
   }
 
 
@@ -224,20 +224,20 @@ functions:
 
   void CEnemyBase(void)
   {
-    m_tmPredict = 0;
+    m_llPredict = 0;
   }
 
   // called by other entities to set time prediction parameter
-  void SetPredictionTime(TIME tmAdvance)   // give time interval in advance to set
+  void SetPredictionTime(TICK llAdvance)   // give time interval in advance to set
   {
     ASSERT(!IsPredictor());
-    m_tmPredict = _pTimer->CurrentTick()+tmAdvance;
+    m_llPredict = _pTimer->GetGameTick()+llAdvance;
   }
 
   // called by engine to get the upper time limit 
-  TIME GetPredictionTime(void)   // return moment in time up to which to predict this entity
+  TICK GetPredictionTime(void)   // return moment in time up to which to predict this entity
   {
-    return m_tmPredict;
+    return m_llPredict;
   }
 
   // describe how this enemy killed player

@@ -189,13 +189,13 @@ procedures:
   Dummy() {};
 
   // wait here until scheduled animation starts
-  WaitUntilScheduledAnimStarts(EVoid)
-  {
+  WaitUntilScheduledAnimStarts(EVoid) {
     ASSERT(en_RenderType == CEntity::RT_MODEL || en_RenderType == CEntity::RT_EDITORMODEL);
-    FLOAT fToWait = GetModelObject()->ao_tmAnimStart-_pTimer->CurrentTick();
-    if( fToWait>0)
-    {
-      autowait(fToWait+_pTimer->TickQuantum);
+
+    TICK llToWait = GetModelObject()->ao_llAnimStart - _pTimer->GetGameTick();
+
+    if (llToWait > 0) {
+      tickwait(llToWait+1/*_pTimer->TickQuantum*/);
     }
     return EReturn();
   }

@@ -1719,7 +1719,7 @@ void CWorldEditorView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 void CWorldEditorView::SetMipBrushFactor(void)
 {
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
 
   CChildFrame *pChild = GetChildFrame();
   // set auto mip brushing mode on
@@ -3781,9 +3781,9 @@ void CWorldEditorView::CallPopupMenu(CPoint point)
 void CWorldEditorView::SetEditingDataPaneInfo( BOOL bImidiateRepainting)
 {
   // obtain current time
-  FLOAT fTimeNow = _pTimer->GetRealTimeTick();
+  TICK llTimeNow = _pTimer->GetTimeTick();
   // get difference to time when last mip brushing option has been used
-  FLOAT fSecondsPassed = fTimeNow-_fLastMipBrushingOptionUsed;
+  FLOAT fSecondsPassed = CTimer::InSeconds(llTimeNow - _llLastMipBrushingOptionUsed);
   // if we used any mip brushing option inside last 30 seconds
   BOOL bUsingMipBrushing;
   if( fSecondsPassed < 120)     bUsingMipBrushing = TRUE;
@@ -4187,7 +4187,7 @@ void CWorldEditorView::OnMouseMove(UINT nFlags, CPoint point)
     case IA_MIP_SETTING:
     {
       // remember current time as time when last mip brushing option has been used
-      _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+      _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
       if( lOffsetY > 0) lOffsetY = 0;
       // translate viewer in floor plane
       svViewer.Translate_OwnSystem( 0, 0, -lOffsetY);
@@ -4201,7 +4201,7 @@ void CWorldEditorView::OnMouseMove(UINT nFlags, CPoint point)
       if( GetChildFrame()->m_fManualMipBrushingFactor - lOffsetY/50.0f > 0.0f)
       {
         // remember current time as time when last mip brushing option has been used
-        _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+        _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
         GetChildFrame()->m_fManualMipBrushingFactor -= lOffsetY/50.0f;
       }
       bRefreshView = TRUE;
@@ -8942,7 +8942,7 @@ void CWorldEditorView::OnCreateEmptyRougherMip()
 void CWorldEditorView::OnAddMorePreciseMip(BOOL bClone)
 {
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
   CWorldEditorDoc* pDoc = GetDocument();
   pDoc->RememberUndo();
 
@@ -8965,7 +8965,7 @@ void CWorldEditorView::OnAddMorePreciseMip(BOOL bClone)
 void CWorldEditorView::OnAddRougherMipLevel(BOOL bClone)
 {
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
   CWorldEditorDoc* pDoc = GetDocument();
   pDoc->RememberUndo();
 
@@ -9007,7 +9007,7 @@ CBrushMip *CWorldEditorView::GetCurrentBrushMip(void)
 void CWorldEditorView::OnDeleteMip()
 {
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
 
   CBrushMip *pbmCurrentMip = GetCurrentBrushMip();
   if (pbmCurrentMip==NULL) {
@@ -9036,7 +9036,7 @@ void CWorldEditorView::OnPreviousMipBrush()
   CBrush3D &brBrush = *penBrush->en_pbrBrush;
 
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
 
   CBrushMip *pbmCurrentMip = GetCurrentBrushMip();
   CBrushMip *pbmPrevMip = NULL;
@@ -9064,7 +9064,7 @@ void CWorldEditorView::OnPreviousMipBrush()
 void CWorldEditorView::OnNextMipBrush()
 {
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
 
   CBrushMip *pbmCurrentMip = GetCurrentBrushMip();
   if (pbmCurrentMip==NULL) {

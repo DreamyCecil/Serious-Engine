@@ -29,7 +29,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CWndDisplayTexture
 
-TIME timeLastTick;
+TICK _llLastTick;
 
 CWndDisplayTexture::CWndDisplayTexture()
 {
@@ -185,11 +185,11 @@ void CWndDisplayTexture::OnTimer(UINT nIDEvent)
 	// on our timer discard test animation window
   if( nIDEvent == 1)
   {
-    TIME timeCurrentTick = _pTimer->GetRealTimeTick();
-    if( timeCurrentTick > timeLastTick )
+    TICK llCurrentTick = _pTimer->GetTimeTick();
+    if (llCurrentTick > _llLastTick)
     {
-      _pTimer->SetCurrentTick( timeCurrentTick);
-      timeLastTick = timeCurrentTick;
+      _pTimer->SetGameTick(llCurrentTick);
+      _llLastTick = llCurrentTick;
     }
     Invalidate(FALSE);	
   }
@@ -207,7 +207,7 @@ void CWndDisplayTexture::OnDestroy()
   }
 
   KillTimer( m_iTimerID);
-  _pTimer->SetCurrentTick( 0.0f);
+  _pTimer->SetGameTick(0);
 	CWnd::OnDestroy();
 }
 

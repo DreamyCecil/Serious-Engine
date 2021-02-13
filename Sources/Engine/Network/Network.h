@@ -287,7 +287,7 @@ public:
   CPlayerSource *GetPlayerSource(CEntity *pen);
 
   // get game time in currently running game
-  TIME GetGameTime(void);
+  TICK NetworkGameTime(void);
 
   /* Get session properties for current game. */
   void *GetSessionProperties(void);

@@ -630,7 +630,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     SetHealth(19.5f);
     m_fMaxHealth = 19.5f;
-    en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
     m_fBlowUpSize = 2.0f;
 

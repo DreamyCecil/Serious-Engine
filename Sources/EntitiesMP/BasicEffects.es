@@ -449,7 +449,7 @@ functions:
     }
     if(m_betType==BET_COLLECT_ENERGY)
     {
-      Particles_CollectEnergy(this, m_tmSpawn, m_tmSpawn+m_fWaitTime);
+      Particles_CollectEnergy(this, m_tmSpawn);
     }
     /*if(m_betType==BET_SNIPER_RESIDUE)
     {

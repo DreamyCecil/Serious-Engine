@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 CChangeable::CChangeable(void)
 {
-  ch_LastChangeTime = TIME(-1);
+  ch_llLastChange = -1;
 }
 
 /*
@@ -34,7 +34,7 @@ CChangeable::CChangeable(void)
  */
 void CChangeable::MarkChanged(void)
 {
-  ch_LastChangeTime = _pTimer->CurrentTick();
+  ch_llLastChange = _pTimer->GetGameTick();
 }
 
 /*
@@ -42,7 +42,7 @@ void CChangeable::MarkChanged(void)
  */
 BOOL CChangeable::IsUpToDate(const CUpdateable &ud) const
 {
-  return ch_LastChangeTime < ud.LastUpdateTime();
+  return ch_llLastChange < ud.LastUpdateTime();
 }
 
 /*
@@ -50,7 +50,7 @@ BOOL CChangeable::IsUpToDate(const CUpdateable &ud) const
  */
 CChangeableRT::CChangeableRT(void)
 {
-  ch_LastChangeTime = TIME(-1);
+  ch_llLastChange = -1;
 }
 
 /*
@@ -58,7 +58,7 @@ CChangeableRT::CChangeableRT(void)
  */
 void CChangeableRT::MarkChanged(void)
 {
-  ch_LastChangeTime = _pTimer->GetRealTimeTick();
+  ch_llLastChange = _pTimer->GetTimeTick();
 }
 
 /*
@@ -66,6 +66,6 @@ void CChangeableRT::MarkChanged(void)
  */
 BOOL CChangeableRT::IsUpToDate(const CUpdateableRT &ud) const
 {
-  return ch_LastChangeTime < ud.LastUpdateTime();
+  return ch_llLastChange < ud.LastUpdateTime();
 }
 

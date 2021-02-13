@@ -538,15 +538,15 @@ void CEntity::AddDependentsToPrediction(void)
 }
 
 // called by other entities to set time prediction parameter
-void CEntity::SetPredictionTime(TIME tmAdvance)   // give time interval in advance to set
+void CEntity::SetPredictionTime(TICK llAdvance)   // give time interval in advance to set
 {
   NOTHING; // by default, don't use time prediction
 }
 
 // called by engine to get the upper time limit 
-TIME CEntity::GetPredictionTime(void)   // return moment in time up to which to predict this entity
+TICK CEntity::GetPredictionTime(void)   // return moment in time up to which to predict this entity
 {
-  return -1.0f; // by default, don't use time prediction
+  return -1; // by default, don't use time prediction
 }
 
 // get maximum allowed range for predicting this entity
@@ -629,7 +629,7 @@ BOOL CEntity::IsPredictionHead(void)
   
   // if predictor, but not currently in the last step of prediction
   if ((en_ulFlags&ENF_PREDICTOR) && 
-    _pTimer->CurrentTick()<=_pNetwork->ga_sesSessionState.ses_tmPredictionHeadTick) {
+    _pTimer->GetGameTick() <= _pNetwork->ga_sesSessionState.ses_llPredictionHeadTick) {
     // it cannot be head of the chain
     return FALSE;
   }
@@ -2780,20 +2780,21 @@ void CEntity::RemoveAttachment(INDEX iAttachment)
 /* Initialize last positions structure for particles. */
 CLastPositions *CEntity::GetLastPositions(INDEX ctPositions)
 {
-  TIME tmNow = _pTimer->CurrentTick();
-  if (en_plpLastPositions==NULL) {
+  TICK llTickNow = _pTimer->GetGameTick();
+
+  if (en_plpLastPositions == NULL) {
     en_plpLastPositions = new CLastPositions;
     en_plpLastPositions->lp_avPositions.New(ctPositions);
     en_plpLastPositions->lp_ctUsed = 0;
     en_plpLastPositions->lp_iLast = 0;
-    en_plpLastPositions->lp_tmLastAdded = tmNow;
+    en_plpLastPositions->lp_llLastAdded = llTickNow;
     const FLOAT3D &vNow = GetPlacement().pl_PositionVector;
     for(INDEX iPos = 0; iPos<ctPositions; iPos++) {
       en_plpLastPositions->lp_avPositions[iPos] = vNow;
     }
   }
 
-  while(en_plpLastPositions->lp_tmLastAdded<tmNow) {
+  while (en_plpLastPositions->lp_llLastAdded < llTickNow) {
     en_plpLastPositions->AddPosition(en_plpLastPositions->GetPosition(0));
   }
 
@@ -3723,7 +3724,7 @@ void CRationalEntity::ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
   CEntity::ChecksumForSync(ulCRC, iExtensiveSyncCheck);
 
   if (iExtensiveSyncCheck>0) {
-    CRC_AddFLOAT(ulCRC, en_timeTimer);
+    CRC_AddLONG(ulCRC, en_llTimer); //CRC_AddFLOAT(ulCRC, en_timeTimer);
     CRC_AddLONG(ulCRC, en_stslStateStack.Count());
   }
   if (iExtensiveSyncCheck>0) {
@@ -3735,7 +3736,7 @@ void CRationalEntity::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // 
 {
   CEntity::DumpSync_t(strm, iExtensiveSyncCheck);
   if (iExtensiveSyncCheck>0) {
-    strm.FPrintF_t("en_timeTimer:  %g(%08x)\n", en_timeTimer, (ULONG&)en_timeTimer);
+    strm.FPrintF_t("en_llTimer:  %g(%08x)\n", CTimer::InSeconds(en_llTimer), (ULONG&)en_llTimer);
     strm.FPrintF_t("en_stslStateStack.Count(): %d\n", en_stslStateStack.Count());
   }
   strm.FPrintF_t("en_fHealth:    %g(%08x)\n", en_fHealth, (ULONG&)en_fHealth);
@@ -3747,7 +3748,7 @@ void CRationalEntity::Copy(CEntity &enOther, ULONG ulFlags)
   CLiveEntity::Copy(enOther, ulFlags);
   if (!(ulFlags&COPY_REINIT)) {
     CRationalEntity *prenOther = (CRationalEntity *)(&enOther);
-    en_timeTimer = prenOther->en_timeTimer;
+    en_llTimer = prenOther->en_llTimer;
     en_stslStateStack = prenOther->en_stslStateStack;
     if (prenOther->en_lnInTimers.IsLinked()) {
       en_pwoWorld->AddTimer(this);
@@ -3758,9 +3759,19 @@ void CRationalEntity::Copy(CEntity &enOther, ULONG ulFlags)
 void CRationalEntity::Read_t( CTStream *istr) // throw char *
 {
   CLiveEntity::Read_t(istr);
-  (*istr)>>en_timeTimer;
+
+  // [Cecil] New timer: 'Tick TiMer v1'
+  if (istr->PeekID_t() != CChunkID("TTM1")) {
+    FLOAT fTimer;
+    (*istr)>>fTimer;
+    en_llTimer = CTimer::InTicks(fTimer);
+
+  } else {
+    istr->ExpectID_t(CChunkID("TTM1"));
+    (*istr)>>en_llTimer;
+  }
   // if waiting for thinking
-  if (en_timeTimer!=THINKTIME_NEVER) {
+  if (en_llTimer != THINKTICK_NEVER) {
     // add to list of thinkers
     en_pwoWorld->AddTimer(this);
   }
@@ -3781,9 +3792,12 @@ void CRationalEntity::Write_t( CTStream *ostr) // throw char *
   // if not currently waiting for thinking
   if (!en_lnInTimers.IsLinked()) {
     // set dummy thinking time as a flag for later loading
-    en_timeTimer = THINKTIME_NEVER;
+    en_llTimer = THINKTICK_NEVER;
   }
-  (*ostr)<<en_timeTimer;
+  // [Cecil] New timer: 'Tick TiMer v1'
+  ostr->WriteID_t(CChunkID("TTM1"));
+  (*ostr)<<en_llTimer;
+
   // write the state stack
   (*ostr)<<en_stslStateStack.Count();
   for(INDEX iState=0; iState<en_stslStateStack.Count(); iState++) {
@@ -3794,16 +3808,15 @@ void CRationalEntity::Write_t( CTStream *ostr) // throw char *
 /*
  * Set next timer event to occur at given moment time.
  */
-void CRationalEntity::SetTimerAt(TIME timeAbsolute)
-{
+void CRationalEntity::TimerAt(TICK llAbsolute) {
   // must never set think back in time, except for special 'never' time
-  ASSERTMSG(timeAbsolute>_pTimer->CurrentTick() ||
-    timeAbsolute==THINKTIME_NEVER, "Do not SetThink() back in time!");
+  ASSERTMSG(llAbsolute > _pTimer->GetGameTick() ||
+    llAbsolute==THINKTICK_NEVER, "Do not SetThink() back in time!");
   // set the timer
-  en_timeTimer = timeAbsolute;
+  en_llTimer = llAbsolute;
 
   // add to world's list of timers if neccessary
-  if (en_timeTimer != THINKTIME_NEVER) {
+  if (en_llTimer != THINKTICK_NEVER) {
     en_pwoWorld->AddTimer(this);
   } else {
     if (en_lnInTimers.IsLinked()) {
@@ -3815,16 +3828,19 @@ void CRationalEntity::SetTimerAt(TIME timeAbsolute)
 /*
  * Set next timer event to occur after given time has elapsed.
  */
-void CRationalEntity::SetTimerAfter(TIME timeDelta)
-{
+void CRationalEntity::TimerAfter(TICK llDelta) {
   // set the execution for the moment that is that much ahead of the current tick
-  SetTimerAt(_pTimer->CurrentTick()+timeDelta);
+  TimerAt(_pTimer->GetGameTick() + llDelta);
+}
+
+void CRationalEntity::SetTimerAfter(TIME tmDelta) {
+  // set the execution for the moment that is that much ahead of the current tick
+  TimerAt(_pTimer->GetGameTick() + CTimer::InTicks(tmDelta));
 }
 
 /* Cancel eventual pending timer. */
-void CRationalEntity::UnsetTimer(void)
-{
-  en_timeTimer = THINKTIME_NEVER;
+void CRationalEntity::UnsetTimer(void) {
+  en_llTimer = THINKTICK_NEVER;
   if (en_lnInTimers.IsLinked()) {
     en_lnInTimers.Remove();
   }
@@ -3894,7 +3910,7 @@ void CRationalEntity::Return(SLONG slThisState, const CEntityEvent &eeReturn)
 // print stack to debug output
 const char *CRationalEntity::PrintStackDebug(void)
 {
-  _RPT2(_CRT_WARN, "-- stack of '%s'@%gs\n", GetName(), _pTimer->CurrentTick());
+  _RPT2(_CRT_WARN, "-- stack of '%s'@%gs\n", GetName(), CTimer::InSeconds(_pTimer->GetGameTick()));
 
   INDEX ctStates = en_stslStateStack.Count();
   for(INDEX iState=ctStates-1; iState>=0; iState--) {
@@ -3935,13 +3951,12 @@ BOOL CRationalEntity::HandleEvent(const CEntityEvent &ee)
 /*
  * Called after creating and setting its properties.
  */
-void CRationalEntity::OnInitialize(const CEntityEvent &eeInput)
-{
+void CRationalEntity::OnInitialize(const CEntityEvent &eeInput) {
   // make sure entity doesn't destroy itself during intialization
   CEntityPointer penThis = this;
 
   // do not think
-  en_timeTimer = THINKTIME_NEVER;
+  en_llTimer = THINKTICK_NEVER;
   if (en_lnInTimers.IsLinked()) {
     en_lnInTimers.Remove();
   }

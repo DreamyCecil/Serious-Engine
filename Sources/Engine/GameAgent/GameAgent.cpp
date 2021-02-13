@@ -123,7 +123,7 @@ BOOL _bInitialized = FALSE;
 BOOL _bActivated = FALSE;
 BOOL _bActivatedLocal = FALSE;
 
-TIME _tmLastHeartbeat = 0;
+TICK _llLastHeartbeat = 0;
 
 CDynamicStackArray<CServerRequest> ga_asrRequests;
 
@@ -277,7 +277,7 @@ void _sendHeartbeat(INDEX iChallenge)
     strPacket.PrintF("\\heartbeat\\%hu\\gamename\\serioussamse", (_pShell->GetINDEX("net_iPort") + 1));
   }
   _sendPacket(strPacket);
-  _tmLastHeartbeat = _pTimer->GetRealTimeTick();
+  _llLastHeartbeat = _pTimer->GetTimeTick();
 }
 
 static void _setStatus(const CTString &strStatus)
@@ -520,7 +520,7 @@ extern void GameAgent_ServerUpdate(void)
  }
 
  // send a heartbeat every 150 seconds
- if(_pTimer->GetRealTimeTick() - _tmLastHeartbeat >= 150.0f) {
+ if(_pTimer->GetTimeTick() - _llLastHeartbeat >= CTimer::InTicks(150.0f)) {
     _sendHeartbeat(0);
  }
 }

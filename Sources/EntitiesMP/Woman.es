@@ -414,7 +414,6 @@ procedures:
     SetFlags(GetFlags()|ENF_ALIVE);
     SetHealth(100.0f);
     m_fMaxHealth = 100.0f;
-    en_tmMaxHoldBreath = 5.0f;
     en_fDensity = 2000.0f;
     
     m_sptType = SPT_FEATHER;

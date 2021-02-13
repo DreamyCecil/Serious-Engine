@@ -33,7 +33,7 @@ public:
   char *con_strLineBuffer;    // one-line-sized buffer for temp usage
   INDEX con_ctCharsPerLine;   // number of characters per line
   INDEX con_ctLines;          // number of total lines
-  TIME *con_atmLines;         // time stamp for each line
+  TICK *con_allLines;         // time stamp for each line
   INDEX con_ctLinesPrinted;   // number of lines printed
   FILE *con_fLog;   // log file for streaming the console to
 
@@ -43,8 +43,6 @@ public:
   void ClearLine(INDEX iLine);
   // scroll buffer up, discarding lines at the start
   void ScrollBufferUp(INDEX ctBytesToFree);
-  // Move last line times one place back and add new time
-  void NewLastTime(TIME tmNew);
 
 // interface:
 
@@ -65,7 +63,7 @@ public:
   void CloseLog(void);
 
   // Get number of lines newer than given time
-  INDEX NumberOfLinesAfter(TIME tmLast);
+  INDEX NumberOfLinesAfter(TICK llLast);
   // Get one of last lines
   CTString GetLastLine(INDEX iLine);
   // Discard timing info for last lines

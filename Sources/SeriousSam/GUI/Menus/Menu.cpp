@@ -51,7 +51,7 @@ CListHead _lhServers;
 void OnPlayerSelect(void);
 
 // last tick done
-TIME _tmMenuLastTickDone = -1;
+TICK _llMenuLastTickDone = -1;
 // all possible menu entities
 CListHead lhMenuEntities;
 
@@ -155,7 +155,7 @@ void ClearThumbnail(void)
 
 void StartMenus(char *str)
 {
-  _tmMenuLastTickDone=_pTimer->GetRealTimeTick();
+  _llMenuLastTickDone = _pTimer->GetTimeTick();
   // disable printing of last lines
   CON_DiscardLastLineTimes();
 
@@ -589,25 +589,25 @@ void MenuUpdateMouseFocus(void)
 }
 
 static CTimerValue _tvInitialization;
-static TIME _tmInitializationTick = -1;
-extern TIME _tmMenuLastTickDone;
+static TICK _llInitializationTick = -1;
+extern TICK _llMenuLastTickDone;
 
 void SetMenuLerping(void)
 {
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
   
   // if lerping was never set before
-  if (_tmInitializationTick<0) {
+  if (_llInitializationTick<0) {
     // initialize it
     _tvInitialization = tvNow;
-    _tmInitializationTick = _tmMenuLastTickDone;
+    _llInitializationTick = _llMenuLastTickDone;
   }
 
   // get passed time from session state starting in precise time and in ticks
   FLOAT tmRealDelta = FLOAT((tvNow-_tvInitialization).GetSeconds());
-  FLOAT tmTickDelta = _tmMenuLastTickDone-_tmInitializationTick;
+  TICK llTickDelta = _llMenuLastTickDone-_llInitializationTick;
   // calculate factor
-  FLOAT fFactor = 1.0f-(tmTickDelta-tmRealDelta)/_pTimer->TickQuantum;
+  FLOAT fFactor = 1.0f-(CTimer::InSeconds(llTickDelta)-tmRealDelta) / _pTimer->TickQuantum;
 
   // if the factor starts getting below zero
   if (fFactor<0) {
@@ -615,17 +615,17 @@ void SetMenuLerping(void)
     fFactor = 0.0f;
     // readjust timers so that it gets better
     _tvInitialization = tvNow;
-    _tmInitializationTick = _tmMenuLastTickDone-_pTimer->TickQuantum;
+    _llInitializationTick = _llMenuLastTickDone-1; //_pTimer->TickQuantum;
   }
   if (fFactor>1) {
     // clamp it
     fFactor = 1.0f;
     // readjust timers so that it gets better
     _tvInitialization = tvNow;
-    _tmInitializationTick = _tmMenuLastTickDone;
+    _llInitializationTick = _llMenuLastTickDone;
   }
   // set lerping factor and timer
-  _pTimer->SetCurrentTick(_tmMenuLastTickDone);
+  _pTimer->SetGameTick(_llMenuLastTickDone);
   _pTimer->SetLerp(fFactor);
 }
 
@@ -667,16 +667,16 @@ BOOL DoMenu( CDrawPort *pdp)
 
   pgmCurrentMenu->Think();
 
-  TIME tmTickNow = _pTimer->GetRealTimeTick();
+  TICK llTickNow = _pTimer->GetTimeTick();
 
-  while( _tmMenuLastTickDone<tmTickNow)
+  while (_llMenuLastTickDone<llTickNow)
   {
-    _pTimer->SetCurrentTick(_tmMenuLastTickDone);
+    _pTimer->SetGameTick(_llMenuLastTickDone);
     // call think for all gadgets in menu
     FOREACHINLIST( CMenuGadget, mg_lnNode, pgmCurrentMenu->gm_lhGadgets, itmg) {
       itmg->Think();
     }
-    _tmMenuLastTickDone+=_pTimer->TickQuantum;
+    _llMenuLastTickDone += 1; //_pTimer->TickQuantum;
   }
 
   SetMenuLerping();
@@ -685,15 +685,7 @@ BOOL DoMenu( CDrawPort *pdp)
   PIX pixH = dpMenu.GetHeight();
 
   // blend background if menu is on
-  if( bMenuActive)
-  {
-    // get current time
-    TIME  tmNow = _pTimer->GetLerpedCurrentTick();
-    UBYTE ubH1  = (INDEX)(tmNow*08.7f) & 255;
-    UBYTE ubH2  = (INDEX)(tmNow*27.6f) & 255;
-    UBYTE ubH3  = (INDEX)(tmNow*16.5f) & 255;
-    UBYTE ubH4  = (INDEX)(tmNow*35.4f) & 255;
-
+  if (bMenuActive) {
     // clear screen with background texture
     LCDPrepare(1.0f);
     LCDSetDrawport(&dpMenu);

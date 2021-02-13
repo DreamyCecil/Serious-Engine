@@ -955,7 +955,7 @@ functions:
     const FLOAT tmNow = _pTimer->GetLerpedCurrentTick();
 
     UBYTE ubBlend = INVISIBILITY_ALPHA_LOCAL;
-    FLOAT tmInvisibility = ((CPlayer *)&*m_penPlayer)->m_tmInvisibility;
+    FLOAT tmInvisibility = CTimer::InSeconds(((CPlayer *)&*m_penPlayer)->m_llInvisibility);
     //FLOAT tmSeriousDamage = ((CPlayer *)&*m_penPlayer)->m_tmSeriousDamage;
     //FLOAT tmInvulnerability = ((CPlayer *)&*m_penPlayer)->m_tmInvulnerability;
     if (tmInvisibility>tmNow) {
@@ -1136,7 +1136,7 @@ functions:
         // if ally prediction is on and this player is local
         if (cli_tmPredictAlly>0 && _pNetwork->IsPlayerLocal(penMe)) {
           // predict the ally
-          penYou->SetPredictionTime(cli_tmPredictAlly);
+          penYou->SetPredictionTime(CTimer::InTicks(cli_tmPredictAlly));
         }
       // if foe player
       } else {
@@ -1145,12 +1145,12 @@ functions:
           // if this player is local
           if (_pNetwork->IsPlayerLocal(penMe)) {
             // predict the foe
-            penYou->SetPredictionTime(cli_tmPredictFoe);
+            penYou->SetPredictionTime(CTimer::InTicks(cli_tmPredictFoe));
           }
           // if the target is local
           if (_pNetwork->IsPlayerLocal(penYou)) {
             // predict self
-            penMe->SetPredictionTime(cli_tmPredictFoe);
+            penMe->SetPredictionTime(CTimer::InTicks(cli_tmPredictFoe));
           }
         }
       }
@@ -1160,7 +1160,7 @@ functions:
         // if this player is local
         if (_pNetwork->IsPlayerLocal(penMe)) {
           // set enemy prediction time
-          penYou->SetPredictionTime(cli_tmPredictEnemy);
+          penYou->SetPredictionTime(CTimer::InTicks(cli_tmPredictEnemy));
         }
       }
     }
@@ -2023,7 +2023,7 @@ functions:
             // shake view
             ((CPlayer&)*m_penPlayer).m_fChainShakeStrength = 0.85f;
             ((CPlayer&)*m_penPlayer).m_fChainShakeFreqMod = 1.0f;
-            ((CPlayer&)*m_penPlayer).m_tmChainShakeEnd = _pTimer->CurrentTick() + CHAINSAW_UPDATETIME*1.5f;
+            ((CPlayer&)*m_penPlayer).m_llChainShakeEnd = _pTimer->GetGameTick() + CTimer::InTicks(CHAINSAW_UPDATETIME*1.5f);
 
           }
           else if(crRay.cr_penHit->GetRenderType()==RT_MODEL)
@@ -2073,7 +2073,7 @@ functions:
             // shake view
             ((CPlayer&)*m_penPlayer).m_fChainShakeStrength = 1.1f;
             ((CPlayer&)*m_penPlayer).m_fChainShakeFreqMod = 1.0f;
-            ((CPlayer&)*m_penPlayer).m_tmChainShakeEnd = _pTimer->CurrentTick() + CHAINSAW_UPDATETIME*1.5f;
+            ((CPlayer&)*m_penPlayer).m_llChainShakeEnd = _pTimer->GetGameTick() + CTimer::InTicks(CHAINSAW_UPDATETIME*1.5f);
 
           }
         }
@@ -2091,7 +2091,7 @@ functions:
         // because we're firing, add just a slight shake
         ((CPlayer&)*m_penPlayer).m_fChainShakeStrength = 0.1f;
         ((CPlayer&)*m_penPlayer).m_fChainShakeFreqMod = 1.0f;
-        ((CPlayer&)*m_penPlayer).m_tmChainShakeEnd = _pTimer->CurrentTick() + CHAINSAW_UPDATETIME*1.5f;
+        ((CPlayer&)*m_penPlayer).m_llChainShakeEnd = _pTimer->GetGameTick() + CTimer::InTicks(CHAINSAW_UPDATETIME*1.5f);
       }
     }
     // if any model hit

@@ -986,8 +986,8 @@ void RenderMessageModel(CDrawPort *pdp, const CTString &strModel)
 
     // set model's position
     CPlacement3D pl;
-    pl.pl_OrientationAngle   = _plModel.pl_OrientationAngle + _aRotation*_pTimer->GetLerpedCurrentTick();
-    pl.pl_PositionVector     = _plModel.pl_PositionVector;
+    pl.pl_OrientationAngle = _plModel.pl_OrientationAngle + _aRotation * CTimer::InSeconds(_pTimer->LerpedGameTick());
+    pl.pl_PositionVector = _plModel.pl_PositionVector;
     pl.pl_PositionVector(3) *= fDistance / pdp->dp_fWideAdjustment;
     rm.SetObjectPlacement(pl);
 

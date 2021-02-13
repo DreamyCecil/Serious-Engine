@@ -24,7 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 class ENGINE_API CChangeableRT {
 private:
-  TIME ch_LastChangeTime;   // last time this object has been changed
+  TICK ch_llLastChange;   // last time this object has been changed
 public:
   /* Constructor. */
   CChangeableRT(void);

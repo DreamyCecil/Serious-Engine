@@ -24,7 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 CUpdateable::CUpdateable(void)
 {
-  ud_LastUpdateTime = TIME(-1);
+  ud_llLastUpdate = -1;
 }
 
 /*
@@ -32,21 +32,21 @@ CUpdateable::CUpdateable(void)
  */
 void CUpdateable::MarkUpdated(void)
 {
-  ud_LastUpdateTime = _pTimer->CurrentTick();
+  ud_llLastUpdate = _pTimer->GetTimeTick();
 }
 
 /*
  * Get time when last updated.
  */
-TIME CUpdateable::LastUpdateTime(void) const
+TICK CUpdateable::LastUpdateTime(void) const
 {
-  return ud_LastUpdateTime;
+  return ud_llLastUpdate;
 }
 
 /* Mark that the object has become invalid in spite of its time stamp. */
 void CUpdateable::Invalidate(void)
 {
-  ud_LastUpdateTime = TIME(-1);
+  ud_llLastUpdate = -1;
 }
 
 /*
@@ -54,7 +54,7 @@ void CUpdateable::Invalidate(void)
  */
 CUpdateableRT::CUpdateableRT(void)
 {
-  ud_LastUpdateTime = TIME(-1);
+  ud_llLastUpdate = -1;
 }
 
 /*
@@ -62,19 +62,19 @@ CUpdateableRT::CUpdateableRT(void)
  */
 void CUpdateableRT::MarkUpdated(void)
 {
-  ud_LastUpdateTime = _pTimer->GetRealTimeTick();
+  ud_llLastUpdate = _pTimer->GetTimeTick();
 }
 
 /*
  * Get time when last updated.
  */
-TIME CUpdateableRT::LastUpdateTime(void) const
+TICK CUpdateableRT::LastUpdateTime(void) const
 {
-  return ud_LastUpdateTime;
+  return ud_llLastUpdate;
 }
 
 /* Mark that the object has become invalid in spite of its time stamp. */
 void CUpdateableRT::Invalidate(void)
 {
-  ud_LastUpdateTime = TIME(-1);
+  ud_llLastUpdate = -1;
 }

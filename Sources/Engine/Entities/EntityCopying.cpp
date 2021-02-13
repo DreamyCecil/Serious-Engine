@@ -242,6 +242,12 @@ void CEntity::CopyOneProperty( CEntityProperty &epPropertySrc, CEntityProperty &
     // copy INDEX
     COPYPROPERTY(INDEX);
     break;
+
+  // [Cecil] New timer: 64-bit integer
+  case CEntityProperty::EPT_TICK:
+    COPYPROPERTY(TICK);
+    break;
+
   // if it is FLOAT
   case CEntityProperty::EPT_FLOAT:
   case CEntityProperty::EPT_RANGE:
@@ -641,8 +647,8 @@ void CWorld::CopyEntitiesToPredictors(CDynamicContainer<CEntity> &cenToCopy)
   }
 
   // clear current tick to prevent timer setting from assertions
-  TIME tmCurrentTickOld = _pTimer->CurrentTick();
-  _pTimer->SetCurrentTick(0.0f);
+  TICK llCurrentTickOld = _pTimer->GetGameTick();
+  _pTimer->SetGameTick(0);
 
   ULONG ulCopyFlags = COPY_REMAP|COPY_PREDICTOR;
 
@@ -743,5 +749,5 @@ void CWorld::CopyEntitiesToPredictors(CDynamicContainer<CEntity> &cenToCopy)
   _bRemapPointersToNULLs = TRUE;
 
   // return current tick
-  _pTimer->SetCurrentTick(tmCurrentTickOld);
+  _pTimer->SetGameTick(llCurrentTickOld);
 }

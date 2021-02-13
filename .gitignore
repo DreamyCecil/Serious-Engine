@@ -91,6 +91,12 @@ Sources/SeriousSkaStudio/Scanner.cpp
 # Ignore levels and custom content
 Levels/
 !Levels/empty
+Models/
+Screenshots/
+Scripts/Addons/
+Sounds/
+Textures/
 __*.gro
 
-Sources/__*
+Temp/
+!Temp/empty

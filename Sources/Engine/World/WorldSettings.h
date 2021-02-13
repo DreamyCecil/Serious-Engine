@@ -54,20 +54,20 @@ public:
   FLOAT st_fJumpSlopeCos;   // cosine of max. jump-from slope
   INDEX st_iWalkDamageType;         // type of damage inflicted when walking on surface
   FLOAT st_fWalkDamageAmount;       // how much to damage when inside
-  FLOAT st_tmWalkDamageDelay;       // how much to delay before first damage
-  FLOAT st_tmWalkDamageFrequency;   // how much to delay between two damages
+  TICK  st_llWalkDamageDelay;       // how much to delay before first damage
+  TICK  st_llWalkDamageFrequency;   // how much to delay between two damages
   ULONG st_ulFlags;
   CTString st_strName;      // name of surface type
   /* Default constructor. */
   CSurfaceType(void) :
     st_fFriction(1.0f),
     st_fStairsHeight(1.0f),
-    st_fClimbSlopeCos( 0.7071067811865f/*cos(45.0f)*/),
-    st_fJumpSlopeCos( 0.7071067811865f/*cos(45.0f)*/),
+    st_fClimbSlopeCos(0.7071067811865f/*cos(45.0f)*/),
+    st_fJumpSlopeCos(0.7071067811865f/*cos(45.0f)*/),
     st_iWalkDamageType(0),
     st_fWalkDamageAmount(0),
-    st_tmWalkDamageDelay(0),
-    st_tmWalkDamageFrequency(100),
+    st_llWalkDamageDelay(0),
+    st_llWalkDamageFrequency(CTimer::InTicks(100.0f)),
     st_ulFlags(0),
     st_strName("") {}
 };
@@ -90,10 +90,10 @@ public:
   FLOAT ct_fSpeedMultiplier;    // max. speed modifier inside the fluid
   INDEX ct_iSwimDamageType;         // type of damage inflicted when swimming
   FLOAT ct_fSwimDamageAmount;       // how much to damage when inside
-  FLOAT ct_tmSwimDamageDelay;       // how much to delay before first damage
-  FLOAT ct_tmSwimDamageFrequency;   // how much to delay between two damages
+  TICK  ct_llSwimDamageDelay;       // how much to delay before first damage
+  TICK  ct_llSwimDamageFrequency;   // how much to delay between two damages
   FLOAT ct_fDrowningDamageAmount;   // how much to damage when drowning
-  FLOAT ct_tmDrowningDamageDelay;   // how much to delay between two damages
+  TICK  ct_llDrowningDamageDelay;   // how much to delay between two damages
   FLOAT ct_fKillImmersion;          // contents kills anything alive that gets in deeper than this
   INDEX ct_iKillDamageType;         // type of killing damage
   /* Default constructor. */
@@ -106,10 +106,10 @@ public:
     ct_fSpeedMultiplier(1),
     ct_iSwimDamageType(0),
     ct_fSwimDamageAmount(0),
-    ct_tmSwimDamageDelay(0),
-    ct_tmSwimDamageFrequency(100),
+    ct_llSwimDamageDelay(0),
+    ct_llSwimDamageFrequency(CTimer::InTicks(100.0f)),
     ct_fDrowningDamageAmount(10),
-    ct_tmDrowningDamageDelay(1),
+    ct_llDrowningDamageDelay(CTimer::InTicks(1.0f)),
     ct_fKillImmersion(0),
     ct_iKillDamageType(0)
     {}

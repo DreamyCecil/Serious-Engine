@@ -921,7 +921,7 @@ functions:
                   FLOAT3D(pl.en_mRotation(1, 2), pl.en_mRotation(2, 2), pl.en_mRotation(3, 2));
 
     // if just jumped
-    if (pl.en_tmJumped>_pTimer->CurrentTick()-0.5f) {
+    if (pl.en_llJumped > _pTimer->GetGameTick() - CTimer::InTicks(0.5f)) {
       fRelY = ClampUp(fRelY, 0.0f);
     }
     m_fEyesYOffset -= fRelY;
@@ -1077,8 +1077,8 @@ functions:
       // has reference (floor)
       if (m_bReference) {
         // jump
-        if (pl.en_tmJumped+_pTimer->TickQuantum>=_pTimer->CurrentTick() &&
-            pl.en_tmJumped<=_pTimer->CurrentTick()) {
+        if (pl.en_llJumped + 1/*_pTimer->TickQuantum*/ >= _pTimer->GetGameTick() &&
+            pl.en_llJumped <= _pTimer->GetGameTick()) {
           m_bReference = FALSE;
           pl.StartModelAnim(PLAYER_ANIM_JUMPSTART, AOF_NORESTART);
           BodyStillAnimation();

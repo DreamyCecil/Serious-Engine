@@ -761,7 +761,7 @@ void CModelerView::RenderView( CDrawPort *pDrawPort)
     // simulate translation along z-axis
     CPlacement3D plTranslated = m_plModelPlacement;
     if( bLoopValid && bSpeedValid && fSpeed!=0 && iLoop>0 && !m_ModelObject.IsPaused()) {
-      TIME tmPassed = _pTimer->CurrentTick() - m_ModelObject.ao_tmAnimStart;
+      TIME tmPassed = CTimer::InSeconds(_pTimer->GetGameTick() - m_ModelObject.ao_llAnimStart);
       TIME tmDuration = m_ModelObject.GetCurrentAnimLength();
       if( tmPassed>tmDuration*iLoop) {
         tmPassed = 0;
@@ -1747,7 +1747,7 @@ void CModelerView::OnAnimNextAnim()
 	m_ModelObject.NextAnim();
   if( m_ModelObject.IsPaused())
   {
-	  m_ModelObject.ao_tmAnimStart = 0;
+	  m_ModelObject.ao_llAnimStart = 0;
   }
 }
 
@@ -1756,7 +1756,7 @@ void CModelerView::OnAnimPrevAnim()
 	m_ModelObject.PrevAnim();
   if( m_ModelObject.IsPaused())
   {
-	  m_ModelObject.ao_tmAnimStart = 0;
+	  m_ModelObject.ao_llAnimStart = 0;
   }
 }
 
@@ -1857,22 +1857,21 @@ void CModelerView::OnUpdateAnimPrevframe(CCmdUI* pCmdUI)
 
 void CModelerView::OnIdle(void)
 {
-  if( m_AutoRotating)
-  {
-    TIME timeNow = _pTimer->GetRealTimeTick();
-    TIME tmDelta = timeNow-m_timeLastTick;
-    m_plModelPlacement.pl_OrientationAngle( 1) -= AngleDeg(160.0f*tmDelta);
+  if (m_AutoRotating) {
+    TICK llTimeNow = _pTimer->GetTimeTick();
+    TICK llDelta = (llTimeNow - m_llLastTick);
+
+    m_plModelPlacement.pl_OrientationAngle(1) -= AngleDeg(CTimer::InSeconds(160) * llDelta);
     theApp.m_chPlacement.MarkChanged();
-    m_timeLastTick = timeNow;
+    m_llLastTick = llTimeNow;
   }
 
-  FLOAT fTimeVar1 = ((FLOAT)_pTimer->GetRealTimeTick()) / 1.5f;
-  FLOAT fTimeVar2 = ((FLOAT)_pTimer->GetRealTimeTick()) * 0.8f;
-  FLOAT fTimeVar3 = ((FLOAT)_pTimer->GetRealTimeTick()) * 1.8f;
+  FLOAT fTimeVar1 = CTimer::InSeconds(_pTimer->GetTimeTick()) / 1.5f;
+  FLOAT fTimeVar2 = CTimer::InSeconds(_pTimer->GetTimeTick()) * 0.8f;
+  FLOAT fTimeVar3 = CTimer::InSeconds(_pTimer->GetTimeTick()) * 1.8f;
 
-  if( m_bDollyViewer)
-  {
-    m_fTargetDistance += (FLOAT)sin( fTimeVar1)/10;
+  if (m_bDollyViewer) {
+    m_fTargetDistance += (FLOAT)sin(fTimeVar1)/10;
     m_angViewerOrientation(1) += AngleDeg( 10.0f);
     m_angViewerOrientation(2) = AngleDeg( 
       DegAngle(m_angViewerOrientation(2)) + (FLOAT)sin(fTimeVar1)/2.0f);
@@ -1989,7 +1988,7 @@ void CModelerView::OnUpdateOptAutoMipModeling(CCmdUI* pCmdUI)
 
 void CModelerView::OnAnimRotation() 
 {
-  m_timeLastTick = _pTimer->GetRealTimeTick();
+  m_llLastTick = _pTimer->GetTimeTick();
   m_AutoRotating = !m_AutoRotating;
 }
 

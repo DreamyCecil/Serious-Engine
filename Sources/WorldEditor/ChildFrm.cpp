@@ -726,7 +726,7 @@ void CChildFrame::OnTimer(UINT nIDEvent)
 void CChildFrame::OnAutoMipLeveling() 
 {
   // remember current time as time when last mip brushing option has been used
-  _fLastMipBrushingOptionUsed = _pTimer->GetRealTimeTick();
+  _llLastMipBrushingOptionUsed = _pTimer->GetTimeTick();
   // get view
   CWorldEditorView *pWEDView = (CWorldEditorView *) m_wndSplitter.GetPane( 0, 0);
   m_bAutoMipBrushingOn = !m_bAutoMipBrushingOn;

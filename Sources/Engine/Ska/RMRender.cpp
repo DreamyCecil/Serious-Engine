@@ -1833,7 +1833,7 @@ static void CalculateBoneTransforms()
 // Match animations in anim queue for bones
 static void MatchAnims(RenModel &rm)
 {
-  const FLOAT fLerpedTick = _pTimer->GetLerpedCurrentTick();
+  const FTICK ftLerpedTick = _pTimer->LerpedGameTick();
 
   // return if no animsets
   INDEX ctas = rm.rm_pmiModel->mi_aAnimSet.Count();
@@ -1865,8 +1865,9 @@ static void MatchAnims(RenModel &rm)
 
     INDEX ctpa = alList.al_PlayedAnims.Count();
     // for each played anim in played anim list
-    for(int ipa=0;ipa<ctpa;ipa++) {
-      FLOAT fTime = fLerpedTick;
+    for (int ipa = 0; ipa < ctpa; ipa++) {
+      FTICK ftTime = ftLerpedTick;
+
       PlayedAnim &pa = alList.al_PlayedAnims[ipa];
       BOOL bAnimLooping = pa.pa_ulFlags & AN_LOOPING;
 
@@ -1878,20 +1879,20 @@ static void MatchAnims(RenModel &rm)
         Animation &an = rm.rm_pmiModel->mi_aAnimSet[iAnimSetIndex].as_Anims[iAnimIndex];
         
         // calculate end time for this animation list
-        FLOAT fFadeInEndTime = alList.al_fStartTime + alList.al_fFadeTime;
+        FLOAT fFadeInEndTime = CTimer::InSeconds(alList.al_llStartTime) + alList.al_fFadeTime;
 
         // if there is a newer anmimation list
-        if(palListNext!=NULL) {
+        if (palListNext!=NULL) {
           // freeze time of this one to never overlap with the newer list
-          fTime = ClampUp(fTime, palListNext->al_fStartTime);
+          ftTime.llTick = ClampUp(ftTime.llTick, palListNext->al_llStartTime);
         }
 
         // calculate time passed since the animation started
-        FLOAT fTimeOffset = fTime - pa.pa_fStartTime;
+        FLOAT fTimeOffset = CTimer::InSeconds(ftTime - pa.pa_llStartTime);
         // if this animation list is fading in
-        if (fLerpedTick < fFadeInEndTime) {
+        if (CTimer::InSeconds(ftLerpedTick) < fFadeInEndTime) {
           // offset the time so that it is paused at the end of fadein interval
-          fTimeOffset += fFadeInEndTime - fLerpedTick;
+          fTimeOffset += fFadeInEndTime - CTimer::InSeconds(ftLerpedTick);
         }
 
         FLOAT f = fTimeOffset / (an.an_fSecPerFrame*pa.pa_fSpeedMul);

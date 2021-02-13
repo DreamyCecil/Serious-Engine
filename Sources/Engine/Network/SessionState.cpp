@@ -96,12 +96,12 @@ void CSessionState::ResetRND(void)
 CSessionState::CSessionState(void)
 {
   ses_bKeepingUpWithTime = TRUE;
-  ses_tmLastUpdated = -100;
+  ses_llLastUpdated = -100;
   ses_bAllowRandom = TRUE;  // random allowed when not in game
   ses_bPredicting = FALSE;
-  ses_tmPredictionHeadTick = -2.0f;
-  ses_tmLastSyncCheck = 0;
-  ses_tmLastPredictionProcessed = -200;
+  ses_llPredictionHeadTick = -2;
+  ses_llLastSyncCheck = 0;
+  ses_llLastPredictionProcessed = -200;
 
   ses_bPause = FALSE;
   ses_bWantPause = FALSE;
@@ -139,11 +139,11 @@ void CSessionState::Stop(void)
 #endif
 
   ses_bKeepingUpWithTime = TRUE;
-  ses_tmLastUpdated = -100;
+  ses_llLastUpdated = -100;
   ses_bAllowRandom = TRUE;  // random allowed when not in game
   ses_bPredicting = FALSE;
-  ses_tmPredictionHeadTick = -2.0f;
-  ses_tmLastSyncCheck = 0;
+  ses_llPredictionHeadTick = -2;
+  ses_llLastSyncCheck = 0;
   ses_bPause = FALSE;
   ses_bWantPause = FALSE;
   ses_bGameFinished = FALSE;
@@ -193,13 +193,13 @@ void CSessionState::Stop(void)
 void CSessionState::Start_t(INDEX ctLocalPlayers) 
 {
   ses_bKeepingUpWithTime = TRUE;
-  ses_tmLastUpdated = -100;
+  ses_llLastUpdated = -100;
   // clear message stream
   ses_nsGameStream.Clear();
   ses_bAllowRandom = FALSE;  // random not allowed in game
   ses_bPredicting = FALSE;
-  ses_tmPredictionHeadTick = -2.0f;
-  ses_tmLastSyncCheck = 0;
+  ses_llPredictionHeadTick = -2;
+  ses_llLastSyncCheck = 0;
   ses_bPause = FALSE;
   ses_bWantPause = FALSE;
   ses_bWaitingForServer = FALSE;
@@ -286,10 +286,10 @@ void CSessionState::Start_AtServer_t(void)     // throw char *
     // if this is the init message
     if (nmReceived.GetType() == MSG_REP_CONNECTLOCALSESSIONSTATE) {
       // just adjust your tick counters
-      nmReceived>>ses_tmLastProcessedTick;
+      nmReceived>>ses_llLastProcessedTick;
       nmReceived>>ses_iLastProcessedSequence;
-      ses_tmInitializationTick  = -1.0f;
-      ses_tmInitializationTick2 = -1.0f;
+      ses_llInitializationTick  = -1;
+      ses_llInitializationTick2 = -1;
       // finish waiting
       return;
     // otherwise
@@ -380,8 +380,8 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
 
     // read the initialization information from the stream
     Read_t(&strmNew);
-    ses_tmInitializationTick  = -1.0f;
-    ses_tmInitializationTick2 = -1.0f;
+    ses_llInitializationTick  = -1;
+    ses_llInitializationTick2 = -1;
   }
 
   // send one unreliable packet to server to make the connection up and running
@@ -580,8 +580,6 @@ void CSessionState::HandleMovers(void)
 {
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLEMOVERS);
 
-//  CPrintF("---- tick %g\n", _pTimer->CurrentTick());
-
   // put all movers in active list, pushing ones first
   CListHead lhActiveMovers, lhDoneMovers, lhDummyMovers;
   {FORDELETELIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_World.wo_lhMovers, itenMover) {
@@ -691,10 +689,10 @@ void CSessionState::HandleMovers(void)
 }
 
 // do thinking for a game tick
-void CSessionState::HandleTimers(TIME tmCurrentTick)
+void CSessionState::HandleTimers(TICK llCurrentTick)
 {
 #define TIME_EPSILON 0.0001f
-  IFDEBUG(TIME tmLast = 0.0f);
+  IFDEBUG(TICK llLast = 0);
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLETIMERS);
   // repeat
@@ -705,7 +703,7 @@ void CSessionState::HandleTimers(TIME tmCurrentTick)
     // for each entity in list of timers
     FOREACHINLIST(CRationalEntity, en_lnInTimers, lhTimers, iten) {
       // if due after current time
-      if(iten->en_timeTimer>tmCurrentTick+TIME_EPSILON) {
+      if (iten->en_llTimer > llCurrentTick/*+TIME_EPSILON*/) {
         // stop searching
         break;
       }
@@ -726,12 +724,11 @@ void CSessionState::HandleTimers(TIME tmCurrentTick)
     }
 
     // check that timers are propertly handled
-    ASSERT(penTimer->en_timeTimer>tmCurrentTick-_pTimer->TickQuantum-TIME_EPSILON);
-    //ASSERT(penTimer->en_timeTimer>=tmLast);
-    IFDEBUG(tmLast=penTimer->en_timeTimer);
+    ASSERT(penTimer->en_llTimer > llCurrentTick-1/*_pTimer->TickQuantum-TIME_EPSILON*/);
+    IFDEBUG(llLast = penTimer->en_llTimer);
 
     // remove the timer from the list
-    penTimer->en_timeTimer = THINKTIME_NEVER;
+    penTimer->en_llTimer = THINKTICK_NEVER;
     penTimer->en_lnInTimers.Remove();
     // send timer event to the entity
     penTimer->SendEvent(ETimer());
@@ -746,14 +743,14 @@ void CSessionState::HandleTimers(TIME tmCurrentTick)
 void CSessionState::WarmUpWorld(void)
 {
 #define WORLD_WORMUP_COUNT 20   // run 20 ticks to get stable
-  ses_tmLastProcessedTick = _pNetwork->ga_srvServer.srv_tmLastProcessedTick = 0;
+  ses_llLastProcessedTick = _pNetwork->ga_srvServer.srv_llLastProcessedTick = 0;
   ses_iLastProcessedSequence = _pNetwork->ga_srvServer.srv_iLastProcessedSequence = -1;
   // add a few empty all-action messages to the game stream
   for (INDEX iTick=0; iTick<WORLD_WORMUP_COUNT; iTick++) {
-    _pNetwork->ga_srvServer.srv_tmLastProcessedTick += _pTimer->TickQuantum;
+    _pNetwork->ga_srvServer.srv_llLastProcessedTick += 1; //_pTimer->TickQuantum;
     _pNetwork->ga_srvServer.srv_iLastProcessedSequence++;
     CNetworkStreamBlock nsbAllActions(MSG_SEQ_ALLACTIONS, _pNetwork->ga_srvServer.srv_iLastProcessedSequence);
-    nsbAllActions<<_pNetwork->ga_srvServer.srv_tmLastProcessedTick;
+    nsbAllActions<<_pNetwork->ga_srvServer.srv_llLastProcessedTick;
     nsbAllActions.Rewind();
     ses_nsGameStream.AddBlock(nsbAllActions);
   }
@@ -816,7 +813,7 @@ void CSessionState::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // th
 {
   strm.FPrintF_t("Level: %d\n", ses_iLevel);
   strm.FPrintF_t("Sequence: %d\n", ses_iLastProcessedSequence);
-  strm.FPrintF_t("Tick: %g\n", ses_tmLastProcessedTick);
+  strm.FPrintF_t("Tick: %g\n", CTimer::InSeconds(ses_llLastProcessedTick));
   strm.FPrintF_t("Paused: %d\n", ses_bPause);
   if (iExtensiveSyncCheck>0) {
     strm.FPrintF_t("Finished: %d\n", ses_bGameFinished);
@@ -901,9 +898,9 @@ void ClearDumpStream(void)
  */
 
 extern INDEX cli_bEmulateDesync;
-void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTick)
+void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TICK llCurrentTick)
 {
-  ses_tmLastPredictionProcessed = -1;
+  ses_llLastPredictionProcessed = -1;
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_PROCESSGAMETICK);
   ASSERT(this!=NULL);
@@ -912,20 +909,19 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
   try
   {
     CTMemoryStream *pstrm = GetDumpStream();
-    pstrm->FPrintF_t("Time tick: %.2f\n", tmCurrentTick);
+    pstrm->FPrintF_t("Time tick: %.2f\n", llCurrentTick);
   }
   catch (char *strError)
   {
     CPrintF("Cannot dump sync data: %s\n", strError);
   }
 #endif
-  //CPrintF("normal: %.2f\n", tmCurrentTick);
 
   // FPU must be in 24-bit mode
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
   // copy the tick to process into tick used for all tasks
-  _pTimer->SetCurrentTick(tmCurrentTick);
+  _pTimer->SetGameTick(llCurrentTick);
   _pfNetworkProfile.IncrementAveragingCounter();
   _pfPhysicsProfile.IncrementAveragingCounter();
 
@@ -963,7 +959,7 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_APPLYACTIONS);
 
   // do thinking
-  HandleTimers(tmCurrentTick);
+  HandleTimers(llCurrentTick);
   // do physics
   HandleMovers();
 
@@ -1007,7 +1003,7 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
 #endif
   ses_bAllowRandom = FALSE;
 
-  ses_tmPredictionHeadTick = Max(ses_tmPredictionHeadTick, tmCurrentTick);
+  ses_llPredictionHeadTick = Max(ses_llPredictionHeadTick, llCurrentTick);
 
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_PROCESSGAMETICK);
 
@@ -1015,21 +1011,19 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
   ASSERT( GetFPUPrecision()==FPT_24BIT);
 
   // let eventual script do something on each tick
-  extern FLOAT cmd_tmTick;
+  extern TICK cmd_llTick;
   extern CTString cmd_cmdOnTick;
   if (cmd_cmdOnTick!="") {
-    cmd_tmTick = tmCurrentTick;
+    cmd_llTick = llCurrentTick;
     _pShell->Execute(cmd_cmdOnTick);
   }
 }
 
 /* Process a predicted game tick. */
-void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFactor, TIME tmCurrentTick)
+void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFactor, TICK llCurrentTick)
 {
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_PROCESSGAMETICK);
   ASSERT(this!=NULL);
-
-  //CPrintF("predicted: %.2f\n", tmCurrentTick);
 
   // FPU must be in 24-bit mode
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
@@ -1038,7 +1032,7 @@ void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFacto
   ses_bPredicting = TRUE;
 
   // copy the tick to process into tick used for all tasks
-  _pTimer->SetCurrentTick(tmCurrentTick);
+  _pTimer->SetGameTick(llCurrentTick);
   _pfNetworkProfile.IncrementAveragingCounter();
   _pfPhysicsProfile.IncrementAveragingCounter();
 
@@ -1060,7 +1054,7 @@ void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFacto
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_APPLYACTIONS);
 
   // do thinking
-  HandleTimers(tmCurrentTick);
+  HandleTimers(llCurrentTick);
   // do physics
   HandleMovers();
 
@@ -1075,7 +1069,7 @@ void CSessionState::ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFacto
   // not predicting any more
   ses_bPredicting = FALSE;
 
-  ses_tmPredictionHeadTick = Max(ses_tmPredictionHeadTick, tmCurrentTick);
+  ses_llPredictionHeadTick = Max(ses_llPredictionHeadTick, llCurrentTick);
 
   _pfPhysicsProfile.StopTimer(CPhysicsProfile::PTI_PROCESSGAMETICK);
 
@@ -1281,13 +1275,13 @@ void CSessionState::ProcessPrediction(void)
   }
 
   // if this would not result in any new tick predicted
-  TIME tmNow = ses_tmLastProcessedTick+ctSteps*_pTimer->TickQuantum;
-  if (Abs(ses_tmLastPredictionProcessed-tmNow)<_pTimer->TickQuantum/10.0f) {
+  TICK llTickNow = ses_llLastProcessedTick + ctSteps; //*_pTimer->TickQuantum;
+  if (Abs(CTimer::InSeconds(ses_llLastPredictionProcessed-llTickNow)) < _pTimer->TickQuantum/10.0f) {
     // do nothing
     return;
   }
   // remeber what was predicted now
-  ses_tmLastPredictionProcessed = tmNow;
+  ses_llLastPredictionProcessed = llTickNow;
 
   // remember random seed and entity ID
   ULONG ulOldRandom = ses_ulRandomSeed;
@@ -1299,12 +1293,11 @@ void CSessionState::ProcessPrediction(void)
   _pNetwork->ga_World.CreatePredictors();
 
   // for each step
-  TIME tmPredictedTick = ses_tmLastProcessedTick;
+  TICK llPredictedTick = ses_llLastProcessedTick;
   for(INDEX iPredictionStep=0; iPredictionStep<ctSteps; iPredictionStep++) {
-    tmPredictedTick+=_pTimer->TickQuantum;
-    //ses_tmPredictionHeadTick = Max(ses_tmPredictionHeadTick, tmPredictedTick);
+    llPredictedTick += 1; //_pTimer->TickQuantum;
     // predict it
-    ProcessPredictedGameTick(iPredictionStep, FLOAT(iPredictionStep)/ctSteps, tmPredictedTick);
+    ProcessPredictedGameTick(iPredictionStep, FLOAT(iPredictionStep)/ctSteps, llPredictedTick);
   }
   // restore random seed and entity ID
   ses_ulRandomSeed = ulOldRandom;
@@ -1317,7 +1310,7 @@ void CSessionState::ProcessPrediction(void)
 void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
 {
   // copy the tick to process into tick used for all tasks
-  _pTimer->SetCurrentTick(ses_tmLastProcessedTick);
+  _pTimer->SetGameTick(ses_llLastProcessedTick);
 
   // check message type
   switch (nmMessage.GetType()) {
@@ -1411,20 +1404,20 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
   // if receiving client actions
   case MSG_SEQ_ALLACTIONS: {
       // read time from packet
-      TIME tmPacket;
-      nmMessage>>tmPacket;    // packet time
+      TICK llTickPacket;
+      nmMessage>>llTickPacket;    // packet time
 
       // time must be greater by one than that on the last packet received
       TIME tmTickQuantum = _pTimer->TickQuantum;
-      TIME tmPacketDelta = tmPacket-ses_tmLastProcessedTick;
-      if(! (Abs(tmPacketDelta-tmTickQuantum) < (tmTickQuantum/10.0f)) ) {
+      TICK llPacketDelta = llTickPacket-ses_llLastProcessedTick;
+      if(! (Abs(CTimer::InSeconds(llPacketDelta-1)/*tmTickQuantum*/) < (tmTickQuantum/10.0f)) ) {
         // report debug info
         CPrintF(
           TRANS("Session state: Mistimed MSG_ALLACTIONS: Last received tick %g, this tick %g\n"),
-          ses_tmLastProcessedTick, tmPacket);
+          ses_llLastProcessedTick, CTimer::InSeconds(llTickPacket));
       }
       // remember the received tick
-      ses_tmLastProcessedTick = tmPacket;
+      ses_llLastProcessedTick = llTickPacket;
 
       // NOTE: if we got a tick, it means that all players have joined
       // don't wait for new players any more
@@ -1433,7 +1426,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       // delete all predictors
       _pNetwork->ga_World.DeletePredictors();
       // process the tick
-      ProcessGameTick(nmMessage, tmPacket);
+      ProcessGameTick(nmMessage, llTickPacket);
 
     } break;
 
@@ -1477,7 +1470,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
   if (!net_bLerping) {
     // set lerping factor without lerping
     _pTimer->SetLerp(1.0f);
-    _pTimer->SetCurrentTick(ses_tmPredictionHeadTick);
+    _pTimer->SetGameTick(ses_llPredictionHeadTick);
     return;
   }
   
@@ -1486,38 +1479,36 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
   
   // ---- primary factor - used for prediction
   {
-    TIME tmLastTick = ses_tmPredictionHeadTick;
+    TICK llLastTick = ses_llPredictionHeadTick;
 
     // if lerping was never set before
-    if (ses_tmInitializationTick<0) {
+    if (ses_llInitializationTick < 0) {
       // initialize it
       ses_tvInitialization = tvNow;
-      ses_tmInitializationTick = tmLastTick;
+      ses_llInitializationTick = llLastTick;
     }
 
     // get passed time from session state starting in precise time and in ticks
     FLOAT tmRealDelta = FLOAT((tvNow-ses_tvInitialization).GetSeconds())
       *_pNetwork->ga_fGameRealTimeFactor*_pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
-    FLOAT tmTickDelta = tmLastTick-ses_tmInitializationTick;
+    TICK llTickDelta = llLastTick-ses_llInitializationTick;
     // calculate factor
-    fFactor = 1.0f-(tmTickDelta-tmRealDelta)/_pTimer->TickQuantum;
+    fFactor = 1.0f-(CTimer::InSeconds(llTickDelta)-tmRealDelta)/_pTimer->TickQuantum;
 
     // if the factor starts getting below zero
     if (fFactor<0) {
-      //CPrintF("Lerp=%.2f <0 @ %.2fs\n", fFactor, tmLastTick);
       // clamp it
       fFactor = 0.0f;
       // readjust timers so that it gets better
       ses_tvInitialization = tvNow;
-      ses_tmInitializationTick = tmLastTick-_pTimer->TickQuantum;
+      ses_llInitializationTick = llLastTick-1; //_pTimer->TickQuantum;
     }
     if (fFactor>1) {
-      //CPrintF("Lerp=%.2f >1 @ %.2fs\n", fFactor, tmLastTick);
       // clamp it
       fFactor = 1.0f;
       // readjust timers so that it gets better
       ses_tvInitialization = tvNow;
-      ses_tmInitializationTick = tmLastTick;
+      ses_llInitializationTick = llLastTick;
     }
 
     #if DEBUG_LERPING
@@ -1525,7 +1516,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
       avfStats[ctCounter][0] = tmRealDelta/_pTimer->TickQuantum;
       avfStats[ctCounter][1] = tmTickDelta/_pTimer->TickQuantum;
       avfStats[ctCounter][2] = fFactor;
-      avfStats[ctCounter][3] = (tmLastTick/_pTimer->TickQuantum-1.0f)+fFactor;
+      avfStats[ctCounter][3] = (llLastTick/*/_pTimer->TickQuantum*/-_pTimer->CTimer::InTicks(1.0f))+fFactor;
       ctCounter++;
       if (ctCounter>=ctMax) {
         ctCounter = 0;
@@ -1535,20 +1526,20 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
 
   // ---- secondary factor - used for non-predicted movement
   {
-    TIME tmLastTick = ses_tmLastProcessedTick;
+    TICK llLastTick = ses_llLastProcessedTick;
     // if lerping was never set before
-    if (ses_tmInitializationTick2<0) {
+    if (ses_llInitializationTick2 < 0) {
       // initialize it
       ses_tvInitialization2 = tvNow;
-      ses_tmInitializationTick2 = tmLastTick;
+      ses_llInitializationTick2 = llLastTick;
     }
 
     // get passed time from session state starting in precise time and in ticks
     FLOAT tmRealDelta = FLOAT((tvNow-ses_tvInitialization2).GetSeconds())
       *_pNetwork->ga_fGameRealTimeFactor*_pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
-    FLOAT tmTickDelta = tmLastTick-ses_tmInitializationTick2;
+    TICK llTickDelta = llLastTick-ses_llInitializationTick2;
     // calculate factor
-    fFactor2 = 1.0f-(tmTickDelta-tmRealDelta)/_pTimer->TickQuantum;
+    fFactor2 = 1.0f-(CTimer::InSeconds(llTickDelta)-tmRealDelta)/_pTimer->TickQuantum;
 
     // if the factor starts getting below zero
     if (fFactor2<0) {
@@ -1557,7 +1548,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
       fFactor2 = 0.0f;
       // readjust timers so that it gets better
       ses_tvInitialization2 = tvNow;
-      ses_tmInitializationTick2 = tmLastTick-_pTimer->TickQuantum;
+      ses_llInitializationTick2 = llLastTick-1; //_pTimer->TickQuantum;
     }
     if (fFactor2>1) {
       //CPrintF("Lerp2=%.2f >1 @ %.2fs\n", fFactor2, tmLastTick);
@@ -1565,14 +1556,14 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
       fFactor2 = 1.0f;
       // readjust timers so that it gets better
       ses_tvInitialization2 = tvNow;
-      ses_tmInitializationTick2 = tmLastTick;
+      ses_llInitializationTick2 = llLastTick;
     }
   }
 
   // set lerping factor2
   _pTimer->SetLerp(fFactor);
   _pTimer->SetLerp2(fFactor2);
-  _pTimer->SetCurrentTick(ses_tmPredictionHeadTick);
+  _pTimer->SetGameTick(ses_llPredictionHeadTick);
 }
 
 /*
@@ -1581,7 +1572,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
 void CSessionState::Read_t(CTStream *pstr)  // throw char *
 {
 #if DEBUG_SYNCSTREAMDUMPING
-  CPrintF( "Session state read: Sequence %d, Time %g\n", ses_iLastProcessedSequence, ses_tmLastProcessedTick);
+  CPrintF( "Session state read: Sequence %d, Time %g\n", ses_iLastProcessedSequence, CTimer::InSeconds(ses_llLastProcessedTick));
 #endif
   // read time information and random seed
 
@@ -1590,14 +1581,14 @@ void CSessionState::Read_t(CTStream *pstr)  // throw char *
     pstr->ExpectID_t("SESV");
     (*pstr)>>iVersion;
   }
-  (*pstr)>>ses_tmLastProcessedTick;
+  (*pstr)>>ses_llLastProcessedTick;
   (*pstr)>>ses_iLastProcessedSequence;
   (*pstr)>>ses_iLevel;
   (*pstr)>>ses_ulRandomSeed;
   (*pstr)>>ses_ulSpawnFlags;
   (*pstr)>>ses_tmSyncCheckFrequency;
   (*pstr)>>ses_iExtensiveSyncCheck;
-  (*pstr)>>ses_tmLastSyncCheck;
+  (*pstr)>>ses_llLastSyncCheck;
   (*pstr)>>ses_ctMaxPlayers;
   (*pstr)>>ses_bWaitAllPlayers;
   (*pstr)>>ses_bPause;
@@ -1608,7 +1599,7 @@ void CSessionState::Read_t(CTStream *pstr)  // throw char *
   ses_bWaitingForServer = FALSE;
   ses_bWantPause = ses_bPause;
   ses_strDisconnected = "";
-  _pTimer->SetCurrentTick(ses_tmLastProcessedTick);
+  _pTimer->SetGameTick(ses_llLastProcessedTick);
 
   // read session properties from stream
   (*pstr)>>_pNetwork->ga_strSessionName;
@@ -1743,19 +1734,19 @@ void CSessionState::ReadRememberedLevels_t(CTStream *pstr)
 void CSessionState::Write_t(CTStream *pstr)  // throw char *
 {
 #if DEBUG_SYNCSTREAMDUMPING
-  CPrintF( "Session state write: Sequence %d, Time %.2f\n", ses_iLastProcessedSequence, ses_tmLastProcessedTick);
+  CPrintF( "Session state write: Sequence %d, Time %.2f\n", ses_iLastProcessedSequence, CTimer::InSeconds(ses_llLastProcessedTick));
 #endif
   pstr->WriteID_t("SESV");
   (*pstr)<<INDEX(SESSIONSTATEVERSION_WITHBULLETTIME);
   // write time information and random seed
-  (*pstr)<<ses_tmLastProcessedTick;
+  (*pstr)<<ses_llLastProcessedTick;
   (*pstr)<<ses_iLastProcessedSequence;
   (*pstr)<<ses_iLevel;
   (*pstr)<<ses_ulRandomSeed;
   (*pstr)<<ses_ulSpawnFlags;
   (*pstr)<<ses_tmSyncCheckFrequency;
   (*pstr)<<ses_iExtensiveSyncCheck;
-  (*pstr)<<ses_tmLastSyncCheck;
+  (*pstr)<<ses_llLastSyncCheck;
   (*pstr)<<ses_ctMaxPlayers;
   (*pstr)<<ses_bWaitAllPlayers;
   (*pstr)<<ses_bPause;
@@ -1866,9 +1857,9 @@ void CSessionState::RestoreOldLevel(const CTString &strFileName)
   // restore it
   try {
     prlOld->rl_strmSessionState.SetPos_t(0);
-    _pTimer->SetCurrentTick(0.0f);
+    _pTimer->SetGameTick(0);
     ReadWorldAndState_t(&prlOld->rl_strmSessionState);
-    _pTimer->SetCurrentTick(ses_tmLastProcessedTick);
+    _pTimer->SetGameTick(ses_llLastProcessedTick);
   } catch (char *strError) {
     FatalError(TRANS("Cannot restore old level '%s':\n%s"), prlOld->rl_strFileName, strError);
   }
@@ -1881,7 +1872,7 @@ void CSessionState::MakeSynchronisationCheck(void)
 {
   if (!_cmiComm.cci_bClientInitialized) return;
   // not yet time
-  if(ses_tmLastSyncCheck+ses_tmSyncCheckFrequency > ses_tmLastProcessedTick) {
+  if (ses_llLastSyncCheck + CTimer::InTicks(ses_tmSyncCheckFrequency) > ses_llLastProcessedTick) {
     // don't check yet
     return;
   }
@@ -1894,8 +1885,8 @@ void CSessionState::MakeSynchronisationCheck(void)
 
   // create sync-check
   CSyncCheck sc;
-  ses_tmLastSyncCheck = ses_tmLastProcessedTick;
-  sc.sc_tmTick = ses_tmLastSyncCheck;
+  ses_llLastSyncCheck = ses_llLastProcessedTick;
+  sc.sc_llTick = ses_llLastSyncCheck;
   sc.sc_iSequence = ses_iLastProcessedSequence; 
   sc.sc_ulCRC = ulLocalCRC;
   sc.sc_iLevel = ses_iLevel;
@@ -2181,7 +2172,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
 
   // gather all event relevant data
   ULONG ulEntityID = pen->en_ulID;
-  TIME tmNow = _pTimer->CurrentTick();
+  TICK llTickNow = _pTimer->GetGameTick();
 
   BOOL bPredicted = FALSE;
   // for each active event
@@ -2189,7 +2180,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
   {for(INDEX ipe=0; ipe<ctpe; ipe++) {
     CPredictedEvent &pe = ses_apeEvents[ipe];
     // if the event is too old
-    if (pe.pe_tmTick<tmNow-5.0f) {
+    if (pe.pe_llTick < llTickNow - CTimer::InTicks(5.0f)) {
       // delete it from list
       pe = ses_apeEvents[ctpe-1];
       ctpe--;
@@ -2197,7 +2188,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
       continue;
     }
     // if the event is same as the new one
-    if (pe.pe_tmTick==tmNow &&
+    if (pe.pe_llTick==llTickNow &&
         pe.pe_ulEntityID==ulEntityID && 
         pe.pe_ulTypeID==ulTypeID && 
         pe.pe_ulEventID==ulEventID) {
@@ -2218,7 +2209,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
   if (!bPredicted) {
     // add the new one
     CPredictedEvent &pe = ses_apeEvents.Push();
-    pe.pe_tmTick     = tmNow;
+    pe.pe_llTick     = llTickNow;
     pe.pe_ulEntityID = ulEntityID;
     pe.pe_ulTypeID   = ulTypeID;
     pe.pe_ulEventID  = ulEventID;

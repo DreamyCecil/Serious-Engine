@@ -45,6 +45,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Base.h>
 #include <Engine/Base/Types.h>
 
+// [Cecil] New timer: Tick types
+#include <Engine/Base/TimerTick.h>
+
 #include <Engine/Base/Input.h>
 #include <Engine/Base/KeyNames.h>
 #include <Engine/Base/Updateable.h>

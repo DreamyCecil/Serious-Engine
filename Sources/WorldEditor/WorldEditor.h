@@ -32,7 +32,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define VIEW_PREFERENCES_CT 10
 #define CHILD_CONFIGURATIONS_CT 10
 
-extern FLOAT _fLastMipBrushingOptionUsed;
+extern TICK _llLastMipBrushingOptionUsed;
 extern INDEX wed_iMaxFPSActive;
 extern struct GameGUI_interface *_pGameGUI;
 

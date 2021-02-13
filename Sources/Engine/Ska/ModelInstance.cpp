@@ -38,14 +38,13 @@ BOOL bRememberSourceFN = FALSE;
 CModelInstance *_yy_mi = NULL;
 
 // calculate fade factor of animation list in animqueue
-FLOAT CalculateFadeFactor(AnimList &alList)
-{
-  if(alList.al_fFadeTime==0) {
+FLOAT CalculateFadeFactor(AnimList &alList) {
+  if (alList.al_fFadeTime == 0) {
     return 1.0f;
   }
 
-  FLOAT fFadeFactor = (_pTimer->GetLerpedCurrentTick() - alList.al_fStartTime) / alList.al_fFadeTime;
-  return Clamp(fFadeFactor,0.0f,1.0f);
+  FLOAT fFadeFactor = CTimer::InSeconds(_pTimer->LerpedGameTick() - alList.al_llStartTime) / alList.al_fFadeTime;
+  return Clamp(fFadeFactor, 0.0f, 1.0f);
 }
 // create model instance
 CModelInstance *CreateModelInstance(CTString strName)
@@ -569,7 +568,7 @@ if (!FindAnimationByID(iAnimID, &iDummy1, &iDummy2)) {
     PlayedAnim &plAnim = alList.al_PlayedAnims.Push();
     plAnim.pa_iAnimID = iAnimID;
     plAnim.pa_fSpeedMul = fSpeedMul;
-    plAnim.pa_fStartTime = _pTimer->CurrentTick();
+    plAnim.pa_llStartTime = _pTimer->GetGameTick();
     plAnim.pa_Strength = fStrength;
     plAnim.pa_ulFlags = ulFlags;
     plAnim.pa_GroupID = iGroupID;
@@ -596,7 +595,7 @@ if (!FindAnimationByID(iAnimID, &iDummy1, &iDummy2)) {
     PlayedAnim &plAnim = alList.al_PlayedAnims[ipa];
     plAnim.pa_iAnimID = iAnimID;
     plAnim.pa_fSpeedMul = fSpeedMul;
-    plAnim.pa_fStartTime = _pTimer->CurrentTick();
+    plAnim.pa_llStartTime = _pTimer->GetGameTick();
     plAnim.pa_Strength = fStrength;
     plAnim.pa_ulFlags = ulFlags;
     plAnim.pa_GroupID = iGroupID;
@@ -716,7 +715,7 @@ void CModelInstance::NewClonedState(FLOAT fFadeTime)
   // copy anims to new List
   alNewList.al_PlayedAnims = alList.al_PlayedAnims;
   alNewList.al_fFadeTime = fFadeTime;
-  alNewList.al_fStartTime = _pTimer->CurrentTick();
+  alNewList.al_llStartTime = _pTimer->GetGameTick();
 }
 
 // create new cleared state and give it a fade time
@@ -727,7 +726,7 @@ void CModelInstance::NewClearState(FLOAT fFadeTime)
   AnimList &alNewList = mi_aqAnims.aq_Lists.Push();
   alNewList.al_PlayedAnims.SetAllocationStep(1);
   alNewList.al_fFadeTime = fFadeTime;
-  alNewList.al_fStartTime = _pTimer->CurrentTick();
+  alNewList.al_llStartTime = _pTimer->GetGameTick();
   alNewList.al_PlayedAnims.PopAll();
 }
 
@@ -744,14 +743,13 @@ void CModelInstance::StopAllAnimations(FLOAT fFadeTime)
 }
 
 // Offset all animations in anim queue
-void CModelInstance::OffSetAnimationQueue(TIME fOffsetTime)
-{
+void CModelInstance::OffSetAnimationQueue(TIME fOffsetTime) {
   // for each anim list in anim queue
   INDEX ctal = mi_aqAnims.aq_Lists.Count();
   for(INDEX ial=0;ial<ctal;ial++) {
     AnimList &al = mi_aqAnims.aq_Lists[ial];
     // Modify anim list start time
-    al.al_fStartTime +=fOffsetTime;
+    al.al_llStartTime += CTimer::InTicks(fOffsetTime);
   }
 }
 

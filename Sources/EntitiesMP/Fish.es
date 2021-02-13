@@ -92,7 +92,6 @@ functions:
     FLOAT fDamageAmmount, const FLOAT3D &vHitPoint, const FLOAT3D &vDirection) 
   {
     if (dmtType==DMT_DROWNING) {
-      //en_tmMaxHoldBreath = -5.0f;
       fDamageAmmount/=2.0f;
     }
     // fish can't harm fish

@@ -119,7 +119,7 @@ public:
 
 class CAnimObject : public CChangeable {
 public:
-  TIME ao_tmAnimStart;      // time when current anim was started
+  TICK ao_llAnimStart;      // time when current anim was started
   INDEX ao_iCurrentAnim;	  // index of active animation
   ULONG ao_ulFlags;         // flags
   INDEX ao_iLastAnim;       // index of last animation (for smooth transition)

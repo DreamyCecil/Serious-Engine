@@ -496,16 +496,16 @@ void CModelerApp::OnAppAbout()
 /////////////////////////////////////////////////////////////////////////////
 // CModelerApp commands
 
-static TIME timeLastTick=TIME(0);
+static TICK _llLastTick = 0;
 BOOL CModelerApp::OnIdle(LONG lCount) 
 {
   if( _pTimer != NULL)
   {
-    TIME timeCurrentTick = _pTimer->GetRealTimeTick();
-    if( (timeCurrentTick > timeLastTick) && !m_OnIdlePaused)
+    TICK llCurrentTick = _pTimer->GetTimeTick();
+    if ((llCurrentTick > _llLastTick) && !m_OnIdlePaused)
     {
-      _pTimer->SetCurrentTick( timeCurrentTick);
-      timeLastTick = timeCurrentTick;
+      _pTimer->SetGameTick(llCurrentTick);
+      _llLastTick = llCurrentTick;
       POSITION pos = m_pdtModelDocTemplate->GetFirstDocPosition();
 
       while (pos!=NULL) {

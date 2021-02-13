@@ -37,3 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Types.h>
 #include <Engine/Base/Assert.h>
+
+// [Cecil] New timer: Tick types
+#include <Engine/Base/TimerTick.h>

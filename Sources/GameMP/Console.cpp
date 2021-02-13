@@ -180,7 +180,7 @@ void CGame::ConsoleRender(CDrawPort *pdp)
   dpConsole.SetTextMode(+1);
 
   // add blinking cursor
-  if( ((ULONG)(_pTimer->GetRealTimeTick()*2)) & 1) {
+  if (((ULONG)(CTimer::InSeconds(_pTimer->GetTimeTick())*2)) & 1) {
     CTString strCursor="_";
     FLOAT fTextScalingX = dpConsole.dp_fTextScaling * dpConsole.dp_fTextAspect;
     PIX pixCellSize = _pfdConsoleFont->fd_pixCharWidth * fTextScalingX + dpConsole.dp_pixTextCharSpacing;
@@ -208,8 +208,8 @@ void CGame::ConsoleRender(CDrawPort *pdp)
 void CGame::ConsolePrintLastLines(CDrawPort *pdp)
 {
   // get number of lines to print
-  con_tmLastLines = Clamp( con_tmLastLines, 1.0f, 10.0f);
-  INDEX ctLines   = CON_NumberOfLinesAfter( _pTimer->GetRealTimeTick() - con_tmLastLines);
+  con_tmLastLines = Clamp(con_tmLastLines, 1.0f, 10.0f);
+  INDEX ctLines   = CON_NumberOfLinesAfter(_pTimer->GetTimeTick() - CTimer::InTicks(con_tmLastLines));
   // if no lines left to print, just skip it
   if( ctLines==0) return;
 

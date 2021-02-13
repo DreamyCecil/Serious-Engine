@@ -180,6 +180,7 @@ void DeclareFeatureProperties(void)
 %token k_autowait
 %token k_autocall
 %token k_waitevent
+%token k_tickwait
 
 /* aditional keywords */
 %token k_event
@@ -234,6 +235,7 @@ void DeclareFeatureProperties(void)
 %token k_ANIMATION
 %token k_ILLUMINATIONTYPE
 %token k_FLAGS
+%token k_TICK
 
 %start program
 
@@ -741,6 +743,11 @@ property_type
     _strCurrentPropertyEnumType = "NULL"; 
     _strCurrentPropertyDataType = "ANIMATION";
   }
+  | k_TICK {
+    _strCurrentPropertyPropertyType = "CEntityProperty::EPT_TICK"; 
+    _strCurrentPropertyEnumType = "NULL"; 
+    _strCurrentPropertyDataType = "TICK";
+  }
   ;
 
 property_wed_name_opt
@@ -1056,7 +1063,7 @@ type_keyword
   | k_BOOL|k_COLOR|k_FLOAT|k_INDEX|k_RANGE
   | k_CEntityPointer|k_CModelObject|k_CModelInstance|k_CAnimObject|k_CSoundObject
   | k_CPlacement3D | k_FLOATaabbox3D|k_FLOATmatrix3D| k_FLOATquat3D|k_ANGLE|k_ANIMATION|k_ILLUMINATIONTYPE
-  | k_ANGLE3D|k_FLOAT3D|k_FLOATplane3D
+  | k_ANGLE3D|k_FLOAT3D|k_FLOATplane3D|k_TICK
   | k_const 
   | k_static
   ;
@@ -1093,6 +1100,7 @@ statement
   | statement_pass
   | statement_return
   | statement_jump
+  | statement_tickwait
   | ';'
   ;
 
@@ -1237,10 +1245,35 @@ statement_wait
     }
   }
   ;
+
 statement_autowait
   : k_autowait wait_expression ';' {
     if (!_bInProcedure) {
       yyerror("Cannot have 'autowait' in functions");
+    }
+    CreateInternalHandlerFunction(_strInWaitName, _strInWaitID);
+    CreateInternalHandlerFunction(_strAfterWaitName, _strAfterWaitID);
+    _bHasOtherwise = 0;
+
+    $$ = SType(GetLineDirective($1))+$2+";\n"+
+      "Jump(STATE_CURRENT, "+_strInWaitID+", FALSE, EBegin());return TRUE;}"+
+      "BOOL "+_strCurrentClass+"::"+_strInWaitName+"(const CEntityEvent &__eeInput) {"+
+      "\n#undef STATE_CURRENT\n#define STATE_CURRENT "+_strInWaitID+"\n"+
+      "switch(__eeInput.ee_slEvent) {"+
+      "case EVENTCODE_EBegin: return TRUE;"+
+      "case EVENTCODE_ETimer: Jump(STATE_CURRENT,"+_strAfterWaitID+", FALSE, EInternal()); return TRUE;"+
+      "default: return FALSE; }}"+
+      "BOOL "+_strCurrentClass+"::"+_strAfterWaitName+"(const CEntityEvent &__eeInput){"+
+      "\nASSERT(__eeInput.ee_slEvent==EVENTCODE_EInternal);"+
+      "\n#undef STATE_CURRENT\n#define STATE_CURRENT "+_strAfterWaitID+"\n"+$3;
+    $$.bCrossesStates = 1;
+  }
+  ;
+
+statement_tickwait
+  : k_tickwait tickwait_expression ';' {
+    if (!_bInProcedure) {
+      yyerror("Cannot have 'tickwait' in functions");
     }
     CreateInternalHandlerFunction(_strInWaitName, _strInWaitID);
     CreateInternalHandlerFunction(_strAfterWaitName, _strAfterWaitID);
@@ -1320,10 +1353,19 @@ statement_autocall
 
 wait_expression
   : '(' ')' {
-    $$ = SType("SetTimerAt(THINKTIME_NEVER)"); 
+    $$ = SType("TimerAt(THINKTICK_NEVER)"); 
   }
   | '(' expression ')' {
     $$ = SType("SetTimerAfter")+$1+$2+$3; 
+  }
+  ;
+
+tickwait_expression
+  : '(' ')' {
+    $$ = SType("TimerAt(THINKTICK_NEVER)"); 
+  }
+  | '(' expression ')' {
+    $$ = SType("TimerAfter")+$1+$2+$3; 
   }
   ;
 

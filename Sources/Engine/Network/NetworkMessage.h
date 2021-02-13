@@ -181,6 +181,10 @@ public:
   inline CNetworkMessage &operator<<(const MESSAGETYPE &mt) { Write(&mt, sizeof(mt)); return *this; }
   CNetworkMessage &operator<<(const CTString &str);
 
+  // [Cecil] New timer: Ticks
+  inline CNetworkMessage &operator>>(TICK &ll) { Read(&ll, sizeof(ll)); return *this; } // throw char *
+  inline CNetworkMessage &operator<<(const TICK &ll) { Write(&ll, sizeof(ll)); return *this; } // throw char *
+
   /* Insert a sub-message into this message. */
   void InsertSubMessage(const CNetworkMessage &nmSubMessage);
   /* Extract a sub-message from this message. */

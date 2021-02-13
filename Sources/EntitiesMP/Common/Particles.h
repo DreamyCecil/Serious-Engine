@@ -152,7 +152,7 @@ void DECL_DLL Particles_SummonerExplode(CEntity *pen, FLOAT3D vCenter, FLOAT fAr
 void DECL_DLL Particles_ExotechLarvaLaser(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget);
 void DECL_DLL Particles_Smoke(CEntity *pen, FLOAT3D vOffset, INDEX ctCount, FLOAT fLife, FLOAT fSpread, FLOAT fStretchAll, FLOAT fYSpeed);
 void DECL_DLL Particles_Windblast( CEntity *pen, FLOAT fStretch, FLOAT fFadeOutStartTime);
-void DECL_DLL Particles_CollectEnergy(CEntity *pen, FLOAT tmStart, FLOAT tmStop);
+void DECL_DLL Particles_CollectEnergy(CEntity *pen, FLOAT tmStart);
 void DECL_DLL Particles_SniperResidue(CEntity *pen, FLOAT3D vSource, FLOAT3D vTarget); 
 void DECL_DLL Particles_GrowingSwirl( CEntity *pen, FLOAT fStretch, FLOAT fStartTime);
 void DECL_DLL Particles_SummonerDisappear( CEntity *pen, FLOAT tmStart);

@@ -140,7 +140,7 @@ functions:
           FLOAT3D(m_fStretchX,m_fStretchY,m_fStretchZ), m_fSize, m_ctCount);
         break;
       case PHT_COLLECT_ENERGY:
-        Particles_CollectEnergy(this, m_fActivateTime, m_fActivateTime+2.0f);
+        Particles_CollectEnergy(this, m_fActivateTime);
         break;
       case PHT_TWISTER:
         Particles_Twister(this, 1.0f, 0.0f, 1e6, 1.0f);

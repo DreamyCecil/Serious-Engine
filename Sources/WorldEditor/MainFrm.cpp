@@ -30,8 +30,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 extern COLOR acol_ColorizePallete[];
-FLOAT _fLastNumKeyDownTime=-1;
-FLOAT _fLastTimePressureApplied=-1;
+TICK _llLastNumKeyDownTime = -1;
+TICK _llLastTimePressureApplied = -1;
 #define BRUSH_PRESSURE_DELAY 0.25f
 #define BRUSH_PRESSURE_SUB_DELAY 0.5f 
 
@@ -1130,22 +1130,22 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
         CWorldEditorDoc *pDoc = theApp.GetDocument();
         if( pDoc != NULL && pDoc->GetEditingMode()==TERRAIN_MODE)
         {
-          FLOAT fCurrentTime = _pTimer->GetRealTimeTick();
-          if(_fLastNumKeyDownTime==-1)
+          TICK llCurrentTime = _pTimer->GetTimeTick();
+          if (_llLastNumKeyDownTime == -1)
           {
-            _fLastNumKeyDownTime = fCurrentTime;
+            _llLastNumKeyDownTime = llCurrentTime;
             return TRUE;
           }
-          else if( fCurrentTime-_fLastNumKeyDownTime>BRUSH_PRESSURE_DELAY)
+          else if (llCurrentTime-_llLastNumKeyDownTime > CTimer::InTicks(BRUSH_PRESSURE_DELAY))
           {
-            _fLastNumKeyDownTime = -2;
+            _llLastNumKeyDownTime = -2;
             ApplyTreeShortcut( iNum, bCtrl);
             return TRUE;
           }
         }
         else
         {
-          _fLastNumKeyDownTime = -2;
+          _llLastNumKeyDownTime = -2;
           ApplyTreeShortcut( iNum, bCtrl);
           return TRUE;
         }
@@ -1164,27 +1164,27 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
       CWorldEditorDoc *pDoc = theApp.GetDocument();
       if( pDoc != NULL && pDoc->GetEditingMode()==TERRAIN_MODE)
       {
-        FLOAT fCurrentTime = _pTimer->GetRealTimeTick();
-        if( fCurrentTime-_fLastNumKeyDownTime<BRUSH_PRESSURE_DELAY)
+        TICK llCurrentTime = _pTimer->GetTimeTick();
+        if (llCurrentTime-_llLastNumKeyDownTime < CTimer::InTicks(BRUSH_PRESSURE_DELAY))
         {
-          if( fCurrentTime-_fLastTimePressureApplied<BRUSH_PRESSURE_SUB_DELAY)
+          if (llCurrentTime-_llLastTimePressureApplied < CTimer::InTicks(BRUSH_PRESSURE_SUB_DELAY))
           {
             INDEX iTens=floor((theApp.m_fTerrainBrushPressure-1.0f)/1024.0f*10.0f+0.5f);
             if(iNum==9) iNum=-1;
             INDEX iResult=(iTens*10+iNum+1)%100;
             theApp.m_fTerrainBrushPressure=(iResult)/100.0f*1024.0f+1;
-            _fLastTimePressureApplied=-1.0f;
+            _llLastTimePressureApplied = -1;
           }
           else
           {
             theApp.m_fTerrainBrushPressure=(iNum+1)*10/100.0f*1024.0f+1;
-            _fLastTimePressureApplied=fCurrentTime;
+            _llLastTimePressureApplied = llCurrentTime;
           }
           theApp.m_ctTerrainPageCanvas.MarkChanged();
         }
       }
     }
-    _fLastNumKeyDownTime = -1;
+    _llLastNumKeyDownTime = -1;
   }
 
   return CMDIFrameWnd::PreTranslateMessage(pMsg);
@@ -1416,7 +1416,7 @@ void CMainFrame::OnShowTreeShortcuts()
   CDlgTreeShortcuts dlgTreeShortcuts;
   dlgTreeShortcuts.DoModal();
 
-  _fLastNumKeyDownTime = -1;
+  _llLastNumKeyDownTime = -1;
   BOOL bCtrl = (GetKeyState( VK_CONTROL)&0x8000) != 0;
   if( dlgTreeShortcuts.m_iPressedShortcut != -1)
   {

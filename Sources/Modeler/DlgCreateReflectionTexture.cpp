@@ -30,7 +30,7 @@ static char THIS_FILE[] = __FILE__;
 
 DECLARE_CTFILENAME( fnBCGTexture, "Models\\Editor\\SpecularPreviewBCG.tex");
 
-static TIME timeLastTick=TIME(0);
+static TICK _llLastTick = 0;
 
 static BOOL _bTimerEnabled = TRUE;
 
@@ -525,11 +525,11 @@ void CDlgCreateReflectionTexture::OnTimer(UINT nIDEvent)
 	// on our timer discard preview window
   if( nIDEvent == 1 && _bTimerEnabled)
   {
-    TIME timeCurrentTick = _pTimer->GetRealTimeTick();
-    if( timeCurrentTick > timeLastTick )
+    TICK llCurrentTick = _pTimer->GetTimeTick();
+    if (llCurrentTick > _llLastTick)
     {
-      _pTimer->SetCurrentTick( timeCurrentTick);
-      timeLastTick = timeCurrentTick;
+      _pTimer->SetGameTick(llCurrentTick);
+      _llLastTick = llCurrentTick;
     }
     RenderPreview();	
   }
@@ -544,7 +544,7 @@ void CDlgCreateReflectionTexture::OnDestroy()
   }
 
   KillTimer( m_iTimerID);
-  _pTimer->SetCurrentTick( 0.0f);
+  _pTimer->SetGameTick(0);
 	CDialog::OnDestroy();
 }
 

@@ -148,6 +148,14 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
         istrm>>iDummy;
 
       } break;
+
+      // [Cecil] New timer: 64-bit integer
+      case CEntityProperty::EPT_TICK: {
+        // skip TICK
+        TICK llDummy;
+        istrm>>llDummy;
+      } break;
+
       // if it is FLOAT
       case CEntityProperty::EPT_FLOAT:
       case CEntityProperty::EPT_RANGE: {
@@ -285,6 +293,13 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
         // read INDEX
         istrm>>PROPERTY(pepProperty->ep_slOffset, INDEX);
         break;
+        
+      // [Cecil] New timer: 64-bit integer
+      case CEntityProperty::EPT_TICK:
+        // read TICK
+        istrm>>PROPERTY(pepProperty->ep_slOffset, TICK);
+        break;
+
       // if it is FLOAT
       case CEntityProperty::EPT_FLOAT:
       case CEntityProperty::EPT_RANGE:
@@ -458,6 +473,13 @@ void CEntity::WriteProperties_t(CTStream &ostrm) // throw char *
         // write INDEX
         ostrm<<PROPERTY(epProperty.ep_slOffset, INDEX);
         break;
+        
+      // [Cecil] New timer: 64-bit integer
+      case CEntityProperty::EPT_TICK:
+        // write TICK
+        ostrm<<PROPERTY(epProperty.ep_slOffset, TICK);
+        break;
+
       // if it is FLOAT
       case CEntityProperty::EPT_FLOAT:
       case CEntityProperty::EPT_RANGE:
