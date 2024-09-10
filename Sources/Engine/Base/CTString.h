@@ -100,8 +100,21 @@ public:
   inline CTString(const CTString &strOriginal);
   // [Cecil] Constructor from character string with optional offset and amount of characters
   inline CTString(const char *strCharString, size_t iFrom = 0, size_t ct = npos);
+
+#if !SE1_EXF_VERIFY_VA_IN_PRINTF
   /* Constructor with formatting. */
-  inline CTString(INDEX iDummy, const char *strFormat, ...);
+  inline CTString(INDEX iDummy, const char *strFormat, ...) SE1_FORMAT_FUNC(3, 4);
+
+#else
+  // [Cecil] See 'SE1_EXF_VERIFY_VA_IN_PRINTF' definition; custom definition because of the custom constructor
+  inline
+  CTString(INDEX iDummy, const char *str)                    { VATypeVerifier::Bail(); };
+  template<class T> inline
+  CTString(INDEX iDummy, const char *str, T a)               { VATypeVerifier::Bail(); VATypeVerifier v(a); };
+  template<class T, class ...Args> inline
+  CTString(INDEX iDummy, const char *str, T a, Args... args) { VATypeVerifier::Bail(); VATypeVerifier v(a); PrintF(str, args...); };
+#endif
+
   /* Destructor. */
   inline ~CTString();
   /* Clear the object. */

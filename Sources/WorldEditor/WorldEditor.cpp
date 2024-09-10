@@ -469,7 +469,7 @@ void CWorldEditorApp::MyParseCommandLine(void)
 {
   _strCmd = CStringA(m_lpCmdLine);
   cmd_strOutput = "";
-  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), _strCmd);
+  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), _strCmd.ConstData());
   // if no command line
   if (_strCmd.Length() == 0) {
     // do nothing

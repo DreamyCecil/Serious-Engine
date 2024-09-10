@@ -1238,7 +1238,7 @@ CModelInstance *CSeriousSkaStudioApp::OnAddNewModelInstance()
   // check if file allready exist
   if(FileExists(fnSim))
   {
-    CTString strText = CTString(0,"'%s' already exists.\nDo you want to overwrite it?",fnSim);
+    CTString strText(0, "'%s' already exists.\nDo you want to overwrite it?", fnSim.ConstData());
     int iRet = AfxMessageBox(CString(strText),MB_YESNO);
     if(iRet == IDNO) {
       return NULL;

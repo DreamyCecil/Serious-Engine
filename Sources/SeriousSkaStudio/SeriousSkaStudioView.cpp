@@ -974,7 +974,7 @@ BOOL CSeriousSkaStudioView::OnAddMeshlist()
   // check if file allready exist
   if(FileExists(fnSim))
   {
-    CTString strText = CTString(0,"File '%s' exist\n\nPress OK to load it, Cancel to overwrite it",fnSim);
+    CTString strText(0, "File '%s' exist\n\nPress OK to load it, Cancel to overwrite it", fnSim.ConstData());
     int iRet = AfxMessageBox(CString(strText),MB_OKCANCEL);
     if(iRet == IDOK)
     {
@@ -1065,7 +1065,7 @@ void CSeriousSkaStudioView::OnAddSkeletonlist()
   // check if file allready exist
   if(FileExists(fnSim))
   {
-    CTString strText = CTString(0,"File '%s' exist\n\nPress OK to load it, Cancel to overwrite it",fnSim);
+    CTString strText = CTString(0, "File '%s' exist\n\nPress OK to load it, Cancel to overwrite it", fnSim.ConstData());
     int iRet = AfxMessageBox(CString(strText),MB_OKCANCEL);
     if(iRet == IDOK)
     {
@@ -1140,7 +1140,7 @@ void CSeriousSkaStudioView::OnAddAnimset()
   // check if file allready exist
   if(FileExists(fnSim))
   {
-    CTString strText = CTString(0,"File '%s' exist\n\nPress OK to load it, Cancel to overwrite it",fnSim);
+    CTString strText = CTString(0, "File '%s' exist\n\nPress OK to load it, Cancel to overwrite it", fnSim.ConstData());
     int iRet = AfxMessageBox(CString(strText),MB_OKCANCEL);
     if(iRet == IDOK)
     {

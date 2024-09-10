@@ -38,6 +38,8 @@ ENGINE_API CTString::CTString(const char *strCharString, size_t iFrom, size_t ct
   }
 }
 
+#if !SE1_EXF_VERIFY_VA_IN_PRINTF
+
 /* Constructor with formatting. */
 ENGINE_API CTString::CTString(INDEX iDummy, const char *strFormat, ...)
 {
@@ -46,6 +48,8 @@ ENGINE_API CTString::CTString(INDEX iDummy, const char *strFormat, ...)
   va_start(arg, strFormat);
   VPrintF(strFormat, arg);
 }
+
+#endif // SE1_EXF_VERIFY_VA_IN_PRINTF
 
 /*
  * Destructor.
