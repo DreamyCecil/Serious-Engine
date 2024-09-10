@@ -1810,7 +1810,7 @@ static void SendAdminResponse(ULONG ulAdr, UWORD uwPort, ULONG ulCode, const CTS
     str.DeleteChar(0);
     if (strLine.Length()>0) {
       CNetworkMessage nm(MSG_EXTRA);
-      nm<<CTString(0, "log %u %d %s\n", ulCode, iLineCt++, strLine);
+      nm << CTString(0, "log %u %d %s\n", ulCode, iLineCt++, strLine.ConstData());
       _pNetwork->SendBroadcast(nm, ulAdr, uwPort);
     }
   }

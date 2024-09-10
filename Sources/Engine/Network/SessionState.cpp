@@ -2071,7 +2071,7 @@ void CSessionState::SessionStateLoop(void)
         CTString strClient(0, "_%s%d", (_pNetwork->IsServer() ? "ser" : "cli"), iClient);
         if (strPlayers != "") strPlayers = "_pl" + strPlayers;
 
-        CTString strFile(0, "Temp\\SyncDump%s%s.txt", strClient, strPlayers);
+        CTString strFile(0, "Temp\\SyncDump%s%s.txt", strClient.ConstData(), strPlayers.ConstData());
 
         CTFileStream strmFile;
         strmFile.Create_t(strFile);

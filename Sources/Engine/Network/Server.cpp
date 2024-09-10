@@ -898,7 +898,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
   if (_strModName!=strGivenMod) {
     // disconnect the client
     // NOTE: DO NOT TRANSLATE THIS STRING!
-    CTString strMod(0, "MOD:%s\\%s", _strModName, _strModURL);
+    CTString strMod(0, "MOD:%s\\%s", _strModName.ConstData(), _strModURL.ConstData());
     SendDisconnectMessage(iClient, strMod.ConstData(), /*bStream=*/TRUE);
     return;
   }

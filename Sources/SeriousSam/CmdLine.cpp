@@ -91,7 +91,7 @@ CTString GetNextParam(void)
 void ParseCommandLine(CTString strCmd)
 {
   cmd_strOutput = "";
-  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), strCmd);
+  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), strCmd.ConstData());
   // if no command line
   if (strCmd.Length() == 0) {
     // do nothing
@@ -134,7 +134,7 @@ void ParseCommandLine(CTString strCmd)
     } else if (strWord=="+logfile") {
       _strLogFile = GetNextParam();
     } else {
-      cmd_strOutput+=CTString(0, TRANS("  Unknown option: '%s'\n"), strWord);
+      cmd_strOutput+=CTString(0, TRANS("  Unknown option: '%s'\n"), strWord.ConstData());
     }
   }
 }
