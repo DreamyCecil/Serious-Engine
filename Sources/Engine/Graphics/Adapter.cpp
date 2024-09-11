@@ -196,10 +196,15 @@ void CGfxLibrary::InitAPIs(void)
   // No need for graphics on a dedicated server
   if (_bDedicatedServer) return;
 
+  // [Cecil] Reset adapters
+  for (INDEX iApi = 0; iApi < GAT_MAX; iApi++) {
+    gl_gaAPI[iApi].ga_ctAdapters = 0;
+    gl_gaAPI[iApi].ga_iCurrentAdapter = 0;
+  }
+
   // Fill OpenGL adapter info
   CGfxAPI &apiOGL = gl_gaAPI[GAT_OGL];
   apiOGL.ga_ctAdapters = 1;
-  apiOGL.ga_iCurrentAdapter = 0;
 
   CDisplayAdapter *pda = &apiOGL.ga_adaAdapter[0];
   pda->da_ulFlags = 0; // [Cecil] NOTE: DAF_USEGDIFUNCTIONS is removed due to being unused

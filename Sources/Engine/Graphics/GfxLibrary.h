@@ -121,7 +121,7 @@ enum VtxType
 class ENGINE_API CGfxLibrary
 {
 public:
-  CGfxAPI gl_gaAPI[2];
+  CGfxAPI gl_gaAPI[GAT_MAX];
   CViewPort *gl_pvpActive;   // active viewport
   HINSTANCE  gl_hiDriver;    // DLL handle
 
