@@ -136,11 +136,11 @@ void CInput::OpenGameController(INDEX iSlot)
   CPrintF(TRANS("  %d hats\n"), SDL_JoystickNumHats(pJoystick));
 
   // Check whether all axes exist
-  const INDEX iFirstJoyAxis = EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
 
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
-    ControlAxisInfo &cai = inp_caiAllAxisInfo[iFirstJoyAxis + iAxis];
-    cai.cai_bExisting = (iAxis < ctAxes);
+    InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
+    ida.ida_bExists = (iAxis < ctAxes);
   }
 };
 
@@ -244,11 +244,11 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   const CTString strJoystickNameInt(0, "C%d ", iSlot + 1);
   const CTString strJoystickNameTra(0, TRANS("C%d "), iSlot + 1);
 
-  const INDEX iAxisTotal = EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
-    inp_caiAllAxisInfo[iAxisTotal + _Axis].cai_strNameInt = strJoystickNameInt + _Name; \
-    inp_caiAllAxisInfo[iAxisTotal + _Axis].cai_strNameTra = strJoystickNameTra + _Translated;
+    inp_aInputActions[iFirstAxis + _Axis].ida_strNameInt = strJoystickNameInt + _Name; \
+    inp_aInputActions[iFirstAxis + _Axis].ida_strNameTra = strJoystickNameTra + _Translated;
 
   // Set default names for all axes
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
@@ -263,11 +263,11 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERLEFT,  "Left Trigger",  TRANS("Left Trigger"));
   SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "Right Trigger", TRANS("Right Trigger"));
 
-  const INDEX iButtonTotal = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
+  const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
 
   #define SET_BUTTON_NAMES(_Button, _Name, _Translated) \
-    inp_strButtonNames   [iButtonTotal + _Button] = strJoystickNameInt + _Name; \
-    inp_strButtonNamesTra[iButtonTotal + _Button] = strJoystickNameTra + _Translated;
+    inp_aInputActions[iFirstButton + _Button].ida_strNameInt = strJoystickNameInt + _Name; \
+    inp_aInputActions[iFirstButton + _Button].ida_strNameTra = strJoystickNameTra + _Translated;
 
   // Set default names for all buttons
   for (INDEX iButton = 0; iButton < SDL_CONTROLLER_BUTTON_MAX; iButton++) {
@@ -296,14 +296,16 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
 void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
   SDL_GameController *pController = inp_aControllers[iSlot].handle;
 
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
+
   // For each available axis
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
-    ControlAxisInfo &cai = inp_caiAllAxisInfo[EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX + iAxis];
+    InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
 
     // If the axis is not present
-    if (!cai.cai_bExisting) {
+    if (!ida.ida_bExists) {
       // Read as zero and skip to the next one
-      cai.cai_fReading = 0.0f;
+      ida.ida_fReading = 0.0;
       continue;
     }
 
@@ -319,7 +321,7 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
     // I have tried multiple methods to try and solve it, even multipling the reading by the time difference between
     // calling this function (per axis), but it always ended up broken. This is the most stable fix I could figure out.
     if (bPreScan) {
-      cai.cai_fReading = 0.0f;
+      ida.ida_fReading = 0.0;
       continue;
     }
 
@@ -330,11 +332,11 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
     const DOUBLE fCurrentValue = DOUBLE(slAxisReading - SDL_JOYSTICK_AXIS_MIN);
     const DOUBLE fMaxValue = DOUBLE(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
 
-    cai.cai_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
+    ida.ida_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
   }
 
   if (!bPreScan) {
-    const INDEX iButtonTotal = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
+    const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
 
     // For each available button
     for (INDEX iButton = 0; iButton < SDL_CONTROLLER_BUTTON_MAX; iButton++) {
@@ -342,9 +344,9 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
       const BOOL bJoyButtonPressed = SDL_GameControllerGetButton(pController, (SDL_GameControllerButton)iButton);
 
       if (bJoyButtonPressed) {
-        inp_ubButtonsBuffer[iButtonTotal + iButton] = 128;
+        inp_aInputActions[iFirstButton + iButton].ida_fReading = 1;
       } else {
-        inp_ubButtonsBuffer[iButtonTotal + iButton] = 0;
+        inp_aInputActions[iFirstButton + iButton].ida_fReading = 0;
       }
     }
   }

@@ -212,9 +212,9 @@ void CInput::Mouse2_Update(void) {
   //CPrintF("m2X: %4d, m2Y: %4d, m2B: 0x%02X\n", _i2ndMouseX, _i2ndMouseY, _i2ndMouseButtons);
 
   // Handle 2nd mouse buttons
-  if (_i2ndMouseButtons & 2) inp_ubButtonsBuffer[KID_2MOUSE1] = 0xFF;
-  if (_i2ndMouseButtons & 1) inp_ubButtonsBuffer[KID_2MOUSE2] = 0xFF;
-  if (_i2ndMouseButtons & 4) inp_ubButtonsBuffer[KID_2MOUSE3] = 0xFF;
+  if (_i2ndMouseButtons & 2) inp_aInputActions[KID_2MOUSE1].ida_fReading = 1;
+  if (_i2ndMouseButtons & 1) inp_aInputActions[KID_2MOUSE2].ida_fReading = 1;
+  if (_i2ndMouseButtons & 4) inp_aInputActions[KID_2MOUSE3].ida_fReading = 1;
 
   // Handle 2nd mouse movement
   FLOAT fDX = _i2ndMouseX;
@@ -264,8 +264,8 @@ void CInput::Mouse2_Update(void) {
   if (inp_bInvert2ndMouse) fMouseRelY = -fMouseRelY;
 
   // Just interpret values as normal
-  inp_caiAllAxisInfo[4].cai_fReading = fMouseRelX;
-  inp_caiAllAxisInfo[5].cai_fReading = fMouseRelY;
+  inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE2_X].ida_fReading = fMouseRelX;
+  inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE2_Y].ida_fReading = fMouseRelY;
 };
 
 #endif // SE1_WIN

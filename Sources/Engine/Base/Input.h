@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #define FIRST_JOYBUTTON (KID_TOTALCOUNT)
 #define MAX_OVERALL_BUTTONS (KID_TOTALCOUNT + MAX_JOYSTICKS * SDL_CONTROLLER_BUTTON_MAX)
+#define FIRST_AXIS_ACTION (MAX_OVERALL_BUTTONS)
 
 enum EInputAxis {
   EIA_NONE = 0, // Invalid/no axis
@@ -47,23 +48,19 @@ enum EInputAxis {
   EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_CONTROLLER_AXIS_MAX * MAX_JOYSTICKS),
 };
 
-/*
- *  Mouse speed control structure
- */
-struct MouseSpeedControl
-{
-  int msc_iThresholdX;
-  int msc_iThresholdY;
-  int msc_iSpeed;
-};
+// All possible input actions
+#define MAX_INPUT_ACTIONS (MAX_OVERALL_BUTTONS + EIA_MAX_ALL)
 
-// Information about a single axis
-struct ControlAxisInfo {
-  CTString cai_strNameInt; // Internal name
-  CTString cai_strNameTra; // Translated display name
+// Information about a single input action
+struct InputDeviceAction {
+  CTString ida_strNameInt; // Internal name
+  CTString ida_strNameTra; // Translated display name
 
-  FLOAT cai_fReading; // Current reading of the axis
-  BOOL cai_bExisting; // Whether a controller has this axis
+  DOUBLE ida_fReading; // Current reading of the action (from -1 to +1)
+  BOOL ida_bExists; // Whether this action (controller axis) can be used
+
+  // Whether the action is active (button is held / controller stick is fully to the side)
+  bool IsActive(DOUBLE fThreshold = 0.5) const;
 };
 
 // [Cecil] Individual game controller
@@ -89,19 +86,22 @@ public:
   BOOL inp_bLastPrescan;
   BOOL inp_bInputEnabled;
   BOOL inp_bPollJoysticks;
-  ControlAxisInfo inp_caiAllAxisInfo[EIA_MAX_ALL]; // info for all available axis
-  CTString inp_strButtonNames[ MAX_OVERALL_BUTTONS];// individual button names
-  CTString inp_strButtonNamesTra[ MAX_OVERALL_BUTTONS];// individual button names (translated)
-  UBYTE inp_ubButtonsBuffer[ MAX_OVERALL_BUTTONS];  // statuses for all buttons (KEY & 128 !=0)
+
+  // [Cecil] All possible actions that can be used as controls
+  InputDeviceAction inp_aInputActions[MAX_INPUT_ACTIONS];
 
   // [Cecil] Game controllers
   CStaticArray<GameController_t> inp_aControllers;
 
 #if !SE1_PREFER_SDL
-  SLONG inp_slScreenCenterX;                        // screen center X in pixels
-  SLONG inp_slScreenCenterY;                        // screen center Y in pixels
-  int inp_aOldMousePos[2];                          // old mouse position
-  struct MouseSpeedControl inp_mscMouseSettings;    // system mouse settings
+  SLONG inp_slScreenCenterX; // Screen center X in pixels
+  SLONG inp_slScreenCenterY; // Screen center Y in pixels
+  int   inp_aOldMousePos[2]; // Old mouse position
+
+  // System mouse settings
+  struct MouseSpeedControl {
+    int iThresholdX, iThresholdY, iSpeed;
+  } inp_mscMouseSettings;
 #endif
 
 public:
@@ -186,38 +186,38 @@ public:
 
   // Get count of available buttons
   inline const INDEX GetAvailableButtonsCount(void) const {
-    return MAX_OVERALL_BUTTONS;
+    // [Cecil] Include axes with buttons
+    return MAX_INPUT_ACTIONS;
   };
 
   // Get name of given axis
   inline const CTString &GetAxisName(INDEX iAxisNo) const {
-    return inp_caiAllAxisInfo[iAxisNo].cai_strNameInt;
+    // [Cecil] Start past the button actions for compatibility
+    return inp_aInputActions[FIRST_AXIS_ACTION + iAxisNo].ida_strNameInt;
   };
 
   // Get translated name of given axis
-  const CTString &GetAxisTransName(INDEX iAxisNo) const {
-    return inp_caiAllAxisInfo[iAxisNo].cai_strNameTra;
+  inline const CTString &GetAxisTransName(INDEX iAxisNo) const {
+    return inp_aInputActions[FIRST_AXIS_ACTION + iAxisNo].ida_strNameTra;
   };
 
   // Get current position of given axis
   inline FLOAT GetAxisValue(INDEX iAxisNo) const {
-    return inp_caiAllAxisInfo[iAxisNo].cai_fReading;
+    return inp_aInputActions[FIRST_AXIS_ACTION + iAxisNo].ida_fReading;
   };
 
   // Get given button's name
   inline const CTString &GetButtonName(INDEX iButtonNo) const {
-    return inp_strButtonNames[iButtonNo];
+    return inp_aInputActions[iButtonNo].ida_strNameInt;
   };
 
   // Get given button's name translated
   inline const CTString &GetButtonTransName(INDEX iButtonNo) const {
-    return inp_strButtonNamesTra[iButtonNo];
+    return inp_aInputActions[iButtonNo].ida_strNameTra;
   };
 
   // Get given button's current state
-  inline BOOL GetButtonState(INDEX iButtonNo) const {
-    return (inp_ubButtonsBuffer[iButtonNo] & 128) != 0;
-  };
+  BOOL GetButtonState(INDEX iButtonNo) const;
 };
 
 // pointer to global input object

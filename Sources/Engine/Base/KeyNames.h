@@ -159,6 +159,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define KID_2MOUSE2         0xD1
 #define KID_2MOUSE3         0xD2
 
+// [Cecil] NOTE: The following types are unused
+
 // Mouse device controls
 #define CID_MOUSE_AXIS_XP     0
 #define CID_MOUSE_AXIS_XN     1

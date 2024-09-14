@@ -148,10 +148,13 @@ void CControls::CalculateInfluencesForAllAxis(void)
 INDEX DIKForName( CTString strKeyName)
 {
   if( strKeyName == "None") return KID_NONE;
-  for( INDEX iButton=0; iButton<MAX_OVERALL_BUTTONS; iButton++)
+
+  // [Cecil] Include axes with buttons
+  for (INDEX i = 0; i < MAX_INPUT_ACTIONS; i++)
   {
-    if( _pInput->GetButtonName( iButton) == strKeyName) return iButton;
+    if (_pInput->GetButtonName(i) == strKeyName) return i;
   }
+
   return KID_NONE;
 }
 
