@@ -983,6 +983,35 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCm
         continue;
       }
 
+      // [Cecil] Moved here from the bottom of the loop to take priority
+      // If any demo is playing
+      if (_gmRunningGameMode == GM_DEMO || _gmRunningGameMode == GM_INTRO)
+      {
+        // Space, Enter, Left Click, Right Click
+        const BOOL bAnyKey = ((event.type == WM_KEYDOWN && (event.key.code == SE1K_SPACE || event.key.code == SE1K_RETURN))
+          || event.type == WM_LBUTTONDOWN || event.type == WM_RBUTTONDOWN);
+
+        // Stop demo on escape
+        if (_pGame->IsEscapeKeyPressed(event)) {
+          _pGame->StopGame();
+          _bInAutoPlayLoop = FALSE;
+          _gmRunningGameMode = GM_NONE;
+
+          event.type = WM_NULL;
+
+        // Skip to the next demo on any key (other than console)
+        } else if (bAnyKey && !_pGame->IsConsoleKeyPressed(event)) {
+          // Only if there's no menu or console in the way
+          if (!bMenuActive && !bMenuRendering && _pGame->gm_csConsoleState == CS_OFF) {
+            _pGame->StopGame();
+            _gmRunningGameMode = GM_NONE;
+            StartNextDemo();
+
+            event.type = WM_NULL;
+          }
+        }
+      }
+
       // No game is running and the console is closed/closing
       const BOOL bMenuForced = (_gmRunningGameMode == GM_NONE && (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF));
 
@@ -1087,30 +1116,6 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCm
       }
 
       _pGame->HandlePause(event); // [Cecil]
-
-      // If any demo is playing
-      if (_gmRunningGameMode == GM_DEMO || _gmRunningGameMode == GM_INTRO)
-      {
-        // Space, Enter, Left Click, Right Click
-        const BOOL bAnyKey = ((event.type == WM_KEYDOWN && (event.key.code == SE1K_SPACE || event.key.code == SE1K_RETURN))
-          || event.type == WM_LBUTTONDOWN || event.type == WM_RBUTTONDOWN);
-
-        // Stop demo on escape
-        if (_pGame->IsEscapeKeyPressed(event)) {
-          _pGame->StopGame();
-          _bInAutoPlayLoop = FALSE;
-          _gmRunningGameMode = GM_NONE;
-
-        // Skip to the next demo on any key (other than console)
-        } else if (bAnyKey && !_pGame->IsConsoleKeyPressed(event)) {
-          // Only if there's no menu or console in the way
-          if (!bMenuActive && !bMenuRendering && _pGame->gm_csConsoleState == CS_OFF) {
-            _pGame->StopGame();
-            _gmRunningGameMode = GM_NONE;
-            StartNextDemo();        
-          }
-        }
-      }
     } // loop while there are messages
 
     // when all messages are removed, window has surely changed
