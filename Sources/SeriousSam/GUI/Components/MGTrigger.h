@@ -35,12 +35,12 @@ public:
   CMGTrigger(void);
 
   void ApplyCurrentSelection(void);
-  void OnSetNextInList(int iVKey);
+  void OnSetNextInList(PressedMenuButton pmb);
   void(*mg_pPreTriggerChange)(INDEX iCurrentlySelected);
   void(*mg_pOnTriggerChange)(INDEX iCurrentlySelected);
 
   // return TRUE if handled
-  BOOL OnKeyDown(int iVKey, int iMouseButton);
+  BOOL OnKeyDown(PressedMenuButton pmb);
   void Render(CDrawPort *pdp);
 };
 

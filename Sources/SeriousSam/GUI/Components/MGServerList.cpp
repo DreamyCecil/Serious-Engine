@@ -356,74 +356,84 @@ void CMGServerList::OnMouseOver(PIX pixI, PIX pixJ)
   }
 }
 
-BOOL CMGServerList::OnKeyDown(int iVKey, int iMouseButton)
+BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
 {
-  switch (iMouseButton) {
-    // [Cecil] Start dragging with left mouse button
-    case SDL_BUTTON_LEFT: {
-      if (mg_pixMouseDrag >= 0) {
-        mg_pixDragJ = mg_pixMouseDrag;
-        mg_iDragLine = mg_iFirstOnScreen;
-        return TRUE;
-      }
-    } break;
-
-    // [Cecil] Scroll with the mouse
-    case MOUSEWHEEL_UP: {
-      mg_iSelected -= 3;
-      mg_iFirstOnScreen -= 3;
-      AdjustFirstOnScreen();
-    } return TRUE;
-
-    case MOUSEWHEEL_DN: {
-      mg_iSelected += 3;
-      mg_iFirstOnScreen += 3;
-      AdjustFirstOnScreen();
-    } return TRUE;
+  // [Cecil] Start dragging with left mouse button
+  if (pmb.iMouse == SDL_BUTTON_LEFT)
+  {
+    if (mg_pixMouseDrag >= 0) {
+      mg_pixDragJ = mg_pixMouseDrag;
+      mg_iDragLine = mg_iFirstOnScreen;
+      return TRUE;
+    }
   }
 
-  switch (iVKey) {
-  case SE1K_UP:
+  // [Cecil] Scroll in some direction
+  const INDEX iScroll = pmb.ScrollPower();
+
+  if (iScroll != 0) {
+    const INDEX iPower = Abs(iScroll);
+    INDEX ctScroll = 0;
+
+    // Entire page at a time
+    if (iPower == 1) {
+      ctScroll = (mg_ctOnScreen - 1);
+
+    // A few at a time
+    } else if (iPower == 2) {
+      ctScroll = 3;
+    }
+
+    if (ctScroll != 0) {
+      const INDEX iDir = SgnNZ(iScroll);
+      mg_iSelected      += ctScroll * iDir;
+      mg_iFirstOnScreen += ctScroll * iDir;
+      AdjustFirstOnScreen();
+    }
+  }
+
+  // [Cecil] Go up one listing
+  if (pmb.Up()) {
     mg_iSelected -= 1;
     AdjustFirstOnScreen();
-    break;
-  case SE1K_DOWN:
+    return TRUE;
+  }
+
+  // [Cecil] Go down one listing
+  if (pmb.Down()) {
     mg_iSelected += 1;
     AdjustFirstOnScreen();
-    break;
-  case SE1K_PAGEUP:
-    mg_iSelected -= mg_ctOnScreen - 1;
-    mg_iFirstOnScreen -= mg_ctOnScreen - 1;
-    AdjustFirstOnScreen();
-    break;
-  case SE1K_PAGEDOWN:
-    mg_iSelected += mg_ctOnScreen - 1;
-    mg_iFirstOnScreen += mg_ctOnScreen - 1;
-    AdjustFirstOnScreen();
-    break;
-  case SE1K_RETURN:
+    return TRUE;
+  }
+
+  // [Cecil] Select the listing
+  if (pmb.Apply()) {
     PlayMenuSound(_psdPress);
     IFeel_PlayEffect("Menu_press");
-    {INDEX i = 0;
+
+    INDEX i = 0;
+
     FOREACHINLIST(CNetworkSession, ns_lnNode, _lhServers, itns) {
       if (i == mg_iSelected) {
-
         char strAddress[256];
         int iPort;
         itns->ns_strAddress.ScanF("%200[^:]:%d", &strAddress, &iPort);
         _pGame->gam_strJoinAddress = strAddress;
         _pShell->SetINDEX("net_iPort", iPort);
+
         extern void StartSelectPlayersMenuFromServers(void);
         StartSelectPlayersMenuFromServers();
         return TRUE;
       }
+
       i++;
-    }}
-    break;
-  default:
-    return FALSE;
+    }
+
+    // [Cecil] NOTE: It skipped to the end with TRUE before, so not sure
+    return TRUE;
   }
-  return TRUE;
+
+  return FALSE;
 }
 
 void CMGServerList::OnSetFocus(void)

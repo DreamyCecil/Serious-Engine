@@ -19,19 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <GameMP/LCDDrawing.h>
 #include "MGTrigger.h"
 
-
-INDEX GetNewLoopValue(int iVKey, INDEX iCurrent, INDEX ctMembers)
+static INDEX GetNewLoopValue(PressedMenuButton pmb, INDEX iCurrent, INDEX ctMembers)
 {
   INDEX iPrev = (iCurrent + ctMembers - 1) % ctMembers;
   INDEX iNext = (iCurrent + 1) % ctMembers;
+
   // return and right arrow set new text
-  if (iVKey == SE1K_RETURN || iVKey == SE1K_RIGHT)
-  {
+  if (pmb.Next()) {
     return iNext;
+
   // left arrow and backspace sets prev text
-  } else if (iVKey == SE1K_BACKSPACE || iVKey == SE1K_LEFT) {
+  } else if (pmb.Prev()) {
     return iPrev;
   }
+
   return iCurrent;
 }
 
@@ -49,13 +50,13 @@ void CMGTrigger::ApplyCurrentSelection(void)
   mg_strValue = mg_astrTexts[mg_iSelected];
 }
 
-void CMGTrigger::OnSetNextInList(int iVKey)
+void CMGTrigger::OnSetNextInList(PressedMenuButton pmb)
 {
   if (mg_pPreTriggerChange != NULL) {
     mg_pPreTriggerChange(mg_iSelected);
   }
 
-  mg_iSelected = GetNewLoopValue(iVKey, mg_iSelected, mg_ctTexts);
+  mg_iSelected = GetNewLoopValue(pmb, mg_iSelected, mg_ctTexts);
   mg_strValue = mg_astrTexts[mg_iSelected];
 
   if (mg_pOnTriggerChange != NULL) {
@@ -63,19 +64,14 @@ void CMGTrigger::OnSetNextInList(int iVKey)
   }
 }
 
-BOOL CMGTrigger::OnKeyDown(int iVKey, int iMouseButton)
+BOOL CMGTrigger::OnKeyDown(PressedMenuButton pmb)
 {
-  // [Cecil] Mimic keys with mouse buttons
-  if (iMouseButton == SDL_BUTTON_LEFT) iVKey = SE1K_RIGHT;
-  else
-  if (iMouseButton == SDL_BUTTON_RIGHT) iVKey = SE1K_LEFT;
-
-  if (iVKey == SE1K_RETURN || iVKey == SE1K_LEFT || iVKey == SE1K_BACKSPACE || iVKey == SE1K_RIGHT)
-  {
+  if (pmb.Prev() || pmb.Next()) {
     // key is handled
-    if (mg_bEnabled) OnSetNextInList(iVKey);
+    if (mg_bEnabled) OnSetNextInList(pmb);
     return TRUE;
   }
+
   // key is not handled
   return FALSE;
 }

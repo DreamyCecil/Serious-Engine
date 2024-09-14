@@ -39,7 +39,7 @@ public:
 
   void Initialize_t(void);
   // return TRUE if handled
-  BOOL OnKeyDown(int iVKey, int iMouseButton);
+  BOOL OnKeyDown(PressedMenuButton pmb);
 
   void BeLarge(void);
   void BeSmall(void);

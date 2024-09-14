@@ -48,10 +48,10 @@ void CMenuGadget::OnActivate(void)
 }
 
 // return TRUE if handled
-BOOL CMenuGadget::OnKeyDown(int iVKey, int iMouseButton)
+BOOL CMenuGadget::OnKeyDown(PressedMenuButton pmb)
 {
   // if return pressed
-  if (iVKey == SE1K_RETURN || iMouseButton == SDL_BUTTON_LEFT) {
+  if (pmb.Apply()) {
     // activate
     OnActivate();
     // key is handled

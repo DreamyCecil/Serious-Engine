@@ -20,6 +20,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "VarList.h"
 #include "MGVarButton.h"
 
+#include "GUI/Menus/MenuManager.h"
+
 extern PIX  _pixCursorPosI;
 extern PIX  _pixCursorPosJ;
 
@@ -50,18 +52,18 @@ PIXaabbox2D CMGVarButton::GetSliderBox(void)
 }
 
 extern BOOL _bVarChanged;
-BOOL CMGVarButton::OnKeyDown(int iVKey, int iMouseButton)
+BOOL CMGVarButton::OnKeyDown(PressedMenuButton pmb)
 {
   if (mg_pvsVar == NULL || mg_pvsVar->vs_bSeparator || !mg_pvsVar->Validate() || !mg_bEnabled) {
-    return CMenuGadget::OnKeyDown(iVKey, iMouseButton);
+    return CMenuGadget::OnKeyDown(pmb);
   }
 
   // handle slider
   if (mg_pvsVar->vs_iSlider && !mg_pvsVar->vs_bCustom) {
     // ignore RMB
-    if (iMouseButton == SDL_BUTTON_RIGHT) return TRUE;
+    if (pmb.iMouse == SDL_BUTTON_RIGHT) return TRUE;
     // handle LMB
-    if (iMouseButton == SDL_BUTTON_LEFT) {
+    if (pmb.iMouse == SDL_BUTTON_LEFT) {
       // get position of slider box on screen
       PIXaabbox2D boxSlider = GetSliderBox();
       // if mouse is within
@@ -75,14 +77,13 @@ BOOL CMGVarButton::OnKeyDown(int iVKey, int iMouseButton)
     }
   }
 
-  if (iVKey == SE1K_RETURN) {
-    FlushVarSettings(TRUE);
-    void MenuGoToParent(void);
-    MenuGoToParent();
+  if (pmb.Apply()) {
+    // [Cecil] Emulate the action of clicking on "Apply"
+    _pGUIM->gmVarMenu.gm_mgApply.OnActivate();
     return TRUE;
   }
 
-  if (iMouseButton == SDL_BUTTON_LEFT || iVKey == SE1K_RIGHT) {
+  if (pmb.Next()) {
     if (mg_pvsVar != NULL) {
       INDEX iOldValue = mg_pvsVar->vs_iValue;
       mg_pvsVar->vs_iValue++;
@@ -100,7 +101,7 @@ BOOL CMGVarButton::OnKeyDown(int iVKey, int iMouseButton)
     return TRUE;
   }
 
-  if (iMouseButton == SDL_BUTTON_RIGHT || iVKey == SE1K_LEFT) {
+  if (pmb.Prev()) {
     if (mg_pvsVar != NULL) {
       INDEX iOldValue = mg_pvsVar->vs_iValue;
       mg_pvsVar->vs_iValue--;
@@ -119,7 +120,7 @@ BOOL CMGVarButton::OnKeyDown(int iVKey, int iMouseButton)
   }
 
   // not handled
-  return CMenuGadget::OnKeyDown(iVKey, iMouseButton);
+  return CMenuGadget::OnKeyDown(pmb);
 }
 
 void CMGVarButton::Render(CDrawPort *pdp)

@@ -734,6 +734,19 @@ void TeleportPlayer(int iPosition)
   _pShell->Execute(strCommand);
 }
 
+// [Cecil] Check any significant controller button
+static BOOL AnyControllerButton(const OS::SE1Event &event) {
+  if (event.type == WM_CTRLBUTTONDOWN) {
+    switch (event.ctrl.action) {
+      case SDL_CONTROLLER_BUTTON_A: case SDL_CONTROLLER_BUTTON_B:
+      case SDL_CONTROLLER_BUTTON_X: case SDL_CONTROLLER_BUTTON_Y:
+      case SDL_CONTROLLER_BUTTON_BACK: case SDL_CONTROLLER_BUTTON_GUIDE: case SDL_CONTROLLER_BUTTON_START:
+        return TRUE;
+    }
+  }
+
+  return FALSE;
+};
 
 CTextureObject _toStarField;
 static FLOAT _fLastVolume = 1.0f;
@@ -801,7 +814,8 @@ void QuitScreenLoop(void)
 
     // Quit the quit screen on any button/key press
     while (OS::PollEvent(event)) {
-      if (event.type == WM_LBUTTONDOWN || event.type == WM_RBUTTONDOWN || event.type == WM_KEYDOWN) {
+      if (event.type == WM_LBUTTONDOWN || event.type == WM_RBUTTONDOWN || event.type == WM_KEYDOWN
+       || AnyControllerButton(event)) {
         return;
       }
     }
@@ -867,6 +881,23 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCm
     // While there are any messages in the message queue
     while (OS::PollEvent(event))
     {
+      // [Cecil] Remap controller axes to buttons
+      if (event.type == WM_CTRLAXISMOTION) {
+        switch (event.ctrl.action) {
+          case SDL_CONTROLLER_AXIS_LEFTX: {
+            event.type = WM_CTRLBUTTONDOWN;
+            event.ctrl.action = (event.ctrl.dir < 0 ? SDL_CONTROLLER_BUTTON_DPAD_LEFT : SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+            event.ctrl.dir = TRUE;
+          } break;
+
+          case SDL_CONTROLLER_AXIS_LEFTY: {
+            event.type = WM_CTRLBUTTONDOWN;
+            event.ctrl.action = (event.ctrl.dir < 0 ? SDL_CONTROLLER_BUTTON_DPAD_UP : SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+            event.ctrl.dir = TRUE;
+          } break;
+        }
+      }
+
       // Stop running the game
       if (_pGame->ShouldStopRunning(event, FALSE)) {
         _bRunning = FALSE;
@@ -991,8 +1022,11 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCm
         const BOOL bAnyKey = ((event.type == WM_KEYDOWN && (event.key.code == SE1K_SPACE || event.key.code == SE1K_RETURN))
           || event.type == WM_LBUTTONDOWN || event.type == WM_RBUTTONDOWN);
 
+        // [Cecil] Stop demo on some controller buttons
+        const BOOL bCtrlStopDemo = AnyControllerButton(event);
+
         // Stop demo on escape
-        if (_pGame->IsEscapeKeyPressed(event)) {
+        if (bCtrlStopDemo || _pGame->IsEscapeKeyPressed(event)) {
           _pGame->StopGame();
           _bInAutoPlayLoop = FALSE;
           _gmRunningGameMode = GM_NONE;
@@ -1071,20 +1105,23 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCm
       // Pass key and mouse messages to the menu if it's active with no input on
       if (bMenuActive && !_pInput->IsInputEnabled()) {
         if (event.type == WM_KEYDOWN) {
-          MenuOnKeyDown(event.key.code, -1);
+          MenuOnKeyDown(PressedMenuButton(event.key.code, -1, -1));
+
+        } else if (event.type == WM_CTRLBUTTONDOWN) {
+          MenuOnKeyDown(PressedMenuButton(-1, -1, event.ctrl.action));
 
         } else if (event.type == WM_LBUTTONDOWN || event.type == WM_RBUTTONDOWN
                 || event.type == WM_MBUTTONDOWN || event.type == WM_XBUTTONDOWN) {
-          MenuOnKeyDown(-1, event.mouse.button);
+          MenuOnKeyDown(PressedMenuButton(-1, event.mouse.button, -1));
 
         } else if (event.type == WM_MOUSEMOVE) {
           MenuOnMouseMove(event.mouse.x, event.mouse.y);
 
         } else if (event.type == WM_MOUSEWHEEL) {
           if (event.mouse.y > 0) {
-            MenuOnKeyDown(-1, MOUSEWHEEL_UP);
+            MenuOnKeyDown(PressedMenuButton(-1, MOUSEWHEEL_UP, -1));
           } else if (event.mouse.y < 0) {
-            MenuOnKeyDown(-1, MOUSEWHEEL_DN);
+            MenuOnKeyDown(PressedMenuButton(-1, MOUSEWHEEL_DN, -1));
           }
 
         } else if (event.type == WM_CHAR) {

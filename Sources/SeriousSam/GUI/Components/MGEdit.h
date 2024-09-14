@@ -30,7 +30,7 @@ public:
   CMGEdit(void);
 
   // return TRUE if handled
-  BOOL OnKeyDown(int iVKey, int iMouseButton);
+  BOOL OnKeyDown(PressedMenuButton pmb);
   BOOL OnChar(const OS::SE1Event &event);
   void Clear(void);
   void OnActivate(void);

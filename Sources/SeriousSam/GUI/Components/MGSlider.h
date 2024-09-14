@@ -33,7 +33,7 @@ public:
   void ApplyCurrentPosition(void);
   void ApplyGivenPosition(INDEX iMin, INDEX iMax, INDEX iCur);
   // return TRUE if handled
-  virtual BOOL OnKeyDown(int iVKey, int iMouseButton);
+  virtual BOOL OnKeyDown(PressedMenuButton pmb);
   void(*mg_pOnSliderChange)(INDEX iCurPos);
   PIXaabbox2D GetSliderBox(void);
   void Render(CDrawPort *pdp);

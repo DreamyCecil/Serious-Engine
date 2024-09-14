@@ -46,7 +46,7 @@ public:
 
   CMenuGadget(void);
   // return TRUE if handled
-  virtual BOOL OnKeyDown(int iVKey, int iMouseButton);
+  virtual BOOL OnKeyDown(PressedMenuButton pmb);
   virtual BOOL OnChar(const OS::SE1Event &event);
   virtual void OnActivate(void);
   virtual void OnSetFocus(void);

@@ -26,7 +26,7 @@ class CMGVarButton : public CMGButton {
 public:
   class CVarSetting *mg_pvsVar;
   PIXaabbox2D GetSliderBox(void);
-  BOOL OnKeyDown(int iVKey, int iMouseButton);
+  BOOL OnKeyDown(PressedMenuButton pmb);
   void Render(CDrawPort *pdp);
   BOOL IsSeparator(void);
   BOOL IsEnabled(void);

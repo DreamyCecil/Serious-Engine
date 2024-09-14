@@ -180,7 +180,7 @@ BOOL CGameMenu::OnChar(const OS::SE1Event &event)
 }
 
 // return TRUE if handled
-BOOL CGameMenu::OnKeyDown(int iVKey, int iMouseButton)
+BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
 {
   // find curently active gadget
   CMenuGadget *pmgActive = NULL;
@@ -200,26 +200,21 @@ BOOL CGameMenu::OnKeyDown(int iVKey, int iMouseButton)
   }
 
   // if active gadget handles it
-  if (pmgActive->OnKeyDown(iVKey, iMouseButton)) {
+  if (pmgActive->OnKeyDown(pmb)) {
     // key is handled
     return TRUE;
   }
 
-  // [Cecil] Scroll with the mouse
-  switch (iMouseButton) {
-    case MOUSEWHEEL_UP: ScrollList(-4); return TRUE;
-    case MOUSEWHEEL_DN: ScrollList(+4); return TRUE;
+  // [Cecil] Scroll in some direction
+  const INDEX iScroll = pmb.ScrollPower();
+
+  if (iScroll != 0) {
+    ScrollList(iScroll * 2);
+    return TRUE;
   }
 
-  // process normal in menu movement
-  switch (iVKey) {
-  case SE1K_PAGEUP:
-    ScrollList(-2);
-    return TRUE;
-  case SE1K_PAGEDOWN:
-    ScrollList(+2);
-    return TRUE;
-  case SE1K_UP:
+  // [Cecil] Go up in the menu
+  if (pmb.Up()) {
     // if this is top button in list
     if (pmgActive == gm_pmgListTop) {
       // scroll list up
@@ -237,8 +232,10 @@ BOOL CGameMenu::OnKeyDown(int iVKey, int iMouseButton)
       // key is handled
       return TRUE;
     }
-    break;
-  case SE1K_DOWN:
+  }
+
+  // [Cecil] Go down in the menu
+  if (pmb.Down()) {
     // if this is bottom button in list
     if (pmgActive == gm_pmgListBottom) {
       // scroll list down
@@ -256,8 +253,10 @@ BOOL CGameMenu::OnKeyDown(int iVKey, int iMouseButton)
       // key is handled
       return TRUE;
     }
-    break;
-  case SE1K_LEFT:
+  }
+
+  // [Cecil] Go left in the menu
+  if (pmb.Left()) {
     // if we can go left
     if (pmgActive->mg_pmgLeft != NULL) {
       // call lose focus to still active gadget and
@@ -273,8 +272,10 @@ BOOL CGameMenu::OnKeyDown(int iVKey, int iMouseButton)
       // key is handled
       return TRUE;
     }
-    break;
-  case SE1K_RIGHT:
+  }
+
+  // [Cecil] Go right in the menu
+  if (pmb.Right()) {
     // if we can go right
     if (pmgActive->mg_pmgRight != NULL) {
       // call lose focus to still active gadget and
@@ -290,7 +291,6 @@ BOOL CGameMenu::OnKeyDown(int iVKey, int iMouseButton)
       // key is handled
       return TRUE;
     }
-    break;
   }
 
   // key is not handled

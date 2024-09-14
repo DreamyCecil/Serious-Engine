@@ -136,7 +136,8 @@ BOOL CGame::ShouldStopRunning(const OS::SE1Event &event, BOOL bOnDeactivation) {
 
 // [Cecil] Check if pressed the key to go back
 BOOL CGame::IsEscapeKeyPressed(const OS::SE1Event &event) {
-  return (event.type == WM_KEYDOWN && event.key.code == SE1K_ESCAPE);
+  return (event.type == WM_KEYDOWN && event.key.code == SE1K_ESCAPE)
+      || (event.type == WM_CTRLBUTTONDOWN && event.ctrl.action == SDL_CONTROLLER_BUTTON_START);
 };
 
 // [Cecil] Check if pressed any of the console opening keys

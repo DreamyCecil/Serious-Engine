@@ -58,7 +58,7 @@ void CMGEdit::OnKillFocus(void)
 {
   // go out of editing mode
   if (mg_bEditing) {
-    OnKeyDown(SE1K_RETURN, -1);
+    OnKeyDown(PressedMenuButton(SE1K_RETURN, -1, -1));
     Clear();
   }
   // proceed
@@ -94,36 +94,52 @@ static void Key_BackDel(CTString &str, INDEX &iPos, BOOL bShift, BOOL bRight)
 }
 
 // key/mouse button pressed
-BOOL CMGEdit::OnKeyDown(int iVKey, int iMouseButton)
+BOOL CMGEdit::OnKeyDown(PressedMenuButton pmb)
 {
   // if not in edit mode
   if (!mg_bEditing) {
     // behave like normal gadget
-    return CMenuGadget::OnKeyDown(iVKey, iMouseButton);
+    return CMenuGadget::OnKeyDown(pmb);
   }
 
-  // finish editing?
+  // [Cecil] Apply changes
+  if (pmb.Apply()) {
+    *mg_pstrToChange = mg_strText;
+    Clear();
+    OnStringChanged();
+    return TRUE;
+  }
+
+  // [Cecil] Discard changes
+  if (pmb.Back()) {
+    mg_strText = *mg_pstrToChange;
+    Clear();
+    OnStringCanceled();
+    return TRUE;
+  }
+
+  // [Cecil] Move left
+  if (pmb.Up() || pmb.Left()) {
+    if (mg_iCursorPos > 0) mg_iCursorPos--;
+    return TRUE;
+  }
+
+  // [Cecil] Move right
+  if (pmb.Down() || pmb.Right()) {
+    if (mg_iCursorPos < mg_strText.Length()) mg_iCursorPos++;
+    return TRUE;
+  }
+
   const BOOL bShift = !!(OS::GetKeyState(SE1K_LSHIFT) & 0x8000) || !!(OS::GetKeyState(SE1K_RSHIFT) & 0x8000);
 
-  // [Cecil] Mimic keys with mouse buttons
-  if (iMouseButton == SDL_BUTTON_LEFT) iVKey = SE1K_RETURN;
-  else
-  if (iMouseButton == SDL_BUTTON_RIGHT) iVKey = SE1K_ESCAPE;
-
-  switch (iVKey) {
-  case SE1K_UP: case SE1K_DOWN:
-  case SE1K_RETURN: *mg_pstrToChange = mg_strText;  Clear(); OnStringChanged();  break;
-  case SE1K_ESCAPE:  mg_strText = *mg_pstrToChange; Clear(); OnStringCanceled(); break;
-  case SE1K_LEFT:    if (mg_iCursorPos > 0)                   mg_iCursorPos--; break;
-  case SE1K_RIGHT:   if (mg_iCursorPos < mg_strText.Length()) mg_iCursorPos++; break;
-  case SE1K_HOME:    mg_iCursorPos = 0;                   break;
-  case SE1K_END:     mg_iCursorPos = mg_strText.Length(); break;
-  case SE1K_BACKSPACE: Key_BackDel(mg_strText, mg_iCursorPos, bShift, FALSE);  break;
-  case SE1K_DELETE:    Key_BackDel(mg_strText, mg_iCursorPos, bShift, TRUE);   break;
-  default:  break; // ignore all other special keys
+  switch (pmb.iKey) {
+    case SE1K_HOME:      mg_iCursorPos = 0;                   break;
+    case SE1K_END:       mg_iCursorPos = mg_strText.Length(); break;
+    case SE1K_BACKSPACE: Key_BackDel(mg_strText, mg_iCursorPos, bShift, FALSE);  break;
+    case SE1K_DELETE:    Key_BackDel(mg_strText, mg_iCursorPos, bShift, TRUE);   break;
   }
 
-  // key is handled
+  // Ignore all other special keys and mark them as handled
   return TRUE;
 }
 
