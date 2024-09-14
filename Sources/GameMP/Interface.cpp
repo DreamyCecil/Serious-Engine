@@ -74,8 +74,13 @@ static void UpdatePauseState(void)
 void CGame::HandleConsoleAndComputer(const OS::SE1Event &event) {
   extern INDEX con_bTalk;
 
+  // [Cecil] Pass controller presses to computer
+  if (event.type == WM_CTRLBUTTONDOWN) {
+    // Only if console isn't in the way
+    if (gm_csConsoleState != CS_ON) ComputerKeyDown(event);
+
   // Pass key presses to console and computer
-  if (event.type == WM_KEYDOWN) {
+  } else if (event.type == WM_KEYDOWN) {
     ConsoleKeyDown(event);
 
     // Only if console isn't in the way
