@@ -332,7 +332,7 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
     const DOUBLE fCurrentValue = DOUBLE(slAxisReading - SDL_JOYSTICK_AXIS_MIN);
     const DOUBLE fMaxValue = DOUBLE(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
 
-    cai.cai_fReading = fCurrentValue / fMaxValue * 2.0f - 1.0f;
+    cai.cai_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
   }
 
   if (!bPreScan) {

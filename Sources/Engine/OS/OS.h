@@ -21,7 +21,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/OS/Keycodes.h>
 #include <Engine/OS/PlatformSpecific.h>
 
-#if !SE1_WIN
+#if SE1_WIN
+
+// Custom controller events
+#define WM_CTRLAXISMOTION 0x100000
+#define WM_CTRLBUTTONDOWN 0x100001
+#define WM_CTRLBUTTONUP   0x100002
+
+#else
 
 // Unique types for some Windows messages
 extern SDL_EventType WM_SYSKEYDOWN;
@@ -45,6 +52,11 @@ extern SDL_EventType WM_XBUTTONUP;
 #define WM_SYSCOMMAND SDL_WINDOWEVENT
 #define WM_QUIT       SDL_QUIT
 #define WM_CLOSE      SDL_QUIT
+
+// Custom controller events
+#define WM_CTRLAXISMOTION SDL_CONTROLLERAXISMOTION
+#define WM_CTRLBUTTONDOWN SDL_CONTROLLERBUTTONDOWN
+#define WM_CTRLBUTTONUP   SDL_CONTROLLERBUTTONUP
 
 #endif
 
@@ -157,6 +169,12 @@ class ENGINE_API OS {
       SLONG y;
     };
 
+    struct ControllerEvent {
+      ULONG type;
+      ULONG action;
+      INDEX dir;
+    };
+
     struct WindowEvent {
       ULONG type;
       ULONG event;
@@ -169,6 +187,7 @@ class ENGINE_API OS {
 
       KeyEvent key;
       MouseEvent mouse;
+      ControllerEvent ctrl;
       WindowEvent window;
     } SE1Event;
 

@@ -70,6 +70,63 @@ HWND OS::Window::GetNativeHandle(void) {
 
 #endif
 
+// Setup controller events from button & axis actions
+static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
+{
+  GameController_t &ctrl = _pInput->inp_aControllers[iCtrl];
+  if (!ctrl.IsConnected()) return FALSE;
+
+  static BOOL _abButtonStates[MAX_JOYSTICKS * SDL_CONTROLLER_BUTTON_MAX] = { 0 };
+  static BOOL _abAxisStates[MAX_JOYSTICKS * SDL_CONTROLLER_AXIS_MAX] = { 0 };
+
+  for (ULONG eButton = 0; eButton < SDL_CONTROLLER_BUTTON_MAX; eButton++) {
+    const BOOL bHolding = !!SDL_GameControllerGetButton(ctrl.handle, (SDL_GameControllerButton)eButton);
+
+    const BOOL bJustPressed  = (bHolding && !_abButtonStates[iCtrl + eButton]);
+    const BOOL bJustReleased = (!bHolding && _abButtonStates[iCtrl + eButton]);
+
+    _abButtonStates[iCtrl + eButton] = bHolding;
+
+    if (bJustPressed) {
+      SDL_zero(event);
+      event.type = WM_CTRLBUTTONDOWN;
+      event.ctrl.action = eButton;
+      event.ctrl.dir = TRUE;
+      return TRUE;
+    }
+
+    if (bJustReleased) {
+      SDL_zero(event);
+      event.type = WM_CTRLBUTTONUP;
+      event.ctrl.action = eButton;
+      event.ctrl.dir = TRUE;
+      return TRUE;
+    }
+  }
+
+  // [Cecil] NOTE: This code only checks whether some axis has been moved past 50% in either direction
+  // in order to determine when it has been significantly moved and reset
+  for (ULONG eAxis = 0; eAxis < SDL_CONTROLLER_AXIS_MAX; eAxis++) {
+    const SLONG slMotion = SDL_GameControllerGetAxis(ctrl.handle, (SDL_GameControllerAxis)eAxis);
+
+    // Holding the axis past the half of the max value in either direction
+    const BOOL bHolding = Abs(slMotion) > SDL_JOYSTICK_AXIS_MAX / 2;
+    const BOOL bJustPressed = (bHolding && !_abAxisStates[iCtrl + eAxis]);
+
+    _abAxisStates[iCtrl + eAxis] = bHolding;
+
+    if (bJustPressed) {
+      SDL_zero(event);
+      event.type = WM_CTRLAXISMOTION;
+      event.ctrl.action = eAxis;
+      event.ctrl.dir = Sgn(slMotion);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+};
+
 BOOL OS::PollEvent(OS::SE1Event &event) {
 #if SE1_PREFER_SDL
   // Read comment above the function definition
@@ -162,6 +219,16 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
         _pInput->CloseGameController(sdlevent.cdevice.which);
       } return TRUE;
 
+      case SDL_CONTROLLERBUTTONDOWN:
+      case SDL_CONTROLLERBUTTONUP:
+      case SDL_CONTROLLERAXISMOTION: {
+        INDEX iSlot = _pInput->GetControllerSlotForDevice(sdlevent.cdevice.which);
+
+        if (iSlot != -1 && SetupControllerEvent(iSlot, event)) {
+          return TRUE;
+        }
+      } break;
+
       default: break;
     }
   }
@@ -171,6 +238,15 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
 #else
   // Manual joystick update
   _pInput->UpdateJoysticks();
+
+  // Process event for the first controller that sends it
+  const INDEX ctControllers = _pInput->inp_aControllers.Count();
+
+  for (INDEX iCtrl = 0; iCtrl < ctControllers; iCtrl++) {
+    if (SetupControllerEvent(iCtrl, event)) {
+      return TRUE;
+    }
+  }
 
   // Go in the loop until it finds an event it can process and return TRUE on it
   // Otherwise break from switch-case and try checking the next event
