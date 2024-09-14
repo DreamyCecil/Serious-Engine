@@ -79,7 +79,7 @@ void CControls::SwitchAxesToDefaults(void)
   for( INDEX iAxisAction=0; iAxisAction<AXIS_ACTIONS_CT; iAxisAction++)
   {
     // set axis action none
-    ctrl_aaAxisActions[ iAxisAction].aa_iAxisAction = AXIS_NONE;
+    ctrl_aaAxisActions[ iAxisAction].aa_iAxisAction = EIA_NONE;
     ctrl_aaAxisActions[ iAxisAction].aa_fSensitivity = 50;
     ctrl_aaAxisActions[ iAxisAction].aa_fDeadZone = 0;
     ctrl_aaAxisActions[ iAxisAction].aa_bInvert = FALSE;
@@ -89,12 +89,12 @@ void CControls::SwitchAxesToDefaults(void)
   }
   // set default controlers for some axis-type actions
   // mouse left/right motion
-  ctrl_aaAxisActions[ AXIS_TURN_LR].aa_iAxisAction = MOUSE_X_AXIS;
+  ctrl_aaAxisActions[ AXIS_TURN_LR].aa_iAxisAction = EIA_MOUSE_X;
   ctrl_aaAxisActions[ AXIS_TURN_LR].aa_fSensitivity = 45;
   ctrl_aaAxisActions[ AXIS_TURN_LR].aa_bInvert = FALSE;
   ctrl_aaAxisActions[ AXIS_TURN_LR].aa_bRelativeControler = TRUE;
   // mouse up/down motion
-  ctrl_aaAxisActions[ AXIS_TURN_UD].aa_iAxisAction = MOUSE_Y_AXIS;
+  ctrl_aaAxisActions[ AXIS_TURN_UD].aa_iAxisAction = EIA_MOUSE_Y;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_fSensitivity = 45;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bInvert = TRUE;
   ctrl_aaAxisActions[ AXIS_TURN_UD].aa_bRelativeControler = TRUE;
@@ -236,7 +236,7 @@ void CControls::Load_t( CTFileName fnFile)
       }}
       // find controller axis
       INDEX iCtrlAxisNo = -1;
-      {for( INDEX iAxis=0; iAxis<MAX_OVERALL_AXES; iAxis++) {
+      {for( INDEX iAxis=0; iAxis < EIA_MAX_ALL; iAxis++) {
         if( _pInput->GetAxisName( iAxis) == achrAxis)
         {
           iCtrlAxisNo = iAxis;
@@ -412,7 +412,7 @@ BOOL CControls::UsesJoystick(void)
     // write axis actions
   for( INDEX iAxis=0; iAxis<AXIS_ACTIONS_CT; iAxis++)
   {
-    if (ctrl_aaAxisActions[iAxis].aa_iAxisAction>=FIRST_JOYAXIS) {
+    if (ctrl_aaAxisActions[iAxis].aa_iAxisAction >= EIA_CONTROLLER_OFFSET) {
       return TRUE;
     }
   }

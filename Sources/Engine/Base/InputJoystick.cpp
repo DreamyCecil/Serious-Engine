@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 INDEX inp_bForceJoystickPolling = 0;
 INDEX inp_ctJoysticksAllowed = MAX_JOYSTICKS;
 
-extern CTString inp_astrAxisTran[MAX_OVERALL_AXES];
+extern CTString inp_astrAxisTran[EIA_MAX_ALL];
 
 GameController_t::GameController_t() : handle(NULL), iInfoSlot(-1)
 {
@@ -138,7 +138,7 @@ void CInput::OpenGameController(INDEX iSlot)
   CPrintF(TRANS("  %d hats\n"), SDL_JoystickNumHats(pJoystick));
 
   // Check whether all axes exist
-  const INDEX iFirstJoyAxis = FIRST_JOYAXIS + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstJoyAxis = EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
 
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
     ControlAxisInfo &cai = inp_caiAllAxisInfo[iFirstJoyAxis + iAxis];
@@ -246,7 +246,7 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   const CTString strJoystickName(0, "C%d ", iSlot + 1);
   const CTString strJoystickNameTra(0, TRANS("C%d "), iSlot + 1);
 
-  const INDEX iAxisTotal = FIRST_JOYAXIS + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iAxisTotal = EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
     inp_caiAllAxisInfo[iAxisTotal + _Axis].cai_strAxisName = strJoystickName    + _Name; \
@@ -300,7 +300,7 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
 
   // For each available axis
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
-    ControlAxisInfo &cai = inp_caiAllAxisInfo[FIRST_JOYAXIS + iSlot * SDL_CONTROLLER_AXIS_MAX + iAxis];
+    ControlAxisInfo &cai = inp_caiAllAxisInfo[EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX + iAxis];
 
     // If the axis is not present
     if (!cai.cai_bExisting) {

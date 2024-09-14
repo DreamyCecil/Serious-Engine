@@ -37,7 +37,7 @@ extern FLOAT inp_bInvertMouse;
 extern INDEX inp_bFilterMouse;
 extern INDEX inp_bAllowPrescan;
 
-CTString inp_astrAxisTran[MAX_OVERALL_AXES]; // translated names for axis
+CTString inp_astrAxisTran[EIA_MAX_ALL]; // translated names for axis
 
 #if SE1_PREFER_SDL
   // [Cecil] For synchronizing SDL events
@@ -422,7 +422,7 @@ CInput::CInput(void)
     inp_ubButtonsBuffer[ iButton] = 0;
   }
   // clear axis relative and absolute values
-  for( INDEX iAxis=0; iAxis<MAX_OVERALL_AXES; iAxis++)
+  for( INDEX iAxis=0; iAxis<EIA_MAX_ALL; iAxis++)
   {
     inp_caiAllAxisInfo[ iAxis].cai_fReading  = 0.0f;
     inp_caiAllAxisInfo[ iAxis].cai_bExisting = FALSE;
@@ -833,7 +833,7 @@ void CInput::ClearInput( void)
   // clear button's buffer
   memset( inp_ubButtonsBuffer, 0, sizeof( inp_ubButtonsBuffer));
   // clear axis values
-  for (INDEX i=0; i<MAX_OVERALL_AXES; i++) {
+  for (INDEX i=0; i<EIA_MAX_ALL; i++) {
     inp_caiAllAxisInfo[i].cai_fReading = 0;
   }
 }

@@ -403,7 +403,7 @@ FLOAT CControls::GetAxisValue(INDEX iAxis)
 
   FLOAT fReading = 0.0f;
 
-  if (aa.aa_iAxisAction!=AXIS_NONE) {
+  if (aa.aa_iAxisAction != EIA_NONE) {
     // get the reading
     fReading = _pInput->GetAxisValue(aa.aa_iAxisAction);
 

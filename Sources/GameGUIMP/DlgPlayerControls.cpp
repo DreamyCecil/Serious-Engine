@@ -67,7 +67,7 @@ void CDlgPlayerControls::DoDataExchange(CDataExchange* pDX)
         // and select it 
         m_comboControlerAxis.SetCurSel( iComboEntry);
         // if axis none is selected, disable sensitivity and other additional controls for axis
-        if( m_ctrlControls.ctrl_aaAxisActions[ iSelectedAxis].aa_iAxisAction == AXIS_NONE)
+        if( m_ctrlControls.ctrl_aaAxisActions[ iSelectedAxis].aa_iAxisAction == EIA_NONE)
         {
           // disable controls for defining controler's attributes
           bEnableControls = FALSE;

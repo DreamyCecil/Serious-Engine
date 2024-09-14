@@ -164,8 +164,8 @@ void CAM_Render(CEntity *pen, CDrawPort *pdp)
     vY(1) = m(1,2); vY(2) = m(2,2); vY(3) = m(3,2);
     vZ(1) = m(1,3); vZ(2) = m(2,3); vZ(3) = m(3,3);
 
-    _cp.cp_aRot(1)-=_pInput->GetAxisValue(MOUSE_X_AXIS)*0.5f;
-    _cp.cp_aRot(2)-=_pInput->GetAxisValue(MOUSE_Y_AXIS)*0.5f;
+    _cp.cp_aRot(1)-=_pInput->GetAxisValue(EIA_MOUSE_X)*0.5f;
+    _cp.cp_aRot(2)-=_pInput->GetAxisValue(EIA_MOUSE_Y)*0.5f;
     
     if( cam_bMoveForward)      { _cp.cp_vPos -= vZ *cam_fSpeed; };
     if( cam_bMoveBackward)     { _cp.cp_vPos += vZ *cam_fSpeed; };

@@ -22,20 +22,30 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/CTString.h>
 #include <Engine/Templates/StaticArray.h>
 
-// number of key ids reserved (in KeyNames.h)
+// Maximum amount of supported game controllers
+#define MAX_JOYSTICKS 8
+
+// Number of reserved key IDs (in KeyNames.h)
 #define KID_TOTALCOUNT 256
 
-// defines for offsets of empty axis ("NONE" key) and mouse axis
-#define AXIS_NONE    0
-#define MOUSE_X_AXIS 1
-#define MOUSE_Y_AXIS 2
-
-#define MAX_JOYSTICKS 8
-#define FIRST_JOYAXIS (1 + 3 + 2) // one dummy, 3 axis for windows mouse (3rd is scroller), 2 axis for serial mouse
-#define MAX_OVERALL_AXES (FIRST_JOYAXIS + MAX_JOYSTICKS * SDL_CONTROLLER_AXIS_MAX)
 #define FIRST_JOYBUTTON (KID_TOTALCOUNT)
 #define MAX_OVERALL_BUTTONS (KID_TOTALCOUNT + MAX_JOYSTICKS * SDL_CONTROLLER_BUTTON_MAX)
 
+enum EInputAxis {
+  EIA_NONE = 0, // Invalid/no axis
+  EIA_MOUSE_X,  // Mouse movement
+  EIA_MOUSE_Y,
+  EIA_MOUSE_Z,  // Mouse wheel
+  EIA_MOUSE2_X, // Second mouse movement
+  EIA_MOUSE2_Y,
+
+  // Amount of mouse axes / first controller axis
+  EIA_MAX_MOUSE,
+  EIA_CONTROLLER_OFFSET = EIA_MAX_MOUSE,
+
+  // Amount of axes (mouse axes + all controller axes * all controllers)
+  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_CONTROLLER_AXIS_MAX * MAX_JOYSTICKS),
+};
 
 /*
  *  Mouse speed control structure
@@ -80,7 +90,7 @@ public:
   BOOL inp_bLastPrescan;
   BOOL inp_bInputEnabled;
   BOOL inp_bPollJoysticks;
-  struct ControlAxisInfo inp_caiAllAxisInfo[ MAX_OVERALL_AXES];// info for all available axis
+  ControlAxisInfo inp_caiAllAxisInfo[EIA_MAX_ALL]; // info for all available axis
   CTString inp_strButtonNames[ MAX_OVERALL_BUTTONS];// individual button names
   CTString inp_strButtonNamesTra[ MAX_OVERALL_BUTTONS];// individual button names (translated)
   UBYTE inp_ubButtonsBuffer[ MAX_OVERALL_BUTTONS];  // statuses for all buttons (KEY & 128 !=0)
@@ -172,7 +182,7 @@ public:
 
   // Get count of available axis
   inline const INDEX GetAvailableAxisCount(void) const {
-    return MAX_OVERALL_AXES;
+    return EIA_MAX_ALL;
   };
 
   // Get count of available buttons
