@@ -37,7 +37,7 @@ struct PressedMenuButton {
   // Apply / Enter the next menu
   inline bool Apply(void) {
     return iKey == SE1K_RETURN || iMouse == SDL_BUTTON_LEFT
-        || iCtrl == SDL_CONTROLLER_BUTTON_A;
+        || iCtrl == SDL_CONTROLLER_BUTTON_A || iCtrl == SDL_CONTROLLER_BUTTON_START;
   };
 
   // Decrease value

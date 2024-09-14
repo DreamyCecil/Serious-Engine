@@ -1076,7 +1076,9 @@ int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCm
       // If currently in the menu and wanting to return to the previous menu
       } else if (bMenuForced && bMenuToggle && pgmCurrentMenu->gm_pgmParentMenu == NULL) {
         // Delete key down message because there's no previous menu
-        event.type = WM_NULL;
+        if (event.type != WM_CTRLBUTTONDOWN) {
+          event.type = WM_NULL;
+        }
       }
 
       // Quick-open specific menus
