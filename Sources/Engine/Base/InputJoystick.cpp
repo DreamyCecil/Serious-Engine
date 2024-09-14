@@ -20,8 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 INDEX inp_bForceJoystickPolling = 0;
 INDEX inp_ctJoysticksAllowed = MAX_JOYSTICKS;
 
-extern CTString inp_astrAxisTran[EIA_MAX_ALL];
-
 GameController_t::GameController_t() : handle(NULL), iInfoSlot(-1)
 {
 };
@@ -243,14 +241,14 @@ void CInput::ShutdownJoysticks(void) {
 
 // Adds axis and buttons for given joystick
 void CInput::AddJoystickAbbilities(INDEX iSlot) {
-  const CTString strJoystickName(0, "C%d ", iSlot + 1);
+  const CTString strJoystickNameInt(0, "C%d ", iSlot + 1);
   const CTString strJoystickNameTra(0, TRANS("C%d "), iSlot + 1);
 
   const INDEX iAxisTotal = EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
-    inp_caiAllAxisInfo[iAxisTotal + _Axis].cai_strAxisName = strJoystickName    + _Name; \
-    inp_astrAxisTran  [iAxisTotal + _Axis]                 = strJoystickNameTra + _Translated;
+    inp_caiAllAxisInfo[iAxisTotal + _Axis].cai_strNameInt = strJoystickNameInt + _Name; \
+    inp_caiAllAxisInfo[iAxisTotal + _Axis].cai_strNameTra = strJoystickNameTra + _Translated;
 
   // Set default names for all axes
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
@@ -268,7 +266,7 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   const INDEX iButtonTotal = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
 
   #define SET_BUTTON_NAMES(_Button, _Name, _Translated) \
-    inp_strButtonNames   [iButtonTotal + _Button] = strJoystickName    + _Name; \
+    inp_strButtonNames   [iButtonTotal + _Button] = strJoystickNameInt + _Name; \
     inp_strButtonNamesTra[iButtonTotal + _Button] = strJoystickNameTra + _Translated;
 
   // Set default names for all buttons

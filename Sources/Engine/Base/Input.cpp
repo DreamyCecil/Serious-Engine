@@ -37,8 +37,6 @@ extern FLOAT inp_bInvertMouse;
 extern INDEX inp_bFilterMouse;
 extern INDEX inp_bAllowPrescan;
 
-CTString inp_astrAxisTran[EIA_MAX_ALL]; // translated names for axis
-
 #if SE1_PREFER_SDL
   // [Cecil] For synchronizing SDL events
   static CTCriticalSection inp_csSDLInput;
@@ -470,19 +468,19 @@ void CInput::SetKeyNames( void)
 
   // -------- Enumerate known axis -------------
   // no axis as axis type 0
-  inp_caiAllAxisInfo[0].cai_strAxisName = "None";
-  inp_astrAxisTran[  0] = TRANS("None");
+  inp_caiAllAxisInfo[0].cai_strNameInt = "None";
+  inp_caiAllAxisInfo[0].cai_strNameTra = TRANS("None");
   // mouse axis occupy types from 1 up to 3
-  inp_caiAllAxisInfo[1].cai_strAxisName = "mouse X";
-  inp_astrAxisTran[  1] = TRANS("mouse X");
-  inp_caiAllAxisInfo[2].cai_strAxisName = "mouse Y";
-  inp_astrAxisTran[  2] = TRANS("mouse Y");
-  inp_caiAllAxisInfo[3].cai_strAxisName = "mouse Z";
-  inp_astrAxisTran[  3] = TRANS("mouse Z");
-  inp_caiAllAxisInfo[4].cai_strAxisName = "2nd mouse X";
-  inp_astrAxisTran[  4] = TRANS("2nd mouse X");
-  inp_caiAllAxisInfo[5].cai_strAxisName = "2nd mouse Y";
-  inp_astrAxisTran[  5] = TRANS("2nd mouse Y");
+  inp_caiAllAxisInfo[1].cai_strNameInt = "mouse X";
+  inp_caiAllAxisInfo[1].cai_strNameTra = TRANS("mouse X");
+  inp_caiAllAxisInfo[2].cai_strNameInt = "mouse Y";
+  inp_caiAllAxisInfo[2].cai_strNameTra = TRANS("mouse Y");
+  inp_caiAllAxisInfo[3].cai_strNameInt = "mouse Z";
+  inp_caiAllAxisInfo[3].cai_strNameTra = TRANS("mouse Z");
+  inp_caiAllAxisInfo[4].cai_strNameInt = "2nd mouse X";
+  inp_caiAllAxisInfo[4].cai_strNameTra = TRANS("2nd mouse X");
+  inp_caiAllAxisInfo[5].cai_strNameInt = "2nd mouse Y";
+  inp_caiAllAxisInfo[5].cai_strNameTra = TRANS("2nd mouse Y");
 
   // [Cecil] Set joystick names separately
   SetJoystickNames();
@@ -836,9 +834,4 @@ void CInput::ClearInput( void)
   for (INDEX i=0; i<EIA_MAX_ALL; i++) {
     inp_caiAllAxisInfo[i].cai_fReading = 0;
   }
-}
-
-const CTString &CInput::GetAxisTransName( INDEX iAxisNo) const
-{
-  return inp_astrAxisTran[iAxisNo];
 }

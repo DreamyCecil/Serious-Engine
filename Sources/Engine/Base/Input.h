@@ -57,14 +57,13 @@ struct MouseSpeedControl
   int msc_iSpeed;
 };
 
-/*
- * One axis descriptive information
- */
-struct ControlAxisInfo
-{
-  CTString cai_strAxisName; // name of this axis
-  FLOAT cai_fReading; // current reading of this axis
-  BOOL cai_bExisting; // set if the axis exists (for joystick axes)
+// Information about a single axis
+struct ControlAxisInfo {
+  CTString cai_strNameInt; // Internal name
+  CTString cai_strNameTra; // Translated display name
+
+  FLOAT cai_fReading; // Current reading of the axis
+  BOOL cai_bExisting; // Whether a controller has this axis
 };
 
 // [Cecil] Individual game controller
@@ -192,10 +191,13 @@ public:
 
   // Get name of given axis
   inline const CTString &GetAxisName(INDEX iAxisNo) const {
-    return inp_caiAllAxisInfo[ iAxisNo].cai_strAxisName;
+    return inp_caiAllAxisInfo[iAxisNo].cai_strNameInt;
   };
 
-  const CTString &GetAxisTransName(INDEX iAxisNo) const;
+  // Get translated name of given axis
+  const CTString &GetAxisTransName(INDEX iAxisNo) const {
+    return inp_caiAllAxisInfo[iAxisNo].cai_strNameTra;
+  };
 
   // Get current position of given axis
   inline FLOAT GetAxisValue(INDEX iAxisNo) const {
