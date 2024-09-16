@@ -51,7 +51,7 @@ void CMenuGadget::OnActivate(void)
 BOOL CMenuGadget::OnKeyDown(PressedMenuButton pmb)
 {
   // if return pressed
-  if (pmb.Apply()) {
+  if (pmb.Apply(TRUE)) {
     // activate
     OnActivate();
     // key is handled

@@ -77,7 +77,7 @@ BOOL CMGVarButton::OnKeyDown(PressedMenuButton pmb)
     }
   }
 
-  if (pmb.Apply()) {
+  if (pmb.Apply(FALSE)) {
     // [Cecil] Emulate the action of clicking on "Apply"
     _pGUIM->gmVarMenu.gm_mgApply.OnActivate();
     return TRUE;

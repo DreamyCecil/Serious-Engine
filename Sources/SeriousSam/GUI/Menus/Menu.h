@@ -29,14 +29,14 @@ struct PressedMenuButton {
     iKey(iSetKey), iMouse(iSetMouse), iCtrl(iSetCtrl) {};
 
   // Cancel / Go back to the previous menu
-  inline bool Back(void) {
-    return iKey == SE1K_ESCAPE || iMouse == SDL_BUTTON_RIGHT
+  inline bool Back(BOOL bMouse) {
+    return iKey == SE1K_ESCAPE || (bMouse && iMouse == SDL_BUTTON_RIGHT)
         || iCtrl == SDL_CONTROLLER_BUTTON_B || iCtrl == SDL_CONTROLLER_BUTTON_BACK;
   };
 
   // Apply / Enter the next menu
-  inline bool Apply(void) {
-    return iKey == SE1K_RETURN || iMouse == SDL_BUTTON_LEFT
+  inline bool Apply(BOOL bMouse) {
+    return iKey == SE1K_RETURN || (bMouse && iMouse == SDL_BUTTON_LEFT)
         || iCtrl == SDL_CONTROLLER_BUTTON_A || iCtrl == SDL_CONTROLLER_BUTTON_START;
   };
 

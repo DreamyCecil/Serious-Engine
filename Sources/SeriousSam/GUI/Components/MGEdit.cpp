@@ -103,7 +103,7 @@ BOOL CMGEdit::OnKeyDown(PressedMenuButton pmb)
   }
 
   // [Cecil] Apply changes
-  if (pmb.Apply()) {
+  if (pmb.Apply(TRUE)) {
     *mg_pstrToChange = mg_strText;
     Clear();
     OnStringChanged();
@@ -111,7 +111,7 @@ BOOL CMGEdit::OnKeyDown(PressedMenuButton pmb)
   }
 
   // [Cecil] Discard changes
-  if (pmb.Back()) {
+  if (pmb.Back(TRUE)) {
     mg_strText = *mg_pstrToChange;
     Clear();
     OnStringCanceled();

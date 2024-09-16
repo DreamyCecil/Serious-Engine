@@ -75,7 +75,7 @@ void CConfirmMenu::BeSmall(void)
 // return TRUE if handled
 BOOL CConfirmMenu::OnKeyDown(PressedMenuButton pmb)
 {
-  if (pmb.Back() && gm_mgConfirmNo.mg_pActivatedFunction != NULL) {
+  if (pmb.Back(TRUE) && gm_mgConfirmNo.mg_pActivatedFunction != NULL) {
     gm_mgConfirmNo.OnActivate();
     return TRUE;
   }

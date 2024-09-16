@@ -407,7 +407,7 @@ BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
   }
 
   // [Cecil] Select the listing
-  if (pmb.Apply()) {
+  if (pmb.Apply(TRUE)) {
     PlayMenuSound(_psdPress);
     IFeel_PlayEffect("Menu_press");
 
