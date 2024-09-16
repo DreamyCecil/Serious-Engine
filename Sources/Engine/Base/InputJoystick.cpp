@@ -194,11 +194,11 @@ void CInput::UpdateJoysticks(void) {
   const INDEX ctControllers = (INDEX)SDL_NumJoysticks();
 
   for (INDEX iController = 0; iController < ctControllers; iController++) {
-    _pInput->OpenGameController(iController);
+    OpenGameController(iController);
   }
 
   // Go through connected controllers
-  FOREACHINSTATICARRAY(_pInput->inp_aControllers, GameController_t, it) {
+  FOREACHINSTATICARRAY(inp_aControllers, GameController_t, it) {
     if (!it->IsConnected()) continue;
 
     // Disconnect this controller if it has been detached

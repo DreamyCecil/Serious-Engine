@@ -225,16 +225,16 @@ static void SE_InitSDL(ULONG ulFlags) {
   if (_bEngineInitializedSDL) return;
 
   // Main initialization (may be basic with 0 flags)
-  ULONG ulNoJoysticks = ulFlags & ~SDL_INIT_JOYSTICK;
+  ULONG ulNoControllers = ulFlags & ~SDL_INIT_GAMECONTROLLER;
 
-  if (SDL_Init(ulNoJoysticks) == -1) {
-    FatalError(TRANS("SDL_Init(0x%X) failed:\n%s"), ulNoJoysticks, SDL_GetError());
+  if (SDL_Init(ulNoControllers) == -1) {
+    FatalError(TRANS("SDL_Init(0x%X) failed:\n%s"), ulNoControllers, SDL_GetError());
   }
 
   // Optional
-  if (ulFlags & SDL_INIT_JOYSTICK) {
-    if (SDL_Init(SDL_INIT_JOYSTICK) == -1) {
-      CPrintF(TRANS("SDL_Init(SDL_INIT_JOYSTICK) failed:\n%s\n"), SDL_GetError());
+  if (ulFlags & SDL_INIT_GAMECONTROLLER) {
+    if (SDL_Init(SDL_INIT_GAMECONTROLLER) == -1) {
+      CPrintF(TRANS("SDL_Init(SDL_INIT_GAMECONTROLLER) failed:\n%s\n"), SDL_GetError());
     }
   }
 

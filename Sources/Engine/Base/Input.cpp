@@ -411,7 +411,7 @@ CInput *_pInput = NULL;
 
 // [Cecil]
 bool InputDeviceAction::IsActive(DOUBLE fThreshold) const {
-  return Abs(ida_fReading) >= ClampUp(fThreshold, 1.0f);
+  return Abs(ida_fReading) >= ClampUp(fThreshold, 1.0);
 };
 
 // deafult constructor
