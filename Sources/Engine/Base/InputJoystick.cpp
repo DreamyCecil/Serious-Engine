@@ -243,9 +243,10 @@ void CInput::ShutdownJoysticks(void) {
 
 // Adds axis and buttons for given joystick
 void CInput::AddJoystickAbbilities(INDEX iSlot) {
-  const CTString strJoystickNameInt(0, "C%d ", iSlot + 1);
-  const CTString strJoystickNameTra(0, TRANS("C%d "), iSlot + 1);
+  const CTString strJoystickNameInt(0, "[C%d] ", iSlot + 1);
+  const CTString strJoystickNameTra(0, TRANS("[C%d] "), iSlot + 1);
 
+  // Set proper names for axes
   const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
@@ -258,12 +259,12 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   }
 
   // Set proper names for axes
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_LEFTX,        "Left X",        TRANS("Left X"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_LEFTY,        "Left Y",        TRANS("Left Y"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_RIGHTX,       "Right X",       TRANS("Right X"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_RIGHTY,       "Right Y",       TRANS("Right Y"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERLEFT,  "Left Trigger",  TRANS("Left Trigger"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "Right Trigger", TRANS("Right Trigger"));
+  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_LEFTX,        "L Stick X", TRANS("L Stick X"));
+  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_LEFTY,        "L Stick Y", TRANS("L Stick Y"));
+  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_RIGHTX,       "R Stick X", TRANS("R Stick X"));
+  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_RIGHTY,       "R Stick Y", TRANS("R Stick Y"));
+  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERLEFT,  "L2",              "L2");
+  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "R2",              "R2");
 
   const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
 
@@ -277,21 +278,27 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   }
 
   // Set proper names for buttons
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_A,             "A",              "A");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_B,             "B",              "B");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_X,             "X",              "X");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_Y,             "Y",              "Y");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_BACK,          "Select",         TRANS("Select"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_GUIDE,         "Home",           TRANS("Home"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_START,         "Start",          TRANS("Start"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_LEFTSTICK,     "Left Stick",     TRANS("Left Stick"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_RIGHTSTICK,    "Right Stick",    TRANS("Right Stick"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_LEFTSHOULDER,  "Left Shoulder",  TRANS("Left Shoulder"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "Right Shoulder", TRANS("Right Shoulder"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_UP,       "D-pad Up",       TRANS("D-pad Up"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_DOWN,     "D-pad Down",     TRANS("D-pad Down"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_LEFT,     "D-pad Left",     TRANS("D-pad Left"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_RIGHT,    "D-pad Right",    TRANS("D-pad Right"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_A,             "A",                 "A");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_B,             "B",                 "B");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_X,             "X",                 "X");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_Y,             "Y",                 "Y");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_BACK,          "Back",        TRANS("Back"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_GUIDE,         "Guide",       TRANS("Guide"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_START,         "Start",       TRANS("Start"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_LEFTSTICK,     "L3",                "L3");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_RIGHTSTICK,    "R3",                "R3");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_LEFTSHOULDER,  "L1",                "L1");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "R1",                "R1");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_UP,       "D-pad Up",    TRANS("D-pad Up"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_DOWN,     "D-pad Down",  TRANS("D-pad Down"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_LEFT,     "D-pad Left",  TRANS("D-pad Left"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_RIGHT,    "D-pad Right", TRANS("D-pad Right"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_MISC1,         "Misc",        TRANS("Misc"));
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE1,       "L4",                "L4");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE2,       "R4",                "R4");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE3,       "L5",                "L5");
+  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE4,       "R5",                "R5");
+
 };
 
 // Scans axis and buttons for given joystick
