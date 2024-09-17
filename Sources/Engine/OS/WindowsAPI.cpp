@@ -77,15 +77,15 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
   if (!ctrl.IsConnected()) return FALSE;
 
   static BOOL _abButtonStates[MAX_JOYSTICKS * SDL_CONTROLLER_BUTTON_MAX] = { 0 };
-  static BOOL _abAxisStates[MAX_JOYSTICKS * SDL_CONTROLLER_AXIS_MAX] = { 0 };
+  const INDEX iFirstButton = iCtrl * SDL_CONTROLLER_BUTTON_MAX;
 
   for (ULONG eButton = 0; eButton < SDL_CONTROLLER_BUTTON_MAX; eButton++) {
     const BOOL bHolding = !!SDL_GameControllerGetButton(ctrl.handle, (SDL_GameControllerButton)eButton);
 
-    const BOOL bJustPressed  = (bHolding && !_abButtonStates[iCtrl + eButton]);
-    const BOOL bJustReleased = (!bHolding && _abButtonStates[iCtrl + eButton]);
+    const BOOL bJustPressed  = (bHolding && !_abButtonStates[iFirstButton + eButton]);
+    const BOOL bJustReleased = (!bHolding && _abButtonStates[iFirstButton + eButton]);
 
-    _abButtonStates[iCtrl + eButton] = bHolding;
+    _abButtonStates[iFirstButton + eButton] = bHolding;
 
     if (bJustPressed) {
       SDL_zero(event);
@@ -104,6 +104,9 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
     }
   }
 
+  static BOOL _abAxisStates[MAX_JOYSTICKS * SDL_CONTROLLER_AXIS_MAX] = { 0 };
+  const INDEX iFirstAxis = iCtrl * SDL_CONTROLLER_AXIS_MAX;
+
   // [Cecil] NOTE: This code only checks whether some axis has been moved past 50% in either direction
   // in order to determine when it has been significantly moved and reset
   for (ULONG eAxis = 0; eAxis < SDL_CONTROLLER_AXIS_MAX; eAxis++) {
@@ -111,9 +114,9 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
 
     // Holding the axis past the half of the max value in either direction
     const BOOL bHolding = Abs(slMotion) > SDL_JOYSTICK_AXIS_MAX / 2;
-    const BOOL bJustPressed = (bHolding && !_abAxisStates[iCtrl + eAxis]);
+    const BOOL bJustPressed = (bHolding && !_abAxisStates[iFirstAxis + eAxis]);
 
-    _abAxisStates[iCtrl + eAxis] = bHolding;
+    _abAxisStates[iFirstAxis + eAxis] = bHolding;
 
     if (bJustPressed) {
       SDL_zero(event);
