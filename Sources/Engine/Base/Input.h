@@ -1,4 +1,5 @@
-/* Copyright (c) 2002-2012 Croteam Ltd. 
+/* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2024 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -71,7 +72,7 @@ struct GameController_t {
   GameController_t();
   ~GameController_t();
 
-  void Connect(INDEX iSetSlot);
+  void Connect(INDEX iConnectSlot, INDEX iArraySlot);
   void Disconnect(void);
   BOOL IsConnected(void);
 };
@@ -123,7 +124,7 @@ public:
   // Scan states of all available input sources
   void GetInput(BOOL bPreScan);
   // Clear all input states (keys become not pressed, axes are reset to zero)
-  void ClearInput( void);
+  void ClearInput(void);
 
 // [Cecil] Second mouse interface
 public:
@@ -141,7 +142,7 @@ public:
 
   // [Cecil] Open a game controller under some slot
   // Slot index always ranges from 0 to SDL_NumJoysticks()-1
-  void OpenGameController(INDEX iSlot);
+  void OpenGameController(INDEX iConnectSlot);
 
   // [Cecil] Close a game controller under some device index
   // This device index is NOT the same as a slot and it's always unique for each added controller

@@ -1,4 +1,5 @@
 /* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2024 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -29,11 +30,11 @@ GameController_t::~GameController_t() {
 };
 
 // Open a game controller under some slot
-void GameController_t::Connect(INDEX iSetSlot) {
+void GameController_t::Connect(INDEX iConnectSlot, INDEX iArraySlot) {
   ASSERT(handle == NULL && iInfoSlot == -1);
 
-  handle = SDL_GameControllerOpen(iSetSlot);
-  iInfoSlot = iSetSlot + 1;
+  handle = SDL_GameControllerOpen(iConnectSlot);
+  iInfoSlot = iArraySlot + 1;
 };
 
 // Close an open game controller
@@ -77,8 +78,8 @@ void CInput::PrintJoysticksInfo(void) {
       strName = SDL_GetError();
     }
 
-    CPrintF("'%s': ", strName);
-    CPrintF(TRANS("%d axes, %d buttons, %d hats\n"), SDL_JoystickNumAxes(pJoystick),
+    CPrintF("'%s':", strName);
+    CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), SDL_JoystickNumAxes(pJoystick),
       SDL_JoystickNumButtons(pJoystick), SDL_JoystickNumHats(pJoystick));
   }
 
@@ -87,33 +88,36 @@ void CInput::PrintJoysticksInfo(void) {
 
 // [Cecil] Open a game controller under some slot
 // Slot index always ranges from 0 to SDL_NumJoysticks()-1
-void CInput::OpenGameController(INDEX iSlot)
+void CInput::OpenGameController(INDEX iConnectSlot)
 {
   // Not a game controller
-  if (!SDL_IsGameController(iSlot)) return;
+  if (!SDL_IsGameController(iConnectSlot)) return;
 
   // Check if this controller is already connected
-  const SDL_JoystickID iDevice = SDL_JoystickGetDeviceInstanceID(iSlot);
+  const SDL_JoystickID iDevice = SDL_JoystickGetDeviceInstanceID(iConnectSlot);
   if (GetControllerSlotForDevice(iDevice) != -1) return;
 
   // Find an empty slot for opening a new controller
   GameController_t *pToOpen = NULL;
+  INDEX iArraySlot = -1;
   const INDEX ct = inp_aControllers.Count();
 
   for (INDEX i = 0; i < ct; i++) {
     if (!inp_aControllers[i].IsConnected()) {
+      // Remember controller and its slot
       pToOpen = &inp_aControllers[i];
+      iArraySlot = i;
       break;
     }
   }
 
   // No slots left
-  if (pToOpen == NULL) {
+  if (pToOpen == NULL || iArraySlot == -1) {
     CPrintF(TRANS("Cannot open another game controller due to all %d slots being occupied!\n"), ct);
     return;
   }
 
-  pToOpen->Connect(iSlot);
+  pToOpen->Connect(iConnectSlot, iArraySlot);
 
   if (!pToOpen->IsConnected()) {
     CPrintF(TRANS("Cannot open another game controller! SDL Error: %s\n"), SDL_GetError());
@@ -129,14 +133,12 @@ void CInput::OpenGameController(INDEX iSlot)
   }
 
   CPrintF(TRANS("Connected '%s' to controller slot %d\n"), strName, pToOpen->iInfoSlot);
-  int ctAxes = SDL_JoystickNumAxes(pJoystick);
 
-  CPrintF(TRANS("  %d axes\n"), ctAxes);
-  CPrintF(TRANS("  %d buttons\n"), SDL_JoystickNumButtons(pJoystick));
-  CPrintF(TRANS("  %d hats\n"), SDL_JoystickNumHats(pJoystick));
+  int ctAxes = SDL_JoystickNumAxes(pJoystick);
+  CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), ctAxes, SDL_JoystickNumButtons(pJoystick), SDL_JoystickNumHats(pJoystick));
 
   // Check whether all axes exist
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iArraySlot * SDL_CONTROLLER_AXIS_MAX;
 
   for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
     InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
