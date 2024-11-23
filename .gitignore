@@ -55,6 +55,7 @@ Debug/*
 *.res
 *.lastbuildstate
 *.idb
+*.aps
 
 # Generated configuration files
 Data/*.bin

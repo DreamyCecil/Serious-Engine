@@ -116,9 +116,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define IDC_EDIT_CONTROLS_NAME          1059
 #define IDC_COMBO_AVAILABLE_PLAYERS     1109
 #define IDC_COMBO_AVAILABLE_CONTROLS    1110
-#define ID_BUTTON_ACTION_EDIT           32772
-#define ID_BUTTON_ACTION_ADD            32773
-#define ID_BUTTON_ACTION_REMOVE         32774
+#define ID_BUTTON_ACTION_EDIT           32672
+#define ID_BUTTON_ACTION_ADD            32673
+#define ID_BUTTON_ACTION_REMOVE         32674
 
 // Next default values for new objects
 // 

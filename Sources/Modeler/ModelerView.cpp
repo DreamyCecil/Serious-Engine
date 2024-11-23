@@ -1052,6 +1052,11 @@ void CModelerView::RenderView( CDrawPort *pDrawPort)
 
 void CModelerView::OnDraw(CDC* pDC)
 {
+#if SE1_SINGLE_THREAD
+  // [Cecil] Run timer logic in the same thread
+  _pTimer->HandleTimerHandlers();
+#endif
+
   CModelerDoc* pDoc = GetDocument();
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
   ASSERT_VALID(pDoc);

@@ -547,6 +547,11 @@ void CSeriousSkaStudioView::RenderView(CDrawPort *pdp)
 
 void CSeriousSkaStudioView::OnDraw(CDC* pDC)
 {
+#if SE1_SINGLE_THREAD
+  // [Cecil] Run timer logic in the same thread
+  _pTimer->HandleTimerHandlers();
+#endif
+
 	CSeriousSkaStudioDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	

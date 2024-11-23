@@ -202,6 +202,11 @@ void CGame::QuickTest(const CTFileName &fnMapName,
   // while it is still running
   while( bRunning)
   {
+  #if SE1_SINGLE_THREAD
+    // [Cecil] Run timer logic in the same thread
+    _pTimer->HandleTimerHandlers();
+  #endif
+
     // [Cecil] Cross-platform events
     OS::SE1Event event;
 
