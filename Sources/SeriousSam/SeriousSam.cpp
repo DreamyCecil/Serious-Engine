@@ -53,9 +53,10 @@ INDEX sam_bWideScreen = FALSE;
 FLOAT sam_fPlayerOffset = 0.0f;
 
 // display mode settings
-INDEX sam_iWindowMode = 0; // [Cecil] Different window modes
-INDEX sam_iScreenSizeI = 1024;  // current size of the window
-INDEX sam_iScreenSizeJ = 768;  // current size of the window
+INDEX sam_iWindowMode = E_WM_BORDERLESS; // [Cecil] Different window modes; borderless window by default
+// [Cecil] Set monitor resolution by default
+INDEX sam_iScreenSizeI = -1;  // current size of the window
+INDEX sam_iScreenSizeJ = -1;  // current size of the window
 INDEX sam_iDisplayDepth  = 0;  // 0==default, 1==16bit, 2==32bit
 INDEX sam_iDisplayAdapter = 0; 
 INDEX sam_iGfxAPI = 0;         // 0==OpenGL
@@ -1436,6 +1437,14 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
 {
   CPrintF( TRANS("\n* START NEW DISPLAY MODE ...\n"));
 
+  // [Cecil] Reset invalid resolutions to the monitor one
+  if (pixSizeI <= 0 || pixSizeJ <= 0) {
+    pixSizeI = _vpixScreenRes(1);
+    pixSizeJ = _vpixScreenRes(2);
+    iWindowMode = E_WM_BORDERLESS;
+    CPrintF(TRANS("Invalid resolution detected! Resetting to fullscreen monitor resolution...\n"));
+  }
+
   // try to set the mode
   BOOL bSuccess = TryToSetDisplayMode( eGfxAPI, iAdapter, pixSizeI, pixSizeJ, eColorDepth, (EWindowModes)iWindowMode);
 
@@ -1445,15 +1454,18 @@ void StartNewMode( enum GfxAPIType eGfxAPI, INDEX iAdapter, PIX pixSizeI, PIX pi
     // report failure and reset to default resolution
     _iDisplayModeChangeFlag = 2;  // failure
     CPrintF( TRANS("Requested display mode could not be set!\n"));
-    pixSizeI = 640;
-    pixSizeJ = 480;
 
-    // [Cecil] Fullscreen is only required for 3Dfx to work properly
-  #if SE1_3DFX
-    iWindowMode = E_WM_FULLSCREEN;
-  #else
-    iWindowMode = E_WM_WINDOWED;
-  #endif
+    // [Cecil] 3Dfx compatibility mode
+    #if SE1_3DFX
+      pixSizeI = 640;
+      pixSizeJ = 480;
+      iWindowMode = E_WM_FULLSCREEN;
+    #else
+      // [Cecil] 640x480 was too small by default
+      pixSizeI = 1024;
+      pixSizeJ = 768;
+      iWindowMode = E_WM_WINDOWED;
+    #endif
 
     // try to revert to one of recovery modes
     for( INDEX iMode=0; iMode<ctDefaultModes; iMode++) {
