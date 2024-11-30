@@ -262,11 +262,11 @@ inline ANGLE AngleDeg(FLOAT fDegrees) {
 }
 // convert radians into angle
 inline ANGLE AngleRad(FLOAT fRadians) {
-  return ANGLE (fRadians*ANGLE_180/PI);
+  return ANGLE(fRadians * ANGLE_180 / PI);
 }
 // convert radians into angle
 inline ANGLE AngleRad(DOUBLE dRadians) {
-  return ANGLE (dRadians*ANGLE_180/PI);
+  return ANGLE(dRadians * ANGLE_180 / PI);
 }
 // convert angle into degrees
 inline FLOAT DegAngle(ANGLE aAngle) {
@@ -275,7 +275,8 @@ inline FLOAT DegAngle(ANGLE aAngle) {
 }
 // convert angle into radians
 inline FLOAT RadAngle(ANGLE aAngle) {
-  return FLOAT (WrapAngle(aAngle)*PI/ANGLE_180);
+  // [Cecil] Removed WrapAngle() from the angle to preserve the sign
+  return FLOAT(aAngle * PI / ANGLE_180);
 }
 
 // [Cecil] Replaced old overcomplicated implementations with fast ones
