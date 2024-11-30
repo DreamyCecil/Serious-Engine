@@ -237,6 +237,9 @@ extern INDEX inp_bForceJoystickPolling;
 // [Cecil] Threshold for moving any axis to consider it as being "held down"
 FLOAT inp_fAxisPressThreshold = 0.2f;
 
+// [Cecil] Pixel threshold for moving the mouse to consider any of its axes as being "held down"
+INDEX inp_iMouseMovePressThreshold = 5;
+
 extern void RendererInfo(void);
 extern void ClearRenderer(void);
 
@@ -891,8 +894,9 @@ void CNetworkLibrary::Init(void)
   _pShell->DeclareSymbol("persistent user INDEX inp_ctJoysticksAllowed;",    &inp_ctJoysticksAllowed);
   _pShell->DeclareSymbol("persistent user INDEX inp_bForceJoystickPolling;", &inp_bForceJoystickPolling);
 
-  // [Cecil] Threshold for moving any axis to consider it as being "held down"
+  // [Cecil] Input thresholds for considering input axes as being "held down"
   _pShell->DeclareSymbol("persistent user FLOAT inp_fAxisPressThreshold;", &inp_fAxisPressThreshold);
+  _pShell->DeclareSymbol("persistent user INDEX inp_iMouseMovePressThreshold;", &inp_iMouseMovePressThreshold);
 
   // [Cecil] Display info about current joysticks
   _pShell->DeclareSymbol("user void inp_JoysticksInfo(void);", &CInput::PrintJoysticksInfo);

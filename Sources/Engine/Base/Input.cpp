@@ -412,7 +412,7 @@ CInput *_pInput = NULL;
 
 // [Cecil]
 bool InputDeviceAction::IsActive(DOUBLE fThreshold) const {
-  return Abs(ida_fReading) >= ClampUp(fThreshold, 1.0);
+  return Abs(ida_fReading) >= Clamp(fThreshold, 0.01, 1.0);
 };
 
 // deafult constructor
@@ -843,9 +843,12 @@ void CInput::ClearInput(void)
 
 // Get given button's current state
 BOOL CInput::GetButtonState(INDEX iButtonNo) const {
-  // [Cecil] Exclude mouse axes
+  const InputDeviceAction &ida = inp_aInputActions[iButtonNo];
+
+  // [Cecil] When using mouse axes as "buttons", check if they've been moved further than some amount of pixels
   if (iButtonNo >= FIRST_AXIS_ACTION && iButtonNo < FIRST_AXIS_ACTION + EIA_MAX_MOUSE) {
-    return FALSE;
+    extern INDEX inp_iMouseMovePressThreshold;
+    return Abs(ida.ida_fReading) >= ClampDn(inp_iMouseMovePressThreshold, 1);
   }
 
   // [Cecil] Set custom threshold for axes
@@ -856,5 +859,5 @@ BOOL CInput::GetButtonState(INDEX iButtonNo) const {
     fThreshold = inp_fAxisPressThreshold;
   }
 
-  return inp_aInputActions[iButtonNo].IsActive(fThreshold);
+  return ida.IsActive(fThreshold);
 };
