@@ -1357,7 +1357,8 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
 
     // adjust for italic
     if( bItalic) {
-      const FLOAT fAdjustX = fTextScalingX * (fY1-fY0)*0.2f;  // 20% slanted
+      // [Cecil] Fixed larger slant with larger text scaling (fY1-fY0  ->  pixCharHeight)
+      const FLOAT fAdjustX = fTextScalingX * FLOAT(pixCharHeight) * 0.2f;  // 20% slanted
       pvtx[0].x += fAdjustX;
       pvtx[3].x += fAdjustX;
     }
