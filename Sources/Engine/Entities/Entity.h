@@ -27,9 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Math/AABBox.h>
 #include <Engine/Math/Placement.h>
 #include <Engine/Entities/EntityEvent.h>
-#include <Engine/Entities/EntityPointer.h>
 #include <Engine/Ska/ModelInstance.h>
-
 
 #define DUMPVECTOR(v) \
   strm.FPrintF_t(#v ":  %g,%g,%g %08x,%08x,%08x\n", \
@@ -50,11 +48,6 @@ public:
   FLOAT fs_fAcceleration;   // acceleration of the force (m/s2) (along the direction)
   FLOAT fs_fVelocity;       // max. velocity that force can give (m/s) (along the direction)
 };
-
-
-#define DECL_DLL ENGINE_API
-#include <Engine/Classes/BaseEvents.h>
-#undef DECL_DLL
 
 /*
  * Flags determining whether some entity is active in some game type or difficulty level.
@@ -106,6 +99,9 @@ public:
 
 // selections of entities
 typedef CSelection<CEntity, ENF_SELECTED> CEntitySelection;
+
+// [Cecil] Declare entity pointer class
+class CEntityPointer;
 
 /*
  *  General structure of an entity instance.
@@ -697,32 +693,13 @@ __forceinline BOOL IsDerivedFromClass(CEntity *pen, const CTString &strClassName
   return IsDerivedFromClass(pen, strClassName.ConstData());
 };
 
-// all standard smart pointer functions are here as inlines
-inline CEntityPointer::CEntityPointer(void) : ep_pen(NULL) {};
-inline CEntityPointer::~CEntityPointer(void) {
-  if (ep_pen != NULL) ep_pen->RemReference();
-};
-inline CEntityPointer::CEntityPointer(const CEntityPointer &penOther) : ep_pen(penOther.ep_pen) {
-  if (ep_pen != NULL) ep_pen->AddReference();
-};
-inline CEntityPointer::CEntityPointer(CEntity *pen) : ep_pen(pen) {
-  if (ep_pen != NULL) ep_pen->AddReference();
-};
-inline const CEntityPointer &CEntityPointer::operator=(CEntity *pen) {
-  if (pen != NULL) pen->AddReference();    // must first add, then remove!
-  if (ep_pen != NULL) ep_pen->RemReference();
-  ep_pen = pen;
-  return *this;
-}
-inline const CEntityPointer &CEntityPointer::operator=(const CEntityPointer &penOther) {
-  if (penOther.ep_pen != NULL) penOther.ep_pen->AddReference();    // must first add, then remove!
-  if (ep_pen != NULL) ep_pen->RemReference();
-  ep_pen = penOther.ep_pen;
-  return *this;
-}
-inline CEntity* CEntityPointer::operator->(void) const { return ep_pen; }
-inline CEntityPointer::operator CEntity*(void) const { return ep_pen; }
-inline CEntity& CEntityPointer::operator*(void) const { return *ep_pen; }
+// [Cecil] Defined all entity pointer methods in there
+#include <Engine/Entities/EntityPointer.h>
+
+// [Cecil] Define all the base events after the entity class, not before
+#define DECL_DLL ENGINE_API
+#include <Engine/Classes/BaseEvents.h>
+#undef DECL_DLL
 
 /////////////////////////////////////////////////////////////////////
 // Reference counting functions

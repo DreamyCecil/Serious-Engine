@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 #define DECL_DLL ENGINE_API
 #include <Engine/Entities/EntityEvent.h>
-#include <Engine/Entities/EntityPointer.h>
 #include <Engine/Math/Vector.h>
 #include <Engine/Math/Plane.h>
 #include <Engine/Entities/EntityProperties.h>
