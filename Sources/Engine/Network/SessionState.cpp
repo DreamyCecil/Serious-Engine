@@ -693,7 +693,8 @@ void CSessionState::HandleMovers(void)
 // do thinking for a game tick
 void CSessionState::HandleTimers(TIME tmCurrentTick)
 {
-#define TIME_EPSILON 0.0001f
+// [Cecil] TEMP: Use higher epsilon value to prevent float imprecision between ticks (0.0001 -> 0.01 == 1/5 of a tick at 20 tps)
+#define TIME_EPSILON 0.01f
   IFDEBUG(TIME tmLast = 0.0f);
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLETIMERS);
