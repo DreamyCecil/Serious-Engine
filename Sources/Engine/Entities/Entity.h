@@ -95,6 +95,7 @@ public:
 #define ENF_TEMPPREDICTOR     (1L<<20)  // predictor that was spawned during prediction (doesn't have a predictor)
 #define ENF_HIDDEN            (1L<<21)  // set if the entity is hidden (for editing)
 #define ENF_NOSHADINGINFO     (1L<<22)  // the entity doesn't need FindShadingInfo(), it will set its own shading
+#define ENF_DYNAMICENTITY     (1L<<23)  // [Cecil] Set when entity cannot be instantiated in world editor, i.e. initialized with EVoid event
 
 
 // selections of entities
@@ -234,8 +235,9 @@ public:
   /* Internal versions for entity reinitialization (do not discard shadows etc.). */
   void Initialize_internal(const CEntityEvent &eeInput);
   void End_internal(void);
-  /* Reinitialize the entity. */
-  void Reinitialize(void);
+
+  // [Cecil] Reinitialize the entity with any event
+  void Reinitialize(const CEntityEvent &eeInput = _eeVoid);
 
   // internal repositioning function
   virtual void SetPlacement_internal(const CPlacement3D &plNew, const FLOATmatrix3D &mRotation,

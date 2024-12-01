@@ -667,11 +667,19 @@ void CEntity::OnInitialize(const CEntityEvent &eeInput)
   ASSERT(GetFPUPrecision()==FPT_24BIT);
 
   // try to find a handler in start state
-  pEventHandler pehHandler = HandlerForStateAndEvent(1, eeInput.ee_slEvent);
+  const SLONG slEventID = eeInput.ee_slEvent;
+  pEventHandler pehHandler = HandlerForStateAndEvent(1, slEventID);
+
   // if there is a handler
   if (pehHandler!=NULL) {
+    // [Cecil] Mark entity as dynamic if it doesn't take EVoid on initialization
+    if (slEventID != _eeVoid.ee_slEvent) {
+      en_ulFlags |= ENF_DYNAMICENTITY;
+    }
+
     // call the function
     (this->*pehHandler)(eeInput);
+
   // if there is no handler
   } else {
     ASSERTALWAYS("All entities must have Main procedure!");
@@ -822,15 +830,19 @@ void CEntity::End_internal(void)
   en_RenderType = RT_NONE;
 }
 
-/*
- * Reinitialize the entity.
- */
-void CEntity::Reinitialize(void)
+// [Cecil] Reinitialize the entity with any event
+void CEntity::Reinitialize(const CEntityEvent &eeInput)
 {
-  ASSERT(GetFPUPrecision()==FPT_24BIT);
+  // [Cecil] Dynamic entities cannot be reinitialized with EVoid
+  if (eeInput.ee_slEvent == _eeVoid.ee_slEvent && (en_ulFlags & ENF_DYNAMICENTITY)) {
+    ASSERTALWAYS("Trying to reinitialize a dynamic entity with an incorrect entity event!");
+    return;
+  }
+
+  ASSERT(GetFPUPrecision() == FPT_24BIT);
   End_internal();
-  Initialize_internal(_eeVoid);
-}
+  Initialize_internal(eeInput);
+};
 
 // teleport this entity to a new location -- takes care of telefrag damage
 void CEntity::Teleport(const CPlacement3D &plNew, BOOL bTelefrag /*=TRUE*/)
