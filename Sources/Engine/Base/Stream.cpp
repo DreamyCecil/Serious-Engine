@@ -956,9 +956,9 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
                             enum CTStream::CreateMode cm) // throws char *
 {
   (void)cm; // OBSOLETE!
-  
+
   CTFileName fnFileNameAbsolute = fnFileName;
-  fnFileNameAbsolute.SetAbsolutePath();
+  fnFileNameAbsolute.NormalizePath();
 
   // [Cecil] Create the directory for the new file if it doesn't exist yet
   CreateAllDirectories(fnFileNameAbsolute);
@@ -1532,7 +1532,7 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
 INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded)
 {
   CTFileName fnmFileAbsolute = fnmFile;
-  fnmFileAbsolute.SetAbsolutePath();
+  fnmFileAbsolute.NormalizePath();
 
   // if writing
   if (ulType&EFP_WRITE) {
@@ -1540,13 +1540,13 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
     if (_fnmMod!="" && (!FileMatchesList(_afnmBaseWriteInc, fnmFileAbsolute) || FileMatchesList(_afnmBaseWriteExc, fnmFileAbsolute))) {
       // do that
       fnmExpanded = _fnmApplicationPath+_fnmMod+fnmFileAbsolute;
-      fnmExpanded.SetAbsolutePath();
+      fnmExpanded.NormalizePath();
       return EFP_FILE;
     // if should not write to mod dir
     } else {
       // write to base dir
       fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
-      fnmExpanded.SetAbsolutePath();
+      fnmExpanded.NormalizePath();
       return EFP_FILE;
     }
 
@@ -1564,7 +1564,7 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
       }
     }
 
-    fnmExpanded.SetAbsolutePath();
+    fnmExpanded.NormalizePath();
 
     if (iRes!=EFP_NONE) {
       return iRes;
@@ -1574,11 +1574,11 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
   } else  {
     ASSERT(FALSE);
     fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
-    fnmExpanded.SetAbsolutePath();
+    fnmExpanded.NormalizePath();
     return EFP_FILE;
   }
 
   fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
-  fnmExpanded.SetAbsolutePath();
+  fnmExpanded.NormalizePath();
   return EFP_NONE;
 }

@@ -1575,7 +1575,7 @@ void CWorldEditorApp::WriteToIniFileOnEnd(void)
   if( theApp.m_ptdActiveTexture != NULL)
   {
     CTFileName fnTextureForPrimitive( theApp.m_ptdActiveTexture->GetName());
-    fnTextureForPrimitive.SetAbsolutePath();
+    fnTextureForPrimitive.NormalizePath();
     strcpy( strIni, fnTextureForPrimitive);
     WriteProfileString( L"World editor prefs", L"Default primitive texture", CString(strIni));
   }

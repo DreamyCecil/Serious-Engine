@@ -99,7 +99,7 @@ size_t CTString::GoUpUntilDir(CTString strDirName) const {
 
 // [Cecil] Normalize the path taking "backward" and "current" directories into consideration
 // E.g. "abc/sub1/../sub2/./qwe" -> "abc/sub2/qwe"
-void CTString::SetAbsolutePath(void) {
+void CTString::NormalizePath(void) {
   CTString strPath(*this);
   strPath.ReplaceChar('/', '\\');
 
@@ -177,7 +177,7 @@ size_t CTString::RootNameLength() const {
 BOOL CTString::RemoveApplicationPath_t(void) // throws char *
 {
   CTString fnmApp = _fnmApplicationPath;
-  fnmApp.SetAbsolutePath();
+  fnmApp.NormalizePath();
   // remove the path string from beginning of the string
   BOOL bIsRelative = RemovePrefix(fnmApp);
   if (_fnmMod!="") {
@@ -201,8 +201,8 @@ void CTString::SetFullDirectory(void) {
     str = _fnmApplicationPath + str;
   }
 
-  // Convert the rest of the path into absolute path
-  str.SetAbsolutePath();
+  // Normalize the rest of the path
+  str.NormalizePath();
 };
 
 // [Cecil] Read string as a filename from a stream

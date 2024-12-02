@@ -5155,7 +5155,7 @@ void ExportLayer_t(CWorldEditorDoc *pDoc, CEntity &en, ExportType etExportType, 
         if( (bpo.bpo_ulFlags&BPOF_PORTAL) && (bpo.bpo_ulFlags&BPOF_TRANSLUCENT) ) {
           strmAmf.FPrintF_t("        \"blend type\" BlendType \"%translucent\";\n");
         }
-        //strPath.SetAbsolutePath();
+        //strPath.NormalizePath();
         //strPath.ReplaceSubstr("\\", "\\\\");
         //strmAmf.FPrintF_t("        \"base texture\" Texture \"%s\";\n", strPath);
         //strmAmf.FPrintF_t("        \"base uvmap\" UVMap \"Texture 1\";\n");

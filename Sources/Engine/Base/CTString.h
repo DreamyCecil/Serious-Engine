@@ -367,7 +367,7 @@ public:
 
   // Normalize the path taking "backward" and "current" directories into consideration
   // E.g. "abc/sub1/../sub2/./qwe" -> "abc/sub2/qwe"
-  void SetAbsolutePath(void);
+  void NormalizePath(void);
 
   // Get length of the root name, if there's any
   size_t RootNameLength() const;
