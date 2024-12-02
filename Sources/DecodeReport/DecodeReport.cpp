@@ -90,7 +90,7 @@ void SubMain( int argc, char *argv[])
   }
   
   // initialize engine
-  SE_InitEngine();
+  SE_InitEngine(E_SEAPP_OTHER);
 
   CTFileName fnSrc = CTString(argv[1]);
   CTFileName fnDst = CTString(argv[2]);

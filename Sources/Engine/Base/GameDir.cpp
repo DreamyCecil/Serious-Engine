@@ -77,7 +77,7 @@ const CTFileName &_fnmApplicationPath = _fnmInternalAppPath;
 const CTFileName &_fnmApplicationExe = _fnmInternalAppExe;
 
 // Determine application paths for the first time
-void DetermineAppPaths(void) {
+void DetermineAppPaths(CTString strSpecifiedRootDir) {
   // Get full path to the executable module
   // E.g. "C:\\SeriousSam\\Bin\\x64\\SeriousSam.exe"
   char strPathBuffer[1024];
@@ -90,38 +90,57 @@ void DetermineAppPaths(void) {
   SDL_free(strExePath);
 #endif
 
-  CTString strPath(strPathBuffer);
-  strPath.ReplaceChar('/', '\\');
+  // Normalize path to the executable
+  CTString strExePath(strPathBuffer);
+  strExePath.NormalizePath();
+
+  // Begin determining the root directory
+  CTString strRootPath = strExePath;
+  strRootPath.ReplaceChar('/', '\\');
 
   // Cut off module filename to end up with the directory
-  // E.g. "C:\\SeriousSam\\Bin\\x64"
-  strPath.Erase(strPath.RFind('\\'));
+  // E.g. "C:\\SeriousSam\\Bin\\x64\\"
+  strRootPath.Erase(strRootPath.RFind('\\') + 1);
 
-  // Check if there's a Bin folder in the middle
-  size_t iPos = strPath.RFind("\\Bin\\");
+  BOOL bSpecifiedRootDir = FALSE;
 
-  if (iPos != CTString::npos) {
-    strPath.Erase(iPos);
+  // Check if the specified root directory is valid
+  if (strSpecifiedRootDir != "") {
+    const BOOL bAbsolute = strSpecifiedRootDir.SetFullDirectory();
 
-  } else {
-    // Check if there's a Bin folder at the end
-    iPos = strPath.RFind("\\Bin");
+    // Add executable path to the beginning of the relative directory and normalize it
+    if (!bAbsolute) {
+      strSpecifiedRootDir = strRootPath + strSpecifiedRootDir;
+      strSpecifiedRootDir.NormalizePath();
+    }
 
-    if (iPos == strPath.Length() - 4) {
-      strPath.Erase(iPos);
+    // Use the specified directory if it's a part of the path to the executable
+    if (strRootPath.HasPrefix(strSpecifiedRootDir)) {
+      strRootPath.Erase(strSpecifiedRootDir.Length());
+      bSpecifiedRootDir = TRUE;
+    }
+  }
+
+  // Determine root directory from the Bin folder
+  if (!bSpecifiedRootDir) {
+    // Check if there's a Bin folder somewhere in the middle or at the end
+    size_t iPos = strRootPath.RFind("\\Bin\\");
+
+    if (iPos != CTString::npos) {
+      strRootPath.Erase(iPos + 1);
     }
   }
 
   // Get cut-off position before the Bin directory
   // E.g. between "C:\\SeriousSam\\" and "Bin\\x64\\SeriousSam.exe"
-  const size_t iBinDir = strPath.Length() + 1;
+  const size_t iBinDir = strRootPath.Length();
 
   // Copy absolute path to the game directory and relative path to the executable
-  CTString(strPathBuffer).Split((INDEX)iBinDir, _fnmInternalAppPath, _fnmInternalAppExe);
+  strExePath.Split((INDEX)iBinDir, _fnmInternalAppPath, _fnmInternalAppExe);
 };
 
 // Create a series of directories within the game folder
-void CreateAllDirectories(CTString strPath) {
+void CreateAllDirectories(const CTString &strPath) {
   size_t iDir = 0;
 
   // Get next directory from the last position

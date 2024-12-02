@@ -206,16 +206,16 @@ enum EEngineAppType {
   E_SEAPP_EDITOR, // World editor
 };
 
-// some global stuff
-ENGINE_API void SE_InitEngine(EEngineAppType eType = E_SEAPP_OTHER); // [Cecil] TEMP: App type
+// [Cecil] Application type and game root directory (blank for automatic)
+ENGINE_API void SE_InitEngine(EEngineAppType eType, const CTString &strRootDir = "");
 ENGINE_API void SE_EndEngine(void);
 ENGINE_API void SE_LoadDefaultFonts(void);
 ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndWindowed);
 ENGINE_API void SE_PretouchIfNeeded(void);
 
-extern ENGINE_API CTString _strEngineBuild;  // not valid before InitEngine()!
-extern ENGINE_API ULONG _ulEngineBuildMajor;
-extern ENGINE_API ULONG _ulEngineBuildMinor;
+ENGINE_API extern CTString _strEngineBuild;  // not valid before InitEngine()!
+ENGINE_API extern ULONG _ulEngineBuildMajor;
+ENGINE_API extern ULONG _ulEngineBuildMinor;
 
 // [Cecil] TEMP: Current application type
 ENGINE_API extern EEngineAppType _eEngineAppType;
@@ -224,7 +224,7 @@ ENGINE_API extern EEngineAppType _eEngineAppType;
 #define _bDedicatedServer bool(_eEngineAppType == E_SEAPP_SERVER)
 #define _bWorldEditorApp  bool(_eEngineAppType == E_SEAPP_EDITOR)
 
-extern ENGINE_API CTString _strLogFile;
+ENGINE_API extern CTString _strLogFile;
 
 // temporary vars for adjustments
 ENGINE_API extern FLOAT tmp_af[10];

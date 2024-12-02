@@ -57,7 +57,7 @@ void SubMain( int argc, char *argv[])
   }
   
   // initialize engine
-  SE_InitEngine();
+  SE_InitEngine(E_SEAPP_OTHER);
 
   // get all filenames from command line
   CTFileName afnFiles[3];

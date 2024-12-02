@@ -51,14 +51,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // this version string can be referenced from outside the engine
-ENGINE_API CTString _strEngineBuild  = "";
-ENGINE_API ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
-ENGINE_API ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
+CTString _strEngineBuild  = "";
+ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
+ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
 
 // [Cecil] TEMP: Current application type
 EEngineAppType _eEngineAppType = E_SEAPP_OTHER;
 
-ENGINE_API CTString _strLogFile = "";
+CTString _strLogFile = "";
 
 // global handle for application window
 OS::Window _hwndCurrent = NULL;
@@ -242,7 +242,7 @@ static void SE_InitSDL(ULONG ulFlags) {
 };
 
 // startup engine 
-ENGINE_API void SE_InitEngine(EEngineAppType eType)
+void SE_InitEngine(EEngineAppType eType, const CTString &strRootDir)
 {
   // [Cecil] SDL: Initialize for gameplay or for basic stuff
   const BOOL bGameApp = (eType == E_SEAPP_GAME || eType == E_SEAPP_EDITOR);
@@ -268,7 +268,7 @@ ENGINE_API void SE_InitEngine(EEngineAppType eType)
   _eEngineAppType = eType;
 
   // [Cecil] Determine application paths for the first time
-  DetermineAppPaths();
+  DetermineAppPaths(strRootDir);
 
   _pConsole = new CConsole;
   if (_strLogFile=="") {
@@ -561,7 +561,7 @@ ENGINE_API void SE_InitEngine(EEngineAppType eType)
 
 
 // shutdown entire engine
-ENGINE_API void SE_EndEngine(void)
+void SE_EndEngine(void)
 {
 #if !SE1_PREFER_SDL
   // restore system gamma table (if needed)
@@ -628,7 +628,7 @@ ENGINE_API void SE_EndEngine(void)
 
 
 // prepare and load some default fonts
-ENGINE_API void SE_LoadDefaultFonts(void)
+void SE_LoadDefaultFonts(void)
 {
   _pfdDisplayFont = new CFontData;
   _pfdConsoleFont = new CFontData;
@@ -651,7 +651,7 @@ ENGINE_API void SE_LoadDefaultFonts(void)
 
 
 // updates main windows' handles for windowed mode and fullscreen
-ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndMain)
+void SE_UpdateWindowHandle(OS::Window hwndMain)
 {
   ASSERT( hwndMain!=NULL);
   _hwndCurrent = hwndMain;
@@ -663,7 +663,7 @@ ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndMain)
 
 BOOL _bNeedPretouch = FALSE;
 
-ENGINE_API extern void SE_PretouchIfNeeded(void)
+void SE_PretouchIfNeeded(void)
 {
   extern INDEX gam_bPretouch;
   gam_bPretouch = FALSE;
@@ -707,7 +707,7 @@ touchLoop:
 
 // pretouch all memory commited by process
 BOOL _bNeedPretouch = FALSE;
-ENGINE_API extern void SE_PretouchIfNeeded(void)
+void SE_PretouchIfNeeded(void)
 {
   // only if pretouching is needed?
   extern INDEX gam_bPretouch;

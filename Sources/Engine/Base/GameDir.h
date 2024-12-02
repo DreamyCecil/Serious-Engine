@@ -17,9 +17,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SE_INCL_GAMEDIRECTORIES_H
 
 // Determine application paths for the first time
-ENGINE_API void DetermineAppPaths(void);
+ENGINE_API void DetermineAppPaths(CTString strSpecifiedRootDir);
 
 // Create a series of directories within the game folder
-ENGINE_API void CreateAllDirectories(CTString strPath);
+ENGINE_API void CreateAllDirectories(const CTString &strPath);
 
 #endif // include-once check
