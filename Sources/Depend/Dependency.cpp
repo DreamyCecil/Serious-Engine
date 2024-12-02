@@ -276,6 +276,10 @@ void CDependencyList::ImportASCII( CTFileName fnAsciiFile)
     try {
       // load one line from file
       file.GetLine_t( chrOneLine, 256);
+
+      // [Cecil] Skip empty lines
+      if (chrOneLine[0] == '\0') continue;
+
       // create file name from loaded line
       CTFileName fnFileName =  CTString(chrOneLine);
       AdjustFilePath_t(fnFileName);
@@ -297,7 +301,9 @@ void CDependencyList::ImportASCII( CTFileName fnAsciiFile)
         // close file
         _close( file_handle);
       } else {
-        CPrintF("cannot open file '%s'\n", chrOneLine);
+        // [Cecil] Same error message as in CTFileStream::Open_t()
+        CTString strError(0, TRANS("Cannot open file `%s' (%s)"), chrOneLine, strerror(errno));
+        CPrintF("%s\n", strError.ConstData());
       }
     }
     // error, EOF catched
@@ -376,7 +382,8 @@ static void AddStringForTranslation(const CTString &str)
   INDEX ct = _atpPairs.Count();
   for(INDEX i=0; i<ct; i++) {
     // if it is that one
-    if (_atpPairs[i].tp_strSrc == str) {
+    // [Cecil] NOTE: Must always perform a case-sensitive check!
+    if (strcmp(_atpPairs[i].tp_strSrc, str.ConstData()) == 0) {
       // just mark it as used
       _atpPairs[i].m_bUsed = TRUE;
       // don't search any more

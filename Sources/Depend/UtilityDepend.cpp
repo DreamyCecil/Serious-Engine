@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // Depend - extract dependencies and create group file utility
 
 #define ACHR_OPTION        argv[1]
+#define ACHR_APP_DIR       argv[2]
 
 void PrintUsage()
 {
@@ -55,9 +56,9 @@ void SubMain( int argc, char *argv[])
   {
     PrintUsage();
   }
-  
-  // initialize engine
-  SE_InitEngine(E_SEAPP_OTHER);
+
+  // [Cecil] Initialize engine with application path from the command line
+  SE_InitEngine(E_SEAPP_OTHER, ACHR_APP_DIR);
 
   // get all filenames from command line
   CTFileName afnFiles[3];
