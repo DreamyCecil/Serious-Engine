@@ -187,7 +187,8 @@ BOOL CTString::RemoveApplicationPath_t(void) // throws char *
 }
 
 // [Cecil] Convert from a relative path to an absolute path and add missing backslashes
-void CTString::SetFullDirectory(void) {
+// Returns TRUE if the path becomes absolute as a result
+BOOL CTString::SetFullDirectory(void) {
   CTString &str = *this;
   INDEX iLength = str.Length();
 
@@ -197,12 +198,17 @@ void CTString::SetFullDirectory(void) {
   }
 
   // Convert relative path into absolute path
-  if (IsRelative()) {
+  BOOL bAbsolute = IsAbsolute();
+
+  if (!bAbsolute && _fnmApplicationPath != "") {
     str = _fnmApplicationPath + str;
+    bAbsolute = TRUE;
   }
 
-  // Normalize the rest of the path
-  str.NormalizePath();
+  // Normalize the rest of the path (leave relative path as is)
+  if (bAbsolute) str.NormalizePath();
+
+  return bAbsolute;
 };
 
 // [Cecil] Read string as a filename from a stream

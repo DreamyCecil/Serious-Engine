@@ -398,7 +398,8 @@ public:
   };
 
   // Convert from a relative path to an absolute path and add missing backslashes
-  void SetFullDirectory(void);
+  // Returns TRUE if the path becomes absolute as a result
+  BOOL SetFullDirectory(void);
 
 // [Cecil] Migrated methods from CTFileName
 public:
