@@ -118,8 +118,9 @@ void CTString::NormalizePath(void) {
     if (strPart == ".") continue;
 
     // If encountered a "backward" directory and there are some directories written
-    if (strPart == ".." && aFinalPath.size() != 0) {
-      // Remove the last directory (go up one directory) and go to the next one
+    // AND it's not another "backward" directory (that has been written because it can't go up any more)
+    if (strPart == ".." && !aFinalPath.empty() && aFinalPath.back() != "..") {
+      // Remove the last directory (go up one directory) and skip to the next one
       aFinalPath.pop_back();
       continue;
     }
