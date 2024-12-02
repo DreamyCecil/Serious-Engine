@@ -831,7 +831,8 @@ const char *CTString::GetSubstr(const char *strSub, size_t iFrom) const {
   const char *pch = str_String + iFrom;
 
   while (*pch != '\0') {
-    if (!memcmp(pch, strSub, ct)) {
+    // Case-insensitive check
+    if (!strnicmp(pch, strSub, ct)) {
       return pch;
     }
     ++pch;
@@ -884,7 +885,8 @@ size_t CTString::RFind(const char *strSub, size_t iFrom) const {
   iFrom = ClampUp(iFrom, iLen - ct);
 
   do {
-    if (!memcmp(str_String + iFrom, strSub, ct)) {
+    // Case-insensitive check
+    if (!strnicmp(str_String + iFrom, strSub, ct)) {
       return iFrom;
     }
   } while (iFrom-- != 0);
