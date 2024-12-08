@@ -974,7 +974,6 @@ void CModelInstance::Copy(CModelInstance &miOther)
   mi_cbAABox = miOther.mi_cbAABox;
   mi_fnSourceFile = miOther.mi_fnSourceFile;
   mi_vStretch = miOther.mi_vStretch;
-  mi_cbAllFramesBBox = miOther.mi_cbAllFramesBBox;
 
   // copt mesh instance
   CopyMeshInstance(miOther);
