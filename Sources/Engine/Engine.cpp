@@ -55,8 +55,9 @@ CTString _strEngineBuild  = "";
 ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
 ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
 
-// [Cecil] TEMP: Current application type
-EEngineAppType _eEngineAppType = E_SEAPP_OTHER;
+// [Cecil] Engine properties after full initialization
+static SeriousEngineSetup _SE1SetupInternal;
+const SeriousEngineSetup &_SE1Setup = _SE1SetupInternal;
 
 CTString _strLogFile = "";
 
@@ -71,7 +72,6 @@ CTCriticalSection zip_csLock;
 // to keep system gamma table
 static UWORD auwSystemGamma[256*3];
 #endif
-
 
 // OS info
 static CTString sys_strOS = "";
@@ -242,10 +242,12 @@ static void SE_InitSDL(ULONG ulFlags) {
 };
 
 // startup engine 
-void SE_InitEngine(EEngineAppType eType, const CTString &strRootDir)
-{
+void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
+  // [Cecil] Remember setup properties
+  _SE1SetupInternal = engineSetup;
+
   // [Cecil] SDL: Initialize for gameplay or for basic stuff
-  const BOOL bGameApp = (eType == E_SEAPP_GAME || eType == E_SEAPP_EDITOR);
+  const BOOL bGameApp = (_SE1Setup.IsAppGame() || _SE1Setup.IsAppEditor());
   const ULONG ulGameplay = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER;
 
   SE_InitSDL(bGameApp ? ulGameplay : 0);
@@ -264,11 +266,8 @@ void SE_InitEngine(EEngineAppType eType, const CTString &strRootDir)
   WM_XBUTTONUP   = (SDL_EventType)SDL_RegisterEvents(1);
 #endif
 
-  // [Cecil] TEMP: Set application type
-  _eEngineAppType = eType;
-
   // [Cecil] Determine application paths for the first time
-  DetermineAppPaths(strRootDir);
+  DetermineAppPaths(_SE1Setup.strSetupRootDir);
 
   _pConsole = new CConsole;
   if (_strLogFile=="") {
@@ -519,8 +518,8 @@ void SE_InitEngine(EEngineAppType eType, const CTString &strRootDir)
   _pGfx->Init();
   _pSound->Init();
 
-  // [Cecil] TEMP: Significant application
-  if (eType != E_SEAPP_OTHER) {
+  // [Cecil] Significant application
+  if (!_SE1Setup.IsAppOther()) {
     _pNetwork->Init();
     // just make classes declare their shell variables
     try {

@@ -380,7 +380,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
   ParseCommandLine(strCmdLine);
 
   // initialize engine
-  SE_InitEngine(E_SEAPP_GAME);
+  SE_InitEngine({ SeriousEngineSetup::E_GAME });
 
   // [Cecil] Get screen resolution
   _vpixScreenRes = _pGfx->GetMonitorResolution();

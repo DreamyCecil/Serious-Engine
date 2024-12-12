@@ -198,16 +198,31 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Selection.h>
 #include <Engine/Templates/Selection.cpp>
 
-// [Cecil] TEMP: Possible application types
-enum EEngineAppType {
-  E_SEAPP_OTHER,  // Some other application without special functions
-  E_SEAPP_GAME,   // Game client
-  E_SEAPP_SERVER, // Dedicated server
-  E_SEAPP_EDITOR, // World editor
+// [Cecil] Engine setup properties
+struct SeriousEngineSetup {
+  // Possible application types
+  enum EAppType {
+    E_OTHER,  // Some other application without special functions
+    E_GAME,   // Game client
+    E_SERVER, // Dedicated server
+    E_EDITOR, // World editor
+  };
+
+  // Current application type
+  EAppType eAppType;
+
+  // Custom game root directory (just for the setup, not necessarily the same as the eventual _fnmApplicationPath)
+  CTString strSetupRootDir;
+
+  // App type checks
+  __forceinline bool IsAppOther (void) const { return eAppType == E_OTHER; };
+  __forceinline bool IsAppGame  (void) const { return eAppType == E_GAME; };
+  __forceinline bool IsAppServer(void) const { return eAppType == E_SERVER; };
+  __forceinline bool IsAppEditor(void) const { return eAppType == E_EDITOR; };
 };
 
-// [Cecil] Application type and game root directory (blank for automatic)
-ENGINE_API void SE_InitEngine(EEngineAppType eType, const CTString &strRootDir = "");
+// [Cecil] Pass setup properties
+ENGINE_API void SE_InitEngine(const SeriousEngineSetup &engineSetup);
 ENGINE_API void SE_EndEngine(void);
 ENGINE_API void SE_LoadDefaultFonts(void);
 ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndWindowed);
@@ -217,12 +232,12 @@ ENGINE_API extern CTString _strEngineBuild;  // not valid before InitEngine()!
 ENGINE_API extern ULONG _ulEngineBuildMajor;
 ENGINE_API extern ULONG _ulEngineBuildMinor;
 
-// [Cecil] TEMP: Current application type
-ENGINE_API extern EEngineAppType _eEngineAppType;
+// [Cecil] Engine properties after full initialization
+ENGINE_API extern const SeriousEngineSetup &_SE1Setup;
 
 // [Cecil] TEMP: Aliases for old variables (deprecated; use is discouraged)
-#define _bDedicatedServer bool(_eEngineAppType == E_SEAPP_SERVER)
-#define _bWorldEditorApp  bool(_eEngineAppType == E_SEAPP_EDITOR)
+#define _bDedicatedServer (_SE1Setup.IsAppServer())
+#define _bWorldEditorApp  (_SE1Setup.IsAppEditor())
 
 ENGINE_API extern CTString _strLogFile;
 

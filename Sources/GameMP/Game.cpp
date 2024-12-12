@@ -142,7 +142,7 @@ BOOL map_bIsFirstEncounter = FALSE;
 // [Cecil] Load shell symbols from the persistent symbols script
 void LoadPersistentSymbols(void) {
   // No need for dedicated servers
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   _pShell->Execute(CTString(0, "include \"%s\";", fnmPersistentSymbols.ConstData()));
 };

@@ -306,7 +306,7 @@ void CSoundLibrary::Init(void)
   _pShell->DeclareSymbol("persistent user CTString snd_strDeviceName;", &snd_strDeviceName);
 
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) {
+  if (_SE1Setup.IsAppServer()) {
     CPrintF(TRANS("Skipping initialization of sound for dedicated servers...\n"));
     return;
   }
@@ -358,7 +358,7 @@ void CSoundLibrary::Init(void)
  */
 void CSoundLibrary::Clear(void) {
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
@@ -382,7 +382,7 @@ void CSoundLibrary::Clear(void) {
 void CSoundLibrary::ClearLibrary(void)
 {
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
@@ -408,7 +408,7 @@ void CSoundLibrary::Mute(void)
   IFeel_StopEffect(NULL);
 
   // [Cecil] Ignore sounds on a dedicated server or when there's no sound interface
-  if (_eEngineAppType == E_SEAPP_SERVER || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
+  if (_SE1Setup.IsAppServer() || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
 
   _pSound->sl_pInterface->Mute(_bMutedForMixing);
 };
@@ -419,7 +419,7 @@ void CSoundLibrary::Mute(void)
 CSoundLibrary::SoundFormat CSoundLibrary::SetFormat( CSoundLibrary::SoundFormat EsfNew, BOOL bReport/*=FALSE*/)
 {
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) {
+  if (_SE1Setup.IsAppServer()) {
     sl_EsfFormat = SF_NONE;
     return SF_NONE;
   }
@@ -463,7 +463,7 @@ CSoundLibrary::SoundFormat CSoundLibrary::SetFormat( CSoundLibrary::SoundFormat 
 void CSoundLibrary::UpdateSounds(void)
 {
   // [Cecil] Ignore sounds on a dedicated server or when there's no sound interface
-  if (_eEngineAppType == E_SEAPP_SERVER || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
+  if (_SE1Setup.IsAppServer() || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
 
 #if SE1_WIN
   // see if we have valid handle for direct sound and eventually reinit sound
@@ -545,7 +545,7 @@ void CSoundTimerHandler::HandleTimer(void)
 void CSoundLibrary::MixSounds(void)
 {
   // [Cecil] Ignore sounds on a dedicated server or when there's no sound interface
-  if (_eEngineAppType == E_SEAPP_SERVER || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
+  if (_SE1Setup.IsAppServer() || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
 
   // synchronize access to sounds
   CTSingleLock slSounds( &_pSound->sl_csSound, TRUE);
@@ -624,7 +624,7 @@ void CSoundLibrary::MixSounds(void)
  */
 void CSoundLibrary::AddSoundAware(CSoundData &CsdAdd) {
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   // add sound to list tail
   sl_ClhAwareList.AddTail(CsdAdd.sd_Node);
@@ -635,7 +635,7 @@ void CSoundLibrary::AddSoundAware(CSoundData &CsdAdd) {
  */
 void CSoundLibrary::RemoveSoundAware(CSoundData &CsdRemove) {
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   // remove it from list
   CsdRemove.sd_Node.Remove();
@@ -645,7 +645,7 @@ void CSoundLibrary::RemoveSoundAware(CSoundData &CsdRemove) {
 void CSoundLibrary::Listen(CSoundListener &sl)
 {
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   // just add it to list
   if (sl.sli_lnInActiveListeners.IsLinked()) {

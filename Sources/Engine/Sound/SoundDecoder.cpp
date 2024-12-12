@@ -286,7 +286,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
   sdc_pmpeg = NULL;
 
   // [Cecil] Ignore sounds on a dedicated server
-  if (_eEngineAppType == E_SEAPP_SERVER) return;
+  if (_SE1Setup.IsAppServer()) return;
 
   CTFileName fnmExpanded;
   INDEX iFileType = ExpandFilePath(EFP_READ, fnm, fnmExpanded);

@@ -88,9 +88,9 @@ void SubMain( int argc, char *argv[])
     printf( "USAGE:\nDecodeReport <infilename> <outfilename> <symbolsdir>\n");
     exit( EXIT_FAILURE);
   }
-  
+
   // initialize engine
-  SE_InitEngine(E_SEAPP_OTHER);
+  SE_InitEngine({ SeriousEngineSetup::E_OTHER });
 
   CTFileName fnSrc = CTString(argv[1]);
   CTFileName fnDst = CTString(argv[2]);
