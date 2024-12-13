@@ -214,6 +214,12 @@ struct SeriousEngineSetup {
   // Custom game root directory (just for the setup, not necessarily the same as the eventual _fnmApplicationPath)
   CTString strSetupRootDir;
 
+  // Constructor
+  __forceinline SeriousEngineSetup(EAppType eSetType = E_OTHER, const CTString &strSetRootDir = "") :
+    eAppType(eSetType), strSetupRootDir(strSetRootDir)
+  {
+  };
+
   // App type checks
   __forceinline bool IsAppOther (void) const { return eAppType == E_OTHER; };
   __forceinline bool IsAppGame  (void) const { return eAppType == E_GAME; };
@@ -222,7 +228,7 @@ struct SeriousEngineSetup {
 };
 
 // [Cecil] Pass setup properties
-ENGINE_API void SE_InitEngine(const SeriousEngineSetup &engineSetup);
+ENGINE_API void SE_InitEngine(const SeriousEngineSetup &engineSetup = SeriousEngineSetup());
 ENGINE_API void SE_EndEngine(void);
 ENGINE_API void SE_LoadDefaultFonts(void);
 ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndWindowed);

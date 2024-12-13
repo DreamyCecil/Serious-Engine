@@ -380,7 +380,7 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
   ParseCommandLine(strCmdLine);
 
   // initialize engine
-  SE_InitEngine({ SeriousEngineSetup::E_GAME });
+  SE_InitEngine(SeriousEngineSetup(SeriousEngineSetup::E_GAME));
 
   // [Cecil] Get screen resolution
   _vpixScreenRes = _pGfx->GetMonitorResolution();
@@ -849,6 +849,9 @@ static void SetDPIAwareness(void) {
 
   // Mark game application as DPI-aware
   _bDPIAware = pFunc();
+
+  // Free the library
+  FreeLibrary(hUser);
 #endif // SE1_WIN
 };
 

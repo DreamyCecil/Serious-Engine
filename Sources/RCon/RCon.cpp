@@ -61,7 +61,7 @@ CRConApp theApp;
 BOOL CRConApp::SubInitInstance()
 {
   // initialize engine
-  SE_InitEngine({ SeriousEngineSetup::E_SERVER });
+  SE_InitEngine(SeriousEngineSetup(SeriousEngineSetup::E_SERVER));
 
   CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
   char strHost[80], strPass[80];
