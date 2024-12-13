@@ -85,8 +85,11 @@ void CConsole::Initialize(const CTFileName &fnmLog, INDEX ctCharsPerLine, INDEX 
   con_strLastLine = con_strBuffer+(ctCharsPerLine+1)*(ctLines-1);
   con_strCurrent = con_strLastLine;
 
-  // open console file
-  con_fLog = FileSystem::Open(fnmLog, "wt");
+  // [Cecil] Create directories for the log file
+  CreateAllDirectories(fnmLog);
+
+  // [Cecil] Open log file using absolute path
+  con_fLog = FileSystem::Open(_fnmApplicationPath + fnmLog, "wt");
 
   if (con_fLog==NULL) {
     FatalError("Cannot open log file '%s' for writing:\n%s", fnmLog.ConstData(), strerror(errno));

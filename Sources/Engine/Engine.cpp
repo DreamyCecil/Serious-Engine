@@ -270,13 +270,14 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   DetermineAppPaths(_SE1Setup.strSetupRootDir);
 
   _pConsole = new CConsole;
-  if (_strLogFile=="") {
+
+  if (_strLogFile == "") {
     _strLogFile = _fnmApplicationExe.FileName();
   }
 
-  // [Cecil] Save under the "Logs/" directory
-  CreateAllDirectories("Logs\\");
-  _pConsole->Initialize(_fnmApplicationPath + "Logs\\" + _strLogFile + ".log", 90, 512);
+  // [Cecil] Save under the "Temp/Logs/" directory
+  _strLogFile = "Temp\\Logs\\" + _strLogFile + ".log";
+  _pConsole->Initialize(_strLogFile, 90, 512);
 
   _pAnimStock        = new CStock_CAnimData;
   _pTextureStock     = new CStock_CTextureData;
