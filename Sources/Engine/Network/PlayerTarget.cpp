@@ -29,7 +29,7 @@ extern INDEX cli_bLerpActions;
 CPlayerTarget::CPlayerTarget(void) {
   plt_bActive = FALSE;
   plt_penPlayerEntity = NULL;
-  plt_csAction.cs_iIndex = -1;
+  plt_csAction.cs_eIndex = EThreadMutexType::E_MTX_IGNORE;
   plt_paLastAction.Clear();
   plt_paPreLastAction.Clear();
   plt_abPrediction.Clear();

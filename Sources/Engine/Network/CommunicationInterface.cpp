@@ -222,7 +222,7 @@ ULONG StringToAddress(const CTString &strAddress)
 
 CCommunicationInterface::CCommunicationInterface(void)
 {
-  cm_csComm.cs_iIndex = -1;
+  cm_csComm.cs_eIndex = EThreadMutexType::E_MTX_IGNORE;
   CTSingleLock slComm(&cm_csComm, TRUE);
 
   cci_bInitialized = FALSE;

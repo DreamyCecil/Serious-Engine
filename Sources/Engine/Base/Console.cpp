@@ -62,7 +62,7 @@ CConsole::~CConsole(void)
 // Initialize the console.
 void CConsole::Initialize(const CTFileName &fnmLog, INDEX ctCharsPerLine, INDEX ctLines)
 {
-  con_csConsole.cs_iIndex = -1;
+  con_csConsole.cs_eIndex = EThreadMutexType::E_MTX_IGNORE;
   // synchronize access to console
   CTSingleLock slConsole(&con_csConsole, TRUE);
 

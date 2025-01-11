@@ -33,7 +33,7 @@ extern FLOAT net_tmProblemsTimeOut;
 CPlayerSource::CPlayerSource(void) {
   pls_Active = FALSE;
   pls_Index = -2;
-  pls_csAction.cs_iIndex = -1;
+  pls_csAction.cs_eIndex = EThreadMutexType::E_MTX_IGNORE;
   // clear action packet
   pls_paAction.Clear();
 }

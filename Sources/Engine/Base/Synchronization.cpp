@@ -139,7 +139,7 @@ typedef struct {
    HANDLE hEvent;
 } OPTEX, *POPTEX;
 
-SE1_THREADLOCAL INDEX _iLastLockedMutex = 0;
+SE1_THREADLOCAL EThreadMutexType _eLastLockedMutex = EThreadMutexType::E_MTX_DEFAULT;
 
 BOOL OPTEX_Initialize (POPTEX poptex) {
   
@@ -296,7 +296,7 @@ INDEX OPTEX_Leave (POPTEX poptex)
 CTCriticalSection::CTCriticalSection(void)
 {
   // index must be set before using the mutex
-  cs_iIndex = -2;
+  cs_eIndex = EThreadMutexType::E_MTX_INVALID;
   cs_pvObject = new OPTEX;
   OPTEX_Initialize((OPTEX*)cs_pvObject);
 }
@@ -322,9 +322,11 @@ CTSingleLock::CTSingleLock(CTCriticalSection *pcs, BOOL bLock) : sl_cs(*pcs)
 {
   // initially not locked
   sl_bLocked = FALSE;
-  sl_iLastLockedIndex = -2;
+  sl_eLastLockedIndex = EThreadMutexType::E_MTX_INVALID;
+
   // critical section must have index assigned
-  ASSERT(sl_cs.cs_iIndex>=1||sl_cs.cs_iIndex==-1);
+  ASSERT(sl_cs.cs_eIndex >= 1 || sl_cs.cs_eIndex == EThreadMutexType::E_MTX_IGNORE);
+
   // if should lock immediately
   if (bLock) {
     Lock();
@@ -342,7 +344,7 @@ void CTSingleLock::Lock(void)
 {
   // must not be locked
   ASSERT(!sl_bLocked);
-  ASSERT(sl_iLastLockedIndex==-2);
+  ASSERT(sl_eLastLockedIndex == EThreadMutexType::E_MTX_INVALID);
 
   // if not locked
   if (!sl_bLocked) {
@@ -351,10 +353,10 @@ void CTSingleLock::Lock(void)
     // if this mutex was not locked already
     if (ctLocks==1) {
       // check that locking in given order
-      if (sl_cs.cs_iIndex!=-1) {
-        ASSERT(_iLastLockedMutex<sl_cs.cs_iIndex);
-        sl_iLastLockedIndex = _iLastLockedMutex;
-        _iLastLockedMutex = sl_cs.cs_iIndex;
+      if (sl_cs.cs_eIndex != EThreadMutexType::E_MTX_IGNORE) {
+        ASSERT(_eLastLockedMutex < sl_cs.cs_eIndex);
+        sl_eLastLockedIndex = _eLastLockedMutex;
+        _eLastLockedMutex = sl_cs.cs_eIndex;
       }
     }
   }
@@ -375,10 +377,10 @@ BOOL CTSingleLock::TryToLock(void)
       // if this mutex was not locked already
       if (ctLocks==1) {
         // check that locking in given order
-        if (sl_cs.cs_iIndex!=-1) {
-          ASSERT(_iLastLockedMutex<sl_cs.cs_iIndex);
-          sl_iLastLockedIndex = _iLastLockedMutex;
-          _iLastLockedMutex = sl_cs.cs_iIndex;
+        if (sl_cs.cs_eIndex != EThreadMutexType::E_MTX_IGNORE) {
+          ASSERT(_eLastLockedMutex < sl_cs.cs_eIndex);
+          sl_eLastLockedIndex = _eLastLockedMutex;
+          _eLastLockedMutex = sl_cs.cs_eIndex;
         }
       }
     }
@@ -401,10 +403,10 @@ void CTSingleLock::Unlock(void)
     // if unlocked completely
     if (ctLocks==0) {
       // check that unlocking in exact reverse order
-      if (sl_cs.cs_iIndex!=-1) {
-        ASSERT(_iLastLockedMutex==sl_cs.cs_iIndex);
-        _iLastLockedMutex = sl_iLastLockedIndex;
-        sl_iLastLockedIndex = -2;
+      if (sl_cs.cs_eIndex != EThreadMutexType::E_MTX_IGNORE) {
+        ASSERT(_eLastLockedMutex == sl_cs.cs_eIndex);
+        _eLastLockedMutex = sl_eLastLockedIndex;
+        sl_eLastLockedIndex = EThreadMutexType::E_MTX_INVALID;
       }
     }
   }

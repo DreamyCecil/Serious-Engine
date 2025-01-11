@@ -95,7 +95,7 @@ CSoundLibrary::CSoundLibrary(void)
   // [Cecil] No sound interface by default
   sl_pInterface = NULL;
 
-  sl_csSound.cs_iIndex = 3000;
+  sl_csSound.cs_eIndex = EThreadMutexType::E_MTX_SOUND;
 
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);

@@ -695,7 +695,7 @@ CNetworkLibrary::CNetworkLibrary(void) :
   ga_slCRCList = 0;
   ga_ulDemoMinorVersion = _SE_BUILD_MINOR;
 
-  ga_csNetwork.cs_iIndex = 2000;
+  ga_csNetwork.cs_eIndex = EThreadMutexType::E_MTX_NETWORK;
   ga_ctTimersPending = -1;
 
   ga_fEnumerationProgress = 0;
@@ -2363,7 +2363,7 @@ extern void NET_MakeDefaultState_t(
     // create new network object
     CNetworkLibrary *pNewNet = new CNetworkLibrary;
     // it must have new mutex index since both will be locked
-    pNewNet->ga_csNetwork.cs_iIndex = 2001;
+    pNewNet->ga_csNetwork.cs_eIndex = EThreadMutexType::E_MTX_TEMPNETWORK;
 
     // lock the new network access
     CTSingleLock slNetwork(&pNewNet->ga_csNetwork, TRUE);

@@ -523,7 +523,7 @@ CTString RemoveSubstringCfunc(void* pArgs)
 // Initialize the shell.
 void CShell::Initialize(void)
 {
-  sh_csShell.cs_iIndex = -1;
+  sh_csShell.cs_eIndex = EThreadMutexType::E_MTX_IGNORE;
 
   // synchronize access to shell
   CTSingleLock slShell(&sh_csShell, TRUE);

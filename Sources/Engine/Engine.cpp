@@ -436,7 +436,7 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
 #endif // !SE1_WIN
 
   // initialize zip semaphore
-  zip_csLock.cs_iIndex = -1;  // not checked for locking order
+  zip_csLock.cs_eIndex = EThreadMutexType::E_MTX_IGNORE;  // not checked for locking order
  
   // add console variables
   extern INDEX con_bNoWarnings;

@@ -315,7 +315,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   bInterrupt = FALSE;
 #endif
 
-  tm_csHooks.cs_iIndex = 1000;
+  tm_csHooks.cs_eIndex = EThreadMutexType::E_MTX_TIMER;
   // set global pointer
   ASSERT(_pTimer == NULL);
   _pTimer = this;

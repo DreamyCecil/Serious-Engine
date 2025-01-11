@@ -430,7 +430,7 @@ CInput::CInput(void)
   }
 
 #if SE1_PREFER_SDL
-  inp_csSDLInput.cs_iIndex = 3000; // [Cecil]
+  inp_csSDLInput.cs_eIndex = EThreadMutexType::E_MTX_INPUT; // [Cecil]
 #endif
 
   MakeConversionTables();
