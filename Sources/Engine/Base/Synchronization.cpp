@@ -17,8 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Synchronization.h>
 
-// [Cecil] Disable all synchronization on the same thread
-#if SE1_SINGLE_THREAD
+#if SE1_SINGLE_THREAD // [Cecil] Disable all synchronization on the same thread
 
 CTCriticalSection::CTCriticalSection(void) {};
 CTCriticalSection::~CTCriticalSection(void) {};
@@ -33,7 +32,63 @@ BOOL CTSingleLock::TryToLock(void) { return TRUE; };
 BOOL CTSingleLock::IsLocked(void) { return TRUE; };
 void CTSingleLock::Unlock(void) {};
 
-#else
+#elif !SE1_INCOMPLETE_CPP11 // [Cecil] Use std::recursive_mutex from C++11
+
+CTCriticalSection::CTCriticalSection(void) : cs_eIndex(EThreadMutexType::E_MTX_INVALID)
+{
+  cs_pMutex = new std::recursive_mutex;
+};
+
+CTCriticalSection::~CTCriticalSection(void) {
+  delete cs_pMutex;
+};
+
+CTSingleLock::CTSingleLock(CTCriticalSection *pcs, BOOL bLock) : sl_lock(*pcs->cs_pMutex, std::defer_lock)
+{
+  if (bLock) {
+    Lock();
+  }
+};
+
+CTSingleLock::~CTSingleLock(void) {
+  if (IsLocked()) {
+    Unlock();
+  }
+};
+
+void CTSingleLock::Lock(void) {
+  ASSERT(!IsLocked());
+
+  if (!IsLocked()) {
+    sl_lock.lock();
+  }
+};
+
+BOOL CTSingleLock::TryToLock(void) {
+  ASSERT(!IsLocked());
+
+  if (!IsLocked()) {
+    return sl_lock.try_lock();
+  }
+
+  return TRUE;
+};
+
+// [Cecil] NOTE: Usage of this method seems redundant during locking/unlocking and I'm not sure if owns_lock() is what I should be
+// using here but I just don't know whether the internal mechanism of std::unique_lock is the exact same as vanilla CTSingleLock
+BOOL CTSingleLock::IsLocked(void) {
+  return sl_lock.owns_lock();
+};
+
+void CTSingleLock::Unlock(void) {
+  ASSERT(IsLocked());
+
+  if (IsLocked()) {
+    sl_lock.unlock();
+  }
+};
+
+#else // [Cecil] OS-specific implementation (before C++11)
 
 /*
 This is implementation of OPTEX (optimized mutex), 
@@ -41,7 +96,7 @@ originally from MSDN Periodicals 1996, by Jeffrey Richter.
 
 It is updated for clearer comments, shielded with tons of asserts,
 and modified to support TryToEnter() function. The original version
-had timeout parameter, bu it didn't work.
+had timeout parameter, but it didn't work.
 
 NOTES: 
 - TryToEnter() was not tested with more than one thread, and perhaps
@@ -53,7 +108,7 @@ NOTES:
   functions, so testing against any other number than 0 doesn't work.
 */
 
-#if !SE1_WIN
+#if !SE1_WIN // [Cecil] POSIX threads wrapped into Win32 API functions
 
 #include <pthread.h>
 

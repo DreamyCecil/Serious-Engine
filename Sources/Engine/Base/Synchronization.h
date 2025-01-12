@@ -19,6 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+// [Cecil] C++11 multithreading
+#if !SE1_INCOMPLETE_CPP11
+  #include <mutex>
+#endif
+
 // [Cecil] Thread mutex types for specific classes
 enum EThreadMutexType {
   E_MTX_INVALID = -2, // Not yet set
@@ -36,7 +41,6 @@ enum EThreadMutexType {
 // NOTE: mutex has no interface - it is locked using CTSingleLock
 class CTCriticalSection {
 public:
-  void *cs_pvObject;  // object is internal to implementation
   EThreadMutexType cs_eIndex; // Mutex type (index) used to prevent deadlock with assertions
 
   // use numbers from 1 and above for deadlock control, or -1 for no deadlock control
@@ -44,9 +48,16 @@ public:
   ENGINE_API ~CTCriticalSection(void);
 
 private:
+#if SE1_INCOMPLETE_CPP11
+  void *cs_pvObject; // Object is internal to implementation
+
   INDEX Lock(void);
   INDEX TryToLock(void);
   INDEX Unlock(void);
+
+#else
+  std::recursive_mutex *cs_pMutex; // [Cecil] Mutex object with recursive locking mechanism
+#endif
 
   // [Cecil] Give access to private methods
   friend class CTSingleLock;
@@ -54,11 +65,17 @@ private:
 
 // lock object for locking a mutex with automatic unlocking
 class CTSingleLock {
-public:
+private:
+#if SE1_INCOMPLETE_CPP11
   CTCriticalSection &sl_cs;   // the mutex this object refers to
   BOOL sl_bLocked;            // set while locked
   EThreadMutexType sl_eLastLockedIndex; // index of mutex that was locked before this lock
 
+#else
+  std::unique_lock<std::recursive_mutex> sl_lock; // [Cecil] Mutex lock
+#endif
+
+public:
   ENGINE_API CTSingleLock(CTCriticalSection *pcs, BOOL bLock);
   ENGINE_API ~CTSingleLock(void);
   ENGINE_API void Lock(void);
