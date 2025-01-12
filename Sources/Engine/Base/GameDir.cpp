@@ -85,9 +85,9 @@ void DetermineAppPaths(CTString strSpecifiedRootDir) {
 #if SE1_WIN
   GetModuleFileNameA(NULL, strPathBuffer, sizeof(strPathBuffer));
 #else
-  char *strExePath = readSymLink("/proc/self/exe");
-  strcpy(strPathBuffer, strExePath);
-  SDL_free(strExePath);
+  char *strTempExePath = readSymLink("/proc/self/exe");
+  strcpy(strPathBuffer, strTempExePath);
+  SDL_free(strTempExePath);
 #endif
 
   // Normalize path to the executable

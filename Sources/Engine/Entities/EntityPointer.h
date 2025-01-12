@@ -19,8 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-// [Cecil] Moved inline definitions of all methods here, so it depends on the definiton of the entity class now
-#include <Engine/Entities/Entity.h>
+// [Cecil] Reverted inline definitions of all methods to remove dependency on the entity class
+class CEntity;
 
 /*
  * Smart pointer to entity objects, does the book-keeping for reference counting.
@@ -30,30 +30,15 @@ public:
   CEntity *ep_pen;  // the pointer itself
 
 public:
-  // Constructors
-  inline CEntityPointer(void) : ep_pen(NULL) {};
-
-  inline CEntityPointer(const CEntityPointer &penOther) : ep_pen(penOther.ep_pen) {
-    if (ep_pen != NULL) ep_pen->AddReference();
-  };
-
-  inline CEntityPointer(CEntity *pen) : ep_pen(pen) {
-    if (ep_pen != NULL) ep_pen->AddReference();
-  };
-
-  // Destructor
-  inline ~CEntityPointer(void) {
-    if (ep_pen != NULL) ep_pen->RemReference();
-  };
+  // all standard smart pointer functions are defined as inlines in Entity.h
+  // (due to strange order of inclusion needed for events and enums)
+  inline CEntityPointer(void);
+  inline ~CEntityPointer(void);
+  inline CEntityPointer(const CEntityPointer &penOther);
+  inline CEntityPointer(CEntity *pen);
 
   // Assignment operators
-  inline const CEntityPointer &operator=(CEntity *pen) {
-    // Have to add the new entity and only then remove the old one
-    if (pen != NULL) pen->AddReference();
-    if (ep_pen != NULL) ep_pen->RemReference();
-    ep_pen = pen;
-    return *this;
-  };
+  inline const CEntityPointer &operator=(CEntity *pen);
 
   inline const CEntityPointer &operator=(const CEntityPointer &penOther) {
     return operator=(penOther.ep_pen);
