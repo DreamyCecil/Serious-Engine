@@ -30,7 +30,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #else
   #include <fcntl.h>
   #include <netdb.h>
-  #include <pthread.h>
   #include <sys/socket.h>
   #include <netinet/in.h>
   #include <arpa/inet.h>

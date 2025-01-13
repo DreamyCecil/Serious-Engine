@@ -19,6 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <errno.h>
 
+// [Cecil] C++11 multithreading
+#if !SE1_INCOMPLETE_CPP11
+  #include <thread>
+#endif
+
 extern unsigned char *gsseckey(u_char *secure, u_char *key, int enctype);
 extern u_int resolv(char *host);
 
@@ -681,11 +686,7 @@ static BOOL ReceiveServerData(SOCKET &iSocketUDP, BOOL bLocal) {
   return FALSE;
 };
 
-#if SE1_WIN
-static DWORD WINAPI MasterServerThread(LPVOID lpParam) {
-#else
-static void *MasterServerThread(void *arg) {
-#endif
+static void MasterServerThread(void) {
   IQuery::SetStatus("");
 
   // Create a UDP socket
@@ -693,7 +694,7 @@ static void *MasterServerThread(void *arg) {
 
   if (iSocketUDP == INVALID_SOCKET) {
     WSACleanup();
-    return 0;
+    return;
   }
 
   const INDEX iAddrLength = 6;
@@ -711,7 +712,7 @@ static void *MasterServerThread(void *arg) {
 
     // Receive server data for enumeration
     if (ReceiveServerData(iSocketUDP, FALSE)) {
-      return 0;
+      return;
     }
   }
 
@@ -729,15 +730,9 @@ static void *MasterServerThread(void *arg) {
 
   _pNetwork->ga_bEnumerationChange = FALSE;
   WSACleanup();
-
-  return 0;
 };
 
-#if SE1_WIN
-static DWORD WINAPI LocalNetworkThread(LPVOID lpParam) {
-#else
-static void *LocalNetworkThread(void *arg) {
-#endif
+static void LocalNetworkThread(void) {
   // Create a UDP socket
   SOCKET iSocketUDP = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -750,15 +745,14 @@ static void *LocalNetworkThread(void *arg) {
       delete[] _pLocalAddressBuffer;
     }
     _pLocalAddressBuffer = NULL;
-
-    return 0;
+    return;
   }
 
   // Allow receiving UDP broadcast
   BOOL bOpt = TRUE;
 
   if (setsockopt(iSocketUDP, SOL_SOCKET, SO_BROADCAST, (char *)&bOpt, sizeof(bOpt)) != 0) {
-    return 0;
+    return;
   }
 
   const INDEX iAddrLength = 6;
@@ -787,7 +781,7 @@ static void *LocalNetworkThread(void *arg) {
 
     // Receive server data for enumeration
     if (ReceiveServerData(iSocketUDP, TRUE)) {
-      return 0;
+      return;
     }
   }
 
@@ -807,7 +801,6 @@ static void *LocalNetworkThread(void *arg) {
   _pNetwork->ga_strEnumerationStatus = "";
 
   WSACleanup();
-  return 0;
 };
 
 void ILegacy::EnumTrigger(BOOL bInternet)
@@ -820,51 +813,28 @@ void ILegacy::EnumTrigger(BOOL bInternet)
 };
 
 void ILegacy::EnumUpdate(void) {
-#if SE1_WIN
-  DWORD dwThreadId;
-
-  // Start master server thread
+#if !SE1_INCOMPLETE_CPP11
+  // [Cecil] Use cross-platform threads
   if (_bActivated) {
-    HANDLE hThread = CreateThread(NULL, 0, MasterServerThread, 0, 0, &dwThreadId);
-
-    if (hThread != NULL) {
-      CloseHandle(hThread);
-    }
+    std::thread thread(MasterServerThread);
+    thread.detach();
 
     _bActivated = FALSE;
   }
 
-  // Start local network thread
   if (_bActivatedLocal) {
-    HANDLE hThread = CreateThread(NULL, 0, LocalNetworkThread, 0, 0, &dwThreadId);
-
-    if (hThread != NULL) {
-      CloseHandle(hThread);
-    }
+    std::thread thread(LocalNetworkThread);
+    thread.detach();
 
     _bActivatedLocal = FALSE;
   }
 
 #else
-  if (_bActivated) {
-    pthread_t _hThread;
-    int iThreadId = pthread_create(&_hThread, NULL, MasterServerThread, NULL);
+  #pragma message(">> Implement server enumeration for compilers before C++11")
 
-    if (iThreadId == 0) {
-      pthread_detach(_hThread);
-    }
-
+  if (_bActivated || _bActivatedLocal) {
+    ASSERTALWAYS("Server enumeration isn't implemented on this platform!");
     _bActivated = FALSE;
-  }
-
-  if (_bActivatedLocal) {
-    pthread_t _hThread;
-    int iThreadId = pthread_create(&_hThread, NULL, LocalNetworkThread, NULL);
-
-    if (iThreadId == 0) {
-      pthread_detach(_hThread);
-    }
-
     _bActivatedLocal = FALSE;
   }
 #endif
