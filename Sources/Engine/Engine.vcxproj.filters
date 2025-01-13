@@ -451,12 +451,6 @@
     <ClCompile Include="Templates\NameTable.cpp">
       <Filter>Source Files\Templates</Filter>
     </ClCompile>
-    <ClCompile Include="Templates\NameTable_CTFileName.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\NameTable_CTranslationPair.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
     <ClCompile Include="Templates\Selection.cpp">
       <Filter>Source Files\Templates</Filter>
     </ClCompile>
@@ -1105,12 +1099,6 @@
       <Filter>Header Files\Templates Headers</Filter>
     </ClInclude>
     <ClInclude Include="Templates\NameTable.h">
-      <Filter>Header Files\Templates Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Templates\NameTable_CTFileName.h">
-      <Filter>Header Files\Templates Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Templates\NameTable_CTranslationPair.h">
       <Filter>Header Files\Templates Headers</Filter>
     </ClInclude>
     <ClInclude Include="Templates\Selection.h">

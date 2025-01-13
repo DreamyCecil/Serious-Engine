@@ -811,8 +811,6 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Templates\NameTable_CTFileName.cpp" />
-    <ClCompile Include="Templates\NameTable_CTranslationPair.cpp" />
     <ClCompile Include="Templates\Selection.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">true</ExcludedFromBuild>
@@ -1185,8 +1183,6 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
     <ClInclude Include="Templates\DynamicStackArray.h" />
     <ClInclude Include="Templates\LinearAllocator.h" />
     <ClInclude Include="Templates\NameTable.h" />
-    <ClInclude Include="Templates\NameTable_CTFileName.h" />
-    <ClInclude Include="Templates\NameTable_CTranslationPair.h" />
     <ClInclude Include="Templates\Selection.h" />
     <ClInclude Include="Templates\StaticArray.h" />
     <ClInclude Include="Templates\StaticStackArray.h" />

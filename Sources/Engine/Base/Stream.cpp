@@ -37,7 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Unzip.h>
 #include <Engine/Base/CRC.h>
 #include <Engine/Base/Shell.h>
-#include <Engine/Templates/NameTable_CTFileName.h>
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicStackArray.cpp>
 
@@ -843,7 +842,7 @@ void CTStream::DictionaryPreload_t(void)
 // General construction/destruction
 
 /* Default constructor. */
-CTStream::CTStream(void) : strm_ntDictionary(*new CNameTable_CTFileName)
+CTStream::CTStream(void) : strm_ntDictionary(*new CNameTable<CTFileName>)
 {
   strm_strStreamDescription = "";
   strm_slDictionaryPos = 0;

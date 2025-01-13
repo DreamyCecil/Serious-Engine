@@ -1,4 +1,5 @@
 /* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2025 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -18,23 +19,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicContainer.cpp>
 
 // Default constructor
-CStock_TYPE::CStock_TYPE()
+template<class Type>
+CResourceStock<Type>::CResourceStock()
 {
   st_ntObjects.SetAllocationParameters(50, 2, 2);
 };
 
 // Destructor
-CStock_TYPE::~CStock_TYPE()
+template<class Type>
+CResourceStock<Type>::~CResourceStock()
 {
   // Free all unused elements of the stock
   FreeUnused();
 };
 
 // Obtain an object from stock - loads if not loaded
-TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName)
+template<class Type>
+Type *CResourceStock<Type>::Obtain_t(const CTFileName &fnmFileName)
 {
   // Find stocked object with same name
-  TYPE *pExisting = st_ntObjects.Find(fnmFileName);
+  Type *pExisting = st_ntObjects.Find(fnmFileName);
 
   // If found
   if (pExisting != NULL) {
@@ -46,7 +50,7 @@ TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName)
   }
 
   // Create a new stock object, if not found
-  TYPE *ptNew = new TYPE;
+  Type *ptNew = new Type;
   ptNew->ser_FileName = fnmFileName;
 
   st_ctObjects.Add(ptNew);
@@ -74,7 +78,8 @@ TYPE *CStock_TYPE::Obtain_t(const CTFileName &fnmFileName)
 };
 
 // Release an object when it's not needed any more
-void CStock_TYPE::Release(TYPE *ptObject) {
+template<class Type>
+void CResourceStock<Type>::Release(Type *ptObject) {
   // Mark that it is used once less
   ptObject->MarkUnused();
 
@@ -89,15 +94,16 @@ void CStock_TYPE::Release(TYPE *ptObject) {
 };
 
 // Free all unused elements from the stock
-void CStock_TYPE::FreeUnused(void)
+template<class Type>
+void CResourceStock<Type>::FreeUnused(void)
 {
   BOOL bAnyRemoved;
 
   do {
     // Fill a container with objects that should be freed
-    CDynamicContainer<TYPE> ctToFree;
+    CDynamicContainer<Type> ctToFree;
 
-    {FOREACHINDYNAMICCONTAINER(st_ctObjects, TYPE, itt) {
+    {FOREACHINDYNAMICCONTAINER(st_ctObjects, Type, itt) {
       if (!itt->IsUsed()) {
         ctToFree.Add(itt);
       }
@@ -106,7 +112,7 @@ void CStock_TYPE::FreeUnused(void)
     bAnyRemoved = ctToFree.Count() > 0;
 
     // Go through objects that should be freed
-    {FOREACHINDYNAMICCONTAINER(ctToFree, TYPE, itt) {
+    {FOREACHINDYNAMICCONTAINER(ctToFree, Type, itt) {
       // Remove and delete it
       st_ctObjects.Remove(itt);
       st_ntObjects.Remove(itt);
@@ -119,12 +125,13 @@ void CStock_TYPE::FreeUnused(void)
 };
 
 // Calculate amount of memory used by all objects in the stock
-SLONG CStock_TYPE::CalculateUsedMemory(void)
+template<class Type>
+SLONG CResourceStock<Type>::CalculateUsedMemory(void)
 {
   SLONG slUsedTotal = 0;
 
   // Go through all stock objects
-  FOREACHINDYNAMICCONTAINER(st_ctObjects, TYPE, itt) {
+  FOREACHINDYNAMICCONTAINER(st_ctObjects, Type, itt) {
     SLONG slUsedByObject = itt->GetUsedMemory();
 
     // Invalid memory
@@ -140,13 +147,14 @@ SLONG CStock_TYPE::CalculateUsedMemory(void)
 };
 
 // Dump memory usage report into a file
-void CStock_TYPE::DumpMemoryUsage_t(CTStream &strm)
+template<class Type>
+void CResourceStock<Type>::DumpMemoryUsage_t(CTStream &strm)
 {
   CTString strLine;
   SLONG slUsedTotal = 0;
 
   // Go through all stock objects
-  FOREACHINDYNAMICCONTAINER(st_ctObjects, TYPE, itt) {
+  FOREACHINDYNAMICCONTAINER(st_ctObjects, Type, itt) {
     SLONG slUsedByObject = itt->GetUsedMemory();
 
     // Invalid memory
@@ -164,17 +172,19 @@ void CStock_TYPE::DumpMemoryUsage_t(CTStream &strm)
 };
 
 // Get number of total elements in stock
-INDEX CStock_TYPE::GetTotalCount(void) {
+template<class Type>
+INDEX CResourceStock<Type>::GetTotalCount(void) {
   return st_ctObjects.Count();
 };
 
 // Get number of used elements in stock
-INDEX CStock_TYPE::GetUsedCount(void)
+template<class Type>
+INDEX CResourceStock<Type>::GetUsedCount(void)
 {
   INDEX ctUsed = 0;
 
   // Go through all stock objects
-  FOREACHINDYNAMICCONTAINER(st_ctObjects, TYPE, itt) {
+  FOREACHINDYNAMICCONTAINER(st_ctObjects, Type, itt) {
     // Count used ones
     if (itt->IsUsed()) {
       ctUsed++;

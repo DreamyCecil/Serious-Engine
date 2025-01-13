@@ -1,4 +1,5 @@
 /* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2025 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -15,18 +16,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/StaticArray.cpp>
 
-#if NAMETABLE_CASESENSITIVE == 1
-  #define COMPARENAMES(a, b) (strcmp((a).ConstData(), (b).ConstData()) == 0)
-
-#elif NAMETABLE_CASESENSITIVE == 0
-  #define COMPARENAMES(a, b) (a == b)
-
-#else
-  #error Please define NAMETABLE_CASESENSITIVE with 0 or 1
-#endif
+#define COMPARENAMES(a, b) (bCaseSensitive ? (strcmp((a).ConstData(), (b).ConstData()) == 0) : (a == b))
 
 // Default constructor
-CNameTable_TYPE::CNameTable_TYPE(void)
+template<class Type, bool bCaseSensitive>
+CNameTable<Type, bCaseSensitive>::CNameTable(void)
 {
   nt_ctCompartments = 0;
   nt_ctSlotsPerComp = 0;
@@ -34,12 +28,14 @@ CNameTable_TYPE::CNameTable_TYPE(void)
 };
 
 // Destructor
-CNameTable_TYPE::~CNameTable_TYPE(void)
+template<class Type, bool bCaseSensitive>
+CNameTable<Type, bCaseSensitive>::~CNameTable(void)
 {
 };
 
 // Remove all slots and reset the name table to the initial (empty) state
-void CNameTable_TYPE::Clear(void)
+template<class Type, bool bCaseSensitive>
+void CNameTable<Type, bCaseSensitive>::Clear(void)
 {
   nt_ctCompartments = 0;
   nt_ctSlotsPerComp = 0;
@@ -48,7 +44,8 @@ void CNameTable_TYPE::Clear(void)
 };
 
 // Set allocation parameters
-void CNameTable_TYPE::SetAllocationParameters(INDEX ctCompartments, INDEX ctSlotsPerComp, INDEX ctSlotsPerCompStep)
+template<class Type, bool bCaseSensitive>
+void CNameTable<Type, bCaseSensitive>::SetAllocationParameters(INDEX ctCompartments, INDEX ctSlotsPerComp, INDEX ctSlotsPerCompStep)
 {
   ASSERT(nt_ctCompartments == 0 && nt_ctSlotsPerComp == 0 && nt_ctSlotsPerCompStep == 0);
   ASSERT(   ctCompartments >  0 &&    ctSlotsPerComp >  0 &&    ctSlotsPerCompStep >  0);
@@ -61,7 +58,8 @@ void CNameTable_TYPE::SetAllocationParameters(INDEX ctCompartments, INDEX ctSlot
 };
 
 // Get pointer to the slot from its key and value
-CNameTableSlot_TYPE *CNameTable_TYPE::FindSlot(ULONG ulKey, const CTString &strName)
+template<class Type, bool bCaseSensitive>
+CNameTableSlot<Type> *CNameTable<Type, bCaseSensitive>::FindSlot(ULONG ulKey, const CTString &strName)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
@@ -72,7 +70,7 @@ CNameTableSlot_TYPE *CNameTable_TYPE::FindSlot(ULONG ulKey, const CTString &strN
   INDEX iSlot = iComp * nt_ctSlotsPerComp;
 
   for (INDEX iSlotInComp = 0; iSlotInComp < nt_ctSlotsPerComp; iSlotInComp++, iSlot++) {
-    CNameTableSlot_TYPE *pnts = &nt_antsSlots[iSlot];
+    CNameTableSlot<Type> *pnts = &nt_antsSlots[iSlot];
 
     // Skip if empty
     if (pnts->nts_ptElement == NULL) {
@@ -93,7 +91,8 @@ CNameTableSlot_TYPE *CNameTable_TYPE::FindSlot(ULONG ulKey, const CTString &strN
 };
 
 // Get index of an object in the name table
-INDEX CNameTable_TYPE::FindSlotIndex(ULONG ulKey, const CTString &strName)
+template<class Type, bool bCaseSensitive>
+INDEX CNameTable<Type, bCaseSensitive>::FindSlotIndex(ULONG ulKey, const CTString &strName)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
@@ -104,7 +103,7 @@ INDEX CNameTable_TYPE::FindSlotIndex(ULONG ulKey, const CTString &strName)
   INDEX iSlot = iComp * nt_ctSlotsPerComp;
 
   for (INDEX iSlotInComp = 0; iSlotInComp < nt_ctSlotsPerComp; iSlotInComp++, iSlot++) {
-    CNameTableSlot_TYPE *pnts = &nt_antsSlots[iSlot];
+    CNameTableSlot<Type> *pnts = &nt_antsSlots[iSlot];
 
     // Skip if empty
     if (pnts->nts_ptElement == NULL) {
@@ -125,7 +124,8 @@ INDEX CNameTable_TYPE::FindSlotIndex(ULONG ulKey, const CTString &strName)
 };
 
 // Get name from the name table by its index
-const CTString CNameTable_TYPE::GetNameFromIndex(INDEX iIndex)
+template<class Type, bool bCaseSensitive>
+const CTString CNameTable<Type, bCaseSensitive>::GetNameFromIndex(INDEX iIndex)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
   ASSERT(iIndex >= 0 && iIndex < nt_ctCompartments * nt_ctSlotsPerComp);
@@ -134,16 +134,18 @@ const CTString CNameTable_TYPE::GetNameFromIndex(INDEX iIndex)
 };
 
 // Find object by its name
-TYPE *CNameTable_TYPE::Find(const CTString &strName)
+template<class Type, bool bCaseSensitive>
+Type *CNameTable<Type, bCaseSensitive>::Find(const CTString &strName)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
-  CNameTableSlot_TYPE *pnts = FindSlot(strName.GetHash(), strName);
+  CNameTableSlot<Type> *pnts = FindSlot(strName.GetHash(), strName);
   return (pnts == NULL) ? NULL : pnts->nts_ptElement;
 };
 
 // Get index of an object by its name
-INDEX CNameTable_TYPE::FindIndex(const CTString &strName)
+template<class Type, bool bCaseSensitive>
+INDEX CNameTable<Type, bCaseSensitive>::FindIndex(const CTString &strName)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
@@ -151,7 +153,8 @@ INDEX CNameTable_TYPE::FindIndex(const CTString &strName)
 };
 
 // Expand the name table to the next step
-void CNameTable_TYPE::Expand(void)
+template<class Type, bool bCaseSensitive>
+void CNameTable<Type, bCaseSensitive>::Expand(void)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
@@ -159,7 +162,7 @@ void CNameTable_TYPE::Expand(void)
   ASSERT(nt_ctSlotsPerCompStep > 0);
 
   // Move the array of slots
-  CStaticArray<CNameTableSlot_TYPE > antsSlotsOld;
+  CStaticArray< CNameTableSlot<Type> > antsSlotsOld;
   antsSlotsOld.MoveArray(nt_antsSlots);
 
   // Allocate a new bigger array
@@ -172,8 +175,8 @@ void CNameTable_TYPE::Expand(void)
   for (INDEX iComp = 0; iComp < nt_ctCompartments; iComp++) {
     // For each old slot in compartment
     for (INDEX iSlotInComp = 0; iSlotInComp < ctOldSlotsPerComp; iSlotInComp++) {
-      CNameTableSlot_TYPE &ntsOld = antsSlotsOld[iSlotInComp + iComp * ctOldSlotsPerComp];
-      CNameTableSlot_TYPE &ntsNew = nt_antsSlots[iSlotInComp + iComp * nt_ctSlotsPerComp];
+      CNameTableSlot<Type> &ntsOld = antsSlotsOld[iSlotInComp + iComp * ctOldSlotsPerComp];
+      CNameTableSlot<Type> &ntsNew = nt_antsSlots[iSlotInComp + iComp * nt_ctSlotsPerComp];
 
       // If it is used
       if (ntsOld.nts_ptElement != NULL) {
@@ -189,7 +192,8 @@ void CNameTable_TYPE::Expand(void)
 static BOOL _bExpanding = FALSE;
 
 // Add a new object
-void CNameTable_TYPE::Add(TYPE *ptNew)
+template<class Type, bool bCaseSensitive>
+void CNameTable<Type, bCaseSensitive>::Add(Type *ptNew)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
@@ -202,7 +206,7 @@ void CNameTable_TYPE::Add(TYPE *ptNew)
   INDEX iSlot = iComp * nt_ctSlotsPerComp;
 
   for (INDEX iSlotInComp = 0; iSlotInComp < nt_ctSlotsPerComp; iSlotInComp++, iSlot++) {
-    CNameTableSlot_TYPE *pnts = &nt_antsSlots[iSlot];
+    CNameTableSlot<Type> *pnts = &nt_antsSlots[iSlot];
 
     // If it is empty
     if (pnts->nts_ptElement == NULL) {
@@ -230,13 +234,14 @@ void CNameTable_TYPE::Add(TYPE *ptNew)
 };
 
 // Remove an object
-void CNameTable_TYPE::Remove(TYPE *ptOld)
+template<class Type, bool bCaseSensitive>
+void CNameTable<Type, bCaseSensitive>::Remove(Type *ptOld)
 {
   ASSERT(nt_ctCompartments > 0 && nt_ctSlotsPerComp > 0);
 
   // Find its slot
   const CTString &strName = ptOld->GetName();
-  CNameTableSlot_TYPE *pnts = FindSlot(strName.GetHash(), strName);
+  CNameTableSlot<Type> *pnts = FindSlot(strName.GetHash(), strName);
 
   if (pnts != NULL) {
     // Mark slot as unused
@@ -246,11 +251,10 @@ void CNameTable_TYPE::Remove(TYPE *ptOld)
 };
 
 // Remove all objects but keep slots
-void CNameTable_TYPE::Reset(void)
+template<class Type, bool bCaseSensitive>
+void CNameTable<Type, bCaseSensitive>::Reset(void)
 {
   for (INDEX iSlot = 0; iSlot < nt_antsSlots.Count(); iSlot++) {
     nt_antsSlots[iSlot].Clear();
   }
 };
-
-#undef NAMETABLE_CASESENSITIVE

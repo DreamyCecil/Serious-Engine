@@ -17,17 +17,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CSoundData.h>
 
-#define TYPE CSoundData
-#define CStock_TYPE CStock_CSoundData
-#define CNameTable_TYPE CNameTable_CSoundData
-#define CNameTableSlot_TYPE CNameTableSlot_CSoundData
-
-#include <Engine/Templates/NameTable.cpp>
-#include <Engine/Templates/Stock.cpp>
-
-#undef CStock_TYPE
-#undef CNameTableSlot_TYPE
-#undef CNameTable_TYPE
-#undef TYPE
-
 CStock_CSoundData *_pSoundStock = NULL;

@@ -21,19 +21,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Ska/AnimSet.h>
-
-#define TYPE CAnimSet
-#define CStock_TYPE CStock_CAnimSet
-#define CNameTable_TYPE CNameTable_CAnimSet
-#define CNameTableSlot_TYPE CNameTableSlot_CAnimSet
-
-#include <Engine/Templates/NameTable.h>
 #include <Engine/Templates/Stock.h>
 
-#undef CStock_TYPE
-#undef CNameTableSlot_TYPE
-#undef CNameTable_TYPE
-#undef TYPE
+typedef CResourceStock<CAnimSet> CStock_CAnimSet;
 
 ENGINE_API extern CStock_CAnimSet *_pAnimSetStock;
 

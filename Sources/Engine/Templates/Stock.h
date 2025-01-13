@@ -1,4 +1,5 @@
 /* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2025 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -13,33 +14,38 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#if !defined(TYPE) || !defined(CStock_TYPE) || !defined(CNameTable_TYPE)
-  #error Please define all macros: TYPE, CStock_TYPE and CNameTable_TYPE
+#ifndef SE_INCL_STOCK_TEMPLATE_H
+#define SE_INCL_STOCK_TEMPLATE_H
+
+#ifdef PRAGMA_ONCE
+  #pragma once
 #endif
 
 #include <Engine/Templates/DynamicContainer.h>
+#include <Engine/Templates/NameTable.h>
 
 // Stock template of some kind of objects which can be saved and loaded
-class CStock_TYPE {
+template<class Type>
+class CResourceStock {
   public:
-    CDynamicContainer<TYPE> st_ctObjects; // Objects in the stock
-    CNameTable_TYPE st_ntObjects; // Name table for fast lookup
+    CDynamicContainer<Type> st_ctObjects; // Objects in the stock
+    CNameTable<Type, false> st_ntObjects; // Name table for fast lookup
 
   public:
     // Default constructor
-    CStock_TYPE();
+    CResourceStock();
 
     // Destructor
-    ~CStock_TYPE();
+    ~CResourceStock();
 
     // Obtain an object from stock - loads if not loaded
-    ENGINE_API TYPE *Obtain_t(const CTFileName &fnmFileName);
+    Type *Obtain_t(const CTFileName &fnmFileName);
 
     // Release an object when it's not needed any more
-    ENGINE_API void Release(TYPE *ptObject);
+    void Release(Type *ptObject);
 
     // Free all unused elements from the stock
-    ENGINE_API void FreeUnused(void);
+    void FreeUnused(void);
 
     // Calculate amount of memory used by all objects in the stock
     SLONG CalculateUsedMemory(void);
@@ -53,3 +59,8 @@ class CStock_TYPE {
     // Get number of used elements in stock
     INDEX GetUsedCount(void);
 };
+
+// [Cecil] Define template methods
+#include <Engine/Templates/Stock.cpp>
+
+#endif  /* include-once check. */

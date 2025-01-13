@@ -22,19 +22,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Models/ModelData.h>
 #include <Engine/Models/Model_internal.h>
-
-#define TYPE CModelData
-#define CStock_TYPE CStock_CModelData
-#define CNameTable_TYPE CNameTable_CModelData
-#define CNameTableSlot_TYPE CNameTableSlot_CModelData
-
-#include <Engine/Templates/NameTable.h>
 #include <Engine/Templates/Stock.h>
 
-#undef CStock_TYPE
-#undef CNameTableSlot_TYPE
-#undef CNameTable_TYPE
-#undef TYPE
+typedef CResourceStock<CModelData> CStock_CModelData;
 
 ENGINE_API extern CStock_CModelData *_pModelStock;
 

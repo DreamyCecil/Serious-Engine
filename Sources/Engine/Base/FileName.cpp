@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 
 #include <Engine/Base/FileName.h>
-#include <Engine/Templates/NameTable_CTFileName.h>
 
 #include <list>
 

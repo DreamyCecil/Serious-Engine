@@ -21,19 +21,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Graphics/Shader.h>
-
-#define TYPE CShader
-#define CStock_TYPE CStock_CShader
-#define CNameTable_TYPE CNameTable_CShader
-#define CNameTableSlot_TYPE CNameTableSlot_CShader
-
-#include <Engine/Templates/NameTable.h>
 #include <Engine/Templates/Stock.h>
 
-#undef CStock_TYPE
-#undef CNameTableSlot_TYPE
-#undef CNameTable_TYPE
-#undef TYPE
+typedef CResourceStock<CShader> CStock_CShader;
 
 ENGINE_API extern CStock_CShader *_pShaderStock;
 

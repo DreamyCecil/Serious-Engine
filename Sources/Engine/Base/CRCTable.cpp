@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Console.h>
 #include <Engine/Base/CRC.h>
 #include <Engine/Templates/DynamicStackArray.cpp>
+#include <Engine/Templates/NameTable.h>
 
 extern INDEX net_bReportCRC;
 
@@ -41,18 +42,8 @@ public:
 };
 
 extern CDynamicStackArray<CTFileName> _afnmNoCRC;
-
-#define TYPE CCRCEntry
-#define CNameTable_TYPE CNameTable_CCRCEntry
-#define CNameTableSlot_TYPE CNameTableSlot_CCRCEntry
-#include <Engine/Templates/NameTable.h>
-#include <Engine/Templates/NameTable.cpp>
-#undef CNameTableSlot_TYPE
-#undef CNameTable_TYPE
-#undef TYPE
-
 static CDynamicStackArray<CCRCEntry> _aceEntries;
-static CNameTable_CCRCEntry _ntEntries;
+static CNameTable<CCRCEntry> _ntEntries;
 
 BOOL CRCT_bGatherCRCs = FALSE;  // set while gathering CRCs of all loaded files
 

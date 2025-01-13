@@ -21,19 +21,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Entities/EntityClass.h>
-
-#define TYPE CEntityClass
-#define CStock_TYPE CStock_CEntityClass
-#define CNameTable_TYPE CNameTable_CEntityClass
-#define CNameTableSlot_TYPE CNameTableSlot_CEntityClass
-
-#include <Engine/Templates/NameTable.h>
 #include <Engine/Templates/Stock.h>
 
-#undef CStock_TYPE
-#undef CNameTableSlot_TYPE
-#undef CNameTable_TYPE
-#undef TYPE
+typedef CResourceStock<CEntityClass> CStock_CEntityClass;
 
 ENGINE_API extern CStock_CEntityClass *_pEntityClassStock;
 

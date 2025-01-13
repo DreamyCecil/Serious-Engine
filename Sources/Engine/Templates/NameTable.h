@@ -1,4 +1,5 @@
 /* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2025 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -13,20 +14,24 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#if !defined(TYPE) || !defined(CNameTableSlot_TYPE) || !defined(CNameTable_TYPE)
-  #error Please define all macros: TYPE, CNameTableSlot_TYPE and CNameTable_TYPE
+#ifndef SE_INCL_NAMETABLE_TEMPLATE_H
+#define SE_INCL_NAMETABLE_TEMPLATE_H
+
+#ifdef PRAGMA_ONCE
+  #pragma once
 #endif
 
 #include <Engine/Templates/StaticArray.h>
 
 // Template class of one object slot in the name table
-class CNameTableSlot_TYPE {
+template<class Type>
+class CNameTableSlot {
   public:
     ULONG nts_ulKey; // Hashing key
-    TYPE *nts_ptElement; // The element inside
+    Type *nts_ptElement; // The element inside
 
     // Constructor
-    CNameTableSlot_TYPE(void) {
+    CNameTableSlot(void) {
       nts_ptElement = NULL;
     };
 
@@ -37,19 +42,20 @@ class CNameTableSlot_TYPE {
 };
 
 // Template class for storing pointers to objects for fast access by name
-class CNameTable_TYPE {
+template<class Type, bool bCaseSensitive = false>
+class CNameTable {
   public:
     INDEX nt_ctCompartments; // Number of compartments in the table
     INDEX nt_ctSlotsPerComp; // Number of slots in one compartment
     INDEX nt_ctSlotsPerCompStep; // Allocation step for number of slots in one compartment
-    CStaticArray<CNameTableSlot_TYPE > nt_antsSlots; // All slots are here
+    CStaticArray< CNameTableSlot<Type> > nt_antsSlots; // All slots are here
 
   public:
     // Default constructor
-    CNameTable_TYPE(void);
+    CNameTable(void);
 
     // Destructor
-    ~CNameTable_TYPE(void);
+    ~CNameTable(void);
 
     // Remove all slots and reset the name table to the initial (empty) state
     void Clear(void);
@@ -59,7 +65,7 @@ class CNameTable_TYPE {
 
   public:
     // Get pointer to the slot from its key and value
-    CNameTableSlot_TYPE *FindSlot(ULONG ulKey, const CTString &strName);
+    CNameTableSlot<Type> *FindSlot(ULONG ulKey, const CTString &strName);
 
     // Get index of an object in the name table
     INDEX FindSlotIndex(ULONG ulKey, const CTString &strName);
@@ -68,7 +74,7 @@ class CNameTable_TYPE {
     const CTString GetNameFromIndex(INDEX iIndex);
 
     // Find object by its name
-    TYPE *Find(const CTString &strName);
+    Type *Find(const CTString &strName);
 
     // Get index of an object by its name
     INDEX FindIndex(const CTString &strName);
@@ -78,10 +84,10 @@ class CNameTable_TYPE {
     void Expand(void);
 
     // Add a new object
-    void Add(TYPE *ptNew);
+    void Add(Type *ptNew);
 
     // Remove an object
-    void Remove(TYPE *ptOld);
+    void Remove(Type *ptOld);
 
     // Remove all objects but keep slots
     void Reset(void);
@@ -89,3 +95,8 @@ class CNameTable_TYPE {
     // Get estimated efficiency of the nametable
     CTString GetEfficiency(void);
 };
+
+// [Cecil] Define template methods
+#include <Engine/Templates/NameTable.cpp>
+
+#endif  /* include-once check. */

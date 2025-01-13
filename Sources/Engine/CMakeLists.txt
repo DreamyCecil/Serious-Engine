@@ -198,8 +198,6 @@ set(ENGINE_SRCS
   "Sound/Wave.cpp"
 
   "Templates/BSP.cpp"
-  "Templates/NameTable_CTFileName.cpp"
-  "Templates/NameTable_CTranslationPair.cpp"
   "Templates/Stock_CAnimData.cpp"
   "Templates/Stock_CAnimSet.cpp"
   "Templates/Stock_CEntityClass.cpp"

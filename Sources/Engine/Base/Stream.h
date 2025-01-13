@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ErrorReporting.h>
 #include <Engine/Templates/DynamicStackArray.h>
 #include <Engine/Templates/DynamicContainer.h>
+#include <Engine/Templates/NameTable.h>
 
 // maximum length of file that can be saved (default: 8Mb)
 ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;
@@ -93,7 +94,7 @@ public:
   } strm_dmDictionaryMode;    // dictionary mode of operation on this file
   SLONG strm_slDictionaryPos; // dictionary position in file (0 for no dictionary)
   INDEX strm_ctDictionaryImported;  // how many filenames were imported
-  class CNameTable_CTFileName &strm_ntDictionary;  // name table for the dictionary
+  CNameTable<CTFileName> &strm_ntDictionary;  // name table for the dictionary
   CDynamicStackArray<CTFileName> strm_afnmDictionary; // dictionary is stored here
   CDynamicContainer<CSerial> strm_cserPreloaded; // [Cecil] Replacement for 'fnm_pserPreloaded' from old CTFileName
 
