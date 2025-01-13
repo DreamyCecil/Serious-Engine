@@ -35,7 +35,7 @@ CResourceStock<Type>::~CResourceStock()
 
 // Obtain an object from stock - loads if not loaded
 template<class Type>
-Type *CResourceStock<Type>::Obtain_t(const CTFileName &fnmFileName)
+Type *CResourceStock<Type>::Obtain_internal_t(const CTFileName &fnmFileName)
 {
   // Find stocked object with same name
   Type *pExisting = st_ntObjects.Find(fnmFileName);
@@ -79,7 +79,7 @@ Type *CResourceStock<Type>::Obtain_t(const CTFileName &fnmFileName)
 
 // Release an object when it's not needed any more
 template<class Type>
-void CResourceStock<Type>::Release(Type *ptObject) {
+void CResourceStock<Type>::Release_internal(Type *ptObject) {
   // Mark that it is used once less
   ptObject->MarkUnused();
 
@@ -95,7 +95,7 @@ void CResourceStock<Type>::Release(Type *ptObject) {
 
 // Free all unused elements from the stock
 template<class Type>
-void CResourceStock<Type>::FreeUnused(void)
+void CResourceStock<Type>::FreeUnused_internal(void)
 {
   BOOL bAnyRemoved;
 

@@ -27,4 +27,27 @@ typedef CResourceStock<CSoundData> CStock_CSoundData;
 
 ENGINE_API extern CStock_CSoundData *_pSoundStock;
 
+// [Cecil] Public interface methods that check for the existence of the stock
+template<> inline
+CSoundData *CStock_CSoundData::Obtain_t(const CTFileName &fnmFileName) {
+  if (_pSoundStock == NULL) {
+    ASSERTALWAYS("No stock to obtain the resource from!");
+    return NULL;
+  }
+
+  return _pSoundStock->Obtain_internal_t(fnmFileName);
+};
+
+template<> inline
+void CStock_CSoundData::Release(CSoundData *ptObject) {
+  if (_pSoundStock == NULL) return;
+  _pSoundStock->Release_internal(ptObject);
+};
+
+template<> inline
+void CStock_CSoundData::FreeUnused(void) {
+  if (_pSoundStock == NULL) return;
+  _pSoundStock->FreeUnused_internal();
+};
+
 #endif // include-once check

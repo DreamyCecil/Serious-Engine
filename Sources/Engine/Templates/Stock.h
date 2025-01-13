@@ -38,15 +38,26 @@ class CResourceStock {
     // Destructor
     ~CResourceStock();
 
+  // [Cecil] Public interface methods need to be defined per specific stock
+  public:
+
+    static inline Type *Obtain_t(const CTFileName &fnmFileName);
+    static inline void Release(Type *ptObject);
+    static inline void FreeUnused(void);
+
+  // [Cecil] Private interface methods need to be used by public methods
+  private:
+
     // Obtain an object from stock - loads if not loaded
-    Type *Obtain_t(const CTFileName &fnmFileName);
+    Type *Obtain_internal_t(const CTFileName &fnmFileName);
 
     // Release an object when it's not needed any more
-    void Release(Type *ptObject);
+    void Release_internal(Type *ptObject);
 
     // Free all unused elements from the stock
-    void FreeUnused(void);
+    void FreeUnused_internal(void);
 
+  public:
     // Calculate amount of memory used by all objects in the stock
     SLONG CalculateUsedMemory(void);
 

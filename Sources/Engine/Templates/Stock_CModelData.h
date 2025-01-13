@@ -28,4 +28,27 @@ typedef CResourceStock<CModelData> CStock_CModelData;
 
 ENGINE_API extern CStock_CModelData *_pModelStock;
 
+// [Cecil] Public interface methods that check for the existence of the stock
+template<> inline
+CModelData *CStock_CModelData::Obtain_t(const CTFileName &fnmFileName) {
+  if (_pModelStock == NULL) {
+    ASSERTALWAYS("No stock to obtain the resource from!");
+    return NULL;
+  }
+
+  return _pModelStock->Obtain_internal_t(fnmFileName);
+};
+
+template<> inline
+void CStock_CModelData::Release(CModelData *ptObject) {
+  if (_pModelStock == NULL) return;
+  _pModelStock->Release_internal(ptObject);
+};
+
+template<> inline
+void CStock_CModelData::FreeUnused(void) {
+  if (_pModelStock == NULL) return;
+  _pModelStock->FreeUnused_internal();
+};
+
 #endif // include-once check

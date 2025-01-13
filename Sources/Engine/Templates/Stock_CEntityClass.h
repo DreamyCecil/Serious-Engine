@@ -27,4 +27,27 @@ typedef CResourceStock<CEntityClass> CStock_CEntityClass;
 
 ENGINE_API extern CStock_CEntityClass *_pEntityClassStock;
 
+// [Cecil] Public interface methods that check for the existence of the stock
+template<> inline
+CEntityClass *CStock_CEntityClass::Obtain_t(const CTFileName &fnmFileName) {
+  if (_pEntityClassStock == NULL) {
+    ASSERTALWAYS("No stock to obtain the resource from!");
+    return NULL;
+  }
+
+  return _pEntityClassStock->Obtain_internal_t(fnmFileName);
+};
+
+template<> inline
+void CStock_CEntityClass::Release(CEntityClass *ptObject) {
+  if (_pEntityClassStock == NULL) return;
+  _pEntityClassStock->Release_internal(ptObject);
+};
+
+template<> inline
+void CStock_CEntityClass::FreeUnused(void) {
+  if (_pEntityClassStock == NULL) return;
+  _pEntityClassStock->FreeUnused_internal();
+};
+
 #endif // include-once check

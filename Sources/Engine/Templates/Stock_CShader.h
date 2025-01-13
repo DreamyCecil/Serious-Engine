@@ -27,4 +27,27 @@ typedef CResourceStock<CShader> CStock_CShader;
 
 ENGINE_API extern CStock_CShader *_pShaderStock;
 
+// [Cecil] Public interface methods that check for the existence of the stock
+template<> inline
+CShader *CStock_CShader::Obtain_t(const CTFileName &fnmFileName) {
+  if (_pShaderStock == NULL) {
+    ASSERTALWAYS("No stock to obtain the resource from!");
+    return NULL;
+  }
+
+  return _pShaderStock->Obtain_internal_t(fnmFileName);
+};
+
+template<> inline
+void CStock_CShader::Release(CShader *ptObject) {
+  if (_pShaderStock == NULL) return;
+  _pShaderStock->Release_internal(ptObject);
+};
+
+template<> inline
+void CStock_CShader::FreeUnused(void) {
+  if (_pShaderStock == NULL) return;
+  _pShaderStock->FreeUnused_internal();
+};
+
 #endif // include-once check

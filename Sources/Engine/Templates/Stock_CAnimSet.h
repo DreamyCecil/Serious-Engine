@@ -27,4 +27,27 @@ typedef CResourceStock<CAnimSet> CStock_CAnimSet;
 
 ENGINE_API extern CStock_CAnimSet *_pAnimSetStock;
 
+// [Cecil] Public interface methods that check for the existence of the stock
+template<> inline
+CAnimSet *CStock_CAnimSet::Obtain_t(const CTFileName &fnmFileName) {
+  if (_pAnimSetStock == NULL) {
+    ASSERTALWAYS("No stock to obtain the resource from!");
+    return NULL;
+  }
+
+  return _pAnimSetStock->Obtain_internal_t(fnmFileName);
+};
+
+template<> inline
+void CStock_CAnimSet::Release(CAnimSet *ptObject) {
+  if (_pAnimSetStock == NULL) return;
+  _pAnimSetStock->Release_internal(ptObject);
+};
+
+template<> inline
+void CStock_CAnimSet::FreeUnused(void) {
+  if (_pAnimSetStock == NULL) return;
+  _pAnimSetStock->FreeUnused_internal();
+};
+
 #endif // include-once check

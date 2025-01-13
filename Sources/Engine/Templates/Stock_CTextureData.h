@@ -27,4 +27,27 @@ typedef CResourceStock<CTextureData> CStock_CTextureData;
 
 ENGINE_API extern CStock_CTextureData *_pTextureStock;
 
+// [Cecil] Public interface methods that check for the existence of the stock
+template<> inline
+CTextureData *CStock_CTextureData::Obtain_t(const CTFileName &fnmFileName) {
+  if (_pTextureStock == NULL) {
+    ASSERTALWAYS("No stock to obtain the resource from!");
+    return NULL;
+  }
+
+  return _pTextureStock->Obtain_internal_t(fnmFileName);
+};
+
+template<> inline
+void CStock_CTextureData::Release(CTextureData *ptObject) {
+  if (_pTextureStock == NULL) return;
+  _pTextureStock->Release_internal(ptObject);
+};
+
+template<> inline
+void CStock_CTextureData::FreeUnused(void) {
+  if (_pTextureStock == NULL) return;
+  _pTextureStock->FreeUnused_internal();
+};
+
 #endif // include-once check
