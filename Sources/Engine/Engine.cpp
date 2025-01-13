@@ -573,6 +573,10 @@ void SE_EndEngine(void)
   }
 #endif
 
+  // [Cecil] Remove default fonts *before* deleting the stocks, not after
+  if (_pfdDisplayFont != NULL) { delete _pfdDisplayFont; _pfdDisplayFont = NULL; }
+  if (_pfdConsoleFont != NULL) { delete _pfdConsoleFont; _pfdConsoleFont = NULL; }
+
   // free stocks
   delete _pEntityClassStock;  _pEntityClassStock = NULL;
   delete _pModelStock;        _pModelStock       = NULL; 
@@ -614,10 +618,6 @@ void SE_EndEngine(void)
   _pfWorldEditingProfile  .pf_aptTimers  .Clear();
   _pfPhysicsProfile       .pf_apcCounters.Clear();
   _pfPhysicsProfile       .pf_aptTimers  .Clear();
-
-  // remove default fonts if needed
-  if( _pfdDisplayFont != NULL) { delete _pfdDisplayFont;  _pfdDisplayFont=NULL; }
-  if( _pfdConsoleFont != NULL) { delete _pfdConsoleFont;  _pfdConsoleFont=NULL; } 
 
   // deinit IFeel
   IFeel_DeleteDevice();
