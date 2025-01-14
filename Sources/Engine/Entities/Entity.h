@@ -219,8 +219,10 @@ public:
   /* Helpers for writing/reading entity pointers. */
   void ReadEntityPointer_t(CTStream *istr, CEntityPointer &pen);
   void WriteEntityPointer_t(CTStream *ostr, CEntityPointer pen);
-  /* Get pointer to entity component from its packed identifier. */
-  class CEntityComponent *ComponentForTypeAndID(ULONG ulType, ULONG ulID);
+
+  // [Cecil] Get pointer to component from its identifier, ignoring the type (IDs must be unique anyway)
+  class CEntityComponent *ComponentForID(SLONG slID);
+
   /* Get pointer to entity property from its name. */
   class CEntityProperty *PropertyForName(const CTString &strPropertyName);
   /* Copy one entity property from property of another entity. */
@@ -318,8 +320,8 @@ public:
   /* Set all properties to default values. - overridden by ecc */
   virtual void SetDefaultProperties(void);
 
-  /* Get a filename for a component of given type and id. */
-  const CTFileName &FileNameForComponent(SLONG slType, SLONG slID);
+  // [Cecil] Get component filename from its identifier, ignoring the type (IDs must be unique anyway)
+  const CTFileName &FileNameForComponent(SLONG slID);
   // Get data for a texture component
   CTextureData *GetTextureDataForComponent(SLONG slID);
   // Get data for a model component

@@ -2391,8 +2391,9 @@ void CEntity::SetModel(const CTFileName &fnmModel)
 void CEntity::SetModel(SLONG idModelComponent)
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);
-  CEntityComponent *pecModel = en_pecClass->ComponentForTypeAndID(
-    ECT_MODEL, idModelComponent);
+  CEntityComponent *pecModel = en_pecClass->ec_pdecDLLClass->ComponentForID(idModelComponent);
+  ASSERT(pecModel != NULL && pecModel->ec_ectType == ECT_MODEL);
+
   en_pmoModelObject->SetData(pecModel->ec_pmdModel);
   UpdateSpatialRange();
   FindCollisionInfo();
@@ -2506,8 +2507,9 @@ void CEntity::SetModelMainTexture(const CTFileName &fnmTexture)
 void CEntity::SetModelMainTexture(SLONG idTextureComponent)
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);
-  CEntityComponent *pecTexture = en_pecClass->ComponentForTypeAndID(
-    ECT_TEXTURE, idTextureComponent);
+  CEntityComponent *pecTexture = ComponentForID(idTextureComponent);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
+
   en_pmoModelObject->mo_toTexture.SetData(pecTexture->ec_ptdTexture);
 }
 /* Get the main texture data for model entity. */
@@ -2527,16 +2529,18 @@ void CEntity::StartModelMainTextureAnim(INDEX iNewTextureAnim)
 void CEntity::SetModelReflectionTexture(SLONG idTextureComponent)
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);
-  CEntityComponent *pecTexture = en_pecClass->ComponentForTypeAndID(
-    ECT_TEXTURE, idTextureComponent);
+  CEntityComponent *pecTexture = ComponentForID(idTextureComponent);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
+
   en_pmoModelObject->mo_toReflection.SetData(pecTexture->ec_ptdTexture);
 }
 /* Set the specular texture data for model entity. */
 void CEntity::SetModelSpecularTexture(SLONG idTextureComponent)
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);
-  CEntityComponent *pecTexture = en_pecClass->ComponentForTypeAndID(
-    ECT_TEXTURE, idTextureComponent);
+  CEntityComponent *pecTexture = ComponentForID(idTextureComponent);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
+
   en_pmoModelObject->mo_toSpecular.SetData(pecTexture->ec_ptdTexture);
 }
 
@@ -2546,11 +2550,14 @@ void CEntity::AddAttachment(INDEX iAttachment, ULONG ulIDModel, ULONG ulIDTextur
   // add attachment
   CModelObject &mo = en_pmoModelObject->AddAttachmentModel(iAttachment)->amo_moModelObject;
   // update model data
-  CEntityComponent *pecWeaponModel = ComponentForTypeAndID( ECT_MODEL, ulIDModel);
-  mo.SetData(pecWeaponModel->ec_pmdModel);
+  CEntityComponent *pecModel = ComponentForID(ulIDModel);
+  ASSERT(pecModel != NULL && pecModel->ec_ectType == ECT_MODEL);
+  mo.SetData(pecModel->ec_pmdModel);
+
   // update texture data if different
-  CEntityComponent *pecWeaponTexture = ComponentForTypeAndID( ECT_TEXTURE, ulIDTexture);
-  mo.SetTextureData(pecWeaponTexture->ec_ptdTexture);
+  CEntityComponent *pecTexture = ComponentForID(ulIDTexture);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
+  mo.SetTextureData(pecTexture->ec_ptdTexture);
 }
 void CEntity::AddAttachment(INDEX iAttachment, CTFileName fnModel, CTFileName fnTexture)
 {
@@ -2585,8 +2592,10 @@ void CEntity::SetModelAttachmentReflectionTexture(INDEX iAttachment, SLONG idTex
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);
   CModelObject &mo = en_pmoModelObject->GetAttachmentModel(iAttachment)->amo_moModelObject;
-  CEntityComponent *pecTexture = en_pecClass->ComponentForTypeAndID(
-    ECT_TEXTURE, idTextureComponent);
+
+  CEntityComponent *pecTexture = ComponentForID(idTextureComponent);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
+
   mo.mo_toReflection.SetData(pecTexture->ec_ptdTexture);
 }
 /* Set the specular texture data for attachment model entity. */
@@ -2594,8 +2603,10 @@ void CEntity::SetModelAttachmentSpecularTexture(INDEX iAttachment, SLONG idTextu
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);
   CModelObject &mo = en_pmoModelObject->GetAttachmentModel(iAttachment)->amo_moModelObject;
-  CEntityComponent *pecTexture = en_pecClass->ComponentForTypeAndID(
-    ECT_TEXTURE, idTextureComponent);
+
+  CEntityComponent *pecTexture = ComponentForID(idTextureComponent);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
+
   mo.mo_toSpecular.SetData(pecTexture->ec_ptdTexture);
 }
 
@@ -2747,11 +2758,10 @@ void CAutoPrecacheTexture::Precache(const CTFileName &fnm)
 }
 
 /* Get a filename for a component of given id. */
-const CTFileName &CEntity::FileNameForComponent(SLONG slType, SLONG slID)
+const CTFileName &CEntity::FileNameForComponent(SLONG slID)
 {
   // find the component
-  CEntityComponent *pec = en_pecClass->ComponentForTypeAndID(
-    (EntityComponentType)slType, slID);
+  CEntityComponent *pec = en_pecClass->ec_pdecDLLClass->ComponentForID(slID);
   // the component must exist
   ASSERT(pec!=NULL);
   // get its name
@@ -2761,23 +2771,27 @@ const CTFileName &CEntity::FileNameForComponent(SLONG slType, SLONG slID)
 // Get data for a texture component
 CTextureData *CEntity::GetTextureDataForComponent(SLONG slID)
 {
-  CEntityComponent *pec = ComponentForTypeAndID( ECT_TEXTURE, slID);
-  if (pec!=NULL) {
+  CEntityComponent *pec = ComponentForID(slID);
+
+  if (pec != NULL) {
+    ASSERT(pec->ec_ectType == ECT_TEXTURE);
     return pec->ec_ptdTexture;
-  } else {
-    return NULL;
   }
+
+  return NULL;
 }
 
 // Get data for a model component
 CModelData *CEntity::GetModelDataForComponent(SLONG slID)
 {
-  CEntityComponent *pec = ComponentForTypeAndID( ECT_MODEL, slID);
-  if (pec!=NULL) {
+  CEntityComponent *pec = en_pecClass->ec_pdecDLLClass->ComponentForID(slID);
+
+  if (pec != NULL) {
+    ASSERT(pec->ec_ectType == ECT_MODEL);
     return pec->ec_pmdModel;
-  } else {
-    return NULL;
   }
+
+  return NULL;
 }
 
 /* Remove attachment from model */
@@ -2937,14 +2951,16 @@ INDEX CEntity::GetWorldPolygonIndex(CBrushPolygon *pbpo)
 // Sound functions
 void CEntity::PlaySound(CSoundObject &so, SLONG idSoundComponent, SLONG slPlayType)
 {
-  CEntityComponent *pecSound = en_pecClass->ComponentForTypeAndID(ECT_SOUND, idSoundComponent);
+  CEntityComponent *pecSound = en_pecClass->ec_pdecDLLClass->ComponentForID(idSoundComponent);
+  ASSERT(pecSound != NULL && pecSound->ec_ectType == ECT_SOUND);
   //so.Stop();
   so.Play(pecSound->ec_psdSound, slPlayType);
 }
 
 double CEntity::GetSoundLength(SLONG idSoundComponent)
 {
-  CEntityComponent *pecSound = en_pecClass->ComponentForTypeAndID(ECT_SOUND, idSoundComponent);
+  CEntityComponent *pecSound = en_pecClass->ec_pdecDLLClass->ComponentForID(idSoundComponent);
+  ASSERT(pecSound != NULL && pecSound->ec_ectType == ECT_SOUND);
   return pecSound->ec_psdSound->GetSecondsLength();
 }
 
@@ -3624,11 +3640,10 @@ class CEntityProperty *CEntity::PropertyForTypeAndID(ULONG ulType, ULONG ulID)
   return en_pecClass->PropertyForTypeAndID(ulType, ulID);
 }
 
-/* Get pointer to entity component from its packed identifier. */
-class CEntityComponent *CEntity::ComponentForTypeAndID(ULONG ulType, ULONG ulID)
-{
-  return en_pecClass->ComponentForTypeAndID((enum EntityComponentType)ulType, ulID);
-}
+// [Cecil] Get pointer to component from its identifier, ignoring the type (IDs must be unique anyway)
+CEntityComponent *CEntity::ComponentForID(SLONG slID) {
+  return en_pecClass->ec_pdecDLLClass->ComponentForID(slID);
+};
 
 /* Get pointer to entity property from its name. */
 class CEntityProperty *CEntity::PropertyForName(const CTString &strPropertyName)
@@ -3639,8 +3654,8 @@ class CEntityProperty *CEntity::PropertyForName(const CTString &strPropertyName)
 /* Create a new entity of given class in this world. */
 CEntity *CEntity::CreateEntity(const CPlacement3D &plPlacement, SLONG idClass)
 {
-  CEntityComponent *pecClassComponent = en_pecClass->ComponentForTypeAndID(
-    ECT_CLASS, idClass);
+  CEntityComponent *pecClassComponent = en_pecClass->ec_pdecDLLClass->ComponentForID(idClass);
+  ASSERT(pecClassComponent != NULL && pecClassComponent->ec_ectType == ECT_CLASS);
   return en_pwoWorld->CreateEntity(plPlacement, pecClassComponent->ec_pecEntityClass);
 }
 

@@ -317,16 +317,6 @@ CEntity::pEventHandler CEntityClass::HandlerForStateAndEvent(SLONG slState, SLON
   return ec_pdecDLLClass->HandlerForStateAndEvent(slState, slEvent);
 }
 
-/* Get pointer to component from its identifier. */
-class CEntityComponent *CEntityClass::ComponentForTypeAndID(
-  EntityComponentType ectType, SLONG slID) {
-  return ec_pdecDLLClass->ComponentForTypeAndID(ectType, slID);
-}
-/* Get pointer to component from the component. */
-class CEntityComponent *CEntityClass::ComponentForPointer(void *pv) {
-  return ec_pdecDLLClass->ComponentForPointer(pv);
-}
-
 // convert value of an enum to its name
 const char *CEntityPropertyEnumType::NameForValue(INDEX iValue)
 {
@@ -396,74 +386,55 @@ class CEntityProperty *CDLLEntityClass::PropertyForTypeAndID(
   }
 };
 
-/*
- * Get pointer to component from its identifier.
- */
-class CEntityComponent *CDLLEntityClass::ComponentForTypeAndID(
-  EntityComponentType ectType, SLONG slID)
+// [Cecil] Get pointer to component from its identifier, ignoring the type (IDs must be unique anyway)
+CEntityComponent *CDLLEntityClass::ComponentForID(SLONG slID)
 {
-  // for each component
-  for (INDEX iComponent=0; iComponent<dec_ctComponents; iComponent++) {
-    // if it has that same identifier
-    if (dec_aecComponents[iComponent].ec_slID==slID) {
-
-      // if it also has same type
-      if (dec_aecComponents[iComponent].ec_ectType==ectType) {
-        // obtain it
-        dec_aecComponents[iComponent].ObtainWithCheck();
-        // return it
-        return &dec_aecComponents[iComponent];
-
-      // if it has different type
-      } else {
-        // return that it was not found, this makes the whole thing much safer
-        return NULL;
-      }
-    }
-  }
-  // if base class exists
-  if (dec_pdecBase!=NULL) {
-    // look in the base class
-    return dec_pdecBase->ComponentForTypeAndID(ectType, slID);
-  // otherwise
-  } else {
-    // none found
-    return NULL;
-  }
-}
-/*
- * Get pointer to component from the component.
- */
-class CEntityComponent *CDLLEntityClass::ComponentForPointer(void *pv)
-{
-  // for each component
-  for (INDEX iComponent=0; iComponent<dec_ctComponents; iComponent++) {
-    // if it has that same pointer
-    if (dec_aecComponents[iComponent].ec_pvPointer==pv) {
-      // obtain it
+  for (INDEX iComponent = 0; iComponent < dec_ctComponents; iComponent++) {
+    // Obtain and return the component with the same identifier
+    if (dec_aecComponents[iComponent].ec_slID == slID)
+    {
       dec_aecComponents[iComponent].ObtainWithCheck();
-      // return it
       return &dec_aecComponents[iComponent];
     }
   }
-  // if base class exists
-  if (dec_pdecBase!=NULL) {
-    // look in the base class
-    return dec_pdecBase->ComponentForPointer(pv);
-  // otherwise
-  } else {
-    // none found
-    return NULL;
+
+  // Try looking for it in the base class
+  if (dec_pdecBase != NULL) {
+    return dec_pdecBase->ComponentForID(slID);
   }
-}
+
+  // None found
+  return NULL;
+};
+
+// Get pointer to component from the component
+CEntityComponent *CDLLEntityClass::ComponentForPointer(void *pv)
+{
+  for (INDEX iComponent = 0; iComponent < dec_ctComponents; iComponent++) {
+    // Obtain and return the component with the same pointer
+    if (dec_aecComponents[iComponent].ec_pvPointer == pv)
+    {
+      dec_aecComponents[iComponent].ObtainWithCheck();
+      return &dec_aecComponents[iComponent];
+    }
+  }
+
+  // Try looking for it in the base class
+  if (dec_pdecBase != NULL) {
+    return dec_pdecBase->ComponentForPointer(pv);
+  }
+
+  // None found
+  return NULL;
+};
 
 // precache given component
 void CDLLEntityClass::PrecacheModel(SLONG slID)
 {
   CTmpPrecachingNow tpn;
 
-  CEntityComponent *pecModel = ComponentForTypeAndID(ECT_MODEL, slID);
-  ASSERT(pecModel!=NULL);
+  CEntityComponent *pecModel = ComponentForID(slID);
+  ASSERT(pecModel != NULL && pecModel->ec_ectType == ECT_MODEL);
   pecModel->ObtainWithCheck();
 }
 
@@ -471,8 +442,8 @@ void CDLLEntityClass::PrecacheTexture(SLONG slID)
 {
   CTmpPrecachingNow tpn;
 
-  CEntityComponent *pecTexture = ComponentForTypeAndID(ECT_TEXTURE, slID);
-  ASSERT(pecTexture!=NULL);
+  CEntityComponent *pecTexture = ComponentForID(slID);
+  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
   pecTexture->ObtainWithCheck();
 }
 
@@ -480,8 +451,8 @@ void CDLLEntityClass::PrecacheSound(SLONG slID)
 {
   CTmpPrecachingNow tpn;
 
-  CEntityComponent *pecSound = ComponentForTypeAndID(ECT_SOUND, slID);
-  ASSERT(pecSound!=NULL);
+  CEntityComponent *pecSound = ComponentForID(slID);
+  ASSERT(pecSound != NULL && pecSound->ec_ectType == ECT_SOUND);
   pecSound->ObtainWithCheck();
 }
 
@@ -489,8 +460,8 @@ void CDLLEntityClass::PrecacheClass(SLONG slID, INDEX iUser /* = -1 */)
 {
   CTmpPrecachingNow tpn;
 
-  CEntityComponent *pecClass = ComponentForTypeAndID(ECT_CLASS, slID);
-  ASSERT(pecClass!=NULL);
+  CEntityComponent *pecClass = ComponentForID(slID);
+  ASSERT(pecClass != NULL && pecClass->ec_ectType == ECT_CLASS);
   pecClass->ObtainWithCheck();
   pecClass->ec_pecEntityClass->ec_pdecDLLClass->dec_OnPrecache(
     pecClass->ec_pecEntityClass->ec_pdecDLLClass, iUser);

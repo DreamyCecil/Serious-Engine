@@ -217,11 +217,13 @@ public:
   const char *HandlerNameForState(SLONG slState);
   /* Get derived class override for given state. */
   SLONG GetOverridenState(SLONG slState);
-  /* Get pointer to component from its type and identifier. */
-  class CEntityComponent *ComponentForTypeAndID(EntityComponentType ectType,
-    SLONG slID);
-  /* Get pointer to component from the component. */
-  class CEntityComponent *ComponentForPointer(void *pv);
+
+  // [Cecil] Get pointer to component from its identifier, ignoring the type (IDs must be unique anyway)
+  CEntityComponent *ComponentForID(SLONG slID);
+
+  // Get pointer to component from the component
+  CEntityComponent *ComponentForPointer(void *pv);
+
   // precache given component
   void PrecacheModel(SLONG slID);
   void PrecacheTexture(SLONG slID);
