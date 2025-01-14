@@ -15,6 +15,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
+#include <Engine/Templates/Stock_CAnimData.h>
+#include <Engine/Templates/Stock_CAnimSet.h>
+#include <Engine/Templates/Stock_CEntityClass.h>
+#include <Engine/Templates/Stock_CMesh.h>
 #include <Engine/Templates/Stock_CModelData.h>
+#include <Engine/Templates/Stock_CShader.h>
+#include <Engine/Templates/Stock_CSkeleton.h>
+#include <Engine/Templates/Stock_CSoundData.h>
+#include <Engine/Templates/Stock_CTextureData.h>
 
+CStock_CAnimData *_pAnimStock = NULL;
+CStock_CAnimSet *_pAnimSetStock = NULL;
+CStock_CEntityClass *_pEntityClassStock = NULL;
+CStock_CMesh *_pMeshStock = NULL;
 CStock_CModelData *_pModelStock = NULL;
+CStock_CShader *_pShaderStock = NULL;
+CStock_CSkeleton *_pSkeletonStock = NULL;
+CStock_CSoundData *_pSoundStock = NULL;
+CStock_CTextureData *_pTextureStock = NULL;

@@ -463,31 +463,7 @@
     <ClCompile Include="Templates\Stock.cpp">
       <Filter>Source Files\Templates</Filter>
     </ClCompile>
-    <ClCompile Include="Templates\Stock_CAnimData.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CAnimSet.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CEntityClass.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CMesh.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CModelData.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CShader.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CSkeleton.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CSoundData.cpp">
-      <Filter>Source Files\Templates</Filter>
-    </ClCompile>
-    <ClCompile Include="Templates\Stock_CTextureData.cpp">
+    <ClCompile Include="Templates\StockPointers.cpp">
       <Filter>Source Files\Templates</Filter>
     </ClCompile>
     <ClCompile Include="Network\ActionBuffer.cpp">

@@ -851,15 +851,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Templates\Stock_CAnimData.cpp" />
-    <ClCompile Include="Templates\Stock_CAnimSet.cpp" />
-    <ClCompile Include="Templates\Stock_CEntityClass.cpp" />
-    <ClCompile Include="Templates\Stock_CMesh.cpp" />
-    <ClCompile Include="Templates\Stock_CModelData.cpp" />
-    <ClCompile Include="Templates\Stock_CShader.cpp" />
-    <ClCompile Include="Templates\Stock_CSkeleton.cpp" />
-    <ClCompile Include="Templates\Stock_CSoundData.cpp" />
-    <ClCompile Include="Templates\Stock_CTextureData.cpp" />
+    <ClCompile Include="Templates\StockPointers.cpp" />
     <ClCompile Include="Network\ActionBuffer.cpp" />
     <ClCompile Include="Network\ClientInterface.cpp" />
     <ClCompile Include="Network\CommunicationInterface.cpp" />
