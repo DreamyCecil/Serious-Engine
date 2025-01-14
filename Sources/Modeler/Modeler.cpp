@@ -171,60 +171,6 @@ CBcgTexture::~CBcgTexture()
 
 CModelerApp::~CModelerApp()
 {
-  if( m_pLampModelData != NULL)
-  {
-    _pModelStock->Release( m_pLampModelData);
-    delete m_LampModelObject;
-  }
-  
-  if( m_pCollisionBoxModelData != NULL)
-  {
-    _pModelStock->Release( m_pCollisionBoxModelData);
-    delete m_pCollisionBoxModelObject;
-    m_pCollisionBoxModelObject = NULL;
-  }
-
-  if( m_pFloorModelData != NULL)
-  {
-    _pModelStock->Release( m_pFloorModelData);
-    delete m_pFloorModelObject;
-    m_pFloorModelObject = NULL;
-  }
-  
-  if( m_ptdCollisionBoxTexture != NULL)
-  {
-    _pTextureStock->Release( m_ptdCollisionBoxTexture);
-    m_ptdCollisionBoxTexture = NULL;
-  }
-
-  if( m_ptdLamp != NULL)
-  {
-    _pTextureStock->Release( m_ptdLamp);
-    m_ptdLamp = NULL;
-  }
-  
-  if( m_ptdFloorTexture != NULL)
-  {
-    _pTextureStock->Release( m_ptdFloorTexture);
-    m_ptdFloorTexture = NULL;
-  }
-  
-
-  FORDELETELIST( CBcgTexture, wt_ListNode, m_WorkingTextures, litTex)
-  {
-    ASSERT( litTex->wt_TextureData != NULL);
-    _pTextureStock->Release( litTex->wt_TextureData);
-    delete &litTex.Current();
-  }
-
-  FORDELETELIST( CWorkingPatch, wp_ListNode, m_WorkingPatches, litPatch)
-  {
-    CTextureData *pTD = litPatch->wp_TextureData;
-    _pTextureStock->Release( litPatch->wp_TextureData);
-    delete &litPatch.Current();
-  }
-
-  SE_EndEngine();
 }
 
 
@@ -244,6 +190,10 @@ BOOL CModelerApp::InitInstance()
   } CTSTREAM_END;
   return bResult;
 }
+
+// [Cecil] FIXME: For some strange reason the modeler calls CModelerApp::ExitInstance() twice when the application is closing, which
+// produces very awkward bugs. I have no idea how to use MFC, so I don't know how to fix it properly other than with this state switch.
+static BOOL _bModelerInitialized = FALSE;
 
 BOOL CModelerApp::SubInitInstance()
 {
@@ -436,7 +386,10 @@ BOOL CModelerApp::SubInitInstance()
     // call preferences
     OnFilePreferences();
   }
-  
+
+  // [Cecil] Modeler is fully initialized
+  _bModelerInitialized = TRUE;
+
   return TRUE;
 }
 
@@ -726,6 +679,66 @@ int CModelerApp::ExitInstance()
 {
   m_Preferences.WriteToIniFile();
   WriteProfileInt(L"Display modes", L"SED Gfx API", m_iApi);
+
+  // [Cecil] Modeler is shutdown
+  if (!_bModelerInitialized) return CWinApp::ExitInstance();
+  _bModelerInitialized = FALSE;
+
+  // [Cecil] Code below has been moved from ~CModelerApp()
+  if( m_pLampModelData != NULL)
+  {
+    _pModelStock->Release( m_pLampModelData);
+    delete m_LampModelObject;
+  }
+
+  if( m_pCollisionBoxModelData != NULL)
+  {
+    _pModelStock->Release( m_pCollisionBoxModelData);
+    delete m_pCollisionBoxModelObject;
+    m_pCollisionBoxModelObject = NULL;
+  }
+
+  if( m_pFloorModelData != NULL)
+  {
+    _pModelStock->Release( m_pFloorModelData);
+    delete m_pFloorModelObject;
+    m_pFloorModelObject = NULL;
+  }
+
+  if( m_ptdCollisionBoxTexture != NULL)
+  {
+    _pTextureStock->Release( m_ptdCollisionBoxTexture);
+    m_ptdCollisionBoxTexture = NULL;
+  }
+
+  if( m_ptdLamp != NULL)
+  {
+    _pTextureStock->Release( m_ptdLamp);
+    m_ptdLamp = NULL;
+  }
+
+  if( m_ptdFloorTexture != NULL)
+  {
+    _pTextureStock->Release( m_ptdFloorTexture);
+    m_ptdFloorTexture = NULL;
+  }
+
+  FORDELETELIST( CBcgTexture, wt_ListNode, m_WorkingTextures, litTex)
+  {
+    ASSERT( litTex->wt_TextureData != NULL);
+    _pTextureStock->Release( litTex->wt_TextureData);
+    delete &litTex.Current();
+  }
+
+  FORDELETELIST( CWorkingPatch, wp_ListNode, m_WorkingPatches, litPatch)
+  {
+    CTextureData *pTD = litPatch->wp_TextureData;
+    _pTextureStock->Release( litPatch->wp_TextureData);
+    delete &litPatch.Current();
+  }
+
+  SE_EndEngine();
+
 	return CWinApp::ExitInstance();
 }
 
