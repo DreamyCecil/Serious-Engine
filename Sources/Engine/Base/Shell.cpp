@@ -207,27 +207,30 @@ void MakeFatalError(void* pArgs)
 
 #if SE1_WIN
 
-// [Cecil] TODO: Check if this function works on x64
 extern void ReportGlobalMemoryStatus(void)
 {
-   CPrintF(TRANS("Global memory status...\n"));
+  CPrintF(TRANS("Global memory status...\n"));
 
-   MEMORYSTATUS ms;
-   GlobalMemoryStatus(&ms);
+  // [Cecil] GlobalMemoryStatus() -> GlobalMemoryStatusEx()
+  MEMORYSTATUSEX ms;
+  ms.dwLength = sizeof(ms);
 
-#define MB (1024*1024)
-   CPrintF(TRANS("  Physical memory used: %4d/%4dMB\n"), (ms.dwTotalPhys    -ms.dwAvailPhys    )/MB, ms.dwTotalPhys    /MB);
-   CPrintF(TRANS("  Page file used:       %4d/%4dMB\n"), (ms.dwTotalPageFile-ms.dwAvailPageFile)/MB, ms.dwTotalPageFile/MB);
-   CPrintF(TRANS("  Virtual memory used:  %4d/%4dMB\n"), (ms.dwTotalVirtual -ms.dwAvailVirtual )/MB, ms.dwTotalVirtual /MB);
-   CPrintF(TRANS("  Memory load: %3d%%\n"), ms.dwMemoryLoad);
+  if (GlobalMemoryStatusEx(&ms)) {
+    #define MB (1024*1024)
+    CPrintF(TRANS("  Physical memory used: %6llu/%6lluMB\n"), (ms.ullTotalPhys    -ms.ullAvailPhys    )/MB, ms.ullTotalPhys    /MB);
+    CPrintF(TRANS("  Page file used:       %6llu/%6lluMB\n"), (ms.ullTotalPageFile-ms.ullAvailPageFile)/MB, ms.ullTotalPageFile/MB);
+    CPrintF(TRANS("  Virtual memory used:  %6llu/%6lluMB\n"), (ms.ullTotalVirtual -ms.ullAvailVirtual )/MB, ms.ullTotalVirtual /MB);
+    CPrintF(TRANS("  Memory load: %3d%%\n"), ms.dwMemoryLoad);
 
-   SIZE_T uMin;
-   SIZE_T uMax;
-   GetProcessWorkingSetSize(GetCurrentProcess(), &uMin, &uMax);
-   CPrintF(TRANS("  Process working set: %dMB-%dMB\n\n"), uMin / (1024 * 1024), uMax / (1024 * 1024));
+    SIZE_T uMin, uMax;
+    GetProcessWorkingSetSize(GetCurrentProcess(), &uMin, &uMax);
+    CPrintF(TRANS("  Process working set: %uMB-%uMB\n\n"), uMin / MB, uMax / MB);
+
+  } else {
+    CPrintF(TRANS("Cannot get global memory status: %s\n"), GetWindowsError(GetLastError()));
+  }
 }
 
-// [Cecil] TODO: Check if this function works on x64
 static void MemoryInfo(void)
 {
   ReportGlobalMemoryStatus();
