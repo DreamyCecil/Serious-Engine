@@ -244,6 +244,9 @@ BOOL CModelerApp::SubInitInstance()
   // set main window for engine
   SE_UpdateWindowHandle( m_pMainWnd->m_hWnd);
 
+  // [Cecil] Determine adjustable gamma
+  SE_DetermineGamma(m_pMainWnd->m_hWnd);
+
 	// Enable drag/drop open
 	m_pMainWnd->DragAcceptFiles();
 
@@ -683,6 +686,9 @@ int CModelerApp::ExitInstance()
   // [Cecil] Modeler is shutdown
   if (!_bModelerInitialized) return CWinApp::ExitInstance();
   _bModelerInitialized = FALSE;
+
+  // [Cecil] Restore gamma adjustments
+  SE_RestoreGamma();
 
   // [Cecil] Code below has been moved from ~CModelerApp()
   if( m_pLampModelData != NULL)

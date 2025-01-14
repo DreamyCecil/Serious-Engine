@@ -382,6 +382,9 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
   // initialize engine
   SE_InitEngine(SeriousEngineSetup(SeriousEngineSetup::E_GAME));
 
+  // [Cecil] Determine adjustable gamma
+  SE_DetermineGamma(_hwndMain);
+
   // [Cecil] Get screen resolution
   _vpixScreenRes = _pGfx->GetMonitorResolution();
 
@@ -573,6 +576,9 @@ void End(void)
     pvpViewPort = NULL;
     pdpNormal   = NULL;
   }
+
+  // [Cecil] Restore gamma adjustments
+  SE_RestoreGamma();
 
   CloseMainWindow();
   MainWindow_End();

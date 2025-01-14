@@ -234,6 +234,10 @@ ENGINE_API void SE_LoadDefaultFonts(void);
 ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndWindowed);
 ENGINE_API void SE_PretouchIfNeeded(void);
 
+// [Cecil] Separate methods for determining and restoring gamma adjustment
+ENGINE_API void SE_DetermineGamma(OS::Window hwnd);
+ENGINE_API void SE_RestoreGamma(OS::Window hwnd = NULL);
+
 ENGINE_API extern CTString _strEngineBuild;  // not valid before InitEngine()!
 ENGINE_API extern ULONG _ulEngineBuildMajor;
 ENGINE_API extern ULONG _ulEngineBuildMinor;

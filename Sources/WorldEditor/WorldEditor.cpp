@@ -603,6 +603,9 @@ BOOL CWorldEditorApp::SubInitInstance()
   // set main window for engine
   SE_UpdateWindowHandle( m_pMainWnd->m_hWnd);
 
+  // [Cecil] Determine adjustable gamma
+  SE_DetermineGamma(m_pMainWnd->m_hWnd);
+
   // Enable drag/drop open
 	m_pMainWnd->DragAcceptFiles();
 
@@ -1896,6 +1899,9 @@ int CWorldEditorApp::ExitInstance()
   WriteToIniFileOnEnd();
   WriteDefaultPolygonValues();
 
+  // [Cecil] Restore gamma adjustments
+  SE_RestoreGamma();
+
   // release entity marker texture
   if( m_ptdEntityMarkerTexture != NULL)
   {
@@ -2024,8 +2030,7 @@ int CWorldEditorApp::ExitInstance()
   // end entire engine
   SE_EndEngine();
 
-  int iResult = CWinApp::ExitInstance();
-  return iResult;
+  return CWinApp::ExitInstance();
 }
 
 

@@ -84,10 +84,7 @@ extern BOOL CVA_bModels;
 static FLOAT _fLastBrightness, _fLastContrast, _fLastGamma;
 static FLOAT _fLastBiasR, _fLastBiasG, _fLastBiasB;
 static INDEX _iLastLevels;
-
-#if !SE1_PREFER_SDL
-static UWORD _auwGammaTable[256*3];
-#endif
+static UWORD _auwGammaTable[3][256];
 
 // table for clipping [-512..+1024] to [0..255]
 static UBYTE aubClipByte[256*2+ 256 +256*3];
@@ -1814,9 +1811,7 @@ INDEX _ctProbeShdB = 0;
 INDEX _ctFullShdU  = 0;
 SLONG _slFullShdUBytes = 0;
 
-#if !SE1_PREFER_SDL
 static BOOL GenerateGammaTable(void);
-#endif
 
 /*
  * Swap buffers in a viewport.
@@ -1982,8 +1977,6 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   if( gfx_bClearScreen) pvp->vp_Raster.ra_MainDrawPort.Fill( C_BLACK|CT_OPAQUE);
   //pvp->vp_Raster.ra_MainDrawPort.FillZBuffer(ZBUF_BACK);
 
-  // [Cecil] SDL: Don't bother with gamma adjustment
-#if !SE1_PREFER_SDL
   // adjust gamma table if supported ...
   if( gl_ulFlags & GLF_ADJUSTABLEGAMMA) {
     // ... and required
@@ -1991,17 +1984,21 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
     if( bTableSet) {
       if (GetCurrentAPI() == GAT_OGL) {
         CTempDC tdc(pvp->vp_hWnd);
-        SetDeviceGammaRamp( tdc.hdc, &_auwGammaTable[0]);
+
+      #if SE1_PREFER_SDL
+        SDL_SetWindowGammaRamp(tdc.hdc, _auwGammaTable[0], _auwGammaTable[1], _auwGammaTable[2]);
+      #else
+        SetDeviceGammaRamp(tdc.hdc, &_auwGammaTable[0][0]);
+      #endif
       } 
     #if SE1_DIRECT3D
       else if (GetCurrentAPI() == GAT_D3D) {
-        gl_pd3dDevice->SetGammaRamp( D3DSGR_NO_CALIBRATION, (D3DGAMMARAMP*)&_auwGammaTable[0]);
+        gl_pd3dDevice->SetGammaRamp( D3DSGR_NO_CALIBRATION, (D3DGAMMARAMP*)&_auwGammaTable[0][0]);
       }
     #endif // SE1_DIRECT3D
     }
     return;
   }
-#endif // !SE1_PREFER_SDL
 
   // just reset settings to default
   gfx_fBrightness = 0;
@@ -2058,8 +2055,6 @@ void CGfxLibrary::UnlockRaster( CRaster *praToUnlock)
   ASSERT( GFX_bRenderingScene);
 }
 
-#if !SE1_PREFER_SDL
-
 // generates gamma table and returns true if gamma table has been changed
 static BOOL GenerateGammaTable(void)
 {
@@ -2088,55 +2083,58 @@ static BOOL GenerateGammaTable(void)
   _fLastBiasR  = gfx_fBiasR;
   _fLastBiasG  = gfx_fBiasG;
   _fLastBiasB  = gfx_fBiasB;
-                
+
+  // [Cecil] Temporary storage array
+  UWORD *puwTempTable = _auwGammaTable[0];
+
   // fill and adjust gamma
   const FLOAT f1oGamma = 1.0f / gfx_fGamma;
-  for( i=0; i<256; i++) {
-    FLOAT fVal = i/255.0f;
-    fVal = Clamp( (FLOAT)pow(fVal,f1oGamma), 0.0f, 1.0f);
-    _auwGammaTable[i] = (UWORD)(fVal*65280);
+
+  for (i = 0; i < 256; i++) {
+    FLOAT fVal = i / 255.0f;
+    fVal = Clamp(pow(fVal, f1oGamma), 0.0f, 1.0f);
+    puwTempTable[i] = UWORD(fVal * 65280);
   }
 
   // adjust contrast
-  for( i=0; i<256; i++) {
-    FLOAT fVal = _auwGammaTable[i]/65280.0f;
-    fVal = Clamp( (fVal-0.5f)*gfx_fContrast +0.5f, 0.0f, 1.0f);
-    _auwGammaTable[i] = (UWORD)(fVal*65280);
+  for (i = 0; i < 256; i++) {
+    FLOAT fVal = puwTempTable[i] / 65280.0f;
+    fVal = Clamp((fVal - 0.5f) * gfx_fContrast + 0.5f, 0.0f, 1.0f);
+    puwTempTable[i] = UWORD(fVal * 65280);
   }
 
   // adjust brightness
-  INDEX iAdd = 256* 256*gfx_fBrightness;
-  for( i=0; i<256; i++) {
-    _auwGammaTable[i] = Clamp( _auwGammaTable[i]+iAdd, 0L, 65280L);
+  const INDEX iAdd = 256 * 256 * gfx_fBrightness;
+
+  for (i = 0; i < 256; i++) {
+    puwTempTable[i] = Clamp(puwTempTable[i] + iAdd, 0L, 65280L);
   }
 
   // adjust levels (posterize)
-  if( gfx_iLevels<256) {
-    const FLOAT fLevels = 256 * 256.0f/gfx_iLevels;
-    for( i=0; i<256; i++) {
-      INDEX iVal = _auwGammaTable[i];
-      iVal = ((INDEX)(iVal/fLevels)) *fLevels;
-      _auwGammaTable[i] = ClampUp( iVal, 0xFF00L);
+  if (gfx_iLevels < 256) {
+    const FLOAT fLevels = 256 * 256.0f / gfx_iLevels;
+
+    for (i = 0; i < 256; i++) {
+      INDEX iVal = puwTempTable[i];
+      iVal = INDEX(iVal / fLevels) * fLevels;
+      puwTempTable[i] = ClampUp(iVal, 0xFF00L);
     }
   }
 
   // copy R to G and B array
-  for( i=0; i<256; i++) {
-    FLOAT fR,fG,fB;
-    fR=fG=fB = _auwGammaTable[i]/65280.0f;
-    fR = Clamp( fR*gfx_fBiasR, 0.0f, 1.0f);
-    fG = Clamp( fG*gfx_fBiasG, 0.0f, 1.0f);
-    fB = Clamp( fB*gfx_fBiasB, 0.0f, 1.0f);
-    _auwGammaTable[i+0]   = (UWORD)(fR*65280);
-    _auwGammaTable[i+256] = (UWORD)(fG*65280);
-    _auwGammaTable[i+512] = (UWORD)(fB*65280);
+  for (i = 0; i < 256; i++) {
+    FLOAT fVal = puwTempTable[i] / 65280.0f;
+    FLOAT fR = Clamp(fVal * gfx_fBiasR, 0.0f, 1.0f);
+    FLOAT fG = Clamp(fVal * gfx_fBiasG, 0.0f, 1.0f);
+    FLOAT fB = Clamp(fVal * gfx_fBiasB, 0.0f, 1.0f);
+    _auwGammaTable[0][i] = UWORD(fR * 65280);
+    _auwGammaTable[1][i] = UWORD(fG * 65280);
+    _auwGammaTable[2][i] = UWORD(fB * 65280);
   }
 
   // done
   return TRUE;
 }
-
-#endif // !SE1_PREFER_SDL
 
 #if 0
 

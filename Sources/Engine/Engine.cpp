@@ -68,10 +68,8 @@ BOOL _bFullScreen = FALSE;
 // critical section for access to zlib functions
 CTCriticalSection zip_csLock; 
 
-#if !SE1_PREFER_SDL
 // to keep system gamma table
-static UWORD auwSystemGamma[256*3];
-#endif
+static UWORD _auwSystemGamma[3][256];
 
 // OS info
 static CTString sys_strOS = "";
@@ -539,21 +537,8 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   _pfdDisplayFont = NULL;
   _pfdConsoleFont = NULL;
 
-#if !SE1_PREFER_SDL
-  // readout system gamma table
-  HDC  hdc = GetDC(NULL);
-  BOOL bOK = GetDeviceGammaRamp( hdc, &auwSystemGamma[0]);
-  _pGfx->gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
-  if( !bOK) {
-    _pGfx->gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
-    CPutString( TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable!\n\n"));
-  } // done
-  ReleaseDC( NULL, hdc);
-
-#else
-  // [Cecil] TODO: Implement detection of adjustable gamma with SDL
-  CPutString(TRANS("\nWARNING: Gamma, brightness and contrast are not adjustable!\n\n"));
-#endif
+  // [Cecil] Gamma isn't adjustable by default (use SE_DetermineGamma() after creating any window)
+  _pGfx->gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
 
   // [Cecil] Initialize IFeel
   SE_IFeelInit();
@@ -563,16 +548,6 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
 // shutdown entire engine
 void SE_EndEngine(void)
 {
-#if !SE1_PREFER_SDL
-  // restore system gamma table (if needed)
-  if( _pGfx->gl_ulFlags&GLF_ADJUSTABLEGAMMA) {
-    HDC  hdc = GetDC(NULL);
-    BOOL bOK = SetDeviceGammaRamp( hdc, &auwSystemGamma[0]);
-    //ASSERT(bOK);
-    ReleaseDC( NULL, hdc);
-  }
-#endif
-
   // [Cecil] Remove default fonts *before* deleting the stocks, not after
   if (_pfdDisplayFont != NULL) { delete _pfdDisplayFont; _pfdDisplayFont = NULL; }
   if (_pfdConsoleFont != NULL) { delete _pfdConsoleFont; _pfdConsoleFont = NULL; }
@@ -626,6 +601,56 @@ void SE_EndEngine(void)
   SE_EndSDL();
 }
 
+// [Cecil] Separate methods for determining and restoring gamma adjustment
+void SE_DetermineGamma(OS::Window hwnd) {
+#if SE1_PREFER_SDL
+  // Read out system gamma table
+  int iGammaResult = SDL_GetWindowGammaRamp(hwnd, _auwSystemGamma[0], _auwSystemGamma[1], _auwSystemGamma[2]);
+
+  if (iGammaResult == 0) {
+    _pGfx->gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
+  } else {
+    _pGfx->gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
+    CPutString(TRANS("WARNING: Gamma, brightness and contrast are not adjustable!\n"));
+    CPrintF(TRANS("SDL Error: %s\n"), SDL_GetError());
+  }
+
+#else
+  // Read out system gamma table
+  HDC hdc = GetDC(NULL);
+  BOOL bOK = GetDeviceGammaRamp(hdc, &_auwSystemGamma[0][0]);
+  ReleaseDC(NULL, hdc);
+
+  if (bOK) {
+    _pGfx->gl_ulFlags |= GLF_ADJUSTABLEGAMMA;
+  } else {
+    _pGfx->gl_ulFlags &= ~GLF_ADJUSTABLEGAMMA;
+    CPutString(TRANS("WARNING: Gamma, brightness and contrast are not adjustable!\n"));
+  }
+#endif
+};
+
+void SE_RestoreGamma(OS::Window hwnd) {
+  // Wasn't adjustable to begin with
+  if (!(_pGfx->gl_ulFlags & GLF_ADJUSTABLEGAMMA)) return;
+
+#if SE1_PREFER_SDL
+  // Borrow current window
+  if (hwnd == NULL) hwnd = _hwndCurrent;
+
+  // Restore system gamma table
+  if (hwnd != NULL) {
+    SDL_SetWindowGammaRamp(hwnd, _auwSystemGamma[0], _auwSystemGamma[1], _auwSystemGamma[2]);
+  }
+
+#else
+  // Restore system gamma table
+  HDC hdc = GetDC(NULL);
+  BOOL bOK = SetDeviceGammaRamp(hdc, &_auwSystemGamma[0][0]);
+  //ASSERT(bOK);
+  ReleaseDC(NULL, hdc);
+#endif
+};
 
 // prepare and load some default fonts
 void SE_LoadDefaultFonts(void)
