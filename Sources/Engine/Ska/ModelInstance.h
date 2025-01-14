@@ -210,6 +210,9 @@ public:
   // Add flags to animation playing in anim queue
   BOOL AddFlagsToPlayingAnim(INDEX iAnimID, ULONG ulFlags);
 
+  // [Cecil] Get animation frame at some point in time, if it's playing
+  INDEX GetFrameInTime(INDEX iAnimID, TIME tmTime);
+
   // Model color
   COLOR &GetModelColor(void);
   void SetModelColor(COLOR colNewColor);

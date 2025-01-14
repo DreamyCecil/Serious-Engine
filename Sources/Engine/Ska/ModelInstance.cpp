@@ -853,6 +853,40 @@ BOOL CModelInstance::AddFlagsToPlayingAnim(INDEX iAnimID, ULONG ulFlags)
   return FALSE;
 }
 
+// [Cecil] Get animation frame at some point in time, if it's playing
+INDEX CModelInstance::GetFrameInTime(INDEX iAnimID, TIME tmTime) {
+  // Check the last animation list in the queue
+  INDEX ctLists = mi_aqAnims.aq_Lists.Count();
+
+  if (ctLists > 0) {
+    const AnimList &al = mi_aqAnims.aq_Lists[ctLists - 1];
+
+    // Go through each animation in the list
+    for (INDEX iAnim = 0; iAnim < al.al_PlayedAnims.Count(); iAnim++) {
+      const PlayedAnim &pa = al.al_PlayedAnims[iAnim];
+
+      // Wrong animation
+      if (pa.pa_iAnimID != iAnimID) continue;
+
+      // Find internal animation
+      INDEX iAnimSetIndex, iAnimIndex;
+      if (!FindAnimationByID(iAnimID, &iAnimSetIndex, &iAnimIndex)) continue;
+
+      Animation &an = mi_aAnimSet[iAnimSetIndex].as_Anims[iAnimIndex];
+
+      // Time since the animation started
+      TIME tmOffset = tmTime - (TIME)pa.pa_fStartTime;
+
+      // Calculate current frame and return it
+      INDEX iFrame = tmOffset / TIME(an.an_fSecPerFrame * pa.pa_fSpeedMul);
+      return iFrame % an.an_iFrames;
+    }
+  }
+
+  // No animation found - invalid frame
+  return -1;
+};
+
 // Sets name of model instance
 void CModelInstance::SetName(CTString strName)
 {
