@@ -428,44 +428,20 @@ CEntityComponent *CDLLEntityClass::ComponentForPointer(void *pv)
   return NULL;
 };
 
-// precache given component
-void CDLLEntityClass::PrecacheModel(SLONG slID)
-{
+// [Cecil] Precache any component by its identifier
+void CDLLEntityClass::PrecacheResource(SLONG slID, INDEX iUser) {
   CTmpPrecachingNow tpn;
 
-  CEntityComponent *pecModel = ComponentForID(slID);
-  ASSERT(pecModel != NULL && pecModel->ec_ectType == ECT_MODEL);
-  pecModel->ObtainWithCheck();
-}
+  CEntityComponent *pec = ComponentForID(slID);
+  ASSERT(pec != NULL);
+  pec->ObtainWithCheck();
 
-void CDLLEntityClass::PrecacheTexture(SLONG slID)
-{
-  CTmpPrecachingNow tpn;
-
-  CEntityComponent *pecTexture = ComponentForID(slID);
-  ASSERT(pecTexture != NULL && pecTexture->ec_ectType == ECT_TEXTURE);
-  pecTexture->ObtainWithCheck();
-}
-
-void CDLLEntityClass::PrecacheSound(SLONG slID)
-{
-  CTmpPrecachingNow tpn;
-
-  CEntityComponent *pecSound = ComponentForID(slID);
-  ASSERT(pecSound != NULL && pecSound->ec_ectType == ECT_SOUND);
-  pecSound->ObtainWithCheck();
-}
-
-void CDLLEntityClass::PrecacheClass(SLONG slID, INDEX iUser /* = -1 */)
-{
-  CTmpPrecachingNow tpn;
-
-  CEntityComponent *pecClass = ComponentForID(slID);
-  ASSERT(pecClass != NULL && pecClass->ec_ectType == ECT_CLASS);
-  pecClass->ObtainWithCheck();
-  pecClass->ec_pecEntityClass->ec_pdecDLLClass->dec_OnPrecache(
-    pecClass->ec_pecEntityClass->ec_pdecDLLClass, iUser);
-}
+  // Precache additional resources of the class
+  if (pec->ec_ectType == ECT_CLASS) {
+    CDLLEntityClass *pdecPrecache = pec->ec_pecEntityClass->ec_pdecDLLClass;
+    pdecPrecache->dec_OnPrecache(pdecPrecache, iUser);
+  }
+};
 
 /*
  * Get event handler given state and event code.

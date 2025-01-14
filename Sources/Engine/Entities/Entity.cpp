@@ -2664,23 +2664,10 @@ void CEntity::AdjustShaderParams(INDEX iSurfaceID,CShader *pShader,ShaderParams 
 {
 }
 
-// precache given component
-void CEntity::PrecacheModel(SLONG slID)
-{
-  en_pecClass->ec_pdecDLLClass->PrecacheModel(slID);
-}
-void CEntity::PrecacheTexture(SLONG slID)
-{
-  en_pecClass->ec_pdecDLLClass->PrecacheTexture(slID);
-}
-void CEntity::PrecacheSound(SLONG slID)
-{
-  en_pecClass->ec_pdecDLLClass->PrecacheSound(slID);
-}
-void CEntity::PrecacheClass(SLONG slID, INDEX iUser /* = -1*/)
-{
-  en_pecClass->ec_pdecDLLClass->PrecacheClass(slID, iUser);
-}
+// [Cecil] Precache any component by its identifier
+void CEntity::PrecacheResource(SLONG slID, INDEX iUser) {
+  en_pecClass->ec_pdecDLLClass->PrecacheResource(slID, iUser);
+};
 
 CAutoPrecacheSound::CAutoPrecacheSound()
 {

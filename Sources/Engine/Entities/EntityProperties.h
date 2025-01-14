@@ -224,11 +224,22 @@ public:
   // Get pointer to component from the component
   CEntityComponent *ComponentForPointer(void *pv);
 
-  // precache given component
-  void PrecacheModel(SLONG slID);
-  void PrecacheTexture(SLONG slID);
-  void PrecacheSound(SLONG slID);
-  void PrecacheClass(SLONG slID, INDEX iUser = -1);
+  // [Cecil] Precache any component by its identifier
+  void PrecacheResource(SLONG slID, INDEX iUser = -1);
+
+  // [Cecil] TEMP: Old method wrappers for compatibility
+  __forceinline void PrecacheModel(SLONG slID) {
+    PrecacheResource(slID);
+  };
+  __forceinline void PrecacheTexture(SLONG slID) {
+    PrecacheResource(slID);
+  };
+  __forceinline void PrecacheSound(SLONG slID) {
+    PrecacheResource(slID);
+  };
+  __forceinline void PrecacheClass(SLONG slID, INDEX iUser = -1) {
+    PrecacheResource(slID, iUser);
+  };
 
   // [Cecil] Moved from CEntityClass
 
