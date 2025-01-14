@@ -22,7 +22,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #if SE1_PREFER_SDL
 
 extern INDEX snd_iDevice;
-extern CTString snd_strDeviceName;
 extern FLOAT snd_tmMixAhead;
 
 static void AudioCallback(void *pUserData, Uint8 *pubStream, int iLength) {
@@ -138,10 +137,10 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
   desired.userdata = this;
   desired.callback = AudioCallback;
 
-  // [Cecil] FIXME
-  // rcg12162001: We force SDL to convert the audio stream on the fly to match sl_SwfeFormat, but I'm curious
-  // if Serious Engine can handle it if we changed sl_SwfeFormat to match what the audio hardware can handle.
-  m_iAudioDevice = SDL_OpenAudioDevice(snd_strDeviceName == "" ? NULL : snd_strDeviceName.ConstData(), 0, &desired, &obtained, 0);
+  // [Cecil] NOTE: Use SDL_GetAudioDeviceName() here to select a specific audio device and report its name below
+  const char *strDevice = NULL;
+  const char *strDeviceName = (strDevice == NULL) ? "[system default playback device]" : strDevice;
+  m_iAudioDevice = SDL_OpenAudioDevice(strDevice, 0, &desired, &obtained, 0);
 
   if (m_iAudioDevice == 0) {
     CPrintF(TRANS("SDL_OpenAudioDevice() error: %s\n"), SDL_GetError());
@@ -156,8 +155,7 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
 
   // Report success
   if (bReport) {
-    // [Cecil] TODO: Check whether or not an actual SDL device name can be reported
-    CPrintF(TRANS("  opened device: %s\n"), "SDL audio stream");
+    CPrintF(TRANS("  opened device: %s\n"), strDeviceName);
     CPrintF(TRANS("  %dHz, %dbit, %s\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, SDL_GetCurrentAudioDriver());
   }
 

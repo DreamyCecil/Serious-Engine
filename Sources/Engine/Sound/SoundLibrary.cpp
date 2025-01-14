@@ -76,9 +76,6 @@ FLOAT snd_fEAXPanning = 0.0f;
 static FLOAT snd_fNormalizer = 0.9f;
 static FLOAT _fLastNormalizeValue = 1;
 
-// [Cecil] TEMP: For specifying SDL audio device
-CTString snd_strDeviceName;
-
 static BOOL _bMutedForMixing = FALSE;
 
 /**
@@ -301,9 +298,6 @@ void CSoundLibrary::Init(void)
   _pShell->DeclareSymbol( "persistent user INDEX snd_iMaxOpenRetries;",   &snd_iMaxOpenRetries);
   _pShell->DeclareSymbol( "persistent user FLOAT snd_tmOpenFailDelay;",   &snd_tmOpenFailDelay);
   _pShell->DeclareSymbol( "persistent user FLOAT snd_fEAXPanning;", &snd_fEAXPanning);
-
-  // [Cecil] TEMP: For specifying SDL audio device
-  _pShell->DeclareSymbol("persistent user CTString snd_strDeviceName;", &snd_strDeviceName);
 
   // [Cecil] Ignore sounds on a dedicated server
   if (_SE1Setup.IsAppServer()) {
