@@ -80,6 +80,9 @@ struct ENGINE_API MeshSurface
   CShader *msrf_pShader;
   ShaderParams msrf_ShadingParams;
   CStaticArray<struct MeshTriangle> msrf_aTriangles;		// list of triangles
+
+  // [Cecil] No shader referenced by default
+  MeshSurface() : msrf_pShader(NULL) {};
 };
 
 struct ENGINE_API MeshTriangle

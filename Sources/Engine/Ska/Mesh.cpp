@@ -56,8 +56,9 @@ CMesh::CMesh()
 {
 }
 
-CMesh::~CMesh()
-{
+CMesh::~CMesh() {
+  // [Cecil] Clear mesh on destruction, which will also free used shaders
+  Clear();
 }
 
 // release old shader and obtain new shader for mesh surface (expand ShaderParams if needed)
@@ -602,7 +603,7 @@ void CMesh::Write_t(CTStream *ostrFile)
         // write float count 
         (*ostrFile)<<ctfl;
 
-        ASSERT(msrf.msrf_pShader!=NULL);
+        ASSERT(msrf.msrf_pShader!=NULL); // [Cecil] FIXME: Seems redundant
         // write shader name
         CTString strShaderName;
         strShaderName = msrf.msrf_pShader->GetName();
