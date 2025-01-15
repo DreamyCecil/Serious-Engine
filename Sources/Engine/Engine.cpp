@@ -471,10 +471,6 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   _pShell->DeclareSymbol("user const CTString sys_strModName;", &sys_strModName);
   _pShell->DeclareSymbol("user const CTString sys_strModExt;",  &sys_strModExt);
 
-  // Stock clearing
-  extern void FreeUnusedStock(void);
-  _pShell->DeclareSymbol("user void FreeUnusedStock(void);", &FreeUnusedStock);
-  
   // Timer tick quantum
   _pShell->DeclareSymbol("user const FLOAT fTickQuantum;", (FLOAT*)&_pTimer->TickQuantum);
 

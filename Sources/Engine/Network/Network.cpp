@@ -29,12 +29,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Entities/InternalClasses.h>
 #include <Engine/Entities/Precaching.h>
 #include <Engine/Network/CommunicationInterface.h>
-#include <Engine/Templates/Stock_CModelData.h>
-#include <Engine/Templates/Stock_CAnimData.h>
-#include <Engine/Templates/Stock_CTextureData.h>
-#include <Engine/Templates/Stock_CSoundData.h>
-#include <Engine/Templates/Stock_CEntityClass.h>
-
 
 #include <Engine/Base/Statistics_internal.h>
 #include <Engine/Graphics/DrawPort.h>
@@ -628,6 +622,17 @@ static void StockDump(void)
     _pSoundStock->DumpMemoryUsage_t(strm);
     strm.PutLine_t("Classes:");
     _pEntityClassStock->DumpMemoryUsage_t(strm);
+
+    // [Cecil] Dump data about SKA-related stocks
+    strm.PutLine_t("Anim Sets:");
+    _pAnimSetStock->DumpMemoryUsage_t(strm);
+    strm.PutLine_t("Meshes:");
+    _pMeshStock->DumpMemoryUsage_t(strm);
+    strm.PutLine_t("Shaders:");
+    _pShaderStock->DumpMemoryUsage_t(strm);
+    strm.PutLine_t("Skeletons:");
+    _pSkeletonStock->DumpMemoryUsage_t(strm);
+
     CPrintF("Dumped to '%s'\n", fnm.ConstData());
   } catch (char *strError) {
     CPrintF("Error: %s\n", strError);
@@ -636,7 +641,7 @@ static void StockDump(void)
 
 
 // free all unused stocks
-extern void FreeUnusedStock(void)
+static void FreeUnusedStock(void)
 {
   // free all unused stocks
   _pEntityClassStock->FreeUnused();
@@ -644,6 +649,12 @@ extern void FreeUnusedStock(void)
   _pSoundStock->FreeUnused();
   _pTextureStock->FreeUnused();
   _pAnimStock->FreeUnused();
+
+  // [Cecil] Free SKA-related stocks
+  _pAnimSetStock->FreeUnused();
+  _pMeshStock->FreeUnused();
+  _pShaderStock->FreeUnused();
+  _pSkeletonStock->FreeUnused();
 }
 
 
@@ -751,6 +762,7 @@ void CNetworkLibrary::Init(void)
   _pShell->DeclareSymbol("user void NetworkInfo(void);",  &NetworkInfo);
   _pShell->DeclareSymbol("user void StockInfo(void);",    &StockInfo);
   _pShell->DeclareSymbol("user void StockDump(void);",    &StockDump);
+  _pShell->DeclareSymbol("user void FreeUnusedStock(void);", &FreeUnusedStock); // [Cecil] Moved from Engine.cpp
   _pShell->DeclareSymbol("user void RendererInfo(void);", &RendererInfo);
   _pShell->DeclareSymbol("user void ClearRenderer(void);",   &ClearRenderer);
   _pShell->DeclareSymbol("user void CacheShadows(void);",    &CacheShadows);
@@ -1600,7 +1612,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   _pSound->Mute();
 
   // cancel all predictions before crossing levels
-  _pNetwork->ga_World.DeletePredictors();
+  ga_World.DeletePredictors();
 
   // find all entities that are to cross to next level
   CEntitySelection senToCross;
