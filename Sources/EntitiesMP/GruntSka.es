@@ -179,7 +179,7 @@ functions:
     SetSkaModel("ModelsSKA\\Enemies\\Grunt\\CommanderNoGun.smc");
     CModelInstance *pmiFlamer = NULL;
     try{
-      pmiFlamer = ParseSmcFile_t("ModelsSKA\\Weapons\\Flamer\\Flamer.smc");
+      pmiFlamer = LoadModelInstance_t("ModelsSKA\\Weapons\\Flamer\\Flamer.smc");
     } catch(char *strErr) {
       FatalError(strErr);
     }

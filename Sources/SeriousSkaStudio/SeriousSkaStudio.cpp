@@ -211,7 +211,7 @@ BOOL CSeriousSkaStudioApp::SubInitInstance()
   // try to load lamp model 
   try
   {
-    pmiLight = ParseSmcFile_t(_fnmApplicationPath + LAMP_MODEL_FILENAME);
+    pmiLight = LoadModelInstance_t(_fnmApplicationPath + LAMP_MODEL_FILENAME);
     pmiLight->StretchModel(FLOAT3D(.5f,.5f,.5f))  ;
   }
   catch(char *strError) 
@@ -295,9 +295,8 @@ void CSeriousSkaStudioApp::OnFileOpen()
 {
   CTFileName fnSim;
   // get file name  
-  fnSim = _EngineGUI.FileRequester( "Select existing Smc file",
-    "ASCII model files (*.smc)\0*.smc\0"
-    "All files (*.*)\0*.*\0\0",
+  fnSim = _EngineGUI.FileRequester("Select a model config file",
+    FILTER_MODELCFG FILTER_ALL FILTER_END // [Cecil] Using filters
     "Open directory", "Models\\", "");
   if (fnSim=="") return;
 
@@ -792,7 +791,7 @@ void CSeriousSkaStudioApp::ReloadRootModelInstance()
     pDoc->m_ModelInstance->Clear();
     // try parsing smc file
     try {
-      pDoc->m_ModelInstance = ParseSmcFile_t(pDoc->m_ModelInstance->mi_fnSourceFile);
+      pDoc->m_ModelInstance = LoadModelInstance_t(pDoc->m_ModelInstance->mi_fnSourceFile);
     } catch(char *strError) {
       // error in parsing occured
       ErrorMessage("%s",strError);
@@ -1226,9 +1225,9 @@ CModelInstance *CSeriousSkaStudioApp::OnAddNewModelInstance()
   CSeriousSkaStudioDoc *pDoc = GetDocument();
   CTFileName fnSim;
   // get file name  
-  fnSim = _EngineGUI.FileRequester( "Type name for new Smc file or select existing one",
-    "ASCII model files (*.smc)\0*.smc\0"
-    "All files (*.*)\0*.*\0\0",
+  fnSim = _EngineGUI.FileRequester("Type name for a new model config file or select an existing one",
+    // [Cecil] TODO: Use FILTER_MODELCFG when it becomes possible to save into both SMC and BMC
+    FILTER_SMC FILTER_ALL FILTER_END // [Cecil] Using filters
     "Open directory", "Models\\", "");
   if (fnSim=="") return NULL;
   CTFileName fnFull;
@@ -1255,7 +1254,7 @@ CModelInstance *CSeriousSkaStudioApp::OnAddNewModelInstance()
     // close file
     ostrFile.Close();
     // load new smc file
-    pmi = ParseSmcFile_t(fnFull);
+    pmi = LoadModelInstance_t(fnFull);
   }
   catch(char *strError)
   {
@@ -1281,7 +1280,7 @@ CModelInstance *CSeriousSkaStudioApp::OnOpenExistingInstance(CTString strModelIn
     // start parsing smc file
     try
     {
-      pmi = ParseSmcFile_t(_fnmApplicationPath + strModelInstance);
+      pmi = LoadModelInstance_t(_fnmApplicationPath + strModelInstance);
     }
     catch(char *strError)
     {
@@ -1413,9 +1412,8 @@ BOOL CSeriousSkaStudioApp::SaveModelAs(CModelInstance *pmi)
 
   // get smc file name  
   CTFileName fnSim;
-  fnSim = _EngineGUI.FileRequester( "Select existing Smc file",
-    "ASCII model files (*.smc)\0*.smc\0"
-    "All files (*.*)\0*.*\0\0",
+  fnSim = _EngineGUI.FileRequester("Select a model config file",
+    FILTER_MODELCFG FILTER_ALL FILTER_END // [Cecil] Using filters
     "Open directory", "Models\\", "",NULL,FALSE);
   if (fnSim=="") return FALSE;
 

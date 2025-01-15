@@ -2421,7 +2421,7 @@ void CEntity::SetSkaModel_t(const CTString &fnmModel)
   }
   try {
     // load the new model data
-    en_pmiModelInstance = ParseSmcFile_t(fnmModel);
+    en_pmiModelInstance = LoadModelInstance_t(fnmModel);
   } catch (char *strErrorDefault) {
     throw(strErrorDefault);
   }
@@ -2441,7 +2441,7 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
     // try to
     try {
       // load the default model data
-      en_pmiModelInstance = ParseSmcFile_t(fnmDefault);
+      en_pmiModelInstance = LoadModelInstance_t(fnmDefault);
     // if failed
     } catch(char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"), fnmDefault.ConstData(), strErrorDefault);

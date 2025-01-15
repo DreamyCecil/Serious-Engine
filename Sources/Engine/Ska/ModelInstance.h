@@ -271,8 +271,8 @@ private:
 
 // Parse smc file in existing model instance
 ENGINE_API void ParseSmcFile_t(CModelInstance &mi, const CTString &fnSmcFile);
-// Create model instance and parse smc file in it
-ENGINE_API CModelInstance *ParseSmcFile_t(const CTString &fnSmcFile);
+// [Cecil] Create model instance load data from a model config into it
+ENGINE_API CModelInstance *LoadModelInstance_t(const CTString &fnConfigFile);
 // Create empty model instance 
 ENGINE_API CModelInstance *CreateModelInstance(CTString strName);
 // Delete model instance

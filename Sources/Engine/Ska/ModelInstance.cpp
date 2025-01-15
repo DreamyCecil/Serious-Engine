@@ -87,14 +87,30 @@ void ParseSmcFile_t(CModelInstance &mi, const CTString &fnSmcFile)
   syyparse();
 }
 
-// Create model instance and parse smc file in it
-CModelInstance *ParseSmcFile_t(const CTString &fnSmcFile)
+// [Cecil] Create model instance load data from a model config into it
+CModelInstance *LoadModelInstance_t(const CTString &fnConfigFile)
 {
   _yy_mi = NULL;
   // Create new model instance for parser
   _yy_mi = CreateModelInstance("Temp");
-  // Parse given smc file
-  ParseSmcFile_t(*_yy_mi,fnSmcFile);
+
+  // [Cecil] Parse a binary model config
+  if (fnConfigFile.FileExt() == ".bmc") {
+    CTFileStream strm;
+    strm.Open_t(fnConfigFile);
+
+    // Remember path to the source file, like the SMC parser
+    if (bRememberSourceFN) {
+      _yy_mi->mi_fnSourceFile = fnConfigFile;
+    }
+
+    ReadModelInstance_t(strm, *_yy_mi);
+    strm.Close();
+
+  } else {
+    // Parse an ASCII model config
+    ParseSmcFile_t(*_yy_mi, fnConfigFile);
+  }
 
   return _yy_mi;
 }

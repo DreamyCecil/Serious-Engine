@@ -133,45 +133,29 @@ void CCtrlBrowseFile::OnClicked()
   // file name to contain selection intersecting file
   CTFileName fnIntersectingFile = GetIntersectingFile();
 
-  // call file requester
-  CTFileName fnChoosedFile;
-  if( fnIntersectingFile.FileExt() == ".mdl")
-  {
-    fnChoosedFile = _EngineGUI.FileRequester( "Choose file",
-    FILTER_MDL FILTER_ALL FILTER_END,
-    KEY_NAME_REQUEST_FILE_DIR, fnIntersectingFile.FileDir(),
-    fnIntersectingFile.FileName()+fnIntersectingFile.FileExt());
-  }
-  else if( fnIntersectingFile.FileExt() == ".tex")
-  {
-    fnChoosedFile = _EngineGUI.FileRequester( "Choose file",
-    FILTER_TEX FILTER_ALL FILTER_END,
-    KEY_NAME_REQUEST_FILE_DIR, fnIntersectingFile.FileDir(),
-    fnIntersectingFile.FileName()+fnIntersectingFile.FileExt());
-  }
-  else if( fnIntersectingFile.FileExt() == ".wav")
-  {
-    fnChoosedFile = _EngineGUI.FileRequester( "Choose file",
-    FILTER_WAV FILTER_ALL FILTER_END,
-    KEY_NAME_REQUEST_FILE_DIR, fnIntersectingFile.FileDir(),
-    fnIntersectingFile.FileName()+fnIntersectingFile.FileExt());
-  }
-  else if( fnIntersectingFile.FileExt() == ".smc")
-  {
-    fnChoosedFile = _EngineGUI.FileRequester( "Choose file",
-    FILTER_SMC FILTER_ALL FILTER_END,
-    KEY_NAME_REQUEST_FILE_DIR, fnIntersectingFile.FileDir(),
-    fnIntersectingFile.FileName()+fnIntersectingFile.FileExt());
-  }
-  else
-  {
-    fnChoosedFile = _EngineGUI.FileRequester( "Choose file",
-    FILTER_ALL FILTER_MDL FILTER_TEX FILTER_WAV FILTER_END,
-    KEY_NAME_REQUEST_FILE_DIR, fnIntersectingFile.FileDir(),
-    fnIntersectingFile.FileName()+fnIntersectingFile.FileExt());
+  // [Cecil] Simplified chunk of code for opening an appropriate file requester
+  const CTString strFileExt = fnIntersectingFile.FileExt();
+  const char *pchFilters = FILTER_ALL FILTER_MDL FILTER_TEX FILTER_WAV FILTER_END;
+
+  if (strFileExt == ".mdl") {
+    pchFilters = FILTER_MDL FILTER_ALL FILTER_END;
+
+  } else if (strFileExt == ".tex") {
+    pchFilters = FILTER_TEX FILTER_ALL FILTER_END;
+
+  } else if (strFileExt == ".wav") {
+    pchFilters = FILTER_WAV FILTER_ALL FILTER_END;
+
+  // [Cecil] Both ASCII and binary model configs
+  } else if (strFileExt == ".smc" || strFileExt == ".bmc") {
+    pchFilters = FILTER_MODELCFG FILTER_ALL FILTER_END;
   }
 
-  if( fnChoosedFile == "") return;
+  // Call file requester
+  const CTString fnChosenFile = _EngineGUI.FileRequester("Choose file", pchFilters, KEY_NAME_REQUEST_FILE_DIR,
+    fnIntersectingFile.FileDir(), fnIntersectingFile.FileName() + strFileExt);
+
+  if (fnChosenFile == "") return;
 
   // for each of the selected entities
   FOREACHINDYNAMICCONTAINER(pDoc->m_selEntitySelection, CEntity, iten)
@@ -181,14 +165,10 @@ void CCtrlBrowseFile::OnClicked()
     // discard old entity settings
     iten->End();
     // set new file name value
-    if( m_bFileNameNoDep)
-    {
-      ENTITYPROPERTY( &*iten, penpProperty->ep_slOffset, CTFileNameNoDep) =
-        (CTFileNameNoDep) fnChoosedFile;
-    }
-    else
-    {
-      ENTITYPROPERTY( &*iten, penpProperty->ep_slOffset, CTFileName) = fnChoosedFile;
+    if (m_bFileNameNoDep) {
+      ENTITYPROPERTY(&*iten, penpProperty->ep_slOffset, CTFileNameNoDep) = fnChosenFile;
+    } else {
+      ENTITYPROPERTY(&*iten, penpProperty->ep_slOffset, CTFileName) = fnChosenFile;
     }
     // apply new entity settings
     iten->Initialize();

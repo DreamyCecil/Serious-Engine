@@ -1434,11 +1434,21 @@ BOOL RemoveFile(const CTFileName &fnmFile)
 // check for some file extensions that can be substituted
 static BOOL SubstExt_internal(CTFileName &fnmFullFileName)
 {
-  if (fnmFullFileName.FileExt()==".mp3") {
-    fnmFullFileName = fnmFullFileName.NoExt()+".ogg";
+  if (fnmFullFileName.FileExt() == ".mp3") {
+    fnmFullFileName = fnmFullFileName.NoExt() + ".ogg";
     return TRUE;
-  } else if (fnmFullFileName.FileExt()==".ogg") {
-    fnmFullFileName = fnmFullFileName.NoExt()+".mp3";
+
+  } else if (fnmFullFileName.FileExt() == ".ogg") {
+    fnmFullFileName = fnmFullFileName.NoExt() + ".mp3";
+    return TRUE;
+
+  // [Cecil] ASCII and binary model configs are interchangeable
+  } else if (fnmFullFileName.FileExt() == ".smc") {
+    fnmFullFileName = fnmFullFileName.NoExt() + ".bmc";
+    return TRUE;
+
+  } else if (fnmFullFileName.FileExt() == ".bmc") {
+    fnmFullFileName = fnmFullFileName.NoExt() + ".smc";
     return TRUE;
   }
 

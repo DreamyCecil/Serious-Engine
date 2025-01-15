@@ -51,6 +51,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define FILTER_LST      "List files (*.lst)\0*.lst\0"
 #define FILTER_TGA      "TGA files (*.tga)\0*.tga\0"
 #define FILTER_SMC      "SMC files (*.smc)\0*.smc\0"
+#define FILTER_BMC      "BMC files (*.bmc)\0*.bmc\0" // [Cecil] Binary model configs
+#define FILTER_MODELCFG "Model config files (*.smc;*.bmc)\0*.smc;*.bmc\0" // [Cecil] All model configs
 #define FILTER_END      "\0"
 
 // SKA studio

@@ -1235,9 +1235,8 @@ void CSeriousSkaStudioView::OnAddChildModelInstance()
   }
  
   CTFileName fnSim;
-  fnSim = _EngineGUI.FileRequester( "Open ASCII intermediate files",
-    "ASCII model files (*.smc)\0*.smc\0"
-    "All files (*.*)\0*.*\0\0",
+  fnSim = _EngineGUI.FileRequester("Select a model config file",
+    FILTER_MODELCFG FILTER_ALL FILTER_END // [Cecil] Using filters
     "Open directory", "Models\\", "");
   if (fnSim=="") return;
 
@@ -1246,7 +1245,7 @@ void CSeriousSkaStudioView::OnAddChildModelInstance()
   CModelInstance *pcmi=NULL;
   try
   {
-    pcmi = ParseSmcFile_t(fnFull);
+    pcmi = LoadModelInstance_t(fnFull);
   }
   catch(char *strError)
   {
