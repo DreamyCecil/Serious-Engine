@@ -42,6 +42,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CSkeleton.h>
 #include <Engine/Templates/Stock_CAnimSet.h>
 #include <Engine/Templates/Stock_CShader.h>
+#include <Engine/Templates/Stock_CModelConfig.h> // [Cecil]
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Base/IFeel.h>
 
@@ -286,6 +287,7 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   _pSkeletonStock    = new CStock_CSkeleton;
   _pAnimSetStock     = new CStock_CAnimSet;
   _pShaderStock      = new CStock_CShader;
+  _pModelConfigStock = new CStock_CModelConfig; // [Cecil]
 
   // init main shell
   _pShell = new CShell;
@@ -558,6 +560,7 @@ void SE_EndEngine(void)
   delete _pSkeletonStock;     _pSkeletonStock    = NULL; 
   delete _pAnimSetStock;      _pAnimSetStock     = NULL; 
   delete _pShaderStock;       _pShaderStock      = NULL; 
+  delete _pModelConfigStock;  _pModelConfigStock = NULL; // [Cecil]
 
   // free all memory used by the crc cache
   CRCT_Clear();

@@ -50,6 +50,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Sound/SoundObject.h>
 #include <Engine/Graphics/Texture.h>
 #include <Engine/Ska/Render.h>
+#include <Engine/Ska/ModelConfig.h> // [Cecil]
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainRayCasting.h>
 #include <Engine/Terrain/TerrainMisc.h>
@@ -2413,47 +2414,49 @@ void CEntity::SetSkaColisionInfo()
 
 void CEntity::SetSkaModel_t(const CTString &fnmModel)
 {
-  ASSERT(en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL);
-  // if model instance allready exists
-  if(en_pmiModelInstance!=NULL) {
-    // release it first
-    en_pmiModelInstance->Clear();
+  ASSERT(en_RenderType == RT_SKAMODEL || en_RenderType == RT_SKAEDITORMODEL);
+
+  // [Cecil] Create new model instance for the entity, if there's none
+  if (en_pmiModelInstance == NULL) {
+    en_pmiModelInstance = CreateModelInstance("");
   }
-  try {
-    // load the new model data
-    en_pmiModelInstance = LoadModelInstance_t(fnmModel);
-  } catch (char *strErrorDefault) {
-    throw(strErrorDefault);
-  }
+
+  // [Cecil] Obtain a copy of the desired model from the stock
+  ASSERT(en_pmiModelInstance != NULL);
+  ObtainModelInstance_t(en_pmiModelInstance, fnmModel);
+
   SetSkaColisionInfo();
-}
+};
+
 BOOL CEntity::SetSkaModel(const CTString &fnmModel)
 {
-  ASSERT(en_RenderType==RT_SKAMODEL || en_RenderType==RT_SKAEDITORMODEL);
-  // try to
+  ASSERT(en_RenderType == RT_SKAMODEL || en_RenderType == RT_SKAEDITORMODEL);
+
+  // Try loading the SKA model from a file
   try {
     SetSkaModel_t(fnmModel);
-  // if failed
-  } catch(char *strError) {
-    (void)strError;
+    return TRUE;
+
+  // If failed
+  } catch (char *strError) {
     WarningMessage("%s\n\rLoading default model.\n", strError);
-    DECLARE_CTFILENAME(fnmDefault, "Models\\Editor\\Ska\\Axis.smc");    
-    // try to
+    DECLARE_CTFILENAME(fnmDefault, "Models\\Editor\\Ska\\Axis.smc");
+
+    // [Cecil] Try loading the default model from a file
     try {
-      // load the default model data
-      en_pmiModelInstance = LoadModelInstance_t(fnmDefault);
-    // if failed
-    } catch(char *strErrorDefault) {
+      SetSkaModel_t(fnmDefault);
+
+    // Display an error If that failed too
+    } catch (char *strErrorDefault) {
       FatalError(TRANS("Cannot load default model '%s':\n%s"), fnmDefault.ConstData(), strErrorDefault);
     }
-    // set colision info for default model
-    SetSkaColisionInfo();
-    return FALSE;
   }
-  return TRUE;
-}
-// set/get model main blend color
 
+  // Couldn't load the desired model
+  return FALSE;
+};
+
+// set/get model main blend color
 void CEntity::SetModelColor( const COLOR colBlend)
 {
   ASSERT(en_RenderType==RT_MODEL || en_RenderType==RT_EDITORMODEL);

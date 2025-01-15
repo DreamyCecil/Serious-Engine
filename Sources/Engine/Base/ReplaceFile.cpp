@@ -32,8 +32,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CSkeleton.h>
 #include <Engine/Templates/Stock_CAnimSet.h>
 #include <Engine/Templates/Stock_CTextureData.h>
+#include <Engine/Templates/Stock_CModelConfig.h> // [Cecil]
 #include <Engine/Templates/DynamicContainer.cpp>
-//#include <Engine/Templates/Stock_CShader.h>
 
 #include <Engine/Base/ListIterator.inl>
 
@@ -475,13 +475,20 @@ void WriteOffsetAndChildren(CTStream &strm, CModelInstance &mi)
   for(INDEX icmi=0;icmi<ctcmi;icmi++) {
     CModelInstance &cmi = mi.mi_cmiChildren[icmi];
     // save child model instance
-    WriteModelInstance_t(strm, cmi);
+    WriteModelInstance_t(strm, cmi, FALSE); // [Cecil] Don't bother caching as they are a part of the main model
   }
 }
 
-void WriteModelInstance_t(CTStream &strm, CModelInstance &mi)
+void WriteModelInstance_t(CTStream &strm, CModelInstance &mi, BOOL bFromStock)
 {
   strm.WriteID_t("MI03"); // model instance 03
+
+  // [Cecil] Write "Model Instance Source File" if this model has been loaded from the stock
+  if (bFromStock && mi.mi_pInStock != NULL) {
+    strm.WriteID_t("MISF");
+    strm.WriteFileName(mi.mi_pInStock->ser_FileName);
+  }
+
   // write model instance name
   strm<<mi.GetName();
   // write index of current colision box
@@ -630,7 +637,7 @@ void ReadModelInstanceOld_t(CTStream &strm, CModelInstance &mi)
     // add as child to parent model isntance
     mi.mi_cmiChildren.Add(pcmi);
     // read child model instance
-    ReadModelInstance_t(strm, *pcmi);
+    ReadModelInstance_t(strm, *pcmi, FALSE); // [Cecil] Configs of child models aren't cached
   }
 }
 
@@ -785,13 +792,32 @@ void ReadOffsetAndChildren_t(CTStream &strm, CModelInstance &mi)
     // add as child to parent model isntance
     mi.mi_cmiChildren.Add(pcmi);
     // read child model instance
-    ReadModelInstance_t(strm, *pcmi);
+    ReadModelInstance_t(strm, *pcmi, FALSE); // [Cecil] Configs of child models aren't cached
   }
 }
 
-void ReadModelInstanceNew_t(CTStream &strm, CModelInstance &mi)
+// [Cecil] Stock flag
+void ReadModelInstanceNew_t(CTStream &strm, CModelInstance &mi, BOOL bMarkInStock)
 {
-  strm.ExpectID_t("MI03");  // model instance 02
+  strm.ExpectID_t("MI03");  // model instance 03
+
+  // [Cecil] Read optional "Model Instance Source File" chunk
+  if (strm.PeekID_t() == CChunkID("MISF")) {
+    strm.ExpectID_t("MISF");
+
+    CTString fnmSourceFile;
+    strm.ReadFileName(fnmSourceFile);
+
+    ASSERT(fnmSourceFile != "");
+    ASSERT(mi.mi_pInStock == NULL);
+
+    // Retrieve it from the stock, if needed
+    if (bMarkInStock) {
+      mi.mi_pInStock = _pModelConfigStock->Obtain_t(fnmSourceFile);
+      ASSERT(mi.mi_pInStock != NULL);
+    }
+  }
+
   // Read model instance name
   CTString strModelInstanceName;
   strm>>strModelInstanceName;
@@ -810,17 +836,17 @@ void ReadModelInstanceNew_t(CTStream &strm, CModelInstance &mi)
   ReadAnimQueue_t(strm, mi);
   ReadColisionBoxes_t(strm, mi);
   ReadOffsetAndChildren_t(strm, mi);
-  strm.ExpectID_t("ME03"); // model instance end 02
+  strm.ExpectID_t("ME03"); // model instance end 03
 }
 
-void ReadModelInstance_t(CTStream &strm, CModelInstance &mi)
+void ReadModelInstance_t(CTStream &strm, CModelInstance &mi, BOOL bMarkInStock)
 {
   // is model instance writen in old format
   if(strm.PeekID_t() == CChunkID("SKMI")) {
     ReadModelInstanceOld_t(strm, mi);
   // is model instance writen in new format
   } else if(strm.PeekID_t() == CChunkID("MI03")) {
-    ReadModelInstanceNew_t(strm, mi);
+    ReadModelInstanceNew_t(strm, mi, bMarkInStock); // [Cecil] Pass flag
   // unknown format
   } else {
     strm.Throw_t("Unknown model instance format");
@@ -830,8 +856,9 @@ void ReadModelInstance_t(CTStream &strm, CModelInstance &mi)
 
 void SkipModelInstance_t(CTStream &strm)
 {
+  // [Cecil] No need to reference it in the stock if skipping
   CModelInstance miDummy;
-  ReadModelInstance_t(strm,miDummy);
+  ReadModelInstance_t(strm, miDummy, FALSE);
 }
 
 // read an anim object from a file together with its anim data filename

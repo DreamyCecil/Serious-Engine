@@ -35,8 +35,8 @@ void SkipModelObject_t(CTStream &strm);
 void WriteModelObject_t(CTStream &strm, CModelObject &mo);
 
 // read/write a ska model from a file
-void WriteModelInstance_t(CTStream &strm, CModelInstance &mi);
-void ReadModelInstance_t(CTStream &strm, CModelInstance &mi);
+void WriteModelInstance_t(CTStream &strm, CModelInstance &mi, BOOL bFromStock = TRUE); // [Cecil] Stock flag
+void ReadModelInstance_t(CTStream &strm, CModelInstance &mi, BOOL bMarkInStock = TRUE); // [Cecil] Stock flag
 void SkipModelInstance_t(CTStream &strm);
 
 

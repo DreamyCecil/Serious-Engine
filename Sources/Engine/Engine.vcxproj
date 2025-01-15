@@ -722,6 +722,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
     <ClCompile Include="Query\MasterServer.cpp" />
     <ClCompile Include="Query\QueryManager.cpp" />
     <ClCompile Include="Query\ServerRequest.cpp" />
+    <ClCompile Include="Ska\ModelConfig.cpp" />
     <ClCompile Include="Sound\SoundAPI.cpp" />
     <ClCompile Include="Sound\SoundAPI_DSound.cpp" />
     <ClCompile Include="Sound\SoundAPI_SDL.cpp" />
@@ -1141,6 +1142,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
     <ClInclude Include="Query\QueryManager.h" />
     <ClInclude Include="Query\ServerRequest.h" />
     <ClInclude Include="SE_Config.h" />
+    <ClInclude Include="Ska\ModelConfig.h" />
     <ClInclude Include="Sound\al_functions.h" />
     <ClInclude Include="Sound\DSound.h" />
     <ClInclude Include="Sound\eax.h" />
@@ -1183,6 +1185,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
     <ClInclude Include="Templates\Stock_CAnimSet.h" />
     <ClInclude Include="Templates\Stock_CEntityClass.h" />
     <ClInclude Include="Templates\Stock_CMesh.h" />
+    <ClInclude Include="Templates\Stock_CModelConfig.h" />
     <ClInclude Include="Templates\Stock_CModelData.h" />
     <ClInclude Include="Templates\Stock_CShader.h" />
     <ClInclude Include="Templates\Stock_CSkeleton.h" />

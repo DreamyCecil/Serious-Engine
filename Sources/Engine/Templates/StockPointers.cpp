@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CAnimSet.h>
 #include <Engine/Templates/Stock_CEntityClass.h>
 #include <Engine/Templates/Stock_CMesh.h>
+#include <Engine/Templates/Stock_CModelConfig.h>
 #include <Engine/Templates/Stock_CModelData.h>
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/Stock_CSkeleton.h>
@@ -29,6 +30,7 @@ CStock_CAnimData *_pAnimStock = NULL;
 CStock_CAnimSet *_pAnimSetStock = NULL;
 CStock_CEntityClass *_pEntityClassStock = NULL;
 CStock_CMesh *_pMeshStock = NULL;
+CStock_CModelConfig *_pModelConfigStock = NULL;
 CStock_CModelData *_pModelStock = NULL;
 CStock_CShader *_pShaderStock = NULL;
 CStock_CSkeleton *_pSkeletonStock = NULL;

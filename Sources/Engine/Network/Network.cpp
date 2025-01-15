@@ -64,6 +64,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CMesh.h>
 #include <Engine/Templates/Stock_CShader.h>
 #include <Engine/Templates/Stock_CSkeleton.h>
+#include <Engine/Templates/Stock_CModelConfig.h> // [Cecil]
 
 #include <Engine/Query/MasterServer.h> // [Cecil]
 
@@ -578,6 +579,7 @@ static void StockInfo(void)
   const FLOAT fAstBytes = dToMB * _pAnimSetStock->CalculateUsedMemory();
   const FLOAT fShaBytes = dToMB * _pShaderStock->CalculateUsedMemory();
   const FLOAT fSkaBytes = dToMB * _pSkeletonStock->CalculateUsedMemory();
+  const FLOAT fCfgBytes = dToMB * _pModelConfigStock->CalculateUsedMemory(); // [Cecil]
 
   CPrintF("\nStock information:\n");
   CPrintF("     Textures: %5d (%5.2f MB)\n", _pTextureStock->GetTotalCount(), fTexBytes);
@@ -597,10 +599,11 @@ static void StockInfo(void)
   CPrintF("    Skeletons: %5d (%5.2f MB)\n", _pSkeletonStock->GetTotalCount(), fSkaBytes);
   CPrintF("     AnimSets: %5d (%5.2f MB)\n", _pAnimSetStock->GetTotalCount(),  fAstBytes);
   CPrintF("      Shaders: %5d (%5.2f MB)\n", _pShaderStock->GetTotalCount(),   fShaBytes);
+  CPrintF(" ModelConfigs: %5d (%5.2f MB)\n", _pModelConfigStock->GetTotalCount(), fCfgBytes); // [Cecil]
   CPrintF("\n");
   CPrintF("CollisionGrid: %.2f MB\n", slCgrBytes*dToMB);
   CPrintF("--------------\n");
-  CPrintF("        Total: %.2f MB\n", fTexBytes+fSndBytes+fMdlBytes+fMshBytes+fSkaBytes+fAstBytes+fShaBytes
+  CPrintF("        Total: %.2f MB\n", fTexBytes+fSndBytes+fMdlBytes+fMshBytes+fSkaBytes+fAstBytes+fShaBytes+fCfgBytes
   + (slShdBytes+slEntBytes+slSecBytes+slPlnBytes+slEdgBytes+slPlyBytes+slVtxBytes+slLyrBytes+slCgrBytes)*dToMB);
   CPrintF("\n");
 }
@@ -632,6 +635,8 @@ static void StockDump(void)
     _pShaderStock->DumpMemoryUsage_t(strm);
     strm.PutLine_t("Skeletons:");
     _pSkeletonStock->DumpMemoryUsage_t(strm);
+    strm.PutLine_t("Model Configs:"); // [Cecil]
+    _pModelConfigStock->DumpMemoryUsage_t(strm);
 
     CPrintF("Dumped to '%s'\n", fnm.ConstData());
   } catch (char *strError) {
@@ -655,6 +660,7 @@ static void FreeUnusedStock(void)
   _pMeshStock->FreeUnused();
   _pShaderStock->FreeUnused();
   _pSkeletonStock->FreeUnused();
+  _pModelConfigStock->FreeUnused(); // [Cecil]
 }
 
 

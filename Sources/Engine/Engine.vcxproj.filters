@@ -748,6 +748,9 @@
     <ClCompile Include="Base\InputJoystick.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
+    <ClCompile Include="Ska\ModelConfig.cpp">
+      <Filter>Source Files\Ska</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base\Anim.h">
@@ -1382,6 +1385,12 @@
     </ClInclude>
     <ClInclude Include="OS\Keycodes.h">
       <Filter>Header Files\OS Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Ska\ModelConfig.h">
+      <Filter>Header Files\Ska Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Templates\Stock_CModelConfig.h">
+      <Filter>Header Files\Templates Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

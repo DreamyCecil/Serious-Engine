@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CAnimSet.h>
 #include <Engine/Templates/Stock_CTextureData.h>
 #include <Engine/Templates/Stock_CShader.h>
+#include <Engine/Templates/Stock_CModelConfig.h>
 
 // does parser remember smc source files?
 BOOL bRememberSourceFN = FALSE;
@@ -104,7 +105,8 @@ CModelInstance *LoadModelInstance_t(const CTString &fnConfigFile)
       _yy_mi->mi_fnSourceFile = fnConfigFile;
     }
 
-    ReadModelInstance_t(strm, *_yy_mi);
+    // Don't cache the config, since this is a generic loading function (also to prevent recursion)
+    ReadModelInstance_t(strm, *_yy_mi, FALSE);
     strm.Close();
 
   } else {
@@ -117,6 +119,7 @@ CModelInstance *LoadModelInstance_t(const CTString &fnConfigFile)
 
 CModelInstance::CModelInstance()
 {
+  mi_pInStock = NULL; // [Cecil]
   mi_psklSkeleton = NULL;
   mi_iParentBoneID = -1;
   mi_colModelColor = 0;
@@ -1025,6 +1028,12 @@ void CModelInstance::Copy(CModelInstance &miOther)
   mi_fnSourceFile = miOther.mi_fnSourceFile;
   mi_vStretch = miOther.mi_vStretch;
 
+  // [Cecil] Reference the same model config
+  if (miOther.mi_pInStock != NULL) {
+    mi_pInStock = miOther.mi_pInStock;
+    mi_pInStock->MarkUsed();
+  }
+
   // copt mesh instance
   CopyMeshInstance(miOther);
 
@@ -1081,6 +1090,12 @@ void CModelInstance::Synchronize(CModelInstance &miOther)
 // clear model instance
 void CModelInstance::Clear(void)
 {
+  // [Cecil] Stop referencing the model config
+  if (mi_pInStock != NULL) {
+    _pModelConfigStock->Release(mi_pInStock);
+    mi_pInStock = NULL;
+  }
+
   // for each child of this model instance
   INDEX ctcmi = mi_cmiChildren.Count();
   for(INDEX icmi=0; icmi<ctcmi; icmi++) {

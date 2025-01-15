@@ -73,6 +73,9 @@ struct MeshInstance
 {
   CMesh *mi_pMesh;
   CStaticArray<struct TextureInstance> mi_tiTextures;
+
+  // [Cecil] No mesh referenced by default
+  MeshInstance() : mi_pMesh(NULL) {};
 };
 
 struct TextureInstance
@@ -249,6 +252,8 @@ public:
   SLONG GetUsedMemory(void);
 
 public:
+  class CModelConfig *mi_pInStock; // [Cecil] Referenced model config in stock
+
   CSkeleton *mi_psklSkeleton;                     // pointer to skeleton object
   CStaticArray<struct MeshInstance> mi_aMeshInst; // array of mesh instances
   CStaticArray<struct ColisionBox> mi_cbAABox;    // array of colision boxes
