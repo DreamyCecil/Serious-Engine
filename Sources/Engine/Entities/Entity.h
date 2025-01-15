@@ -334,6 +334,10 @@ public:
   BOOL SetSkaModel(const CTString &fnmModel);
   void SetSkaModel_t(const CTString &fnmModel);
   void SetSkaColisionInfo();
+
+  // [Cecil] Set SKA model from an entity component
+  void SetSkaModel(SLONG idSkaModelComponent);
+
   /* Get the model data for model entity. */
   const CTFileName &GetModel(void);
   /* Start new animation for model entity. */

@@ -23,12 +23,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Translation.h>
 #include <Engine/Base/CRCTable.h>
 
-#include <Engine/Templates/Stock_CAnimData.h>
-#include <Engine/Templates/Stock_CTextureData.h>
-#include <Engine/Templates/Stock_CModelData.h>
-#include <Engine/Templates/Stock_CSoundData.h>
-#include <Engine/Templates/Stock_CEntityClass.h>
-
 #include <Engine/Templates/Stock_CEntityClass.h>
 
 /////////////////////////////////////////////////////////////////////

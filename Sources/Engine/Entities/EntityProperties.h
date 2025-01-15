@@ -139,10 +139,11 @@ public:
 // Classes and macros for defining entity components
 
 enum EntityComponentType {  // DO NOT RENUMBER!
-  ECT_TEXTURE   = 1,    // texture data
-  ECT_MODEL     = 2,    // model data
-  ECT_CLASS     = 3,    // entity class
-  ECT_SOUND     = 4,    // sound data
+  ECT_TEXTURE     = 1, // texture data
+  ECT_MODEL       = 2, // model data
+  ECT_CLASS       = 3, // entity class
+  ECT_SOUND       = 4, // sound data
+  ECT_MODELCONFIG = 5, // [Cecil] Model config
 };
 
 class ENGINE_API CEntityComponent {
@@ -166,6 +167,7 @@ public:
     CModelData   *ec_pmdModel;        // for models
     CSoundData   *ec_psdSound;        // for sounds
     CEntityClass *ec_pecEntityClass;  // for entity classes
+    class CModelConfig *ec_pmcModelConfig; // [Cecil] For SKA model configs
     void *ec_pvPointer;   // for comparison needs
   };
 

@@ -2456,6 +2456,27 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
   return FALSE;
 };
 
+// [Cecil] Set SKA model from an entity component
+void CEntity::SetSkaModel(SLONG idSkaModelComponent) {
+  ASSERT(en_RenderType == RT_SKAMODEL || en_RenderType == RT_SKAEDITORMODEL);
+
+  CEntityComponent *pecModel = en_pecClass->ec_pdecDLLClass->ComponentForID(idSkaModelComponent);
+  ASSERT(pecModel != NULL && pecModel->ec_ectType == ECT_MODELCONFIG);
+
+  // Create new model instance for the entity, if there's none
+  if (en_pmiModelInstance == NULL) {
+    en_pmiModelInstance = CreateModelInstance("");
+  }
+
+  // Copy model instance from the component
+  ASSERT(pecModel->ec_pmcModelConfig != NULL);
+  ASSERT(pecModel->ec_pmcModelConfig->mc_pModelInstance != NULL);
+  CModelInstance *pmiComponent = pecModel->ec_pmcModelConfig->mc_pModelInstance;
+  en_pmiModelInstance->Copy(*pmiComponent);
+
+  SetSkaColisionInfo();
+};
+
 // set/get model main blend color
 void CEntity::SetModelColor( const COLOR colBlend)
 {

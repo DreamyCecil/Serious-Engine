@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CModelData.h>
 #include <Engine/Templates/Stock_CSoundData.h>
 #include <Engine/Templates/Stock_CEntityClass.h>
+#include <Engine/Templates/Stock_CModelConfig.h> // [Cecil]
 #include <Engine/Templates/StaticArray.cpp>
 
 #define PROPERTY(offset, type) ENTITYPROPERTY(this, offset, type)
@@ -574,24 +575,34 @@ void CEntityComponent::Obtain_t(void)  // throw char *
       ec_ptdTexture = _pTextureStock->Obtain_t(ec_fnmComponent);
       ctUsed = ec_ptdTexture->GetUsedCount();
       break;
+
     // if model
     case ECT_MODEL:
       // obtain model data
       ec_pmdModel = _pModelStock->Obtain_t(ec_fnmComponent);
       ctUsed = ec_pmdModel->GetUsedCount();
       break;
+
     // if sound
     case ECT_SOUND:
       // obtain sound data
       ec_psdSound = _pSoundStock->Obtain_t(ec_fnmComponent);
       ctUsed = ec_psdSound->GetUsedCount();
       break;
+
     // if class
     case ECT_CLASS:
       // obtain entity class
       ec_pecEntityClass = _pEntityClassStock->Obtain_t(ec_fnmComponent);
       ctUsed = ec_pecEntityClass->GetUsedCount();
       break;
+
+    // [Cecil] Model config
+    case ECT_MODELCONFIG:
+      ec_pmcModelConfig = _pModelConfigStock->Obtain_t(ec_fnmComponent);
+      ctUsed = ec_pmcModelConfig->GetUsedCount();
+      break;
+
     // if something else
     default:
       // error
@@ -632,6 +643,7 @@ void CEntityComponent::AddToCRCTable(void)
     case ECT_MODEL:   ec_pmdModel->AddToCRCTable(); break;
     case ECT_SOUND:   ec_psdSound->AddToCRCTable(); break;
     case ECT_CLASS:   ec_pecEntityClass->AddToCRCTable(); break;
+    case ECT_MODELCONFIG: ec_pmcModelConfig->AddToCRCTable(); break; // [Cecil]
   }
 }
 
@@ -652,21 +664,30 @@ void CEntityComponent::Release(void)
       // release texture data
       _pTextureStock->Release(ec_ptdTexture);
       break;
+
     // if model
     case ECT_MODEL:
       // release model data
       _pModelStock->Release(ec_pmdModel);
       break;
+
     // if sound
     case ECT_SOUND:
       // release sound data
       _pSoundStock->Release(ec_psdSound);
       break;
+
     // if class
     case ECT_CLASS:
       // release entity class
       _pEntityClassStock->Release(ec_pecEntityClass);
       break;
+
+    // [Cecil] Model config
+    case ECT_MODELCONFIG:
+      _pModelConfigStock->Release(ec_pmcModelConfig);
+      break;
+
     // if something else
     default:
       // error
