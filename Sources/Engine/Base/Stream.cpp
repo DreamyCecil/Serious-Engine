@@ -1120,10 +1120,24 @@ BOOL CTFileStream::AtEOF(void)
 {
   if(fstrm_iZipHandle != -1) {
     return fstrm_iZipLocation >= fstrm_slZipSize;
-  } else {
-    int eof = feof(fstrm_pFile);
-    return eof != 0;
   }
+
+  // [Cecil] Rewritten to check for EOF immediately instead of relying on the last failed read
+  //return feof(fstrm_pFile) != 0;
+
+  // Remember current position before checking for EOF
+  long iCurrentPos = ftell(fstrm_pFile);
+
+  // Check EOF by trying to read past the end
+  int iEOF = fgetc(fstrm_pFile);
+
+  // Restore remembered position if not at EOF yet
+  if (iEOF != EOF) {
+    fseek(fstrm_pFile, iCurrentPos, SD_BEG);
+    return FALSE; // Didn't hit the end
+  }
+
+  return TRUE; // Hit the end
 }
 
 // whether or not the given pointer is coming from this stream (mainly used for exception handling)
