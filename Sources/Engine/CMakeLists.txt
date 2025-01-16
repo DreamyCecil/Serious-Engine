@@ -176,6 +176,7 @@ set(ENGINE_SRCS
 
   "Ska/AnimSet.cpp"
   "Ska/Mesh.cpp"
+  "Ska/ModelConfig.cpp"
   "Ska/ModelInstance.cpp"
   "Ska/RMRender.cpp"
   "Ska/RMRenderMask.cpp"
@@ -198,15 +199,7 @@ set(ENGINE_SRCS
   "Sound/Wave.cpp"
 
   "Templates/BSP.cpp"
-  "Templates/Stock_CAnimData.cpp"
-  "Templates/Stock_CAnimSet.cpp"
-  "Templates/Stock_CEntityClass.cpp"
-  "Templates/Stock_CMesh.cpp"
-  "Templates/Stock_CModelData.cpp"
-  "Templates/Stock_CShader.cpp"
-  "Templates/Stock_CSkeleton.cpp"
-  "Templates/Stock_CSoundData.cpp"
-  "Templates/Stock_CTextureData.cpp"
+  "Templates/StockPointers.cpp"
 
   "Terrain/ArrayHolder.cpp"
   "Terrain/Terrain.cpp"
