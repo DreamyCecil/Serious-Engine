@@ -282,6 +282,28 @@ void CTString::OnlyFirstLine(void)
   TrimRight((INDEX)iNL);
 }
 
+// [Cecil] Resize the character array to fit a specific amount of characters
+void CTString::Resize(size_t ct) {
+  // Empty string
+  if (ct == 0) {
+    *this = "";
+    return;
+  }
+
+  ASSERT(IsValid());
+
+  // Create a new string full of null terminators
+  char *strNew = (char *)AllocMemory(ct + 1);
+  memset(strNew, '\0', ct + 1);
+
+  // Copy characters from the old string
+  strncpy(strNew, str_String, Min(ct, Length()));
+
+  // Reassign to the new string
+  FreeMemory(str_String);
+  str_String = strNew;
+};
+
 // [Cecil] Convert all characters to lowercase
 CTString CTString::ToLower(void) const {
   CTString strCopy(*this);
@@ -372,11 +394,7 @@ void CTString::ReadFromText_t(CTStream &strmStream, const CTString &strKeyword, 
   }
 
   // read the string from the file
-  char str[1024];
-  strmStream.GetLine_t(str, sizeof(str));
-
-  // copy it here
-  (*this) = str;
+  strmStream.GetLine_t(*this);
 }
 
 /*

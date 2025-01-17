@@ -280,6 +280,11 @@ public:
   // Assign a new string consisting of a specific character
   inline void Fill(size_t ct, char ch);
 
+  // Resize the character array to fit a specific amount of characters
+  // If amount is higher than the current length, nullifies the rest of the characters
+  // If amount is lower than the current length, cuts off the characters at the end
+  void Resize(size_t ct);
+
   // Convert all characters to lowercase
   CTString ToLower(void) const;
 
