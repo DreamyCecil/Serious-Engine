@@ -196,33 +196,37 @@ void CNetworkMessage::Write(const void *pvBuffer, SLONG slSize)
   nm_iBit = 0;
   nm_slSize += slSize;
 }
+
 CNetworkMessage &CNetworkMessage::operator>>(CTString &str)
 {
-  // start reading string from message
-  str = "";
   nm_iBit = 0;
-  // repeat
-  for(;;) {
-    // if reached end of message (this happens when we read string-only messages)
-    if (nm_pubPointer-nm_pubMessage>=nm_slSize) {
-      // stop
-      return *this;
+
+  // [Cecil] String that occasionally reserves more space for characters instead of reallocating it for each new character
+  size_t iChar = 0; // Current character
+  size_t ctLength = 256; // Current string length
+  str.Fill(ctLength, '\0'); // Preallocate an empty string with enough space for new characters
+
+  FOREVER {
+    // Reached the end of the message (happens only while reading string-only messages)
+    if (nm_pubPointer - nm_pubMessage >= nm_slSize) break;
+
+    // [Cecil] Expand character array
+    if (iChar >= ctLength) {
+      ctLength += 256;
+      str.Resize(ctLength);
     }
-    // get next char
-    char strChar[2];
-    strChar[0] = *nm_pubPointer++;
-    strChar[1] = 0;
-    // if end of string
-    if (strChar[0]==0) {
-      // stop
-      return *this;
-    // if normal char
-    } else {
-      // append to the string
-      str+=strChar;
-    }
+
+    // [Cecil] Append next character
+    const char chNext = *(nm_pubPointer++);
+    str.Data()[iChar++] = chNext;
+
+    // Reached the end of the string
+    if (chNext == '\0') break;
   }
+
+  return *this;
 }
+
 CNetworkMessage &CNetworkMessage::operator<<(const CTString &str)
 {
   // start writing string to message
@@ -246,7 +250,7 @@ CNetworkMessage &CNetworkMessage::operator<<(const CTString &str)
     *nm_pubPointer++ = chr;
     nm_slSize++;
     // if end
-    if (chr==0) {
+    if (chr == '\0') {
       // stop
       return *this;
     }

@@ -101,7 +101,7 @@ inline void CStaticStackArray<Type>::Add(const Type &tObject) {
   sa_UsedCount++;
 
   if (sa_UsedCount > CStaticArray<Type>::Count()) {
-    Expand(CStaticArray<Type>::Count() + sa_ctAllocationStep+1);
+    this->Expand(CStaticArray<Type>::Count() + sa_ctAllocationStep);
   }
 
   ASSERT(sa_UsedCount <= CStaticArray<Type>::Count());
