@@ -210,16 +210,27 @@ static void DetectCPUWrapper(void)
 
 // [Cecil] SDL: Initialization and shutdown management
 static bool _bEngineInitializedSDL = false;
+static bool _bSDLQuitRegistered = false;
 
+// [Cecil] NOTE: It's safe to call SDL_Quit() multiple times in a row
 static void SE_EndSDL(void) {
+  SDL_Quit();
+
   // Already shut down
   if (!_bEngineInitializedSDL) return;
 
-  SDL_Quit();
+  // ... extra SDL cleanup?
+
   _bEngineInitializedSDL = false;
 };
 
 static void SE_InitSDL(ULONG ulFlags) {
+  // Quit SDL on program termination
+  if (!_bSDLQuitRegistered) {
+    atexit(&SE_EndSDL);
+    _bSDLQuitRegistered = true;
+  }
+
   // Already initialized
   if (_bEngineInitializedSDL) return;
 
