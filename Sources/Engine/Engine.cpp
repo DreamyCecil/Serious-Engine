@@ -476,6 +476,12 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   // Timer tick quantum
   _pShell->DeclareSymbol("user const FLOAT fTickQuantum;", (FLOAT*)&_pTimer->TickQuantum);
 
+  // [Cecil] TEMP
+  extern void DisplayRegistryContents(void);
+  extern void CheckEntityClasses(void);
+  _pShell->DeclareSymbol("user void DisplayRegistryContents(void);", &DisplayRegistryContents);
+  _pShell->DeclareSymbol("user void CheckEntityClasses(void);", &CheckEntityClasses);
+
   // init MODs and stuff ...
   extern void InitStreams(void);
   InitStreams();
