@@ -284,7 +284,8 @@
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
-      <Message>Copying $(ProjectName) binaries into Bin</Message>
+      <Message>Generating list of objects from $(ProjectName)</Message>
+      <Command>powershell.exe -ExecutionPolicy Bypass -File "$(SolutionDir)StaticAPI\Scripts\ExtractShaderNames.ps1" "$(SolutionDir)StaticAPI\Lists\Shaders.inl" "$(ProjectName)" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
@@ -361,7 +362,8 @@
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
-      <Message>Copying $(ProjectName) binaries into Bin</Message>
+      <Message>Generating list of objects from $(ProjectName)</Message>
+      <Command>powershell.exe -ExecutionPolicy Bypass -File "$(SolutionDir)StaticAPI\Scripts\ExtractShaderNames.ps1" "$(SolutionDir)StaticAPI\Lists\Shaders.inl" "$(ProjectName)" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
@@ -438,7 +440,8 @@
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
-      <Message>Copying $(ProjectName) binaries into Bin</Message>
+      <Message>Generating list of objects from $(ProjectName)</Message>
+      <Command>powershell.exe -ExecutionPolicy Bypass -File "$(SolutionDir)StaticAPI\Scripts\ExtractShaderNames.ps1" "$(SolutionDir)StaticAPI\Lists\Shaders.inl" "$(ProjectName)" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
@@ -513,7 +516,8 @@
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
-      <Message>Copying $(ProjectName) binaries into Bin</Message>
+      <Message>Generating list of objects from $(ProjectName)</Message>
+      <Command>powershell.exe -ExecutionPolicy Bypass -File "$(SolutionDir)StaticAPI\Scripts\ExtractShaderNames.ps1" "$(SolutionDir)StaticAPI\Lists\Shaders.inl" "$(ProjectName)" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>

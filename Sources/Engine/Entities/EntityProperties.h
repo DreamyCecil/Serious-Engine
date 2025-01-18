@@ -275,7 +275,7 @@ public:
     &classname##_OnWorldRender,                                       \
     &classname##_OnWorldEnd                                           \
   };\
-  DynamicModuleClass classname##_AddToRegistry(#classname, &classname##_DLLClass)
+  ClassRegistrar classname##_AddToRegistry(#classname, &classname##_DLLClass)
 
 #define ENTITY_CLASSDEFINITION_BASE(classname, id)                    \
   extern "C" SE1_API_EXPORT CDLLEntityClass classname##_DLLClass; \

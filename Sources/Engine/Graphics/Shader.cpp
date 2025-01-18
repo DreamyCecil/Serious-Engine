@@ -846,6 +846,8 @@ void CShader::Read_t(CTStream *istrFile)
     return;
   }
 
+  ASSERT(_pShaderRenderRegistry != NULL && _pShaderDescRegistry != NULL);
+
   // [Cecil] Try to find the function in the global registry, assuming it's been added
   ShaderRenderRegistry_t::const_iterator itRender = _pShaderRenderRegistry->find(strShaderFunc);
 

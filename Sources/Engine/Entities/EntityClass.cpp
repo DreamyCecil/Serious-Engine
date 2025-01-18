@@ -234,6 +234,7 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
   ec_fnmClassDLL = fnmDLL;
 
   // [Cecil] Try to find the class in the global registry, assuming it's been added
+  ASSERT(_pEntityClassRegistry != NULL);
   EntityClassRegistry_t::const_iterator itInRegistry = _pEntityClassRegistry->find(strClassName);
 
   // if class structure is not found

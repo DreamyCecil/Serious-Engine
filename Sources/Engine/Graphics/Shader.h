@@ -238,12 +238,12 @@ ENGINE_API BOOL shaOverBrightningEnabled(void);
 
 #define SHADER_MAIN(name) \
   extern "C" void SE1_API_EXPORT Shader_##name(void); \
-  DynamicModuleClass Shader_##name##_AddToRegistry("Shader_" #name, &Shader_##name); \
+  ClassRegistrar Shader_##name##_AddToRegistry("Shader_" #name, &Shader_##name); \
   void Shader_##name(void)
 
 #define SHADER_DESC(name,x) \
   extern "C" void SE1_API_EXPORT Shader_Desc_##name(x); \
-  DynamicModuleClass Shader_Desc_##name##_AddToRegistry("Shader_Desc_" #name, &Shader_Desc_##name); \
+  ClassRegistrar Shader_Desc_##name##_AddToRegistry("Shader_Desc_" #name, &Shader_Desc_##name); \
   void SE1_API_EXPORT Shader_Desc_##name(x)
 
 #endif  /* include-once check. */

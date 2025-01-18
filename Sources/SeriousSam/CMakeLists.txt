@@ -71,6 +71,9 @@ target_link_libraries(SeriousSam Engine ${ENTITIESLIB} ${GAMELIB} ${SHADERSLIB})
 #set_target_properties(SeriousSam PROPERTIES ENABLE_EXPORTS ON)
 
 if(LINUX)
+  # For preserving global class registrars in static modules
+  target_link_options(SeriousSam PRIVATE -Wl,--whole-archive ../EntitiesMP/lib${ENTITIESLIB}.a ../Shaders/lib${SHADERSLIB}.a -Wl,--no-whole-archive)
+
   set_target_properties(SeriousSam PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
   target_link_libraries(SeriousSam "m")
   target_link_libraries(SeriousSam "dl")
