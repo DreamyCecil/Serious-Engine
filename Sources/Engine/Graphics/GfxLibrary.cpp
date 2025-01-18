@@ -1835,9 +1835,16 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   gfxSetTextureFiltering( gap_iTextureFiltering, gap_iTextureAnisotropy);
   gfxSetTextureBiasing( gap_fTextureLODBias);
 
+  // [Cecil] Allow adaptive VSync with -1 using SDL
+  #if SE1_PREFER_SDL
+    const INDEX iMinSwapInterval = -1;
+  #else
+    const INDEX iMinSwapInterval = 0;
+  #endif
+
   // clamp some cvars
   gap_iDithering = Clamp( gap_iDithering, 0L, 2L);
-  gap_iSwapInterval = Clamp( gap_iSwapInterval, 0L, 4L);
+  gap_iSwapInterval = Clamp( gap_iSwapInterval, iMinSwapInterval, 4L);
   gap_iOptimizeClipping = Clamp( gap_iOptimizeClipping, 0L, 2L);
   gap_iTruformLevel = Clamp( gap_iTruformLevel, 0L, _pGfx->gl_iMaxTessellationLevel);
   ogl_iFinish = Clamp( ogl_iFinish, 0L, 3L);

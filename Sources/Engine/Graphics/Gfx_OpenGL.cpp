@@ -762,6 +762,26 @@ void CGfxLibrary::InitContext_OGL(void)
     pwglGetSwapIntervalEXT = (GLint     (__stdcall*)(void) )OGL_GetProcAddress( "wglGetSwapIntervalEXT");
     ASSERT( pwglSwapIntervalEXT!=NULL && pwglGetSwapIntervalEXT!=NULL);
   }
+
+#else
+  // [Cecil] SDL: Check swap control by enabling VSync
+  CPutString(TRANS("SDL: Checking swap control...\n"));
+
+  if (SDL_GL_SetSwapInterval(1) == 0) {
+    CPutString(TRANS("  Swap interval can be set.\n"));
+    AddExtension_OGL(GLF_VSYNC, "WGL_EXT_swap_control");
+
+  // If failed
+  } else {
+    CPrintF(TRANS("  Swap interval cannot be set. SDL Error: %s\n"), SDL_GetError());
+
+    // Try adaptive VSync instead
+    if (SDL_GL_SetSwapInterval(-1) == 0) {
+      CPutString(TRANS("  Adaptive VSync is available and set.\n"));
+    } else {
+      CPrintF(TRANS("  Adaptive VSync is not available. SDL Error: %s\n"), SDL_GetError());
+    }
+  }
 #endif
 
 #if SE1_TRUFORM
