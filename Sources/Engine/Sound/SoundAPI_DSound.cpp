@@ -222,12 +222,8 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   extern OS::Window _hwndCurrent;
   m_wndCurrent = _hwndCurrent;
 
-#if SE1_PREFER_SDL
-  // [Cecil] FIXME: Get HWND from SDL_Window
-  hResult = m_pDS->SetCooperativeLevel(GetActiveWindow(), DSSCL_PRIORITY);
-#else
-  hResult = m_pDS->SetCooperativeLevel(m_wndCurrent, DSSCL_PRIORITY);
-#endif
+  // [Cecil] Always use native window handle
+  hResult = m_pDS->SetCooperativeLevel(m_wndCurrent.GetNativeHandle(), DSSCL_PRIORITY);
 
   if (hResult != DS_OK) return Fail(TRANS("  ! DirectSound error: Cannot set cooperative level.\n"));
 
@@ -361,12 +357,8 @@ void CSoundAPI_DSound::ShutDown(void) {
   {
     // Reset cooperative level
     if (m_wndCurrent != NULL) {
-      #if SE1_PREFER_SDL
-        // [Cecil] FIXME: Get HWND from SDL_Window
-        m_pDS->SetCooperativeLevel(GetActiveWindow(), DSSCL_NORMAL);
-      #else
-        m_pDS->SetCooperativeLevel(m_wndCurrent, DSSCL_NORMAL);
-      #endif
+      // [Cecil] Always use native window handle
+      m_pDS->SetCooperativeLevel(m_wndCurrent.GetNativeHandle(), DSSCL_NORMAL);
     }
 
     m_pDS->Release();

@@ -55,6 +55,7 @@ HWND OS::Window::GetNativeHandle(void) {
 
 #if SE1_PREFER_SDL
   SDL_SysWMinfo info;
+  SDL_VERSION(&info.version);
 
   if (!SDL_GetWindowWMInfo(pWindow, &info)) {
     FatalError(TRANS("Couldn't retrieve driver-specific information about an SDL window:\n%s"), SDL_GetError());
