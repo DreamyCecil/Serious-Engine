@@ -256,6 +256,9 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   // [Cecil] Remember setup properties
   _SE1SetupInternal = engineSetup;
 
+  // [Cecil] SDL: Set generic application name
+  SDL_SetHint(SDL_HINT_APP_NAME, _SE1Setup.strAppName.ConstData());
+
   // [Cecil] SDL: Initialize for gameplay or for basic stuff
   const BOOL bGameApp = (_SE1Setup.IsAppGame() || _SE1Setup.IsAppEditor());
   const ULONG ulGameplay = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER;

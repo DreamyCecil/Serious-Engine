@@ -58,7 +58,10 @@ void SubMain( int argc, char *argv[])
   }
 
   // [Cecil] Initialize engine with application path from the command line
-  SE_InitEngine(SeriousEngineSetup(SeriousEngineSetup::E_OTHER, ACHR_APP_DIR));
+  SeriousEngineSetup se1setup("Depend");
+  se1setup.eAppType = SeriousEngineSetup::E_OTHER;
+  se1setup.strSetupRootDir = ACHR_APP_DIR;
+  SE_InitEngine(se1setup);
 
   // get all filenames from command line
   CTFileName afnFiles[3];

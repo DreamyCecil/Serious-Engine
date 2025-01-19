@@ -233,7 +233,9 @@ BOOL CModelerApp::SubInitInstance()
 	AddDocTemplate(pDocTemplate);
 
   // initialize engine, without network
-  SE_InitEngine();
+  SeriousEngineSetup se1setup("Serious Modeler");
+  se1setup.eAppType = SeriousEngineSetup::E_OTHER;
+  SE_InitEngine(se1setup);
   SE_LoadDefaultFonts();
 
 	// create main MDI Frame window

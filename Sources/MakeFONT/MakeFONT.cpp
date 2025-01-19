@@ -48,7 +48,9 @@ void SubMain( int argc, char *argv[])
   }
 
   // initialize engine
-  SE_InitEngine();
+  SeriousEngineSetup se1setup("MakeFONT");
+  se1setup.eAppType = SeriousEngineSetup::E_OTHER;
+  SE_InitEngine(se1setup);
 
   // first input parameter is texture name
   CTFileName fnTextureFileName = CTString(argv[1]);

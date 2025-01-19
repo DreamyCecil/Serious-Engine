@@ -202,11 +202,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 struct SeriousEngineSetup {
   // Possible application types
   enum EAppType {
-    E_OTHER,  // Some other application without special functions
+    E_OTHER,  // Some other application or tool without gameplay functionality
     E_GAME,   // Game client
     E_SERVER, // Dedicated server
     E_EDITOR, // World editor
   };
+
+  // Generic application name, e.g. game ("Serious Sam"), tool ("Serious Editor") etc.
+  CTString strAppName;
 
   // Current application type
   EAppType eAppType;
@@ -214,9 +217,9 @@ struct SeriousEngineSetup {
   // Custom game root directory (just for the setup, not necessarily the same as the eventual _fnmApplicationPath)
   CTString strSetupRootDir;
 
-  // Constructor
-  __forceinline SeriousEngineSetup(EAppType eSetType = E_OTHER, const CTString &strSetRootDir = "") :
-    eAppType(eSetType), strSetupRootDir(strSetRootDir)
+  // Constructor with application name
+  __forceinline SeriousEngineSetup(const CTString &strSetName = "") :
+    strAppName(strSetName), eAppType(E_OTHER), strSetupRootDir("")
   {
   };
 
@@ -228,7 +231,7 @@ struct SeriousEngineSetup {
 };
 
 // [Cecil] Pass setup properties
-ENGINE_API void SE_InitEngine(const SeriousEngineSetup &engineSetup = SeriousEngineSetup());
+ENGINE_API void SE_InitEngine(const SeriousEngineSetup &engineSetup);
 ENGINE_API void SE_EndEngine(void);
 ENGINE_API void SE_LoadDefaultFonts(void);
 ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndWindowed);

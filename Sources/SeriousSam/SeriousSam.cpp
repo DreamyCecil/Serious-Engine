@@ -384,7 +384,9 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
   ParseCommandLine(strCmdLine);
 
   // initialize engine
-  SE_InitEngine(SeriousEngineSetup(SeriousEngineSetup::E_GAME));
+  SeriousEngineSetup se1setup("Serious Sam");
+  se1setup.eAppType = SeriousEngineSetup::E_GAME;
+  SE_InitEngine(se1setup);
 
   // [Cecil] Determine adjustable gamma
   SE_DetermineGamma(_hwndMain);

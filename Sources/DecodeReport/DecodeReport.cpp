@@ -90,7 +90,9 @@ void SubMain( int argc, char *argv[])
   }
 
   // initialize engine
-  SE_InitEngine();
+  SeriousEngineSetup se1setup("DecodeReport");
+  se1setup.eAppType = SeriousEngineSetup::E_OTHER;
+  SE_InitEngine(se1setup);
 
   CTFileName fnSrc = CTString(argv[1]);
   CTFileName fnDst = CTString(argv[2]);

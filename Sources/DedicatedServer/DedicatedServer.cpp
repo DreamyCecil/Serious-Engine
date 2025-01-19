@@ -201,7 +201,9 @@ BOOL Init(int argc, char* argv[])
   _strLogFile = CTString("Dedicated_")+argv[1];
 
   // initialize engine
-  SE_InitEngine(SeriousEngineSetup(SeriousEngineSetup::E_SERVER));
+  SeriousEngineSetup se1setup("Serious Sam Dedicated Server");
+  se1setup.eAppType = SeriousEngineSetup::E_SERVER;
+  SE_InitEngine(se1setup);
 
 //  ParseCommandLine(strCmdLine);
 
