@@ -34,10 +34,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // [Cecil] Screen resolution lists and window modes
 #include "ScreenResolutions.h"
 
-// [Cecil] Link EntitiesMP and Shaders
-#include <StaticAPI/EntitiesMP.inl>
-#include <StaticAPI/Shaders.inl>
-
 // application state variables
 BOOL _bRunning = TRUE;
 BOOL _bQuitScreen = TRUE;

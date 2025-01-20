@@ -20,10 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #include <signal.h>
 #endif
 
-// [Cecil] Link EntitiesMP and Shaders
-#include <StaticAPI/EntitiesMP.inl>
-#include <StaticAPI/Shaders.inl>
-
 // application state variables
 BOOL _bRunning = TRUE;
 static BOOL _bForceRestart = FALSE;
