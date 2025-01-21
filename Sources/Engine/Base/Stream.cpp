@@ -308,7 +308,7 @@ int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoP
  */
 void CTStream::ExceptionFatalError(void)
 {
-  FatalError(GetWindowsError(GetLastError()).ConstData());
+  FatalError("%s", GetWindowsError(GetLastError()).ConstData());
 }
 
 #endif // SE1_WIN

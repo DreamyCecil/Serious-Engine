@@ -227,7 +227,7 @@ extern void ReportGlobalMemoryStatus(void)
     CPrintF(TRANS("  Process working set: %uMB-%uMB\n\n"), uMin / MB, uMax / MB);
 
   } else {
-    CPrintF(TRANS("Cannot get global memory status: %s\n"), GetWindowsError(GetLastError()));
+    CPrintF(TRANS("Cannot get global memory status: %s\n"), GetWindowsError(GetLastError()).ConstData());
   }
 }
 

@@ -230,7 +230,7 @@ CTString CTString::Undecorated(void) const
   return strResult;
 }
 
-BOOL IsSpace(char c)
+static BOOL IsSpace(char c)
 {
   return c==' ' || c=='\t' || c=='\n' || c=='\r';
 }
