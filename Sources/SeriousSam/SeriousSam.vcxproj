@@ -637,7 +637,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="ScreenResolutions.h" />
     <ClInclude Include="SeriousSam.h" />
-    <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="StdH.h" />
     <ClInclude Include="VarList.h" />
   </ItemGroup>

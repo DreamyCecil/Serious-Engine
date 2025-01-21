@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/CurrentVersion.h>
 #include <GameMP/Game.h>
 #include "resource.h"
-#include "SplashScreen.h"
 #include "MainWindow.h"
 #include "GLSettings.h"
 #include "LevelInfo.h"
@@ -127,11 +126,11 @@ ENGINE_API extern INDEX snd_iFormat;
 
 
 // main window canvas
-CDrawPort *pdp;
-CDrawPort *pdpNormal;
-CDrawPort *pdpWideScreen;
-CViewPort *pvpViewPort;
-HINSTANCE _hInstance;
+CDrawPort *pdp = NULL;
+CDrawPort *pdpNormal = NULL;
+CDrawPort *pdpWideScreen = NULL;
+CViewPort *pvpViewPort = NULL;
+HINSTANCE _hInstance = NULL;
 
 
 static void PlayDemo(void* pArgs)
@@ -367,10 +366,12 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
   }
 }
 
-BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
-{
+BOOL Init(HINSTANCE hInstance, CTString strCmdLine) {
+  // [Cecil] NOTE: Used in ShowSplashScreen() and for creating new game windows under Windows platforms
   _hInstance = hInstance;
-  ShowSplashScreen(hInstance);
+
+  extern void ShowSplashScreen(void);
+  ShowSplashScreen();
 
   // prepare main window
   MainWindow_Init();
@@ -512,7 +513,8 @@ BOOL Init( HINSTANCE hInstance, int nCmdShow, CTString strCmdLine)
     _iDisplayModeChangeFlag = 0;
     sam_bFirstStarted = FALSE;
   }
-  
+
+  extern void HideSplashScreen(void);
   HideSplashScreen();
 
   if (cmd_strPassword!="") {
@@ -863,14 +865,11 @@ static void SetDPIAwareness(void) {
 #endif // SE1_WIN
 };
 
-int SubMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCmdLine, int nCmdShow)
-{
-  (void)hPrevInstance;
-
+int SubMain(HINSTANCE hInstance, const CTString &strCmdLine) {
   // [Cecil] Set DPI awareness
   SetDPIAwareness();
 
-  if (!Init(hInstance, nCmdShow, strCmdLine)) return FALSE;
+  if (!Init(hInstance, strCmdLine)) return FALSE;
 
   // [Cecil] Disable SDL joystick events to handle them manually alongside Windows API
   #if !SE1_PREFER_SDL
@@ -1251,11 +1250,11 @@ void CheckBrowser(void)
 }
 
 // [Cecil] Used to be WinMain()
-int GameEntryPoint(HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString &strCmdLine, int nCmdShow)
+int GameEntryPoint(HINSTANCE hInstance, const CTString &strCmdLine)
 {
   int iResult = 1;
   CTSTREAM_BEGIN {
-    iResult = SubMain(hInstance, hPrevInstance, strCmdLine, nCmdShow);
+    iResult = SubMain(hInstance, strCmdLine);
   } CTSTREAM_END;
 
   CheckBrowser();
@@ -1267,7 +1266,9 @@ int GameEntryPoint(HINSTANCE hInstance, HINSTANCE hPrevInstance, const CTString 
 
 // Entry point
 int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-  return GameEntryPoint(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+  (void)hPrevInstance;
+  (void)nCmdShow;
+  return GameEntryPoint(hInstance, lpCmdLine);
 };
 
 #else
@@ -1282,7 +1283,7 @@ int main(int argc, char **argv) {
     cmdLine += "\"";
   }
 
-  return GameEntryPoint(NULL, NULL, cmdLine, 0);
+  return GameEntryPoint(NULL, cmdLine);
 };
 
 #endif // SE1_WIN

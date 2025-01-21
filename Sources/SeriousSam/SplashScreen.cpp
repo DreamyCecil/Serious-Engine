@@ -15,7 +15,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
-#include "SplashScreen.h"
+extern HINSTANCE _hInstance;
 
 #define SPLASH_TITLE "SeriousSam loading..."
 
@@ -26,8 +26,9 @@ static OS::Window _window = NULL;
 static SDL_Renderer *_pRenderer = NULL;
 static SDL_Texture *_pTexture = NULL;
 
-void ShowSplashScreen(HINSTANCE hInstance)
-{
+void HideSplashScreen(void);
+
+void ShowSplashScreen(void) {
   // Get splash image
   SDL_Surface *surSplash = SDL_LoadBMP("Splash.bmp");
   if (surSplash == NULL) return;
@@ -149,13 +150,13 @@ static LRESULT FAR PASCAL SplashWindowProc( HWND hWnd, UINT message,
   return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void ShowSplashScreen(HINSTANCE hInstance)
+void ShowSplashScreen(void)
 {
-  _hbmSplash = LoadBitmapA(hInstance, (char*)IDB_SPLASH);
+  _hbmSplash = LoadBitmapA(_hInstance, (char*)IDB_SPLASH);
   if (_hbmSplash==NULL) {
     return;
   }
-  _hbmSplashMask = LoadBitmapA(hInstance, (char*)IDB_SPLASHMASK);
+  _hbmSplashMask = LoadBitmapA(_hInstance, (char*)IDB_SPLASHMASK);
   if (_hbmSplashMask==NULL) {
     return;
   }
@@ -175,8 +176,8 @@ void ShowSplashScreen(HINSTANCE hInstance)
   wc.lpfnWndProc = SplashWindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
-  wc.hInstance = hInstance;
-  wc.hIcon = LoadIcon( hInstance, (LPCTSTR)IDR_MAINFRAME );
+  wc.hInstance = _hInstance;
+  wc.hIcon = LoadIcon(_hInstance, (LPCTSTR)IDR_MAINFRAME );
   wc.hCursor = LoadCursor( NULL, IDC_ARROW );
   wc.hbrBackground = NULL;
   wc.lpszMenuName = NAME;
@@ -196,7 +197,7 @@ void ShowSplashScreen(HINSTANCE hInstance)
 	  _bmSplash.bmWidth,_bmSplash.bmHeight,  // window size
 	  NULL,
 	  NULL,
-	  hInstance,
+	  _hInstance,
 	  NULL);
 
   if (_window == NULL) {

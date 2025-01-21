@@ -17,6 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MainWindow.h"
 #include "resource.h"
 
+extern HINSTANCE _hInstance;
+
 BOOL _bWindowChanging = FALSE;    // ignores window messages while this is set
 OS::Window _hwndMain = NULL;
 char _achWindowTitle[256]; // current window title

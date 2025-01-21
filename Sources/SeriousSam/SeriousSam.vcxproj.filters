@@ -230,9 +230,6 @@
     <ClInclude Include="SeriousSam.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SplashScreen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StdH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
