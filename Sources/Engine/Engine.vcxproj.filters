@@ -1392,6 +1392,9 @@
     <ClInclude Include="Templates\Stock_CModelConfig.h">
       <Filter>Header Files\Templates Headers</Filter>
     </ClInclude>
+    <ClInclude Include="API\Engine.h">
+      <Filter>Header Files\API Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Base\CTString.inl">

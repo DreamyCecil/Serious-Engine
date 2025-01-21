@@ -1044,6 +1044,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="API\Engine.h" />
     <ClInclude Include="API\EngineGUI.h" />
     <ClInclude Include="Base\Anim.h" />
     <ClInclude Include="Base\Assert.h" />
