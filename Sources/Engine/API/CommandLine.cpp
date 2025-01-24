@@ -15,6 +15,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
+// Common command line options
+
+static void OptionGame(const CommandLineArgs_t &aArgs) {
+  // [Cecil] TEMP: Use base directory for the default mod
+  if (aArgs[0] != "SeriousSam") {
+    _fnmMod = "Mods\\" + aArgs[0] + "\\";
+  }
+};
+
+static void OptionLogFile(const CommandLineArgs_t &aArgs) {
+  _strLogFile = aArgs[0];
+};
+
 // Separate a string into multiple arguments (e.g. command line arguments)
 // Implemented according to the rules from Microsoft docs:
 // https://learn.microsoft.com/en-us/cpp/c-language/parsing-c-command-line-arguments?view=msvc-170
@@ -113,11 +126,18 @@ static void StringToArgs(const char *str, CommandLineArgs_t &aArgs)
   }
 };
 
+// Add common command line option processors
+inline void AddCommonProcessors(CommandLineSetup *pCmd) {
+  pCmd->AddCommand("+game",    &OptionGame,    1);
+  pCmd->AddCommand("+logfile", &OptionLogFile, 1);
+};
+
 // Constructor for C-like command line
 CommandLineSetup::CommandLineSetup(int argc, char **argv) :
   pInitialArgs(NULL, -1), pUnknownOption(NULL)
 {
   GetArguments(argc, argv, aArgs);
+  AddCommonProcessors(this);
 
   // Cache the entire command line as a single string
   strCommandLine = "";
@@ -136,6 +156,7 @@ CommandLineSetup::CommandLineSetup(const char *strCmd) :
   pInitialArgs(NULL, -1), pUnknownOption(NULL)
 {
   GetArguments(strCmd, aArgs);
+  AddCommonProcessors(this);
   strCommandLine = strCmd;
 };
 
@@ -172,9 +193,12 @@ void SE_ParseCommandLine(const CommandLineSetup &cmd) {
     const CommandLineFunction_t *pCmdFunc = NULL;
 
     // Parse initial arguments
-    if (i == 0 && cmd.pInitialArgs.first != NULL) {
+    if (i == 0 && cmd.pInitialArgs.pFunc != NULL) {
       strCmd = "Program executable";
       pCmdFunc = &cmd.pInitialArgs;
+
+      // Pretend that this is a real option so it pushes arguments starting from 0
+      i--;
 
     } else {
       // Get command name
@@ -203,15 +227,12 @@ void SE_ParseCommandLine(const CommandLineSetup &cmd) {
 
       // Get command line function from the command
       pCmdFunc = &itCmd->second;
-
-      // Skip the command argument
-      i++;
     }
 
     // Get command function
-    FCommandLineCallback pFunc = pCmdFunc->first;
+    FCommandLineCallback pFunc = pCmdFunc->pFunc;
 
-    INDEX ctArgs = pCmdFunc->second;
+    INDEX ctArgs = pCmdFunc->ctArgs;
     INDEX ctLeft = ct - i;
 
     // Not enough arguments for the last command
@@ -223,7 +244,7 @@ void SE_ParseCommandLine(const CommandLineSetup &cmd) {
 
     // Retrieve required amount of arguments for the command
     while (--ctArgs >= 0) {
-      aCmdArgs.Add(cmd[i++]);
+      aCmdArgs.Add(cmd[++i]);
     }
 
     // Call command function with the arguments

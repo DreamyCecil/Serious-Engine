@@ -419,14 +419,6 @@ static BOOL HandleUnknownOption(const CTString &strCmd) {
   return TRUE;
 };
 
-// [Cecil] Command line options as functions
-static void OptionGame(const CommandLineArgs_t &aArgs) {
-  // Use base directory for the default mod
-  if (aArgs[0] != "SeriousSam") {
-    _fnmMod = "Mods\\" + aArgs[0] + "\\";
-  }
-};
-
 BOOL CWorldEditorApp::SubInitInstance()
 {
   // required for visual styles
@@ -453,7 +445,6 @@ BOOL CWorldEditorApp::SubInitInstance()
     // [Cecil] Parse command line arguments
     CommandLineSetup cmd(strCmdCopy.ConstData());
     cmd.AddUnknownHandler(&HandleUnknownOption);
-    cmd.AddCommand("+game", &OptionGame, 1);
     SE_ParseCommandLine(cmd);
   }
 

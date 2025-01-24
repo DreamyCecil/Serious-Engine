@@ -184,6 +184,8 @@ static void HandleInitialArgs(const CommandLineArgs_t &aArgs) {
 #endif
 
   ded_strConfig = "Scripts\\Dedicated\\" + strConfig + "\\";
+
+  // [Cecil] NOTE: Always empty at this point, only overriden by +logfile after these initial arguments
   _strLogFile = "Dedicated_" + strConfig;
 
   // Mod directory name

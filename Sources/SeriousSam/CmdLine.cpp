@@ -40,13 +40,6 @@ static void OptionQuickJoin(const CommandLineArgs_t &) {
   cmd_bQuickJoin = TRUE;
 };
 
-static void OptionGame(const CommandLineArgs_t &aArgs) {
-  // Use base directory for the default mod
-  if (aArgs[0] != "SeriousSam") {
-    _fnmMod = "Mods\\" + aArgs[0] + "\\";
-  }
-};
-
 static void OptionPassword(const CommandLineArgs_t &aArgs) {
   cmd_strPassword = aArgs[0];
 };
@@ -69,11 +62,7 @@ static void OptionScript(const CommandLineArgs_t &aArgs) {
 };
 
 static void OptionGoTo(const CommandLineArgs_t &aArgs) {
-  aArgs[0].ScanF("%d", &cmd_iGoToMarker);
-};
-
-static void OptionLogFile(const CommandLineArgs_t &aArgs) {
-  _strLogFile = aArgs[0];
+  cmd_iGoToMarker = strtol(aArgs[0].ConstData(), NULL, 10);
 };
 
 // [Cecil] Register command line functions
@@ -81,10 +70,8 @@ void SetupCommandLine(CommandLineSetup &cmd) {
   cmd.AddCommand("+level",     &OptionLevel,     1);
   cmd.AddCommand("+server",    &OptionServer,    0);
   cmd.AddCommand("+quickjoin", &OptionQuickJoin, 0);
-  cmd.AddCommand("+game",      &OptionGame,      1);
   cmd.AddCommand("+password",  &OptionPassword,  1);
   cmd.AddCommand("+connect",   &OptionConnect,   1);
   cmd.AddCommand("+script",    &OptionScript,    1);
   cmd.AddCommand("+goto",      &OptionGoTo,      1);
-  cmd.AddCommand("+logfile",   &OptionLogFile,   1);
 };

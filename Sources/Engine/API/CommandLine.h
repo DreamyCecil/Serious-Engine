@@ -30,7 +30,13 @@ typedef CStaticStackArray<CTString> CommandLineArgs_t;
 typedef void (*FCommandLineCallback)(const CommandLineArgs_t &);
 
 // Command callback with argument count (e.g. if expecting "+run MyMod 0" command, then the argument count is 2)
-typedef std::pair<FCommandLineCallback, INDEX> CommandLineFunction_t;
+struct CommandLineFunction_t {
+  FCommandLineCallback pFunc;
+  INDEX ctArgs;
+
+  __forceinline CommandLineFunction_t(FCommandLineCallback pSetFunc = NULL, INDEX ctSetArgs = -1) :
+    pFunc(pSetFunc), ctArgs(ctSetArgs) {};
+};
 
 // Setup structure for command line arguments
 struct ENGINE_API CommandLineSetup {
@@ -70,12 +76,14 @@ struct ENGINE_API CommandLineSetup {
 
     // Register new command callback
     inline void AddCommand(const CTString &strName, FCommandLineCallback pFunc, INDEX ctArguments) {
-      mapCommands[strName] = std::make_pair(pFunc, ctArguments);
+      ASSERT(ctArguments >= 0);
+      mapCommands[strName] = CommandLineFunction_t(pFunc, ctArguments);
     };
 
     // Register initial arguments parser
     inline void AddInitialParser(FCommandLineCallback pFunc, INDEX ctArguments) {
-      pInitialArgs = std::make_pair(pFunc, ctArguments);
+      ASSERT(ctArguments > 0); // No point in processing initial arguments with no arguments
+      pInitialArgs = CommandLineFunction_t(pFunc, ctArguments);
     };
 
     // Register unknown options handler
@@ -89,7 +97,7 @@ struct ENGINE_API CommandLineSetup {
     };
 
     // Accessor operator (equal to argv[i - 1])
-    inline const CTString &operator[](size_t i) const {
+    inline const CTString &operator[](INDEX i) const {
       return aArgs[i];
     };
 };
