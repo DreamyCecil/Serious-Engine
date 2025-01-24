@@ -199,6 +199,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Selection.cpp>
 
 // [Cecil] Engine API functions
+#include <Engine/API/CommandLine.h>
 #include <Engine/API/Engine.h>
 
 // [Cecil] TODO: Remove these

@@ -325,6 +325,9 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   CPrintF(TRANS("Executable: %s\n"), (_fnmApplicationPath + _fnmApplicationExe).ConstData());
   CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath.ConstData());
 
+  // [Cecil] Command line parser output
+  CPutString(SE_CommandLineOutput().ConstData());
+
   CPutString("\n");
 
   // report os info

@@ -598,6 +598,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="API\API.cpp" />
+    <ClCompile Include="API\CommandLine.cpp" />
     <ClCompile Include="Base\Anim.cpp" />
     <ClCompile Include="Base\Changeable.cpp" />
     <ClCompile Include="Base\Console.cpp" />
@@ -1044,6 +1045,7 @@ del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="API\CommandLine.h" />
     <ClInclude Include="API\Engine.h" />
     <ClInclude Include="API\EngineGUI.h" />
     <ClInclude Include="Base\Anim.h" />
