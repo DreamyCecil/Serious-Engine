@@ -28,9 +28,12 @@
 !Sources/ThirdParty/SDL2/lib/**/*.lib
 
 # Executables
+Bin/*
+!Bin/**/empty
 *.exe
 *.out
 *.app
+*.lnk
 !Bison.exe
 !Flex.exe
 !Sources/ThirdParty/glew/bin/**/*.exe
@@ -57,12 +60,20 @@ Debug/*
 *.idb
 *.aps
 
-# Generated configuration files
-Data/*.bin
-Data/*.pri
+# User game files
+Animations/*
+AnimationsMP/*
 Demos/*
+Models/*
+ModelsMP/*
+ModelsSKA/*
+Mods/*
+Sounds/*
+SoundsMP/*
 Temp/*
+!Temp/README.txt
 UserData/*
+!UserData/README.txt
 *.log
 *.rpt
 *.gms
@@ -71,6 +82,7 @@ UserData/*
 # Generated source files
 Sources/Engine/Classes/*.h
 Sources/Engine/Classes/*.cpp
+Sources/Engine/CurrentCommitHash.h
 Sources/EntitiesMP/**/*.cpp
 Sources/EntitiesMP/**/*.h
 !Sources/EntitiesMP/Common/*
