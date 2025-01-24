@@ -232,7 +232,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -283,7 +284,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -332,7 +334,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -381,7 +384,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -434,7 +438,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -487,7 +492,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -538,7 +544,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -589,7 +596,8 @@ del "$(ProjectDir)Base\Parser.h" /q
 del "$(ProjectDir)Base\Scanner.cpp" /q
 del "$(ProjectDir)Ska\smcPars.cpp" /q
 del "$(ProjectDir)Ska\smcPars.h" /q
-del "$(ProjectDir)Ska\smcScan.cpp" /q</Command>
+del "$(ProjectDir)Ska\smcScan.cpp" /q
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps1"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>

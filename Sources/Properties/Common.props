@@ -20,6 +20,6 @@
     <SE1Incl>$(SolutionDir);$(SolutionDir)ThirdParty\;$(ProjectDir);$(DX8InclPath);$(SDLInclPath);$(GLEWInclPath);</SE1Incl>
     <SE1Libs>$(BinDir);$(DX8LibPath);$(SDLLibPath);$(GLEWLibPath);</SE1Libs>
 
-    <SE1GenericPreproc>DIRECT3D_VERSION=0x0800;</SE1GenericPreproc>
+    <SE1GenericPreproc>SE1_INCLUDE_CURRENTCOMMITHASH;DIRECT3D_VERSION=0x0800;</SE1GenericPreproc>
   </PropertyGroup>
 </Project>
