@@ -34,6 +34,14 @@ inline CAllocationArray<Type>::CAllocationArray(void) :
   aa_ctAllocationStep = 256;
 };
 
+// Copy constructor
+template<class Type>
+inline CAllocationArray<Type>::CAllocationArray(const CAllocationArray<Type> &aaOriginal)
+{
+  // Call assignment operator
+  (*this) = aaOriginal;
+};
+
 // Destructor
 template<class Type>
 inline CAllocationArray<Type>::~CAllocationArray(void)

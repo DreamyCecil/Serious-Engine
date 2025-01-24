@@ -30,6 +30,12 @@ inline CStaticStackArray<Type>::CStaticStackArray(void) : CStaticArray<Type>() {
   sa_ctAllocationStep = 256;
 };
 
+// Copy constructor
+template<class Type>
+inline CStaticStackArray<Type>::CStaticStackArray(const CStaticStackArray<Type> &arOther) {
+  CopyArray(arOther);
+};
+
 // Destructor
 template<class Type>
 inline CStaticStackArray<Type>::~CStaticStackArray(void)

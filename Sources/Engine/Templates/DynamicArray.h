@@ -46,7 +46,7 @@ class CDynamicArray {
     CDynamicArray(void);
 
     // Copy constructor
-    CDynamicArray(CDynamicArray<Type> &daOriginal);
+    CDynamicArray(const CDynamicArray<Type> &daOriginal);
 
     // Destructor
     ~CDynamicArray(void);

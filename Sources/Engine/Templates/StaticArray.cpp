@@ -33,6 +33,12 @@ inline CStaticArray<Type>::CStaticArray(void) {
   sa_Array = NULL;
 };
 
+// Copy constructor
+template<class Type>
+inline CStaticArray<Type>::CStaticArray(const CStaticArray<Type> &arOther) {
+  CopyArray(arOther);
+};
+
 // Destructor
 template<class Type>
 inline CStaticArray<Type>::~CStaticArray(void) {

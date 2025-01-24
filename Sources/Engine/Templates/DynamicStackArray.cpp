@@ -33,6 +33,19 @@ inline CDynamicStackArray<Type>::CDynamicStackArray(void) : CDynamicArray<Type>(
   CDynamicArray<Type>::Lock();
 };
 
+// Copy constructor
+template<class Type>
+inline CDynamicStackArray<Type>::CDynamicStackArray(const CDynamicStackArray<Type> &arOriginal) {
+  da_ctUsed = 0;
+  da_ctAllocationStep = 256;
+
+  // Copy array contents
+  (*this) = arOriginal;
+
+  // Lock the array upon construction
+  CDynamicArray<Type>::Lock();
+};
+
 // Destructor
 template<class Type>
 inline CDynamicStackArray<Type>::~CDynamicStackArray(void) {
@@ -194,7 +207,7 @@ Type **CDynamicStackArray<Type>::GetArrayOfPointers(void)
 
 // Assignment operator
 template<class Type>
-CDynamicStackArray<Type> &CDynamicStackArray<Type>::operator=(CDynamicStackArray<Type> &arOriginal)
+CDynamicStackArray<Type> &CDynamicStackArray<Type>::operator=(const CDynamicStackArray<Type> &arOriginal)
 {
   ASSERT(this != NULL);
   ASSERT(&arOriginal != NULL);

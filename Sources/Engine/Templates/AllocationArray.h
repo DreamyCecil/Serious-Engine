@@ -33,6 +33,9 @@ class CAllocationArray : public CStaticArray<Type> {
     // Default constructor
     inline CAllocationArray(void);
 
+    // Copy constructor
+    inline CAllocationArray(const CAllocationArray<Type> &aaOriginal);
+
     // Destructor
     inline ~CAllocationArray(void);
 

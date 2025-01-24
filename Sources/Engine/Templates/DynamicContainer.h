@@ -35,7 +35,7 @@ class CDynamicContainer : public CStaticStackArray<Type *> {
     CDynamicContainer(void);
 
     // Copy constructor
-    CDynamicContainer(CDynamicContainer<Type> &coOriginal);
+    CDynamicContainer(const CDynamicContainer<Type> &coOriginal);
 
     // Destructor
     ~CDynamicContainer(void);
@@ -89,7 +89,7 @@ class CDynamicContainer : public CStaticStackArray<Type *> {
     INDEX GetIndex(Type *ptMember);
 
     // Assignment operator
-    CDynamicContainer<Type> &operator=(CDynamicContainer<Type> &coOriginal);
+    CDynamicContainer<Type> &operator=(const CDynamicContainer<Type> &coOriginal);
 
     // Move all elements of another container into this one
     void MoveContainer(CDynamicContainer<Type> &coOther);

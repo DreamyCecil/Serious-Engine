@@ -35,7 +35,7 @@ CDynamicContainer<Type>::CDynamicContainer(void) {
 
 // Copy constructor
 template<class Type>
-CDynamicContainer<Type>::CDynamicContainer(CDynamicContainer<Type> &dcOriginal) {
+CDynamicContainer<Type>::CDynamicContainer(const CDynamicContainer<Type> &dcOriginal) {
 #if CHECKARRAYLOCKING
   // Not locked
   dc_LockCt = 0;
@@ -217,7 +217,7 @@ INDEX CDynamicContainer<Type>::GetIndex(Type *ptMember) {
 
 // Assignment operator
 template<class Type>
-CDynamicContainer<Type> &CDynamicContainer<Type>::operator=(CDynamicContainer<Type> &coOriginal)
+CDynamicContainer<Type> &CDynamicContainer<Type>::operator=(const CDynamicContainer<Type> &coOriginal)
 {
   CStaticStackArray<Type *>::operator=(coOriginal);
   return *this;

@@ -33,6 +33,9 @@ class CDynamicStackArray : public CDynamicArray<Type> {
     // Default constructor
     inline CDynamicStackArray(void);
 
+    // Copy constructor
+    inline CDynamicStackArray(const CDynamicStackArray<Type> &arOriginal);
+
     // Destructor
     inline ~CDynamicStackArray(void);
 
@@ -75,7 +78,7 @@ class CDynamicStackArray : public CDynamicArray<Type> {
     Type **GetArrayOfPointers(void);
 
     // Assignment operator
-    CDynamicStackArray<Type> &operator=(CDynamicStackArray<Type> &arOriginal);
+    CDynamicStackArray<Type> &operator=(const CDynamicStackArray<Type> &arOriginal);
 };
 
 // [Cecil] Inline definition

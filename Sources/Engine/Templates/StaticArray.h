@@ -31,6 +31,9 @@ class CStaticArray {
     // Default constructor
     inline CStaticArray(void);
 
+    // Copy constructor
+    inline CStaticArray(const CStaticArray<Type> &arOther);
+
     // Destructor
     inline ~CStaticArray(void);
 

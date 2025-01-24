@@ -39,7 +39,7 @@ CDynamicArray<Type>::CDynamicArray(void) {
 
 // Copy constructor
 template<class Type>
-CDynamicArray<Type>::CDynamicArray(CDynamicArray<Type> &daOriginal)
+CDynamicArray<Type>::CDynamicArray(const CDynamicArray<Type> &daOriginal)
 {
 #if CHECKARRAYLOCKING
   // Not locked
