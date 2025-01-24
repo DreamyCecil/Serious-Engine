@@ -402,101 +402,30 @@ BOOL CWorldEditorApp::InitInstance()
   return bResult;
 }
 
-static CTString _strCmd;
-static CString _strCmdW;
-static CTString cmd_strOutput;
-static CTString cmd_strMod;
+// [Cecil] NOTE: Original code for parsing the command line seems to have been saving "unhandled"
+// parameters back into the MFC command line string presumably for some further processing by MFC
 
-// get first next word or quoted string
-static CTString GetNextParam(void)
-{
-  // strip leading spaces/tabs
-  _strCmd.TrimSpacesLeft();
-  // if nothing left
-  if (_strCmd=="") {
-    // no word to return
-    return "";
+// [Cecil] Handle unknown commands
+static BOOL HandleUnknownOption(const CTString &strCmd) {
+  // Cached command line string
+  static CString _strCmdCache = "";
+
+  // Add next argument
+  if (_strCmdCache != _T("")) _strCmdCache += _T(" ");
+  _strCmdCache += CString(strCmd.ConstData());
+
+  // Update command line
+  theApp.m_lpCmdLine = (LPTSTR)_strCmdCache.GetString();
+  return TRUE;
+};
+
+// [Cecil] Command line options as functions
+static void OptionGame(const CommandLineArgs_t &aArgs) {
+  // Use base directory for the default mod
+  if (aArgs[0] != "SeriousSam") {
+    _fnmMod = "Mods\\" + aArgs[0] + "\\";
   }
-
-  // if the first char is quote
-  if (_strCmd[0]=='"') {
-    // find first next quote
-    size_t iQuote = _strCmd.Find('"', 1);
-    // if not found
-    if (iQuote == CTString::npos) {
-      // error in command line
-      cmd_strOutput+=CTString(0, TRANS("Command line error!\n"));
-      // finish parsing
-      _strCmd = "";
-      return "";
-    }
-
-    // get the quoted string
-    CTString strWord;
-    CTString strRest;
-    _strCmd.Split((INDEX)iQuote, strWord, strRest);
-    // remove the quotes
-    strWord.DeleteChar(0);
-    strRest.DeleteChar(0);
-    // get the word
-    _strCmd = strRest;
-    return strWord;
-
-  // if the first char is not quote
-  } else {
-    // find first next space
-    INDEX iSpace;
-    INDEX ctChars = _strCmd.Length();
-    for(iSpace=0; iSpace<ctChars; iSpace++) {
-      if (isspace(_strCmd[iSpace])) {
-        break;
-      }
-    }
-    // get the word string
-    CTString strWord;
-    CTString strRest;
-    _strCmd.Split(iSpace, strWord, strRest);
-    // remove the space
-    strRest.DeleteChar(0);
-    // get the word
-    _strCmd = strRest;
-    return strWord;
-  }
-}
-
-// check for custom parameters
-void CWorldEditorApp::MyParseCommandLine(void)
-{
-  _strCmd = CStringA(m_lpCmdLine);
-  cmd_strOutput = "";
-  cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), _strCmd.ConstData());
-  // if no command line
-  if (_strCmd.Length() == 0) {
-    // do nothing
-    return;
-  }
-
-  FOREVER {
-    CTString strWord = GetNextParam();
-    if (strWord=="") {
-      cmd_strOutput+="\n";
-      _strCmdW = CString(_strCmd);
-      m_lpCmdLine = (LPWSTR)(LPCWSTR)_strCmdW;
-      return;
-    } else if (strWord=="+game") {
-      CTString strMod = GetNextParam();
-      if (strMod!="SeriousSam") { // (we ignore default mod - always use base dir in that case)
-        cmd_strMod = strMod;
-        _fnmMod = "Mods\\"+strMod+"\\";
-      }
-    } else {
-      _strCmdW = CString(_strCmd);
-      m_lpCmdLine = (LPWSTR)(LPCWSTR)_strCmdW;
-      return;
-    }
-  }
-  
-}
+};
 
 BOOL CWorldEditorApp::SubInitInstance()
 {
@@ -516,8 +445,17 @@ BOOL CWorldEditorApp::SubInitInstance()
 	}
 	AfxEnableControlContainer();
 
-  // check for custom parameters
-  MyParseCommandLine();
+  {
+    // [Cecil] Borrow the command line
+    CTString strCmdCopy = CStringA(m_lpCmdLine).GetString();
+    m_lpCmdLine = _T("");
+
+    // [Cecil] Parse command line arguments
+    CommandLineSetup cmd(strCmdCopy.ConstData());
+    cmd.AddUnknownHandler(&HandleUnknownOption);
+    cmd.AddCommand("+game", &OptionGame, 1);
+    SE_ParseCommandLine(cmd);
+  }
 
 #ifdef _AFXDLL
 	Enable3dControls();			// Call this when using MFC in a shared DLL
@@ -537,8 +475,6 @@ BOOL CWorldEditorApp::SubInitInstance()
   } else {
     SetRegistryKey( CString("CroTeam\\"+_strModExt));
   }
-
-  CPutString(cmd_strOutput);
 
   // if the registry is not set yet
   CString strDefaultTexture = GetProfileString( L"World editor prefs", L"Default primitive texture", L"");

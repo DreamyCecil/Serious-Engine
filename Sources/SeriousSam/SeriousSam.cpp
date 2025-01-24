@@ -366,7 +366,7 @@ void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileN
   }
 }
 
-BOOL Init(HINSTANCE hInstance, CTString strCmdLine) {
+BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   // [Cecil] NOTE: Used in ShowSplashScreen() and for creating new game windows under Windows platforms
   _hInstance = hInstance;
 
@@ -377,8 +377,8 @@ BOOL Init(HINSTANCE hInstance, CTString strCmdLine) {
   MainWindow_Init();
   OpenMainWindowInvisible();
 
-  // parse command line before initializing engine
-  ParseCommandLine(strCmdLine);
+  // [Cecil] Parse command line arguments
+  SE_ParseCommandLine(cmd);
 
   // initialize engine
   SeriousEngineSetup se1setup("Serious Sam");
@@ -392,8 +392,6 @@ BOOL Init(HINSTANCE hInstance, CTString strCmdLine) {
   _vpixScreenRes = _pGfx->GetMonitorResolution();
 
   SE_LoadDefaultFonts();
-  // now print the output of command line parsing
-  CPutString(cmd_strOutput.ConstData());
 
   // lock the directory
   DirectoryLockOn();
@@ -865,11 +863,11 @@ static void SetDPIAwareness(void) {
 #endif // SE1_WIN
 };
 
-int SubMain(HINSTANCE hInstance, const CTString &strCmdLine) {
+int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   // [Cecil] Set DPI awareness
   SetDPIAwareness();
 
-  if (!Init(hInstance, strCmdLine)) return FALSE;
+  if (!Init(hInstance, cmd)) return FALSE;
 
   // [Cecil] Disable SDL joystick events to handle them manually alongside Windows API
   #if !SE1_PREFER_SDL
@@ -1250,11 +1248,14 @@ void CheckBrowser(void)
 }
 
 // [Cecil] Used to be WinMain()
-int GameEntryPoint(HINSTANCE hInstance, const CTString &strCmdLine)
+int GameEntryPoint(HINSTANCE hInstance, CommandLineSetup &cmd)
 {
   int iResult = 1;
+
   CTSTREAM_BEGIN {
-    iResult = SubMain(hInstance, strCmdLine);
+    // [Cecil] Register command line functions
+    SetupCommandLine(cmd);
+    iResult = SubMain(hInstance, cmd);
   } CTSTREAM_END;
 
   CheckBrowser();
@@ -1268,22 +1269,19 @@ int GameEntryPoint(HINSTANCE hInstance, const CTString &strCmdLine)
 int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
   (void)hPrevInstance;
   (void)nCmdShow;
-  return GameEntryPoint(hInstance, lpCmdLine);
+
+  // [Cecil] Setup the command line
+  CommandLineSetup cmd(lpCmdLine);
+  return GameEntryPoint(hInstance, cmd);
 };
 
 #else
 
 // Entry point
 int main(int argc, char **argv) {
-  CTString cmdLine;
-
-  for (int i = 1; i < argc; i++) {
-    cmdLine += " \"";
-    cmdLine += argv[i];
-    cmdLine += "\"";
-  }
-
-  return GameEntryPoint(NULL, cmdLine);
+  // [Cecil] Setup the command line
+  CommandLineSetup cmd(argc, argv);
+  return GameEntryPoint(NULL, cmd);
 };
 
 #endif // SE1_WIN

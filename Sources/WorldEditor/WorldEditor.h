@@ -498,7 +498,6 @@ public:
 // Operations
   CWorldEditorApp();
 	~CWorldEditorApp();
-	void MyParseCommandLine(void);
 	BOOL SubInitInstance(void);
   void OnFileNew();
   CEntity *CreateWorldBaseEntity(CWorld &woWorld, BOOL bZoning, CPlacement3D pl=CPlacement3D(FLOAT3D(0,0,0),ANGLE3D(0,0,0)));

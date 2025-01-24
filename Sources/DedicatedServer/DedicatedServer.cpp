@@ -169,9 +169,41 @@ void ExecScript(const CTString &str)
   _pShell->Execute(strCmd);
 }
 
-BOOL Init(int argc, char* argv[])
-{
-  if (argc!=1+1 && argc!=2+1) {
+// [Cecil] Parsed arguments
+static INDEX _ctParsedArgs = 0;
+
+// [Cecil] Handle program's launch arguments
+static void HandleInitialArgs(const CommandLineArgs_t &aArgs) {
+  _ctParsedArgs = aArgs.Count();
+
+  // Dedicated server setup config
+  const CTString &strConfig = aArgs[0];
+
+#if SE1_WIN
+  SetConsoleTitleA(strConfig.ConstData());
+#endif
+
+  ded_strConfig = "Scripts\\Dedicated\\" + strConfig + "\\";
+  _strLogFile = "Dedicated_" + strConfig;
+
+  // Mod directory name
+  if (_ctParsedArgs > 1) {
+    _fnmMod = "Mods\\" + aArgs[1] + "\\";
+  }
+};
+
+BOOL Init(int argc, char **argv) {
+  // [Cecil] Parse command line arguments
+  {
+    CommandLineSetup cmd(argc, argv);
+    cmd.AddInitialParser(&HandleInitialArgs, (argc > 2) ? 2 : 1); // Take optional argument into account
+    SE_ParseCommandLine(cmd);
+  }
+
+  // [Cecil] Command line output in the console
+  printf("%s", SE_CommandLineOutput().ConstData());
+
+  if (_ctParsedArgs < 1 || _ctParsedArgs > 2) {
     // NOTE: this cannot be translated - translations are not loaded yet
     printf("Usage: DedicatedServer <configname> [<modname>]\n"
       "This starts a server reading configs from directory 'Scripts\\Dedicated\\<configname>\\'\n");
@@ -183,25 +215,10 @@ BOOL Init(int argc, char* argv[])
     exit(0);
   }
 
-#if SE1_WIN
-  SetConsoleTitleA(argv[1]);
-#endif
-
-  ded_strConfig = CTString("Scripts\\Dedicated\\")+argv[1]+"\\";
-
-  if (argc==2+1) {
-    _fnmMod = CTString("Mods\\")+argv[2]+"\\";
-  }
-
-
-  _strLogFile = CTString("Dedicated_")+argv[1];
-
   // initialize engine
   SeriousEngineSetup se1setup("Serious Sam Dedicated Server");
   se1setup.eAppType = SeriousEngineSetup::E_SERVER;
   SE_InitEngine(se1setup);
-
-//  ParseCommandLine(strCmdLine);
 
   // load all translation tables
   InitTranslation();
@@ -391,11 +408,9 @@ void DoGame(void)
   LimitFrameRate();
 }
 
-int SubMain(int argc, char* argv[])
-{
-
+int SubMain(int argc, char **argv) {
   // initialize
-  if( !Init(argc, argv)) {
+  if (!Init(argc, argv)) {
     End();
     return -1;
   }
@@ -460,14 +475,12 @@ int SubMain(int argc, char* argv[])
   return 0;
 }
 
-
-int main(int argc, char* argv[])
-{
+int main(int argc, char **argv) {
   int iResult;
+
   CTSTREAM_BEGIN {
     iResult = SubMain(argc, argv);
   } CTSTREAM_END;
 
   return iResult;
-}
-
+};

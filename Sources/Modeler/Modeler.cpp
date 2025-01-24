@@ -232,6 +232,13 @@ BOOL CModelerApp::SubInitInstance()
 		RUNTIME_CLASS(CScriptView));
 	AddDocTemplate(pDocTemplate);
 
+  // [Cecil] Parse command line arguments
+  {
+    CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
+    CommandLineSetup cmd(strCmdLine.ConstData());
+    SE_ParseCommandLine(cmd);
+  }
+
   // initialize engine, without network
   SeriousEngineSetup se1setup("Serious Modeler");
   se1setup.eAppType = SeriousEngineSetup::E_OTHER;

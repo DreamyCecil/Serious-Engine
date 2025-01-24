@@ -23,13 +23,46 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Engine.h>
 
+// Command line arguments
+static CTString _fnmTexture;
+static ULONG _ulCharWidth;
+static ULONG _ulCharHeight;
+static CTString _fnmOrder;
+static BOOL _bUseAlpha = TRUE; // Use alpha by default
 
-void SubMain( int argc, char *argv[])
-{
+// [Cecil] Parsed arguments
+static INDEX _ctParsedArgs = 0;
+
+// [Cecil] Handle program's launch arguments
+static void HandleInitialArgs(const CommandLineArgs_t &aArgs) {
+  _ctParsedArgs = aArgs.Count();
+
+  _fnmTexture = aArgs[0];
+  _ulCharWidth  = strtoul(aArgs[1].ConstData(), NULL, 10);
+  _ulCharHeight = strtoul(aArgs[2].ConstData(), NULL, 10);
+  _fnmOrder = aArgs[3];
+
+  if (_ctParsedArgs > 4 && aArgs[4].HasPrefix("-A")) {
+    _bUseAlpha = FALSE;
+  }
+};
+
+void SubMain(int argc, char **argv) {
+  // [Cecil] Parse command line arguments
+  {
+    CommandLineSetup cmd(argc, argv);
+    cmd.AddInitialParser(&HandleInitialArgs, (argc > 5) ? 5 : 4); // Take optional argument into account
+    SE_ParseCommandLine(cmd);
+  }
+
   printf("\nMakeFONT - Font Tables Maker (2.51)\n");
   printf(  "           (C)1999 CROTEAM Ltd\n\n");
-  // 5 to 7 parameters are allowed as input
-  if( (argc<5) || (argc>6))
+
+  // [Cecil] Command line output in the console
+  printf("%s", SE_CommandLineOutput().ConstData());
+
+  // [Cecil] Should only parse 4 or 5 of own arguments
+  if (_ctParsedArgs < 4 || _ctParsedArgs > 5)
   {
     printf( "USAGE: MakeFont <texture_file> <char_width> <char_height> ");
     printf( "<char_order_file> [-A]\n");
@@ -52,18 +85,6 @@ void SubMain( int argc, char *argv[])
   se1setup.eAppType = SeriousEngineSetup::E_OTHER;
   SE_InitEngine(se1setup);
 
-  // first input parameter is texture name
-  CTFileName fnTextureFileName = CTString(argv[1]);
-  // parameters 2 and 3 give us character dimensions
-  ULONG ulCharWidth = strtoul( argv[2], NULL, 10);
-  ULONG ulCharHeight= strtoul( argv[3], NULL, 10);
-  // parameter 4 specifies text file for character arrangements
-  CTFileName fnOrderFile = CTString(argv[4]);
-
-  // alpha channel ignore check
-  BOOL bUseAlpha = TRUE;
-  if( argc==6 && (argv[5][1]=='a' || argv[5][1]=='A')) bUseAlpha = FALSE;
-
   // font generation starts
   printf( "- Generating font table.\n");
   // try to create font
@@ -71,9 +92,9 @@ void SubMain( int argc, char *argv[])
   try
   { 
     // remove application path from font texture file
-    fnTextureFileName.RemoveApplicationPath_t();
+    _fnmTexture.RemoveApplicationPath_t();
     // create font
-    fdFontData.Make_t( fnTextureFileName, ulCharWidth, ulCharHeight, fnOrderFile, bUseAlpha);
+    fdFontData.Make_t(_fnmTexture, _ulCharWidth, _ulCharHeight, _fnmOrder, _bUseAlpha);
   }
   // catch and report errors
   catch(char *strError)
@@ -85,8 +106,7 @@ void SubMain( int argc, char *argv[])
   // save processed data
   printf( "- Saving font table file.\n");
   // create font name
-  CTFileName strFontFileName;
-  strFontFileName = fnTextureFileName.FileDir()+fnTextureFileName.FileName() + ".fnt";
+  CTFileName strFontFileName = _fnmTexture.NoExt() + ".fnt";
   // try to
   try
   {
@@ -102,15 +122,11 @@ void SubMain( int argc, char *argv[])
   exit( EXIT_SUCCESS);
 }
 
-
-// ---------------- Main
-int main( int argc, char *argv[])
-{
-  CTSTREAM_BEGIN
-  {
+int main(int argc, char **argv) {
+  CTSTREAM_BEGIN {
     SubMain(argc, argv);
-  }
-  CTSTREAM_END;
+  } CTSTREAM_END;
+
   getch();
   return 0;
 }

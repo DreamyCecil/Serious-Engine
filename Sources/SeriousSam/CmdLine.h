@@ -25,12 +25,10 @@ extern CTString cmd_strScript;      // script to execute
 extern CTString cmd_strServer;      // server to connect to
 extern INDEX cmd_iPort;             // port to connect to
 extern CTString cmd_strPassword;    // network password
-extern CTString cmd_strOutput;      // output from parsing command line
 extern BOOL cmd_bServer;            // set to run as server
 extern BOOL cmd_bQuickJoin;         // do not ask for players and network settings
 
-void ParseCommandLine(CTString strCmd);
-
+// [Cecil] Register command line functions
+void SetupCommandLine(CommandLineSetup &cmd);
 
 #endif  /* include-once check. */
-

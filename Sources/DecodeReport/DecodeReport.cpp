@@ -18,16 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "stdafx.h"
 
-void SubMain( int argc, char *argv[]);
-
-int main( int argc, char *argv[])
-{
-  CTSTREAM_BEGIN {
-    SubMain(argc, argv);
-  } CTSTREAM_END;
-  return 0;
-}
-
 void FindInMapFile(const CTFileName &fnSymbols, const CTString &strImage, ULONG ulSeg, ULONG ulOff, CTString &strFunction, SLONG &slDelta)
 {
   CTFileName fnmImage = strImage;
@@ -78,13 +68,37 @@ void FindInMapFile(const CTFileName &fnSymbols, const CTString &strImage, ULONG 
   }
 }
 
-void SubMain( int argc, char *argv[])
-{
+// [Cecil] Command line arguments
+static CTString _fnmSrc;
+static CTString _fnmDst;
+static CTString _fnmSymbols;
+
+// [Cecil] Parsed initial arguments
+static BOOL _bParsedArgs = FALSE;
+
+// [Cecil] Handle program's launch arguments
+static void HandleInitialArgs(const CommandLineArgs_t &aArgs) {
+  _fnmSrc = aArgs[0];
+  _fnmDst = aArgs[1];
+  _fnmSymbols = aArgs[2];
+  _bParsedArgs = TRUE;
+};
+
+void SubMain(int argc, char **argv) {
+  // [Cecil] Parse command line arguments
+  {
+    CommandLineSetup cmd(argc, argv);
+    cmd.AddInitialParser(&HandleInitialArgs, 3);
+    SE_ParseCommandLine(cmd);
+  }
+
   printf("\nDecodeReport - '.RPT' file decoder V1.0\n");
   printf(  "           (C)1999 CROTEAM Ltd\n\n");
 
-  if( argc!=3+1)
-  {
+  // [Cecil] Command line output in the console
+  printf("%s", SE_CommandLineOutput().ConstData());
+
+  if (!_bParsedArgs) {
     printf( "USAGE:\nDecodeReport <infilename> <outfilename> <symbolsdir>\n");
     exit( EXIT_FAILURE);
   }
@@ -94,20 +108,15 @@ void SubMain( int argc, char *argv[])
   se1setup.eAppType = SeriousEngineSetup::E_OTHER;
   SE_InitEngine(se1setup);
 
-  CTFileName fnSrc = CTString(argv[1]);
-  CTFileName fnDst = CTString(argv[2]);
-  CTFileName fnSymbols = CTString(argv[3]);
-
-  try
-  {
-    if (fnSrc==fnDst) {
+  try {
+    if (_fnmSrc == _fnmDst) {
       throw "Use different files!";
     }
 
     CTFileStream strmSrc;
-    strmSrc.Open_t(fnSrc, CTStream::OM_READ);
+    strmSrc.Open_t(_fnmSrc, CTStream::OM_READ);
     CTFileStream strmDst;
-    strmDst.Create_t(fnDst);
+    strmDst.Create_t(_fnmDst);
     
     // while there is some line in src
     while(!strmSrc.AtEOF()) {
@@ -136,7 +145,7 @@ void SubMain( int argc, char *argv[])
         // find the function
         CTString strFunction;
         SLONG slDelta;
-        FindInMapFile(fnSymbols, CTString(strImage), ulSegment, ulOffset, strFunction, slDelta);
+        FindInMapFile(_fnmSymbols, CTString(strImage), ulSegment, ulOffset, strFunction, slDelta);
         // out put the result
         CTString strResult;
         strResult.PrintF("%s (%s+0X%X)", strLine.ConstData(), strFunction.ConstData(), slDelta);
@@ -151,3 +160,10 @@ void SubMain( int argc, char *argv[])
   }
 }
 
+int main(int argc, char **argv) {
+  CTSTREAM_BEGIN {
+    SubMain(argc, argv);
+  } CTSTREAM_END;
+
+  return 0;
+};

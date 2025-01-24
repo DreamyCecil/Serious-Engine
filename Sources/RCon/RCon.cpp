@@ -55,36 +55,53 @@ CRConApp theApp;
 /////////////////////////////////////////////////////////////////////////////
 // CRConApp initialization
 
+// [Cecil] Command line arguments
+static CTString _strHost = "";
+static ULONG _ulPort = 0;
+static CTString _strPass = "";
+
+// [Cecil] Handle program's launch arguments
+static void HandleInitialArgs(const CommandLineArgs_t &aArgs) {
+  _strHost = aArgs[0];
+  _ulPort = strtoul(aArgs[1].ConstData(), NULL, 10);
+  _strPass = aArgs[2];
+};
+
 BOOL CRConApp::SubInitInstance()
 {
+  // [Cecil] Parse command line arguments
+  {
+    CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
+    CommandLineSetup cmd(strCmdLine.ConstData());
+    cmd.AddInitialParser(&HandleInitialArgs, 3);
+    SE_ParseCommandLine(cmd);
+  }
+
   // initialize engine
   SeriousEngineSetup se1setup("RCon");
   se1setup.eAppType = SeriousEngineSetup::E_OTHER;
   SE_InitEngine(se1setup);
 
-  CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
-  char strHost[80], strPass[80];
-
-  strHost[0] = 0;
-  strPass[0] = 0;
-
-  ULONG ulPort;
-  strCmdLine.ScanF("%80s %u \"%80[^\"]\"", strHost, &ulPort, strPass); 
-  
-  
   CNetworkProvider np;
   np.np_Description = "TCP/IP Client";
   _pNetwork->StartProvider_t(np);
 
-  m_ulHost = StringToAddress(strHost);
-  m_uwPort = ulPort;
+  m_ulHost = StringToAddress(_strHost);
+  m_uwPort = _ulPort;
   m_ulCode = rand()*rand();
-  m_strPass = strPass;
+  m_strPass = _strPass;
 
   CRConDlg dlg;
 	m_pMainWnd = &dlg;
 
-  CTString strHeader(0, "Serious Sam RCON v1.0\r\nServer: %s:%d\r\nReady for commands...\r\n", strHost, ulPort);
+  // [Cecil] Append command line output
+  CTString strCmd = SE_CommandLineOutput();
+  strCmd.ReplaceChar('\n', '\x1A'); // Use "substitute character"
+  while (strCmd.ReplaceSubstr("\x1A", "\r\n"));
+
+  CTString strHeader(0, "Serious Sam RCON v1.0\r\n%sServer: %s:%u\r\nReady for commands...\r\n",
+    strCmd.ConstData(), _strHost.ConstData(), _ulPort);
+
   dlg.m_strLog = strHeader.ConstData();
 
 	int nResponse = dlg.DoModal();

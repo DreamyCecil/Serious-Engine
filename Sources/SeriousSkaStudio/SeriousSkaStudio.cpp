@@ -158,6 +158,13 @@ BOOL CSeriousSkaStudioApp::SubInitInstance()
 		RUNTIME_CLASS(CSeriousSkaStudioView));
 	AddDocTemplate(m_pdtDocTemplate);
 
+  // [Cecil] Parse command line arguments
+  {
+    CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
+    CommandLineSetup cmd(strCmdLine.ConstData());
+    SE_ParseCommandLine(cmd);
+  }
+
   // initialize entire engine
   SeriousEngineSetup se1setup("Serious SKA Studio");
   se1setup.eAppType = SeriousEngineSetup::E_OTHER;
