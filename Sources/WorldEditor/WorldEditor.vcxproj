@@ -230,6 +230,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -271,6 +272,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>$(ObjDir)..\EngineGUI\Graphics.res;$(ObjDir)..\GameGUIMP\GameGUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -310,6 +312,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -350,6 +353,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>$(ObjDir)..\EngineGUI\Graphics.res;$(ObjDir)..\GameGUIMP\GameGUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -387,6 +391,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -425,6 +430,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>$(ObjDir)..\EngineGUI\Graphics.res;$(ObjDir)..\GameGUIMP\GameGUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -461,6 +467,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -498,6 +505,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>$(ObjDir)..\EngineGUI\Graphics.res;$(ObjDir)..\GameGUIMP\GameGUI.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
