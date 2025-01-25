@@ -17,11 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Console_Internal.h>
 
-#include <Engine/Build.h>
-
-extern ULONG _ulEngineBuildMajor;
-extern ULONG _ulEngineBuildMinor;
-
 //==========================================
 // Matt Pietrek
 // Microsoft Systems Journal, May 1997

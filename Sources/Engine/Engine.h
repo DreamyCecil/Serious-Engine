@@ -16,11 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // [Cecil] Serious Engine configuration for a specific platform
 #include <Engine/SE_Config.h>
 
-// [Cecil] Auto-generated header for Visual Studio projects
-#ifdef SE1_INCLUDE_CURRENTCOMMITHASH
-  #include <Engine/CurrentCommitHash.h>
-#endif
-
 // set this to 1 to enable checks whether somethig is deleted while iterating some array/container
 #define CHECKARRAYLOCKING 0
 
@@ -71,6 +66,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // Engine base
 #include <Engine/Base/Base.h>
 #include <Engine/Base/Types.h>
+
+// [Cecil] Helper macros with current version of the engine, game etc.
+#include <Engine/API/CurrentVersion.h>
 
 // [Cecil] OS-specific interface
 #include <Engine/OS/OS.h>

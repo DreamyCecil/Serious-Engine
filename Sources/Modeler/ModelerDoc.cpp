@@ -22,8 +22,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/Stock_CSoundData.h>
 #include <Engine/Templates/Stock_CModelData.h>
 
-#include <Engine/Build.h>
-
 #ifdef _DEBUG
 #undef new
 #define new DEBUG_NEW

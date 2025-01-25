@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <Engine/CurrentVersion.h>
 #include <GameMP/Game.h>
 #include "resource.h"
 #include "MainWindow.h"
@@ -112,7 +111,7 @@ CTextureObject *_ptoLogoCT  = NULL;
 CTextureObject *_ptoLogoODI = NULL;
 CTextureObject *_ptoLogoEAX = NULL;
 
-CTString sam_strVersion = "1.10";
+CTString sam_strVersion = _SE_VER_STRING;
 CTString sam_strModName = TRANS("-   O P E N   S O U R C E   -");
 
 CTString sam_strFirstLevel = "Levels\\LevelsMP\\1_0_InTheLastEpisode.wld";

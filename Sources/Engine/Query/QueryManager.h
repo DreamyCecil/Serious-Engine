@@ -23,8 +23,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Query/MasterServer.h>
 #include <Engine/Query/ServerRequest.h>
 
-#include <Engine/CurrentVersion.h>
-
 #if SE1_WIN
   typedef int socklen_t;
 #else

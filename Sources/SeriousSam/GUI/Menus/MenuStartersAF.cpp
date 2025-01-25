@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /* This file contains additional functions called from starters. */
 
 #include "StdH.h"
-#include <Engine/Build.h>
 
 #include "MenuManager.h"
 #include "MenuStartersAF.h"

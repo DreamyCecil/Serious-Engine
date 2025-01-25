@@ -1054,6 +1054,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="API\CommandLine.h" />
+    <ClInclude Include="API\CurrentVersion.h" />
     <ClInclude Include="API\Engine.h" />
     <ClInclude Include="API\EngineGUI.h" />
     <ClInclude Include="Base\Anim.h" />
@@ -1264,8 +1265,6 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClInclude Include="Terrain\TerrainRayCasting.h" />
     <ClInclude Include="Terrain\TerrainRender.h" />
     <ClInclude Include="Terrain\TerrainTile.h" />
-    <ClInclude Include="Build.h" />
-    <ClInclude Include="CurrentVersion.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="StdH.h" />
   </ItemGroup>

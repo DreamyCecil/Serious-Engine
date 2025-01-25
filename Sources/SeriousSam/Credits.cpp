@@ -14,9 +14,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include "StdH.h"
-#include <Engine/CurrentVersion.h>
-#include "Credits.h"
 
+#include "Credits.h"
 
 static CStaticStackArray<CTString> _astrCredits;
 static BOOL _bCreditsOn = FALSE;

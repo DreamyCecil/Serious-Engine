@@ -1308,12 +1308,6 @@
     <ClInclude Include="Terrain\TerrainTile.h">
       <Filter>Header Files\Terrain Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Build.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CurrentVersion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1399,6 +1393,9 @@
       <Filter>Header Files\API Headers</Filter>
     </ClInclude>
     <ClInclude Include="API\CommandLine.h">
+      <Filter>Header Files\API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="API\CurrentVersion.h">
       <Filter>Header Files\API Headers</Filter>
     </ClInclude>
   </ItemGroup>

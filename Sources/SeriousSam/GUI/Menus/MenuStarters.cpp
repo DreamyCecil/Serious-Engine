@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /* This file contains starter fuctions for all menus. */
 
 #include "StdH.h"
-#include <Engine/Build.h>
 
 #include "MenuManager.h"
 #include "MenuStarters.h"

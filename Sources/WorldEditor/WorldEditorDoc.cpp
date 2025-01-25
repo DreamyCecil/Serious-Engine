@@ -20,8 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "WorldEditor.h"
 #include "WorldEditorDoc.h"
 
-#include <Engine/Base/Profiling.h>
-#include <Engine/Build.h>
 #include <direct.h>
 
 #ifdef _DEBUG

@@ -15,7 +15,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
-#include <Engine/CurrentVersion.h>
 #include "CmdLine.h"
 
 CTString cmd_strWorld = "";  // world to load

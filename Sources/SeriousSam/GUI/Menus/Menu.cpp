@@ -14,11 +14,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
 #include "StdH.h"
-#include <Engine/Build.h>
+
 #include <sys/timeb.h>
 #include <time.h>
 #include "MainWindow.h"
-#include <Engine/CurrentVersion.h>
 #include <Engine/Templates/Stock_CSoundData.h>
 #include <GameMP/LCDDrawing.h>
 #include "MenuPrinting.h"
