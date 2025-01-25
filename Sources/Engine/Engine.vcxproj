@@ -607,6 +607,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
   <ItemGroup>
     <ClCompile Include="API\API.cpp" />
     <ClCompile Include="API\CommandLine.cpp" />
+    <ClCompile Include="API\CurrentVersion.cpp" />
     <ClCompile Include="Base\Anim.cpp" />
     <ClCompile Include="Base\Changeable.cpp" />
     <ClCompile Include="Base\Console.cpp" />

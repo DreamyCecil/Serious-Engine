@@ -754,14 +754,7 @@ BOOL DoMenu( CDrawPort *pdp)
 
         const PIX pixBuildX = dpMenu.GetWidth() - 16;
         const PIX pixBuildY = dpMenu.GetHeight() - _pfdConsoleFont->fd_pixCharHeight;
-
-        CTString strDate = SE1_BUILD_DATETIME;
-        strDate.ReplaceChar('T', ' ');
-
-        CTString strHash = SE1_CURRENT_COMMIT_HASH;
-        strHash.Erase(7);
-
-        dpMenu.PutTextR(strDate + " | " + strHash, pixBuildX, pixBuildY, 0xFFFFFFFF);
+        dpMenu.PutTextR(SE_GetBuildVersion(), pixBuildX, pixBuildY, 0xFFFFFFFF);
       }
 
   } else if (pgmCurrentMenu == &_pGUIM->gmAudioOptionsMenu) {

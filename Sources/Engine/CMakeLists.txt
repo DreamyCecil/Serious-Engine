@@ -20,6 +20,7 @@ set(ENGINE_SRCS
 
   "API/API.cpp"
   "API/CommandLine.cpp"
+  "API/CurrentVersion.cpp"
 
   "Base/Anim.cpp"
   "Base/Changeable.cpp"

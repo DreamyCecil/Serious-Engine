@@ -492,6 +492,9 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   // Timer tick quantum
   _pShell->DeclareSymbol("user const FLOAT fTickQuantum;", (FLOAT*)&_pTimer->TickQuantum);
 
+  // [Cecil] Current build version string
+  _pShell->DeclareSymbol("user CTString GetBuildVersion(void);", &SE_GetBuildVersion);
+
   // [Cecil] TEMP
   extern void DisplayRegistryContents(void);
   extern void CheckEntityClasses(void);

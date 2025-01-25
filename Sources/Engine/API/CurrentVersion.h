@@ -43,4 +43,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define _SE_BUILD_EXTRA    ""  // Extra version with minor code changes
 #define _SE_VER_STRING  "1.10" // Usually shown in server browser, etc
 
+// Get current engine build version as a readable string
+ENGINE_API CTString SE_GetBuildVersion(void);
+
 #endif // include-once check
