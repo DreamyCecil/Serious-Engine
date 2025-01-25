@@ -643,12 +643,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClCompile Include="Base\Serial.cpp" />
     <ClCompile Include="Base\Shell.cpp" />
     <ClCompile Include="Base\ShellTypes.cpp" />
-    <ClCompile Include="Base\StackDump.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Base\StackDump.cpp" />
     <ClCompile Include="Base\Statistics.cpp" />
     <ClCompile Include="Base\Stream.cpp" />
     <ClCompile Include="Base\Synchronization.cpp" />

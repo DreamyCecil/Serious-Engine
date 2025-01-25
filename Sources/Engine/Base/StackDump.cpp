@@ -26,8 +26,10 @@ class MSJExceptionHandler
 {
       public:
 
-      MSJExceptionHandler( );
       ~MSJExceptionHandler( );
+
+      // [Cecil] Replacement for the constructor
+      void SetExceptionHandler(void);
 
       void SetLogFileName(const char* pszLogFileName );
 
@@ -58,6 +60,19 @@ class MSJExceptionHandler
 
 MSJExceptionHandler g_MSJExceptionHandler;  // Declare global instance of class
 
+// [Cecil] Manually setup an exception handler
+extern void SE_SetupCrashHandler(void) {
+  g_MSJExceptionHandler.SetExceptionHandler();
+};
+
+// [Cecil] Set new report filename
+extern void SE_SetReportLogFileName(const CTString &fnmReport) {
+  // Create directories for the report file
+  CreateAllDirectories(fnmReport);
+
+  g_MSJExceptionHandler.SetLogFileName(fnmReport.ConstData());
+};
+
 //============================== Global Variables =============================
 
 //
@@ -69,10 +84,8 @@ HANDLE MSJExceptionHandler::m_hReportFile;
 
 //============================== Class Methods =============================
 
-//=============
-// Constructor
-//=============
-MSJExceptionHandler::MSJExceptionHandler( )
+// [Cecil] Replacement for the constructor
+void MSJExceptionHandler::SetExceptionHandler(void)
 {
     // Install the unhandled exception filter function
     m_previousFilter = SetUnhandledExceptionFilter(MSJUnhandledExceptionFilter);

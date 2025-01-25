@@ -252,6 +252,13 @@ static void SE_InitSDL(ULONG ulFlags) {
 
 // startup engine 
 void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
+  // [Cecil] TODO: Implement cross-platform crash handler
+#if SE1_WIN
+  // [Cecil] Manually setup an exception handler
+  extern void SE_SetupCrashHandler(void);
+  SE_SetupCrashHandler();
+#endif
+
   // [Cecil] Remember setup properties
   _SE1SetupInternal = engineSetup;
 
@@ -287,8 +294,16 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
     _strLogFile = _fnmApplicationExe.FileName();
   }
 
+  const CTString strLogFileName = _strLogFile;
+
+#if SE1_WIN
+  // [Cecil] Set new report filename
+  extern void SE_SetReportLogFileName(const CTString &fnmReport);
+  SE_SetReportLogFileName("Temp\\CrashReports\\" + strLogFileName + ".rpt");
+#endif
+
   // [Cecil] Save under the "Temp/Logs/" directory
-  _strLogFile = "Temp\\Logs\\" + _strLogFile + ".log";
+  _strLogFile = "Temp\\Logs\\" + strLogFileName + ".log";
   _pConsole->Initialize(_strLogFile, 90, 512);
 
   _pAnimStock        = new CStock_CAnimData;
