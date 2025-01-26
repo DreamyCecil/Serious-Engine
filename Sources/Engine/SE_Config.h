@@ -51,8 +51,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // Automatic switches for convenience
 
-#define SE1_32BIT (SE1_PLATFORM == PLATFORM_X86) // Is building under 32-bit platform?
-#define SE1_64BIT (SE1_PLATFORM == PLATFORM_X64) // Is building under 64-bit platform?
+#define SE1_X86 (SE1_PLATFORM == PLATFORM_X86) // Is building under x86 platform?
+#define SE1_X64 (SE1_PLATFORM == PLATFORM_X64) // Is building under x64 platform?
+
+#define SE1_32BIT (SE1_X86) // Is building under any 32-bit platform?
+#define SE1_64BIT (SE1_X64) // Is building under any 64-bit platform?
 
 #define SE1_WIN  (SE1_SYSTEM == OS_WINDOWS) // Is building under Windows OS?
 #define SE1_UNIX (SE1_SYSTEM == OS_UNIX)    // Is building under Unix OS?
@@ -88,7 +91,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SE1_SINGLE_THREAD 0 // Run all timer logic manually in the same thread as the application logic (0 - No; 1 - Yes)
 #endif
 #ifndef SE1_DOUBLE_TIMER
-#define SE1_DOUBLE_TIMER  0 // Use double-precision floating-point type for timer values
+#define SE1_DOUBLE_TIMER  0 // Use double-precision floating-point type for timer values (0 - No; 1 - Yes)
 #endif
 #ifndef SE1_DIRECT3D
 #define SE1_DIRECT3D      0 // Implement rendering using Direct3D 8 (0 - Disabled; 1 - Enabled)
@@ -108,9 +111,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // Automatic switches for convenience
 
-#define SE1_PREFER_SDL (!SE1_WIN || SE1_USE_SDL)                  // Prefer SDL over Windows API?
-#define SE1_USE_ASM    (SE1_WIN && SE1_32BIT && SE1_ASMOPT)       // Prioritize inline assembly under a traditional platform?
-#define SE1_USE_MMXINT (!SE1_WIN || (SE1_32BIT && SE1_MMXINTOPT)) // Prioritize MMX intrinsic functions?
+#define SE1_PREFER_SDL (!SE1_WIN || SE1_USE_SDL)                // Prefer SDL over Windows API?
+#define SE1_USE_ASM    (SE1_WIN && SE1_X86 && SE1_ASMOPT)       // Prioritize inline assembly under a traditional platform?
+#define SE1_USE_MMXINT (!SE1_WIN || (SE1_X86 && SE1_MMXINTOPT)) // Prioritize MMX intrinsic functions?
 
 // **************************************************************************
 // EXPERIMENTAL FEATURES ----- USE WITH CAUTION SOLELY FOR DEBUGGING PURPOSES

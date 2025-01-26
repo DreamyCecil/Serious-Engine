@@ -17,8 +17,30 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Math/Float.h>
 
-#if !SE1_WIN // [Cecil] Non-Windows OS
+#if SE1_WIN
 
+#if SE1_X64
+  // Simplified logic with overwriting
+  static inline ULONG FPUControl(ULONG newcw, ULONG mask)
+  {
+    static ULONG fpcw = _PC_64;
+
+    if (mask != 0) {
+      fpcw = newcw;
+    }
+
+    return fpcw;
+  };
+
+#elif SE1_X86
+  // Use proper _control87()
+  #define FPUControl _control87
+
+#else
+  #error Define FPUControl() for CPU architectures other than x86 and x64
+#endif
+
+#elif SE1_X64 || SE1_X86
   #define MCW_PC  0x0300
   #define _MCW_PC MCW_PC
   #define _PC_24  0x0000
@@ -38,25 +60,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
     return fpw;
   };
 
-#elif SE1_64BIT // [Cecil] Windows x64
-
-  // Simplified logic with overwriting
-  static inline ULONG FPUControl(ULONG newcw, ULONG mask)
-  {
-    static ULONG fpcw = _PC_64;
-
-    if (mask != 0) {
-      fpcw = newcw;
-    }
-
-    return fpcw;
-  };
-
-#else // [Cecil] Windows x86
-
-  // Use proper _control87()
-  #define FPUControl _control87
-
+#else
+  #error Define FPUControl() for CPU architectures other than x86 and x64
 #endif
 
 /* Get current precision setting of FPU. */
