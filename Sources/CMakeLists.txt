@@ -7,6 +7,9 @@ option(SE1_BUILD_X86 "Build 32-bit libraries and executables" OFF)
 # Disable in order to reuse already compiled entity sources
 option(SE1_COMPILE_ES "Compile entity source files (.es)" ON)
 
+# Replace generated info about the current engine build with dummy values
+option(SE1_DUMMY_BUILD_INFO "Generate dummy info about an engine build" OFF)
+
 if(SE1_BUILD_X86)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")

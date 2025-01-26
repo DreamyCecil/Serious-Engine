@@ -63,29 +63,37 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(DEBUG TRUE)
 endif()
 
-# [Cecil] Get the current working branch 
-execute_process(
-  COMMAND git rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE SE1_CURRENT_BRANCH_NAME
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+# [Cecil] Dummy values
+if(SE1_DUMMY_BUILD_INFO)
+  add_definitions("-DSE1_CURRENT_BRANCH_NAME=\"main\"")
+  add_definitions("-DSE1_CURRENT_COMMIT_HASH=\"0000000000000000000000000000000000000000\"")
+  add_definitions("-DSE1_BUILD_DATETIME=\"1970-01-01T00:00:00\"")
 
-# [Cecil] Get the latest commit hash
-execute_process(
-  COMMAND git rev-parse HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE SE1_CURRENT_COMMIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+else()
+  # [Cecil] Get the current working branch 
+  execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE SE1_CURRENT_BRANCH_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 
-# [Cecil] Get the current date and time
-string(TIMESTAMP SE1_BUILD_DATETIME "%Y-%m-%dT%H:%M:%S" UTC)
+  # [Cecil] Get the latest commit hash
+  execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE SE1_CURRENT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 
-# [Cecil] Add preprocessor definitions
-add_definitions("-DSE1_CURRENT_BRANCH_NAME=\"${SE1_CURRENT_BRANCH_NAME}\"")
-add_definitions("-DSE1_CURRENT_COMMIT_HASH=\"${SE1_CURRENT_COMMIT_HASH}\"")
-add_definitions("-DSE1_BUILD_DATETIME=\"${SE1_BUILD_DATETIME}\"")
+  # [Cecil] Get the current date and time
+  string(TIMESTAMP SE1_BUILD_DATETIME "%Y-%m-%dT%H:%M:%S" UTC)
+
+  # [Cecil] Add preprocessor definitions
+  add_definitions("-DSE1_CURRENT_BRANCH_NAME=\"${SE1_CURRENT_BRANCH_NAME}\"")
+  add_definitions("-DSE1_CURRENT_COMMIT_HASH=\"${SE1_CURRENT_COMMIT_HASH}\"")
+  add_definitions("-DSE1_BUILD_DATETIME=\"${SE1_BUILD_DATETIME}\"")
+endif()
 
 # Set compiler-specific options
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
