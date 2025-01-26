@@ -334,7 +334,6 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   #endif // SE1_WIN
 
     tm_llCPUSpeedHZ = GetCPUSpeedHz();
-    tm_llPerformanceCounterFrequency = tm_llCPUSpeedHZ;
 
     // measure profiling errors and set epsilon corrections
     CProfileForm::CalibrateProfilingTimers();

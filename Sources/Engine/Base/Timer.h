@@ -73,7 +73,6 @@ class ENGINE_API CTimer {
 // implementation:
 public:
 
-  SQUAD tm_llPerformanceCounterFrequency; // frequency of Win32 performance counter
   SQUAD tm_llCPUSpeedHZ;  // CPU speed in HZ
 
   CTimerValue tm_tvLastTimeOnTime;  // last time when timer was on time
