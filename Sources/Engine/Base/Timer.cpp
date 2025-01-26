@@ -174,63 +174,129 @@ void __stdcall CTimer_TimerFunc(UINT uID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR
 #endif // SE1_PREFER_SDL
 #endif // !SE1_SINGLE_THREAD
 
+// [Cecil] Get CPU speed using platform-specific methods
+static BOOL GetCPUSpeedFromOS(SQUAD &llSpeedHz) {
+#if SE1_WIN
+  // Get CPU speed from the Windows registry
+  ULONG ulSpeedReg = 0;
+
+  if (REG_GetLong("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz", ulSpeedReg)) {
+    llSpeedHz = (SQUAD)ulSpeedReg * 1000000;
+    return TRUE;
+  }
+
+  llSpeedHz = 0;
+  return FALSE;
+
+#elif SE1_UNIX
+  // Determine CPU speed on Unix
+  FILE *fileCPU = fopen("/proc/cpuinfo", "rb");
+
+  if (fileCPU == NULL) {
+    CPrintF(TRANS("Couldn't open '/proc/cpuinfo' for reading:\n%s"), strerror(errno));
+    return FALSE;
+  }
+
+  char *pBuffer = (char *)AllocMemory(10240);
+
+  if (pBuffer != NULL) {
+    fread(pBuffer, 10240, 1, fileCPU);
+    char *pMHz = strstr(pBuffer, "cpu MHz");
+
+    if (pMHz != NULL) {
+      pMHz = strchr(pMHz, ':');
+
+      if (pMHz != NULL) {
+        do {
+          pMHz++;
+        } while (isspace(static_cast<UBYTE>(*pMHz)));
+
+        llSpeedHz = (SQUAD)atof(pMHz) * 1000000;
+      }
+    }
+
+    FreeMemory(pBuffer);
+  }
+
+  fclose(fileCPU);
+
+  return (llSpeedHz != 0);
+
+#else
+  ASSERTALWAYS("Implement CPU speed determination for this platform!");
+  llSpeedHz = 0;
+  return FALSE;
+#endif
+};
+
 #pragma inline_depth()
 
 // Get processor speed in Hertz
 static SQUAD GetCPUSpeedHz(void)
 {
-#if SE1_WIN
+  // [Cecil] NOTE: When measuring CPU speed manually with the code below, the value is always
+  // going to be ever-so-slightly different compared to any other time, which is inconsistent.
+  // So, I decided to just rely on the OS first and do manual measurements second as a fallback.
+  SQUAD llPlatformHz;
+  if (GetCPUSpeedFromOS(llPlatformHz)) return llPlatformHz;
+
+  // [Cecil] Proceed with a manual measurement of the CPU speed if it couldn't be read from the OS
+  CPrintF(TRANS("  CPU speed not found in registry, using calculated value\n\n"));
+
   #define MAX_MEASURE_TRIES 5
-  static INDEX _aiTries[MAX_MEASURE_TRIES];
+  static SQUAD _aTries[MAX_MEASURE_TRIES];
 
-  // get the frequency of the 'high' precision timer
-  SQUAD llTimerFrequency;
-  BOOL bPerformanceCounterPresent = QueryPerformanceFrequency((LARGE_INTEGER*)&llTimerFrequency);
-  // fail if the performance counter is not available on this system
-  if( !bPerformanceCounterPresent) {
-    CPrintF( TRANS("PerformanceTimer is not available!\n"));
-    return 1;
-  }
+  // [Cecil] SDL: Get precision timer frequency
+  const SQUAD llTimerFrequency = SDL_GetPerformanceFrequency();
 
-  INDEX iSpeed, iTry;
-  INDEX ctTotalFaults=0;
+  INDEX iTry;
   SQUAD llTimeLast, llTimeNow;
   SQUAD llCPUBefore, llCPUAfter; 
   SQUAD llTimeBefore, llTimeAfter;
-  SQUAD llSpeedMeasured;
 
   // try to measure 10 times
-  INDEX iSet=0;
-  for( ; iSet<10; iSet++)
-  { // one time has several tries
-    for( iTry=0; iTry<MAX_MEASURE_TRIES; iTry++)
-    { // wait the state change on the timer
-      QueryPerformanceCounter((LARGE_INTEGER*)&llTimeNow);
+  INDEX iSet = 0;
+
+  for (; iSet < 10; iSet++)
+  {
+    // one time has several tries
+    for (iTry = 0; iTry < MAX_MEASURE_TRIES; iTry++)
+    {
+      // wait the state change on the timer
+      llTimeNow = SDL_GetPerformanceCounter(); // [Cecil] SDL
+
       do {
         llTimeLast = llTimeNow;
-        QueryPerformanceCounter((LARGE_INTEGER*)&llTimeNow);
+        llTimeNow = SDL_GetPerformanceCounter(); // [Cecil] SDL
       } while( llTimeLast==llTimeNow);
+
       // wait for some time, and count the CPU clocks passed
       llCPUBefore  = ReadTSC();
       llTimeBefore = llTimeNow;
-      llTimeAfter  = llTimeNow + llTimerFrequency/4;
+      llTimeAfter  = llTimeNow + llTimerFrequency / 4;
+
       do {
-        QueryPerformanceCounter((LARGE_INTEGER*)&llTimeNow);
-      } while( llTimeNow<llTimeAfter );
+        llTimeNow = SDL_GetPerformanceCounter(); // [Cecil] SDL
+      } while (llTimeNow < llTimeAfter);
+
       llCPUAfter = ReadTSC();
+
       // calculate the CPU clock frequency from gathered data
-      llSpeedMeasured = (llCPUAfter-llCPUBefore)*llTimerFrequency / (llTimeNow-llTimeBefore);
-      _aiTries[iTry]  = llSpeedMeasured/1000000;
+      _aTries[iTry] = (llCPUAfter - llCPUBefore) * llTimerFrequency / (llTimeNow - llTimeBefore);
     }
+
     // see if we had good measurement
     INDEX ctFaults = 0;
-    iSpeed = _aiTries[0];
-    const INDEX iTolerance = iSpeed *1/100; // %1 tolerance should be enough
-    for( iTry=1; iTry<MAX_MEASURE_TRIES; iTry++) {
-      if( abs(iSpeed-_aiTries[iTry]) > iTolerance) ctFaults++;
+    SQUAD llSpeed = _aTries[0];
+    const SQUAD llTolerance = llSpeed / 100; // 1% tolerance should be enough
+
+    for (iTry = 1; iTry < MAX_MEASURE_TRIES; iTry++) {
+      if (Abs(llSpeed - _aTries[iTry]) > llTolerance) ctFaults++;
     }
+
     // done if no faults
-    if( ctFaults==0) break;
+    if (ctFaults == 0) break;
+
     _pTimer->Suspend(1000);
   }
 
@@ -242,69 +308,9 @@ static SQUAD GetCPUSpeedHz(void)
     // if this failed, the speed will be read from registry (only happens on Win2k)
   }
 
-  // keep readout speed and read speed from registry
-  const SLONG slSpeedRead = _aiTries[0];
-  SLONG slSpeedReg = 0;
-  BOOL bFoundInReg = REG_GetLong("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz", (ULONG&)slSpeedReg);
-
-  // if not found in registry
-  if( !bFoundInReg) {
-    // use measured
-    CPrintF(TRANS("  CPU speed not found in registry, using calculated value\n\n"));
-    return (SQUAD)slSpeedRead*1000000;
-  // if found in registry
-  } else {
-    // if different than measured
-    const INDEX iTolerance = slSpeedRead *1/100; // %1 tolerance should be enough
-    if( abs(slSpeedRead-slSpeedReg) > iTolerance) {
-      // report warning and use registry value
-      CPrintF(TRANS("  WARNING: calculated CPU speed different than stored in registry!\n\n"));
-      return (SQUAD)slSpeedReg*1000000;
-    }
-    // use measured value
-    return (SQUAD)slSpeedRead*1000000;
-  }
-
-#else
-  // [Cecil] Determine CPU speed on Unix
-  FILE *fileCPU = fopen("/proc/cpuinfo", "rb");
-
-  if (fileCPU == NULL) {
-    FatalError(TRANS("Couldn't open '/proc/cpuinfo' for reading:\n%s"), strerror(errno));
-  }
-
-  SQUAD llSpeedMHz = 0;
-  char *pBuffer = (char *)AllocMemory(10240);
-
-  if (pBuffer != NULL) {
-    fread(pBuffer, 10240, 1, fileCPU);
-    char *strMHz = strstr(pBuffer, "cpu MHz");
-
-    if (strMHz != NULL) {
-      strMHz = strchr(strMHz, ':');
-
-      if (strMHz != NULL) {
-        do {
-          strMHz++;
-        } while (*strMHz == '\t' || *strMHz == ' ');
-
-        llSpeedMHz = (SQUAD)atof(strMHz);
-      }
-    }
-
-    FreeMemory(pBuffer);
-  }
-
-  fclose(fileCPU);
-
-  if (llSpeedMHz == 0) {
-    FatalError(TRANS("Couldn't determine CPU speed!"));
-  }
-
-  return llSpeedMHz * (SQUAD)1000000;
-#endif // SE1_WIN
-}
-
+  // [Cecil] Simply return the measured value
+  return _aTries[0];
+};
 
 /*
  * Constructor.
