@@ -385,7 +385,7 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   SE_InitEngine(se1setup);
 
   // [Cecil] Determine adjustable gamma
-  SE_DetermineGamma(_hwndMain);
+  SE_DetermineGamma();
 
   // [Cecil] Get screen resolution
   _vpixScreenRes = _pGfx->GetMonitorResolution();

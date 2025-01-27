@@ -1992,9 +1992,9 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
       if (GetCurrentAPI() == GAT_OGL) {
         CTempDC tdc(pvp->vp_hWnd);
 
-      #if SE1_PREFER_SDL
-        SDL_SetWindowGammaRamp(tdc.hdc, _auwGammaTable[0], _auwGammaTable[1], _auwGammaTable[2]);
-      #else
+        // [Cecil] FIXME: Since SDL3 doesn't do this anymore, this whole gamma thing for the monitor needs
+        // to be replaced with post-processing shaders for game windows, if this feature is needed at all
+      #if !SE1_PREFER_SDL
         SetDeviceGammaRamp(tdc.hdc, &_auwGammaTable[0][0]);
       #endif
       } 

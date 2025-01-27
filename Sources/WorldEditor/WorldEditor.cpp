@@ -533,7 +533,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   SE_UpdateWindowHandle( m_pMainWnd->m_hWnd);
 
   // [Cecil] Determine adjustable gamma
-  SE_DetermineGamma(m_pMainWnd->m_hWnd);
+  SE_DetermineGamma();
 
   // Enable drag/drop open
 	m_pMainWnd->DragAcceptFiles();
