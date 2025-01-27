@@ -238,7 +238,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">
@@ -290,7 +290,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">
@@ -341,7 +341,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">
@@ -391,7 +391,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">
@@ -446,7 +446,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">
@@ -500,7 +500,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">
@@ -553,7 +553,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">
@@ -605,7 +605,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     </PreBuildEvent>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(SDLLibPath)SDL2.dll" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(GLEWBinPath)glew32.dll" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -10,15 +10,14 @@
 
     <DX8InclPath>$(SolutionDir)..\Tools.Win32\Libraries\DX8SDK\Include\</DX8InclPath>
     <DX8LibPath>$(SolutionDir)..\Tools.Win32\Libraries\DX8SDK\Lib\</DX8LibPath>
-    <SDLInclPath>$(SolutionDir)ThirdParty\SDL2\include\</SDLInclPath>
-    <SDLLibPath>$(SolutionDir)ThirdParty\SDL2\lib\$(SE1Platform)\</SDLLibPath>
+    <SDLInclPath>$(SolutionDir)ThirdParty\SDL\include\</SDLInclPath>
     <GLEWInclPath>$(SolutionDir)ThirdParty\glew\include\GL\</GLEWInclPath>
     <GLEWLibPath>$(SolutionDir)ThirdParty\glew\lib\Release\$(PlatformName)\</GLEWLibPath>
     <GLEWBinPath>$(SolutionDir)ThirdParty\glew\bin\Release\$(PlatformName)\</GLEWBinPath>
 
     <SE1Exe>$(BinDir);$(SolutionDir)..\Tools.Win32;</SE1Exe>
     <SE1Incl>$(SolutionDir);$(SolutionDir)ThirdParty\;$(ProjectDir);$(DX8InclPath);$(SDLInclPath);$(GLEWInclPath);</SE1Incl>
-    <SE1Libs>$(BinDir);$(DX8LibPath);$(SDLLibPath);$(GLEWLibPath);</SE1Libs>
+    <SE1Libs>$(BinDir);$(DX8LibPath);$(GLEWLibPath);</SE1Libs>
 
     <SE1GenericPreproc>SE1_INCLUDE_CURRENTCOMMITHASH;DIRECT3D_VERSION=0x0800;</SE1GenericPreproc>
   </PropertyGroup>

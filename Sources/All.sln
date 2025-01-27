@@ -23,6 +23,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcx
 	ProjectSection(ProjectDependencies) = postProject
 		{9187FA7C-47D1-416A-9066-8B214753A249} = {9187FA7C-47D1-416A-9066-8B214753A249}
 		{1F46FD81-1A15-7E2C-7C68-84AB43BC0B05} = {1F46FD81-1A15-7E2C-7C68-84AB43BC0B05}
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68} = {81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineGUI", "EngineGUI\EngineGUI.vcxproj", "{870758F3-5C2F-D196-2A89-CC336EBE7779}"
@@ -114,6 +115,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3", "ThirdParty\SDL-Win\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -459,6 +462,22 @@ Global
 		{9187FA7C-47D1-416A-9066-8B214753A249}.Static-Release|x64.Build.0 = Static-Release|x64
 		{9187FA7C-47D1-416A-9066-8B214753A249}.Static-Release|x86.ActiveCfg = Static-Release|Win32
 		{9187FA7C-47D1-416A-9066-8B214753A249}.Static-Release|x86.Build.0 = Static-Release|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Debug|x64.ActiveCfg = Dynamic-Debug|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Debug|x64.Build.0 = Dynamic-Debug|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Debug|x86.ActiveCfg = Dynamic-Debug|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Debug|x86.Build.0 = Dynamic-Debug|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Release|x64.ActiveCfg = Dynamic-Release|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Release|x64.Build.0 = Dynamic-Release|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Release|x86.ActiveCfg = Dynamic-Release|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Dynamic-Release|x86.Build.0 = Dynamic-Release|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Debug|x64.ActiveCfg = Static-Debug|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Debug|x64.Build.0 = Static-Debug|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Debug|x86.ActiveCfg = Static-Debug|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Debug|x86.Build.0 = Static-Debug|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Release|x64.ActiveCfg = Static-Release|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Release|x64.Build.0 = Static-Release|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Release|x86.ActiveCfg = Static-Release|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Static-Release|x86.Build.0 = Static-Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -485,6 +504,7 @@ Global
 		{CEBDE98B-A6AA-46E6-BC79-FAAF823DB9EC} = {AE653AC4-FE7F-4892-B46A-F663B812FA97}
 		{3A214E06-B95E-4D61-A291-1F8DF2EC10FD} = {AE653AC4-FE7F-4892-B46A-F663B812FA97}
 		{9187FA7C-47D1-416A-9066-8B214753A249} = {AE653AC4-FE7F-4892-B46A-F663B812FA97}
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68} = {AE653AC4-FE7F-4892-B46A-F663B812FA97}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E80FFC72-AAA8-4B42-8A18-A4335C15650D}
