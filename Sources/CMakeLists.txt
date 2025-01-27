@@ -16,8 +16,8 @@ if(SE1_BUILD_X86)
 endif()
 
 # Use system libraries by default
-option(USE_SYSTEM_SDL2 "Use systems SDL2 development files" ON)
-option(USE_SYSTEM_ZLIB "Use systems zlib development files" ON)
+option(USE_SYSTEM_SDL3 "Use systems SDL3 development files" OFF)
+option(USE_SYSTEM_ZLIB "Use systems zlib development files" OFF)
 
 option(USE_CCACHE "Set to ON to use ccache if present in the system" ${USE_CCACHE})
 
@@ -49,6 +49,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/ThirdParty"
   "${CMAKE_SOURCE_DIR}/ThirdParty/libogg/include"
   "${CMAKE_SOURCE_DIR}/ThirdParty/libvorbis/include"
+  "${CMAKE_SOURCE_DIR}/ThirdParty/SDL/include"
 )
 
 # Build ECC from source if there isn't a prebuilt one specified on the command line
