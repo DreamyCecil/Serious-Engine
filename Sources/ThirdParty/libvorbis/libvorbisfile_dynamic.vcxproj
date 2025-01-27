@@ -203,7 +203,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -232,7 +232,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -264,6 +264,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <CallingConvention>Cdecl</CallingConvention>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -295,6 +296,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <CallingConvention>Cdecl</CallingConvention>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -319,6 +321,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -346,6 +349,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -375,7 +379,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -405,7 +409,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libogg.lib;libvorbis.lib;%(AdditionalDependencies)</AdditionalDependencies>
