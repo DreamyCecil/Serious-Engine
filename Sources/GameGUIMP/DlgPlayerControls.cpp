@@ -363,7 +363,7 @@ void CDlgPlayerControls::ActivatePressKey(const char *strFirstOrSecond)
         || (iButton==KID_MOUSE3 && (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0))
       {
         // disable direct input
-        _pInput->DisableInput();
+        _pInput->DisableInput(m_hWnd);
         // if new button is mounted allready, set owner's action mounting to "key none"
         FOREACHINLIST( CButtonAction, ba_lnNode, m_ctrlControls.ctrl_lhButtonActions, itButtonAction)
         {

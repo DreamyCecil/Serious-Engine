@@ -44,7 +44,7 @@ void UpdateInputEnabledState(CViewPort *pvp)
   // if should be turned off
   if (!bShouldBeEnabled && _bInputEnabled) {
     // disable it
-    _pInput->DisableInput();
+    _pInput->DisableInput(pvp);
 
     // remember new state
     _bInputEnabled = FALSE;
@@ -296,7 +296,7 @@ void CGame::QuickTest(const CTFileName &fnMapName,
     cmp_ppenPlayer = NULL;
   }
 
-  _pInput->DisableInput();
+  _pInput->DisableInput(pvp);
   StopGame();
   DisableLoadingHook();
 }

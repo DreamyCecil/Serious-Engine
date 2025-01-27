@@ -223,7 +223,7 @@ void UpdateInputEnabledState(void)
   // if should be turned off
   if( (!bShouldBeEnabled && _bInputEnabled) || _bReconsiderInput) {
     // disable it and remember new state
-    _pInput->DisableInput();
+    _pInput->DisableInput(_hwndMain);
     _bInputEnabled = FALSE;
   }
   // if should be turned on
@@ -953,7 +953,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
               } else
             #endif
               {
-                _pInput->DisableInput();
+                _pInput->DisableInput(_hwndMain);
               }
             }
           } break;
@@ -1207,7 +1207,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
 
   } // end of main application loop
 
-  _pInput->DisableInput();
+  _pInput->DisableInput(_hwndMain);
   _pGame->StopGame();
 
 #if SE1_WIN

@@ -504,13 +504,6 @@ void CInput::Initialize( void )
 /*
  * Enable direct input
  */
-
-void CInput::EnableInput(CViewPort *pvp)
-{
-  EnableInput(pvp->vp_hWnd);
-}
-
-
 void CInput::EnableInput(OS::Window hwnd)
 {
   // skip if already enabled
@@ -602,11 +595,8 @@ void CInput::EnableInput(OS::Window hwnd)
   inp_bPollJoysticks = FALSE;
 }
 
-
-/*
- * Disable direct input
- */
-void CInput::DisableInput( void)
+// [Cecil] Disable input inside one window instead of generally
+void CInput::DisableInput(OS::Window hwnd)
 {
   // skip if allready disabled
   if( !inp_bInputEnabled) return;

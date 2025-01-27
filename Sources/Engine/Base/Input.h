@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Base/CTString.h>
+#include <Engine/Graphics/ViewPort.h>
 #include <Engine/Templates/StaticArray.h>
 
 // Maximum amount of supported game controllers
@@ -112,17 +113,24 @@ public:
 
   // Sets name for every key
   void SetKeyNames(void);
+
   // Initializes all available devices and enumerates available controls
   void Initialize(void);
-  // Enable input inside one viewport, or window
-  void EnableInput(CViewPort *pvp);
-  void EnableInput(OS::Window hWnd);
-  // Disable input
-  void DisableInput(void);
+
+  // Enable input inside one window
+  void EnableInput(OS::Window hwnd);
+  __forceinline void EnableInput(CViewPort *pvp) { EnableInput(pvp->vp_hWnd); };
+
+  // [Cecil] Disable input inside one window instead of generally
+  void DisableInput(OS::Window hwnd);
+  __forceinline void DisableInput(CViewPort *pvp) { DisableInput(pvp->vp_hWnd); };
+
   // Test input activity
   BOOL IsInputEnabled( void) const { return inp_bInputEnabled; };
+
   // Scan states of all available input sources
   void GetInput(BOOL bPreScan);
+
   // Clear all input states (keys become not pressed, axes are reset to zero)
   void ClearInput(void);
 
