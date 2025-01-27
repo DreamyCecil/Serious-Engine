@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/StaticArray.cpp>
 
+#if SE1_UNIX
+  #include <x86intrin.h>
+#endif
+
 static inline SQUAD ReadTSC_profile(void)
 {
 // [Cecil] Prioritize old compiler

@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #if SE1_UNIX
   #include <chrono>
   #include <thread>
+  #include <x86intrin.h>
 #endif
 
 // Read the Pentium TimeStampCounter
