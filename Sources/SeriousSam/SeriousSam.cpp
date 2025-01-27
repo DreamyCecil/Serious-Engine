@@ -501,6 +501,10 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   LoadLevelsList();
   LoadDemosList();
 
+  // [Cecil] NOTE: Needs to be hidden *before* creating a game window, otherwise it breaks under Linux somehow
+  extern void HideSplashScreen(void);
+  HideSplashScreen();
+
   // apply application mode
   StartNewMode( (GfxAPIType)sam_iGfxAPI, sam_iDisplayAdapter, sam_iScreenSizeI, sam_iScreenSizeJ,
                 (enum DisplayDepth)sam_iDisplayDepth, sam_iWindowMode);
@@ -510,9 +514,6 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
     _iDisplayModeChangeFlag = 0;
     sam_bFirstStarted = FALSE;
   }
-
-  extern void HideSplashScreen(void);
-  HideSplashScreen();
 
   if (cmd_strPassword!="") {
     _pShell->SetString("net_strConnectPassword", cmd_strPassword);
