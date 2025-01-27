@@ -17,11 +17,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "OS.h"
 
-#if SE1_WIN
-  #include <SDL2/include/SDL_syswm.h>
-
-#else
+#if !SE1_WIN
   // Unique types for some Windows messages
+  SDL_EventType WM_SYSCOMMAND;
   SDL_EventType WM_SYSKEYDOWN;
   SDL_EventType WM_SYSKEYUP;
   SDL_EventType WM_LBUTTONDOWN;
@@ -77,11 +75,11 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
   GameController_t &ctrl = _pInput->inp_aControllers[iCtrl];
   if (!ctrl.IsConnected()) return FALSE;
 
-  static BOOL _abButtonStates[MAX_JOYSTICKS * SDL_CONTROLLER_BUTTON_MAX] = { 0 };
-  const INDEX iFirstButton = iCtrl * SDL_CONTROLLER_BUTTON_MAX;
+  static BOOL _abButtonStates[MAX_JOYSTICKS * SDL_GAMEPAD_BUTTON_COUNT] = { 0 };
+  const INDEX iFirstButton = iCtrl * SDL_GAMEPAD_BUTTON_COUNT;
 
-  for (ULONG eButton = 0; eButton < SDL_CONTROLLER_BUTTON_MAX; eButton++) {
-    const BOOL bHolding = !!SDL_GameControllerGetButton(ctrl.handle, (SDL_GameControllerButton)eButton);
+  for (ULONG eButton = 0; eButton < SDL_GAMEPAD_BUTTON_COUNT; eButton++) {
+    const BOOL bHolding = !!SDL_GetGamepadButton(ctrl.handle, (SDL_GamepadButton)eButton);
 
     const BOOL bJustPressed  = (bHolding && !_abButtonStates[iFirstButton + eButton]);
     const BOOL bJustReleased = (!bHolding && _abButtonStates[iFirstButton + eButton]);
@@ -105,13 +103,13 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
     }
   }
 
-  static BOOL _abAxisStates[MAX_JOYSTICKS * SDL_CONTROLLER_AXIS_MAX] = { 0 };
-  const INDEX iFirstAxis = iCtrl * SDL_CONTROLLER_AXIS_MAX;
+  static BOOL _abAxisStates[MAX_JOYSTICKS * SDL_GAMEPAD_AXIS_COUNT] = { 0 };
+  const INDEX iFirstAxis = iCtrl * SDL_GAMEPAD_AXIS_COUNT;
 
   // [Cecil] NOTE: This code only checks whether some axis has been moved past 50% in either direction
   // in order to determine when it has been significantly moved and reset
-  for (ULONG eAxis = 0; eAxis < SDL_CONTROLLER_AXIS_MAX; eAxis++) {
-    const SLONG slMotion = SDL_GameControllerGetAxis(ctrl.handle, (SDL_GameControllerAxis)eAxis);
+  for (ULONG eAxis = 0; eAxis < SDL_GAMEPAD_AXIS_COUNT; eAxis++) {
+    const SLONG slMotion = SDL_GetGamepadAxis(ctrl.handle, (SDL_GamepadAxis)eAxis);
 
     // Holding the axis past the half of the max value in either direction
     const BOOL bHolding = Abs(slMotion) > SDL_JOYSTICK_AXIS_MAX / 2;
@@ -149,34 +147,34 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
 
     switch (sdlevent.type) {
       // Key events
-      case SDL_TEXTINPUT: {
+      case SDL_EVENT_TEXT_INPUT: {
         event.type = WM_CHAR;
         event.key.code = sdlevent.text.text[0]; // [Cecil] FIXME: Use all characters from the array
       } return TRUE;
 
-      case SDL_KEYDOWN: {
-        event.type = (sdlevent.key.keysym.mod & KMOD_ALT) ? WM_SYSKEYDOWN : WM_KEYDOWN;
-        event.key.code = sdlevent.key.keysym.sym;
+      case SDL_EVENT_KEY_DOWN: {
+        event.type = (sdlevent.key.mod & SDL_KMOD_ALT) ? WM_SYSKEYDOWN : WM_KEYDOWN;
+        event.key.code = sdlevent.key.key;
       } return TRUE;
 
-      case SDL_KEYUP: {
-        event.type = (sdlevent.key.keysym.mod & KMOD_ALT) ? WM_SYSKEYUP : WM_KEYUP;
-        event.key.code = sdlevent.key.keysym.sym;
+      case SDL_EVENT_KEY_UP: {
+        event.type = (sdlevent.key.mod & SDL_KMOD_ALT) ? WM_SYSKEYUP : WM_KEYUP;
+        event.key.code = sdlevent.key.key;
       } return TRUE;
 
       // Mouse events
-      case SDL_MOUSEMOTION: {
+      case SDL_EVENT_MOUSE_MOTION: {
         event.type = WM_MOUSEMOVE;
         event.mouse.x = sdlevent.motion.x;
         event.mouse.y = sdlevent.motion.y;
       } return TRUE;
 
-      case SDL_MOUSEWHEEL: {
+      case SDL_EVENT_MOUSE_WHEEL: {
         event.type = WM_MOUSEWHEEL;
         event.mouse.y = sdlevent.wheel.y * MOUSEWHEEL_SCROLL_INTERVAL;
       } return TRUE;
 
-      case SDL_MOUSEBUTTONDOWN: {
+      case SDL_EVENT_MOUSE_BUTTON_DOWN: {
         switch (sdlevent.button.button) {
           case SDL_BUTTON_LEFT:   event.type = WM_LBUTTONDOWN; break;
           case SDL_BUTTON_RIGHT:  event.type = WM_RBUTTONDOWN; break;
@@ -187,10 +185,10 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
         }
 
         event.mouse.button = sdlevent.button.button;
-        event.mouse.pressed = sdlevent.button.state;
+        event.mouse.pressed = sdlevent.button.down;
       } return TRUE;
 
-      case SDL_MOUSEBUTTONUP: {
+      case SDL_EVENT_MOUSE_BUTTON_UP: {
         switch (sdlevent.button.button) {
           case SDL_BUTTON_LEFT:   event.type = WM_LBUTTONUP; break;
           case SDL_BUTTON_RIGHT:  event.type = WM_RBUTTONUP; break;
@@ -201,39 +199,40 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
         }
 
         event.mouse.button = sdlevent.button.button;
-        event.mouse.pressed = sdlevent.button.state;
+        event.mouse.pressed = sdlevent.button.down;
       } return TRUE;
 
       // Window events
-      case SDL_WINDOWEVENT: {
-        event.type = WM_SYSCOMMAND;
-        event.window.event = sdlevent.window.event;
-      } return TRUE;
-
-      case SDL_QUIT: {
+      case SDL_EVENT_QUIT: {
         event.type = WM_QUIT;
       } return TRUE;
 
       // Controller input
-      case SDL_CONTROLLERDEVICEADDED: {
-        _pInput->OpenGameController(sdlevent.cdevice.which);
+      case SDL_EVENT_GAMEPAD_ADDED: {
+        _pInput->OpenGameController(sdlevent.gdevice.which);
       } return TRUE;
 
-      case SDL_CONTROLLERDEVICEREMOVED: {
-        _pInput->CloseGameController(sdlevent.cdevice.which);
+      case SDL_EVENT_GAMEPAD_REMOVED: {
+        _pInput->CloseGameController(sdlevent.gdevice.which);
       } return TRUE;
 
-      case SDL_CONTROLLERBUTTONDOWN:
-      case SDL_CONTROLLERBUTTONUP:
-      case SDL_CONTROLLERAXISMOTION: {
-        INDEX iSlot = _pInput->GetControllerSlotForDevice(sdlevent.cdevice.which);
+      case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+      case SDL_EVENT_GAMEPAD_BUTTON_UP:
+      case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
+        INDEX iSlot = _pInput->GetControllerSlotForDevice(sdlevent.gdevice.which);
 
         if (iSlot != -1 && SetupControllerEvent(iSlot, event)) {
           return TRUE;
         }
       } break;
 
-      default: break;
+      default: {
+        // Replacement for SDL_WINDOWEVENT from SDL2
+        if (sdlevent.type >= SDL_EVENT_WINDOW_FIRST && sdlevent.type <= SDL_EVENT_WINDOW_LAST) {
+          event.type = WM_SYSCOMMAND;
+          event.window.event = sdlevent.type;
+        }
+      } break;
     }
   }
 
@@ -355,31 +354,31 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
 
       case WM_SYSCOMMAND: {
         switch (msg.wParam & ~0x0F) {
-          case SC_MINIMIZE: event.window.event = SDL_WINDOWEVENT_MINIMIZED; break;
-          case SC_MAXIMIZE: event.window.event = SDL_WINDOWEVENT_MAXIMIZED; break;
-          case SC_RESTORE:  event.window.event = SDL_WINDOWEVENT_RESTORED; break;
-          default: event.window.event = SDL_WINDOWEVENT_NONE; // Unknown
+          case SC_MINIMIZE: event.window.event = SDL_EVENT_WINDOW_MINIMIZED; break;
+          case SC_MAXIMIZE: event.window.event = SDL_EVENT_WINDOW_MAXIMIZED; break;
+          case SC_RESTORE:  event.window.event = SDL_EVENT_WINDOW_RESTORED; break;
+          default: event.window.event = 0; // Unknown
         }
       } return TRUE;
 
       case WM_PAINT: {
         event.type = WM_SYSCOMMAND;
-        event.window.event = SDL_WINDOWEVENT_EXPOSED;
+        event.window.event = SDL_EVENT_WINDOW_EXPOSED;
       } return TRUE;
 
       case WM_CANCELMODE: {
         event.type = WM_SYSCOMMAND;
-        event.window.event = SDL_WINDOWEVENT_FOCUS_LOST;
+        event.window.event = SDL_EVENT_WINDOW_FOCUS_LOST;
       } return TRUE;
 
       case WM_KILLFOCUS: {
         event.type = WM_SYSCOMMAND;
-        event.window.event = SDL_WINDOWEVENT_FOCUS_LOST;
+        event.window.event = SDL_EVENT_WINDOW_FOCUS_LOST;
       } return TRUE;
 
       case WM_SETFOCUS: {
         event.type = WM_SYSCOMMAND;
-        event.window.event = SDL_WINDOWEVENT_FOCUS_GAINED;
+        event.window.event = SDL_EVENT_WINDOW_FOCUS_GAINED;
       } return TRUE;
 
       case WM_ACTIVATE: {
@@ -387,12 +386,12 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
         {
           case WA_ACTIVE: case WA_CLICKACTIVE: {
             event.type = WM_SYSCOMMAND;
-            event.window.event = SDL_WINDOWEVENT_ENTER;
+            event.window.event = SDL_EVENT_WINDOW_MOUSE_ENTER;
           } return TRUE;
 
           case WA_INACTIVE: {
             event.type = WM_SYSCOMMAND;
-            event.window.event = SDL_WINDOWEVENT_LEAVE;
+            event.window.event = SDL_EVENT_WINDOW_MOUSE_LEAVE;
           } return TRUE;
 
           default:
@@ -400,7 +399,7 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
             if (HIWORD(msg.wParam)) {
               // Deactivated
               event.type = WM_SYSCOMMAND;
-              event.window.event = SDL_WINDOWEVENT_LEAVE;
+              event.window.event = SDL_EVENT_WINDOW_MOUSE_LEAVE;
               return TRUE;
             }
         }
@@ -409,10 +408,10 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
       case WM_ACTIVATEAPP: {
         if (msg.wParam) {
           event.type = WM_SYSCOMMAND;
-          event.window.event = SDL_WINDOWEVENT_ENTER;
+          event.window.event = SDL_EVENT_WINDOW_MOUSE_ENTER;
         } else {
           event.type = WM_SYSCOMMAND;
-          event.window.event = SDL_WINDOWEVENT_LEAVE;
+          event.window.event = SDL_EVENT_WINDOW_MOUSE_LEAVE;
         }
       } return TRUE;
 
@@ -436,8 +435,8 @@ BOOL OS::IsIconic(OS::Window hWnd)
 UWORD OS::GetKeyState(ULONG iKey)
 {
 #if SE1_PREFER_SDL
-  const Uint8 *aState = SDL_GetKeyboardState(NULL);
-  SDL_Scancode eScancode = SDL_GetScancodeFromKey(iKey);
+  const bool *aState = SDL_GetKeyboardState(NULL);
+  SDL_Scancode eScancode = SDL_GetScancodeFromKey(iKey, NULL);
 
   return (aState[eScancode] ? 0x8000 : 0x0);
 #else
@@ -445,14 +444,14 @@ UWORD OS::GetKeyState(ULONG iKey)
 #endif
 };
 
-ULONG OS::GetMouseState(int *piX, int *piY, BOOL bRelativeToWindow) {
+ULONG OS::GetMouseState(float *pfX, float *pfY, BOOL bRelativeToWindow) {
   ULONG ulMouse = 0;
 
 #if SE1_PREFER_SDL
   if (bRelativeToWindow) {
-    ulMouse = SDL_GetMouseState(piX, piY);
+    ulMouse = SDL_GetMouseState(pfX, pfY);
   } else {
-    ulMouse = SDL_GetGlobalMouseState(piX, piY);
+    ulMouse = SDL_GetGlobalMouseState(pfX, pfY);
   }
 
 #else
@@ -467,8 +466,8 @@ ULONG OS::GetMouseState(int *piX, int *piY, BOOL bRelativeToWindow) {
     bResult = ::ScreenToClient(GetActiveWindow(), &pt);
   }
 
-  if (piX != NULL) *piX = pt.x;
-  if (piY != NULL) *piY = pt.y;
+  if (pfX != NULL) *pfX = (float)pt.x;
+  if (pfY != NULL) *pfY = (float)pt.y;
 
   // Gather mouse states
   if (::GetKeyState(VK_LBUTTON) & 0x8000) ulMouse |= SDL_BUTTON_LMASK;
@@ -487,7 +486,11 @@ int OS::ShowCursor(BOOL bShow)
   static int ct = 0;
   ct += (bShow) ? 1 : -1;
 
-  SDL_ShowCursor((ct >= 0) ? SDL_TRUE : SDL_FALSE);
+  if (ct >= 0) {
+    SDL_ShowCursor();
+  } else {
+    SDL_HideCursor();
+  }
   return ct;
 
 #else

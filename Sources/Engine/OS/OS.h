@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #else
 
 // Unique types for some Windows messages
+extern SDL_EventType WM_SYSCOMMAND;
 extern SDL_EventType WM_SYSKEYDOWN;
 extern SDL_EventType WM_SYSKEYUP;
 extern SDL_EventType WM_LBUTTONDOWN;
@@ -43,20 +44,19 @@ extern SDL_EventType WM_XBUTTONDOWN;
 extern SDL_EventType WM_XBUTTONUP;
 
 // Redefined Windows messages
-#define WM_NULL       SDL_FIRSTEVENT
-#define WM_CHAR       SDL_TEXTINPUT
-#define WM_KEYDOWN    SDL_KEYDOWN
-#define WM_KEYUP      SDL_KEYUP
-#define WM_MOUSEMOVE  SDL_MOUSEMOTION
-#define WM_MOUSEWHEEL SDL_MOUSEWHEEL
-#define WM_SYSCOMMAND SDL_WINDOWEVENT
-#define WM_QUIT       SDL_QUIT
-#define WM_CLOSE      SDL_QUIT
+#define WM_NULL       SDL_EVENT_FIRST
+#define WM_CHAR       SDL_EVENT_TEXT_INPUT
+#define WM_KEYDOWN    SDL_EVENT_KEY_DOWN
+#define WM_KEYUP      SDL_EVENT_KEY_UP
+#define WM_MOUSEMOVE  SDL_EVENT_MOUSE_MOTION
+#define WM_MOUSEWHEEL SDL_EVENT_MOUSE_WHEEL
+#define WM_QUIT       SDL_EVENT_QUIT
+#define WM_CLOSE      SDL_EVENT_QUIT
 
 // Custom controller events
-#define WM_CTRLAXISMOTION SDL_CONTROLLERAXISMOTION
-#define WM_CTRLBUTTONDOWN SDL_CONTROLLERBUTTONDOWN
-#define WM_CTRLBUTTONUP   SDL_CONTROLLERBUTTONUP
+#define WM_CTRLAXISMOTION SDL_EVENT_GAMEPAD_AXIS_MOTION
+#define WM_CTRLBUTTONDOWN SDL_EVENT_GAMEPAD_BUTTON_DOWN
+#define WM_CTRLBUTTONUP   SDL_EVENT_GAMEPAD_BUTTON_UP
 
 #endif
 
@@ -210,12 +210,12 @@ class ENGINE_API OS {
     // Works just like SDL_GetMouseState() or SDL_GetGlobalMouseState() method depending on bRelativeToWindow state
     // [SE1_PREFER_SDL = 0]
     // Uses GetCursorPos() and ScreenToClient() for the cursor position and GetKeyState() with mouse buttons for
-    // returning SDL masks with pressed mouse buttons (SDL_BUTTON)
-    static ULONG GetMouseState(int *piX, int *piY, BOOL bRelativeToWindow = TRUE);
+    // returning SDL masks with pressed mouse buttons (SDL_BUTTON_MASK)
+    static ULONG GetMouseState(float *pfX, float *pfY, BOOL bRelativeToWindow = TRUE);
 
     // [SE1_PREFER_SDL = 1]
     // Mimics Win32's ShowCursor() functionality: if bShow is TRUE, the display count is incremented, otherwise it's decremented
-    // Uses SDL_ShowCursor() with TRUE or FALSE depending on whether the display count is positive or not
+    // Uses SDL_ShowCursor() or SDL_HideCursor() depending on whether the display count is positive or not
     // [SE1_PREFER_SDL = 0]
     // Works just like Win32's ShowCursor() method
     static int ShowCursor(BOOL bShow);

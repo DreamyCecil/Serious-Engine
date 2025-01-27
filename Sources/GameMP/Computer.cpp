@@ -942,7 +942,7 @@ void CGame::ComputerKeyDown(const OS::SE1Event &event)
   // if escape pressed
   if ((event.type == WM_KEYDOWN && event.key.code == SE1K_ESCAPE)
   // [Cecil] Controller button
-   || (event.type == WM_CTRLBUTTONDOWN && event.ctrl.action == SDL_CONTROLLER_BUTTON_START)) {
+   || (event.type == WM_CTRLBUTTONDOWN && event.ctrl.action == SDL_GAMEPAD_BUTTON_START)) {
     ExitRequested();
     return;
   }
@@ -995,23 +995,23 @@ void CGame::ComputerKeyDown(const OS::SE1Event &event)
   } else if (event.type == WM_CTRLBUTTONDOWN) {
     switch (event.ctrl.action) {
       // Change message types on ABXY
-      case SDL_CONTROLLER_BUTTON_A: _cmtWantedType = CMT_INFORMATION; return;
-      case SDL_CONTROLLER_BUTTON_B: _cmtWantedType = CMT_WEAPONS;     return;
-      case SDL_CONTROLLER_BUTTON_X: _cmtWantedType = CMT_ENEMIES;     return;
-      case SDL_CONTROLLER_BUTTON_Y: _cmtWantedType = CMT_BACKGROUND;  return;
+      case SDL_GAMEPAD_BUTTON_SOUTH: _cmtWantedType = CMT_INFORMATION; return;
+      case SDL_GAMEPAD_BUTTON_EAST:  _cmtWantedType = CMT_WEAPONS;     return;
+      case SDL_GAMEPAD_BUTTON_WEST:  _cmtWantedType = CMT_ENEMIES;     return;
+      case SDL_GAMEPAD_BUTTON_NORTH: _cmtWantedType = CMT_BACKGROUND;  return;
 
       // Statistics on Back
-      case SDL_CONTROLLER_BUTTON_BACK: _cmtWantedType = CMT_STATISTICS;  return;
+      case SDL_GAMEPAD_BUTTON_BACK: _cmtWantedType = CMT_STATISTICS;  return;
 
       // Left/Right to switch between messages
-      case SDL_CONTROLLER_BUTTON_DPAD_LEFT:  PrevMessage(); return;
-      case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: NextMessage(); return;
+      case SDL_GAMEPAD_BUTTON_DPAD_LEFT:  PrevMessage(); return;
+      case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: NextMessage(); return;
 
       // Scroll message text
-      case SDL_CONTROLLER_BUTTON_DPAD_UP:       MessageTextUp(1); return;
-      case SDL_CONTROLLER_BUTTON_DPAD_DOWN:     MessageTextDn(1); return;
-      case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:  MessageTextUp(_ctTextLinesOnScreen - 1); return;
-      case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: MessageTextDn(_ctTextLinesOnScreen - 1); return;
+      case SDL_GAMEPAD_BUTTON_DPAD_UP:        MessageTextUp(1); return;
+      case SDL_GAMEPAD_BUTTON_DPAD_DOWN:      MessageTextDn(1); return;
+      case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:  MessageTextUp(_ctTextLinesOnScreen - 1); return;
+      case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: MessageTextDn(_ctTextLinesOnScreen - 1); return;
     }
   }
 

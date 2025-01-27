@@ -234,16 +234,16 @@ static void SE_InitSDL(ULONG ulFlags) {
   if (_bEngineInitializedSDL) return;
 
   // Main initialization (may be basic with 0 flags)
-  ULONG ulNoControllers = ulFlags & ~SDL_INIT_GAMECONTROLLER;
+  ULONG ulNoControllers = ulFlags & ~SDL_INIT_GAMEPAD;
 
-  if (SDL_Init(ulNoControllers) == -1) {
+  if (!SDL_Init(ulNoControllers)) {
     FatalError(TRANS("SDL_Init(0x%X) failed:\n%s"), ulNoControllers, SDL_GetError());
   }
 
   // Optional
-  if (ulFlags & SDL_INIT_GAMECONTROLLER) {
-    if (SDL_Init(SDL_INIT_GAMECONTROLLER) == -1) {
-      CPrintF(TRANS("SDL_Init(SDL_INIT_GAMECONTROLLER) failed:\n%s\n"), SDL_GetError());
+  if (ulFlags & SDL_INIT_GAMEPAD) {
+    if (!SDL_Init(SDL_INIT_GAMEPAD)) {
+      CPrintF(TRANS("SDL_Init(SDL_INIT_GAMEPAD) failed:\n%s\n"), SDL_GetError());
     }
   }
 
@@ -267,12 +267,13 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
 
   // [Cecil] SDL: Initialize for gameplay or for basic stuff
   const BOOL bGameApp = (_SE1Setup.IsAppGame() || _SE1Setup.IsAppEditor());
-  const ULONG ulGameplay = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER;
+  const ULONG ulGameplay = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD;
 
   SE_InitSDL(bGameApp ? ulGameplay : 0);
 
 #if !SE1_WIN
   // [Cecil] Register new SDL events
+  WM_SYSCOMMAND  = (SDL_EventType)SDL_RegisterEvents(1);
   WM_SYSKEYDOWN  = (SDL_EventType)SDL_RegisterEvents(1);
   WM_SYSKEYUP    = (SDL_EventType)SDL_RegisterEvents(1);
   WM_LBUTTONDOWN = (SDL_EventType)SDL_RegisterEvents(1);

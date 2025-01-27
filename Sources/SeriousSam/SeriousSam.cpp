@@ -337,7 +337,7 @@ void RunBrowser(const char *strUrl)
 {
 #if SE1_PREFER_SDL
   // [Cecil] SDL: Open URL in browser
-  if (SDL_OpenURL(strUrl) == -1) {
+  if (!SDL_OpenURL(strUrl)) {
     NOTHING;
   }
 
@@ -747,9 +747,9 @@ void TeleportPlayer(int iPosition)
 static BOOL AnyControllerButton(const OS::SE1Event &event) {
   if (event.type == WM_CTRLBUTTONDOWN) {
     switch (event.ctrl.action) {
-      case SDL_CONTROLLER_BUTTON_A: case SDL_CONTROLLER_BUTTON_B:
-      case SDL_CONTROLLER_BUTTON_X: case SDL_CONTROLLER_BUTTON_Y:
-      case SDL_CONTROLLER_BUTTON_BACK: case SDL_CONTROLLER_BUTTON_GUIDE: case SDL_CONTROLLER_BUTTON_START:
+      case SDL_GAMEPAD_BUTTON_EAST: case SDL_GAMEPAD_BUTTON_SOUTH:
+      case SDL_GAMEPAD_BUTTON_WEST: case SDL_GAMEPAD_BUTTON_NORTH:
+      case SDL_GAMEPAD_BUTTON_BACK: case SDL_GAMEPAD_BUTTON_GUIDE: case SDL_GAMEPAD_BUTTON_START:
         return TRUE;
     }
   }
@@ -871,7 +871,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
 
   // [Cecil] Disable SDL joystick events to handle them manually alongside Windows API
   #if !SE1_PREFER_SDL
-    SDL_JoystickEventState(SDL_IGNORE);
+    SDL_SetJoystickEventsEnabled(false);
   #endif
 
   // initialy, application is running and active, console and menu are off
@@ -893,15 +893,15 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       // [Cecil] Remap controller axes to buttons
       if (event.type == WM_CTRLAXISMOTION) {
         switch (event.ctrl.action) {
-          case SDL_CONTROLLER_AXIS_LEFTX: {
+          case SDL_GAMEPAD_AXIS_LEFTX: {
             event.type = WM_CTRLBUTTONDOWN;
-            event.ctrl.action = (event.ctrl.dir < 0 ? SDL_CONTROLLER_BUTTON_DPAD_LEFT : SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+            event.ctrl.action = (event.ctrl.dir < 0 ? SDL_GAMEPAD_BUTTON_DPAD_LEFT : SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
             event.ctrl.dir = TRUE;
           } break;
 
-          case SDL_CONTROLLER_AXIS_LEFTY: {
+          case SDL_GAMEPAD_AXIS_LEFTY: {
             event.type = WM_CTRLBUTTONDOWN;
-            event.ctrl.action = (event.ctrl.dir < 0 ? SDL_CONTROLLER_BUTTON_DPAD_UP : SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+            event.ctrl.action = (event.ctrl.dir < 0 ? SDL_GAMEPAD_BUTTON_DPAD_UP : SDL_GAMEPAD_BUTTON_DPAD_DOWN);
             event.ctrl.dir = TRUE;
           } break;
         }
@@ -918,7 +918,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       if (event.type == WM_SYSCOMMAND) {
         switch (event.window.event) {
           // Minimize the window
-          case SDL_WINDOWEVENT_MINIMIZED: {
+          case SDL_EVENT_WINDOW_MINIMIZED: {
             if (_bWindowChanging) break;
             _bWindowChanging  = TRUE;
             _bReconsiderInput = TRUE;
@@ -940,8 +940,8 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
 
         #if SE1_PREFER_SDL
           // If application is deactivated or minimized
-          case SDL_WINDOWEVENT_LEAVE:
-          case SDL_WINDOWEVENT_FOCUS_LOST: {
+          case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+          case SDL_EVENT_WINDOW_FOCUS_LOST: {
             // If application is running and in full screen mode
             if (!_bWindowChanging && _bRunning) {
             #if !SE1_PREFER_SDL
@@ -959,17 +959,17 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
           } break;
 
           // If application is activated or maximized
-          case SDL_WINDOWEVENT_ENTER:
-          case SDL_WINDOWEVENT_FOCUS_GAINED: {
+          case SDL_EVENT_WINDOW_MOUSE_ENTER:
+          case SDL_EVENT_WINDOW_FOCUS_GAINED: {
             // Enable input back again if needed
             _bReconsiderInput = TRUE;
           } break;
 
-          case SDL_WINDOWEVENT_CLOSE: break;
+          case SDL_EVENT_WINDOW_CLOSE_REQUESTED: break;
 
         #else
           // Restore the window
-          case SDL_WINDOWEVENT_RESTORED: {
+          case SDL_EVENT_WINDOW_RESTORED: {
             if (_bWindowChanging) break;
             _bWindowChanging  = TRUE;
             _bReconsiderInput = TRUE;
@@ -984,7 +984,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
           } break;
 
           // Maximize the window
-          case SDL_WINDOWEVENT_MAXIMIZED: {
+          case SDL_EVENT_WINDOW_MAXIMIZED: {
             if (_bWindowChanging) break;
             _bWindowChanging  = TRUE;
             _bReconsiderInput = TRUE;
@@ -1171,9 +1171,9 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
 
     // get real cursor position
     if( _pGame->gm_csComputerState!=CS_OFF && _pGame->gm_csComputerState!=CS_ONINBACKGROUND) {
-      int iMouseX, iMouseY;
-      OS::GetMouseState(&iMouseX, &iMouseY);
-      _pGame->ComputerMouseMove(iMouseX, iMouseY);
+      float fMouseX, fMouseY;
+      OS::GetMouseState(&fMouseX, &fMouseY);
+      _pGame->ComputerMouseMove(fMouseX, fMouseY);
     }
 
     // if addon is to be executed
