@@ -257,8 +257,12 @@ void CGfxLibrary::InitAPIs(void)
 
 #else
   // [Cecil] SDL: Detect modes for OpenGL ICD
-  const INDEX iDisplayIndex = 0;
-  const INDEX ctDisplayModes = SDL_GetNumDisplayModes(iDisplayIndex);
+  int ctDisplayModes;
+  SDL_DisplayMode **aModes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &ctDisplayModes);
+
+  if (aModes == NULL) {
+    FatalError(TRANS("Cannot retrieve fullscreen display modes! SDL Error: %s"), SDL_GetError());
+  }
 
   INDEX &ctModes = pda->da_ctDisplayModes;
 
@@ -267,8 +271,7 @@ void CGfxLibrary::InitAPIs(void)
   {
     if (ctModes >= MAX_DA_DISPLAYMODES) break;
 
-    SDL_DisplayMode mode;
-    if (SDL_GetDisplayMode(iDisplayIndex, iMode, &mode) != 0) continue;
+    const SDL_DisplayMode &mode = *aModes[iMode];
 
     INDEX iBPP = SDL_BITSPERPIXEL(mode.format);
     if (iBPP < 16) continue;
@@ -284,6 +287,8 @@ void CGfxLibrary::InitAPIs(void)
     CDisplayMode &dm = pda->da_admDisplayModes[ctModes++];
     dm.Configure(mode.w, mode.h, DD_DEFAULT);
   }
+
+  SDL_free(aModes);
 #endif // !SE1_PREFER_SDL
 }
 

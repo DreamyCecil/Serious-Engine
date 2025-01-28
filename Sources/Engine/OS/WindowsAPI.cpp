@@ -52,18 +52,9 @@ HWND OS::Window::GetNativeHandle(void) {
   if (pWindow == NULL) return NULL;
 
 #if SE1_PREFER_SDL
-  SDL_SysWMinfo info;
-  SDL_VERSION(&info.version);
-
-  if (!SDL_GetWindowWMInfo(pWindow, &info)) {
-    FatalError(TRANS("Couldn't retrieve driver-specific information about an SDL window:\n%s"), SDL_GetError());
-  }
-
-  return info.info.win.window;
-
+  return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(pWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 #else
-  // Already native
-  return pWindow;
+  return pWindow; // Already native
 #endif
 };
 
@@ -79,7 +70,7 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
   const INDEX iFirstButton = iCtrl * SDL_GAMEPAD_BUTTON_COUNT;
 
   for (ULONG eButton = 0; eButton < SDL_GAMEPAD_BUTTON_COUNT; eButton++) {
-    const BOOL bHolding = !!SDL_GetGamepadButton(ctrl.handle, (SDL_GamepadButton)eButton);
+    const BOOL bHolding = SDL_GetGamepadButton(ctrl.handle, (SDL_GamepadButton)eButton);
 
     const BOOL bJustPressed  = (bHolding && !_abButtonStates[iFirstButton + eButton]);
     const BOOL bJustReleased = (!bHolding && _abButtonStates[iFirstButton + eButton]);

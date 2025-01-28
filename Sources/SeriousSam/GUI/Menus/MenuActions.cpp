@@ -660,6 +660,9 @@ static void FillResolutionsList(void)
     CDisplayMode *pdm = _pGfx->EnumDisplayModes(ctEngineRes,
       SwitchToAPI(gmCurrent.gm_mgDisplayAPITrigger.mg_iSelected), gmCurrent.gm_mgDisplayAdaptersTrigger.mg_iSelected);
 
+    // Remember current amount here to prevent assertions from SetResolutionInList()
+    _ctResolutions = ctEngineRes;
+
     _astrResolutionTexts = new CTString[ctEngineRes];
     _admResolutionModes = new CDisplayMode[ctEngineRes];
 
@@ -668,9 +671,6 @@ static void FillResolutionsList(void)
       SetResolutionInList(iRes, pdm[iRes].dm_pixSizeI, pdm[iRes].dm_pixSizeJ);
     }
 
-    // Remember current amount
-    _ctResolutions = ctEngineRes;
-    
   // [Cecil] If any other aspect ratio or windowed mode
   } else {
     // Amount of resolutions under this aspect ratio
