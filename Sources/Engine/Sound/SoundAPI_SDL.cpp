@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Sound/SoundAPI_SDL.h>
 #include <Engine/Sound/SoundLibrary.h>
 
-#if SE1_PREFER_SDL
+#if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
 extern INDEX snd_iDevice;
 extern FLOAT snd_tmMixAhead;
@@ -254,4 +254,4 @@ void CSoundAPI_SDL::Mute(BOOL &bSetSoundMuted) {
   SDL_UnlockAudioDevice(m_iAudioDevice);
 };
 
-#endif // SE1_PREFER_SDL
+#endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO

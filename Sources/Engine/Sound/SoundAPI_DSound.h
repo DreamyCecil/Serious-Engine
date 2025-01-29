@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Sound/SoundAPI.h>
 
-#if SE1_WIN
+#if SE1_WIN && SE1_SND_DSOUND
 
 #if !SE1_OLD_COMPILER
   #include <initguid.h>
@@ -31,16 +31,20 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
   public:
     HINSTANCE m_hDSoundLib;
     OS::Window m_wndCurrent;
-    BOOL m_bUsingEAX;
 
     LPDIRECTSOUND           m_pDS;           // DirectSound handle
-    LPKSPROPERTYSET         m_pKSProperty;   // EAX properties
     LPDIRECTSOUNDBUFFER     m_pDSPrimary;
     LPDIRECTSOUNDBUFFER     m_pDSSecondary;  // 2D usage
+
+  #if SE1_SND_EAX
+    BOOL m_bUsingEAX;
+
+    LPKSPROPERTYSET         m_pKSProperty;   // EAX properties
     LPDIRECTSOUNDBUFFER     m_pDSSecondary2;
     LPDIRECTSOUND3DLISTENER m_pDSListener;   // 3D EAX
     LPDIRECTSOUND3DBUFFER   m_pDSSourceLeft;
     LPDIRECTSOUND3DBUFFER   m_pDSSourceRight;
+  #endif
 
     INDEX m_iWriteOffset;
     INDEX m_iWriteOffset2;
@@ -53,16 +57,20 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
     CSoundAPI_DSound() : CAbstractSoundAPI() {
       m_hDSoundLib = NULL;
       m_wndCurrent = NULL;
-      m_bUsingEAX = FALSE;
 
       m_pDS            = NULL;
-      m_pKSProperty    = NULL;
       m_pDSPrimary     = NULL;
       m_pDSSecondary   = NULL;
+
+    #if SE1_SND_EAX
+      m_bUsingEAX = FALSE;
+
+      m_pKSProperty    = NULL;
       m_pDSSecondary2  = NULL;
       m_pDSListener    = NULL;
       m_pDSSourceLeft  = NULL;
       m_pDSSourceRight = NULL;
+    #endif
 
       m_iWriteOffset  = 0;
       m_iWriteOffset2 = 0;
@@ -95,6 +103,6 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
     virtual void UpdateEAX(void);
 };
 
-#endif // SE1_WIN
+#endif // SE1_WIN && SE1_SND_DSOUND
 
 #endif // include-once check

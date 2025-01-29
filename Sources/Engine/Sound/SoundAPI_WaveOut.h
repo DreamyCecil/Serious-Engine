@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Sound/SoundAPI.h>
 
-#if SE1_WIN
+#if SE1_WIN && SE1_SND_WAVEOUT
 
 class CSoundAPI_WaveOut : public CAbstractSoundAPI {
   public:
@@ -48,6 +48,6 @@ class CSoundAPI_WaveOut : public CAbstractSoundAPI {
     virtual SLONG PrepareSoundBuffer(void);
 };
 
-#endif // SE1_WIN
+#endif // SE1_WIN && SE1_SND_WAVEOUT
 
 #endif // include-once check

@@ -26,24 +26,29 @@ class ENGINE_API CAbstractSoundAPI {
     enum ESoundAPI {
       E_SND_INVALID = -1,
 
+      // Windows-only APIs
     #if SE1_WIN
+    #if SE1_SND_WAVEOUT
       E_SND_WAVEOUT,
+    #endif // SE1_SND_WAVEOUT
+    #if SE1_SND_DSOUND
       E_SND_DSOUND,
+    #if SE1_SND_EAX
       E_SND_EAX,
-    #endif
-    #if SE1_PREFER_SDL
+    #endif // SE1_SND_EAX
+    #endif // SE1_SND_DSOUND
+    #endif // SE1_WIN
+
+      // Cross-platform APIs
+    #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
       E_SND_SDL,
-    #endif
+    #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
       // [Cecil] NOTE: This should always be at least 1 under any configuration
       E_SND_MAX,
 
-      // Default API to use
-    #if SE1_WIN
-      E_SND_DEFAULT = E_SND_EAX,
-    #else
-      E_SND_DEFAULT = E_SND_SDL,
-    #endif
+      // Default API to use (last possible one)
+      E_SND_DEFAULT = E_SND_MAX - 1,
     };
 
   public:

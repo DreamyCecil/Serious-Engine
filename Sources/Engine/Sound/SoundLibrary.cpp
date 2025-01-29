@@ -89,6 +89,9 @@ static BOOL _bMutedForMixing = FALSE;
  */
 CSoundLibrary::CSoundLibrary(void)
 {
+  // [Cecil] Should have at least one sound API
+  ASSERT(CAbstractSoundAPI::E_SND_MAX > 0);
+
   // [Cecil] No sound interface by default
   sl_pInterface = NULL;
 
@@ -459,7 +462,7 @@ void CSoundLibrary::UpdateSounds(void)
   // [Cecil] Ignore sounds on a dedicated server or when there's no sound interface
   if (_SE1Setup.IsAppServer() || _pSound == NULL || _pSound->sl_pInterface == NULL) return;
 
-#if SE1_WIN
+#if SE1_WIN && SE1_SND_DSOUND
   // see if we have valid handle for direct sound and eventually reinit sound
   if (_pSound->sl_pInterface->GetType() == CAbstractSoundAPI::E_SND_DSOUND) {
     // [Cecil] FIXME: Don't like including the interface just for accessing one of its fields
@@ -471,7 +474,7 @@ void CSoundLibrary::UpdateSounds(void)
       _pSound->SetFormat(_pSound->sl_EsfFormat);
     }
   }
-#endif
+#endif // SE1_WIN && SE1_SND_DSOUND
 
   _bMutedForMixing = FALSE; // enable mixer
   _sfStats.StartTimer(CStatForm::STI_SOUNDUPDATE);

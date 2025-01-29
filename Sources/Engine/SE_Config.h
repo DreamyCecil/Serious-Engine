@@ -109,6 +109,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SE1_USE_SDL       0 // Prefer SDL over Windows API (0 - No; 1 - Yes)
 #endif
 
+// Sound API switches specifically for Windows platforms
+
+#ifndef SE1_SND_WAVEOUT
+#define SE1_SND_WAVEOUT   1 // Implement sound using WaveOut (0 - Disabled; 1 - Enabled)
+#endif
+#ifndef SE1_SND_DSOUND
+#define SE1_SND_DSOUND    1 // Implement sound using DirectSound (0 - Disabled; 1 - Enabled)
+#endif
+#ifndef SE1_SND_EAX
+#define SE1_SND_EAX       0 // Implement EAX support via DirectSound, if it's enabled (0 - Disabled; 1 - Enabled)
+#endif
+#ifndef SE1_SND_SDLAUDIO
+#define SE1_SND_SDLAUDIO  1 // Implement sound using SDL Audio regardless of SE1_USE_SDL (0 - Disabled; 1 - Enabled)
+#endif
+
 // Automatic switches for convenience
 
 #define SE1_PREFER_SDL (!SE1_WIN || SE1_USE_SDL)                // Prefer SDL over Windows API?

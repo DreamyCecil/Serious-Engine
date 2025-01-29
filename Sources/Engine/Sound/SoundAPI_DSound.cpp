@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Sound/SoundAPI_DSound.h>
 #include <Engine/Sound/SoundLibrary.h>
 
-#if SE1_WIN
+#if SE1_WIN && SE1_SND_DSOUND
 
 #include <Engine/Sound/EAX.h>
 
@@ -47,6 +47,7 @@ BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize)
   // Eventually adjust for EAX
   DWORD dwFlag3D = NONE;
 
+#if SE1_SND_EAX
   if (snd_iInterface == E_SND_EAX) {
     dwFlag3D = DSBCAPS_CTRL3D;
     wfe.nChannels = 1;  // mono output
@@ -54,6 +55,7 @@ BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize)
     wfe.nAvgBytesPerSec /= 2;
     slSize /= 2;
   }
+#endif
 
   DSBUFFERDESC dsBuffer;
   memset(&dsBuffer, 0, sizeof(dsBuffer));
@@ -65,12 +67,14 @@ BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize)
 
   HRESULT hResult = m_pDS->CreateSoundBuffer(&dsBuffer, &pBuffer, NULL);
 
+#if SE1_SND_EAX
   if (snd_iInterface == E_SND_EAX) {
     // Revert back to original wave format (stereo)
     wfe.nChannels = 2;
     wfe.nBlockAlign *= 2;
     wfe.nAvgBytesPerSec *= 2;
   }
+#endif
 
   if (hResult != DS_OK) {
     return Fail(TRANS("  ! DirectSound error: Cannot create secondary buffer.\n"));
@@ -82,8 +86,10 @@ BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize)
 BOOL CSoundAPI_DSound::LockBuffer(LPDIRECTSOUNDBUFFER pBuffer, SLONG slSize, LPVOID &lpData, DWORD &dwSize) {
   INDEX ctRetries = 1000; // Too many?
 
+#if SE1_SND_EAX
   // Buffer is mono in case of EAX
   if (m_bUsingEAX) slSize /= 2;
+#endif
 
   FOREVER {
     HRESULT hResult = pBuffer->Lock(0, slSize, &lpData, &dwSize, NULL, NULL, 0);
@@ -106,7 +112,10 @@ void CSoundAPI_DSound::PlayBuffers(void) {
 
   ASSERT(m_pDSSecondary != NULL && m_pDSPrimary != NULL);
 
+#if SE1_SND_EAX
   if (m_bUsingEAX && m_pDSSecondary2->GetStatus(&dw) == DS_OK && !(dw & DSBSTATUS_PLAYING)) bInitiatePlay = TRUE;
+#endif
+
   if (m_pDSSecondary->GetStatus(&dw) == DS_OK && !(dw & DSBSTATUS_PLAYING)) bInitiatePlay = TRUE;
   if (m_pDSPrimary->GetStatus(&dw)   == DS_OK && !(dw & DSBSTATUS_PLAYING)) bInitiatePlay = TRUE;
 
@@ -116,7 +125,10 @@ void CSoundAPI_DSound::PlayBuffers(void) {
   // Stop buffers (in case some buffers are playing
   m_pDSPrimary->Stop();
   m_pDSSecondary->Stop();
+
+#if SE1_SND_EAX
   if (m_bUsingEAX) m_pDSSecondary2->Stop();
+#endif
 
   // Check sound buffer lock and clear sound buffer(s)
   LPVOID lpData;
@@ -126,6 +138,7 @@ void CSoundAPI_DSound::PlayBuffers(void) {
   memset(lpData, 0, dwSize);
   m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
 
+#if SE1_SND_EAX
   if (m_bUsingEAX)
   {
     if (!LockBuffer(m_pDSSecondary2, m_slMixerBufferSize, lpData, dwSize)) return;
@@ -135,6 +148,7 @@ void CSoundAPI_DSound::PlayBuffers(void) {
     // Start playing EAX additional buffer
     m_pDSSecondary2->Play(0, 0, DSBPLAY_LOOPING);
   }
+#endif
 
   // Start playing standard DirectSound buffers
   m_pDSPrimary->Play(0, 0, DSBPLAY_LOOPING);
@@ -143,6 +157,7 @@ void CSoundAPI_DSound::PlayBuffers(void) {
   m_iWriteOffset = 0;
   m_iWriteOffset2 = 0;
 
+#if SE1_SND_EAX
   // Adjust starting offsets for EAX
   if (m_bUsingEAX) {
     DWORD dwCursor1, dwCursor2;
@@ -179,6 +194,7 @@ void CSoundAPI_DSound::PlayBuffers(void) {
     ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_slMixerBufferSize);
     ASSERT(m_iWriteOffset2 >= 0 && m_iWriteOffset2 < m_slMixerBufferSize);
   }
+#endif // SE1_SND_EAX
 };
 
 BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
@@ -229,7 +245,10 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
 
   // Prepare 3D flag if EAX
   DWORD dwFlag3D = NONE;
+
+#if SE1_SND_EAX
   if (snd_iInterface == E_SND_EAX) dwFlag3D = DSBCAPS_CTRL3D;
+#endif
 
   // Create primary sound buffer (must have one)
   DSBUFFERDESC dsBuffer;
@@ -254,6 +273,7 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
 
   if (!InitSecondary(m_pDSSecondary, slBufferSize)) return FALSE;
 
+#if SE1_SND_EAX
   // Set some additionals for EAX
   if (snd_iInterface == E_SND_EAX) {
     // 2nd secondary buffer
@@ -311,6 +331,7 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
     // Made it
     m_bUsingEAX = TRUE;
   }
+#endif // SE1_SND_EAX
 
   // Mark that DirectSound is operative and set mixer buffer size (decoder buffer always works at 44khz)
   m_iWriteOffset = 0;
@@ -328,7 +349,10 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
     CPrintF(TRANS("  %dHz, %dbit, %s, mix-ahead: %gs\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, strDevice.ConstData(), snd_tmMixAhead);
     CPrintF(TRANS("  mixer buffer size:  %d KB\n"), m_slMixerBufferSize / 1024);
     CPrintF(TRANS("  decode buffer size: %d KB\n"), m_slDecodeBufferSize / 1024);
+
+  #if SE1_SND_EAX
     CPrintF(TRANS("  EAX: %s\n"), m_bUsingEAX ? TRANS("Enabled") : TRANS("Disabled"));
+  #endif
   }
 
   return TRUE;
@@ -336,21 +360,24 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
 
 void CSoundAPI_DSound::ShutDown(void) {
   m_wndCurrent = NULL;
-  m_bUsingEAX = FALSE;
 
   #define DSOUND_FREE(_Buf)          if (_Buf != NULL) {               _Buf->Release(); _Buf = NULL; }
   #define DSOUND_STOP_AND_FREE(_Buf) if (_Buf != NULL) { _Buf->Stop(); _Buf->Release(); _Buf = NULL; }
 
-  // Free DirectSound buffers
+#if SE1_SND_EAX
+  m_bUsingEAX = FALSE;
+
+  // Free EAX buffers
   DSOUND_FREE(m_pDSSourceRight);
   DSOUND_FREE(m_pDSSourceLeft);
   DSOUND_FREE(m_pDSListener);
-
   DSOUND_STOP_AND_FREE(m_pDSSecondary2);
+  DSOUND_FREE(m_pKSProperty);
+#endif
+
+  // Free DirectSound buffers
   DSOUND_STOP_AND_FREE(m_pDSSecondary);
   DSOUND_STOP_AND_FREE(m_pDSPrimary);
-
-  DSOUND_FREE(m_pKSProperty);
 
   // Free DirectSound object
   if (m_pDS != NULL)
@@ -379,6 +406,7 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
   DWORD dwSize;
   SLONG slPart1Size, slPart2Size;
 
+#if SE1_SND_EAX
   // If EAX is in use
   if (m_bUsingEAX) {
     // Lock left buffer and copy first part of the 1st mono block
@@ -412,9 +440,12 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
 
     ASSERT(m_iWriteOffset2 >= 0 && m_iWriteOffset2 < m_slMixerBufferSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);
+    return;
+  }
+#endif // SE1_SND_EAX
 
   // Only standard DirectSound (no EAX)
-  } else {
+  {
     // Lock stereo buffer and copy first part of block
     if (!LockBuffer(m_pDSSecondary, m_slMixerBufferSize, lpData, dwSize)) return;
 
@@ -442,6 +473,7 @@ SLONG CSoundAPI_DSound::PrepareSoundBuffer(void)
 
   ASSERT(m_pDSSecondary != NULL && m_pDSPrimary != NULL);
 
+#if SE1_SND_EAX
   // If EAX is in use
   if (m_bUsingEAX) {
     hr1 = m_pDSSecondary->GetCurrentPosition(&dwCurrentCursor, NULL);
@@ -468,8 +500,12 @@ SLONG CSoundAPI_DSound::PrepareSoundBuffer(void)
     ASSERT(slDataToMix2 >= 0 && slDataToMix2 <= m_slMixerBufferSize);
     slDataToMix = Min(slDataToMix1, slDataToMix2);
 
+    return slDataToMix;
+  }
+#endif // SE1_SND_EAX
+
   // Standard DirectSound (no EAX)
-  } else {
+  {
     hr1 = m_pDSSecondary->GetCurrentPosition(&dwCurrentCursor, NULL);
 
     if (hr1 != DS_OK) {
@@ -504,6 +540,7 @@ void CSoundAPI_DSound::Mute(BOOL &bSetSoundMuted) {
   memset(lpData, 0, dwSize);
   m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
 
+#if SE1_SND_EAX
   // Flush right buffer as well for EAX
   if (m_bUsingEAX) {
     if (!LockBuffer(m_pDSSecondary2, m_slMixerBufferSize, lpData, dwSize)) return;
@@ -511,11 +548,13 @@ void CSoundAPI_DSound::Mute(BOOL &bSetSoundMuted) {
     memset(lpData, 0, dwSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);
   }
+#endif
 };
 
 // Set listener enviroment properties for EAX
 BOOL CSoundAPI_DSound::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize)
 {
+#if SE1_SND_EAX
   if (!m_bUsingEAX) return FALSE;
 
   // Trim values
@@ -536,6 +575,10 @@ BOOL CSoundAPI_DSound::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize)
   if (hResult != DS_OK) return Fail(TRANS("  ! EAX error: Cannot set environment size.\n"));
 
   return TRUE;
+
+#else
+  return FALSE;
+#endif
 };
 
 void CSoundAPI_DSound::UpdateEAX(void) {
@@ -567,6 +610,7 @@ void CSoundAPI_DSound::UpdateEAX(void) {
     SetEnvironment(m_iLastEnvType, m_fLastEnvSize);
   }
 
+#if SE1_SND_EAX
   // Adjust panning if needed
   snd_fEAXPanning = Clamp(snd_fEAXPanning, -1.0f, +1.0f);
 
@@ -590,6 +634,7 @@ void CSoundAPI_DSound::UpdateEAX(void) {
   if (hr1 != DS_OK || hr2 != DS_OK || hr3 != DS_OK) {
     Fail(TRANS("  ! DirectSound3D error: Cannot set 3D position.\n"));
   }
+#endif // SE1_SND_EAX
 };
 
-#endif // SE1_WIN
+#endif // SE1_WIN && SE1_SND_DSOUND

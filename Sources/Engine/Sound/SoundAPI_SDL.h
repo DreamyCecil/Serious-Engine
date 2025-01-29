@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Sound/SoundAPI.h>
 
-#if SE1_PREFER_SDL
+#if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
 class CSoundAPI_SDL : public CAbstractSoundAPI {
   public:
@@ -55,6 +55,6 @@ class CSoundAPI_SDL : public CAbstractSoundAPI {
     virtual void Mute(BOOL &bSetSoundMuted);
 };
 
-#endif // SE1_PREFER_SDL
+#endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
 #endif // include-once check

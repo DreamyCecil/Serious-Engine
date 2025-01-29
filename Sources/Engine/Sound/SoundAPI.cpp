@@ -81,13 +81,20 @@ const CTString &CAbstractSoundAPI::GetApiName(CAbstractSoundAPI::ESoundAPI eAPI)
 
   static const CTString astrApiNames[E_SND_MAX] = {
   #if SE1_WIN
+  #if SE1_SND_WAVEOUT
     "WaveOut",
+  #endif // SE1_SND_WAVEOUT
+  #if SE1_SND_DSOUND
     "DirectSound",
+  #if SE1_SND_EAX
     "EAX",
-  #endif
-  #if SE1_PREFER_SDL
+  #endif // SE1_SND_EAX
+  #endif // SE1_SND_DSOUND
+  #endif // SE1_WIN
+
+  #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
     "SDL Audio",
-  #endif
+  #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
   };
 
   return astrApiNames[eAPI];
@@ -97,13 +104,20 @@ const CTString &CAbstractSoundAPI::GetApiName(CAbstractSoundAPI::ESoundAPI eAPI)
 CAbstractSoundAPI *CAbstractSoundAPI::CreateAPI(CAbstractSoundAPI::ESoundAPI eAPI) {
   switch (eAPI) {
   #if SE1_WIN
+  #if SE1_SND_WAVEOUT
     case E_SND_WAVEOUT: return new CSoundAPI_WaveOut;
+  #endif // SE1_SND_WAVEOUT
+  #if SE1_SND_DSOUND
     case E_SND_DSOUND:  return new CSoundAPI_DSound;
+  #if SE1_SND_EAX
     case E_SND_EAX:     return new CSoundAPI_DSound;
-  #endif
-  #if SE1_PREFER_SDL
+  #endif // SE1_SND_EAX
+  #endif // SE1_SND_DSOUND
+  #endif // SE1_WIN
+
+  #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
     case E_SND_SDL:     return new CSoundAPI_SDL;
-  #endif
+  #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
     // Invalid API
     default: {

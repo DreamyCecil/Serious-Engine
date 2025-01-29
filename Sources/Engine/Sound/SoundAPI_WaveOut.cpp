@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Sound/SoundAPI_WaveOut.h>
 #include <Engine/Sound/SoundLibrary.h>
 
-#if SE1_WIN
+#if SE1_WIN && SE1_SND_WAVEOUT
 
 extern FLOAT snd_tmMixAhead;
 extern INDEX snd_iDevice;
@@ -241,4 +241,4 @@ SLONG CSoundAPI_WaveOut::PrepareSoundBuffer(void) {
   return slDataToMix;
 };
 
-#endif // SE1_WIN
+#endif // SE1_WIN && SE1_SND_WAVEOUT
