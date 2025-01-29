@@ -29,7 +29,7 @@ static void AudioCallback(void *pUserData, Uint8 *pubStream, int iLength) {
   ASSERT(pAPI->m_slBackBufferRemain >= 0 && pAPI->m_slBackBufferRemain <= pAPI->m_slBackBufferAlloc);
 
   // How many bytes can actually be copied
-  SLONG slToCopy = (iLength < pAPI->m_slBackBufferRemain) ? iLength : pAPI->m_slBackBufferRemain;
+  SLONG slToCopy = (iLength < pAPI->m_slBackBufferRemain) ? iLength : (SLONG)pAPI->m_slBackBufferRemain;
 
   // Cap at the end of the ring buffer
   const SLONG slBytesLeft = pAPI->m_slBackBufferAlloc - pAPI->m_slBackBufferPos;
@@ -61,7 +61,7 @@ static void AudioCallback(void *pUserData, Uint8 *pubStream, int iLength) {
 
     // Might need to feed SDL more data now
     if (iLength > 0) {
-      slToCopy = (iLength < pAPI->m_slBackBufferRemain) ? iLength : pAPI->m_slBackBufferRemain;
+      slToCopy = (iLength < pAPI->m_slBackBufferRemain) ? iLength : (SLONG)pAPI->m_slBackBufferRemain;
 
       if (slToCopy > 0) {
         // Move second block to SDL stream
@@ -88,90 +88,98 @@ static void AudioCallback(void *pUserData, Uint8 *pubStream, int iLength) {
   }
 };
 
-BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
-  SDL_AudioSpec desired, obtained;
-  SDL_zero(desired);
-  SDL_zero(obtained);
+// [Cecil] FIXME: Get rid of this SDL3 wrapper for an SDL2 callback
+void SDL3to2_Callback(void *pUserData, SDL_AudioStream *pStream, int ctAdditional, int ctTotal) {
+  if (ctAdditional <= 0) return;
 
+  Uint8 *pData = SDL_stack_alloc(Uint8, ctAdditional);
+
+  if (pData != NULL) {
+    AudioCallback(pUserData, pData, ctAdditional);
+    SDL_PutAudioStreamData(pStream, pData, ctAdditional);
+    SDL_stack_free(pData);
+  }
+};
+
+BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
   const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
   Sint16 iBPS = wfe.wBitsPerSample;
+  SDL_AudioFormat formatSet;
 
   if (iBPS <= 8) {
-    desired.format = AUDIO_U8;
+    formatSet = SDL_AUDIO_U8;
 
   } else if (iBPS <= 16) {
-    desired.format = AUDIO_S16LSB;
+    formatSet = SDL_AUDIO_S16LE;
 
   } else if (iBPS <= 32) {
-    desired.format = AUDIO_S32LSB;
+    formatSet = SDL_AUDIO_S32LE;
 
   } else {
     CPrintF(TRANS("Unsupported bits-per-sample: %d\n"), iBPS);
     return FALSE;
   }
 
-  desired.freq = wfe.nSamplesPerSec;
+  // [Cecil] NOTE: Sample count is needed for buffer size calculation below
+  const SLONG iSpecFreq = wfe.nSamplesPerSec;
+  SLONG iSpecSamples;
 
-  // [Cecil] TODO: Check if this is fine or a console variable should be used instead
-  if (desired.freq <= 11025) {
-    desired.samples = 512;
+  if (iSpecFreq <= 11025) {
+    iSpecSamples = 512;
 
-  } else if (desired.freq <= 22050) {
-    desired.samples = 1024;
+  } else if (iSpecFreq <= 22050) {
+    iSpecSamples = 1024;
 
-  } else if (desired.freq <= 44100) {
-    desired.samples = 2048;
+  } else if (iSpecFreq <= 44100) {
+    iSpecSamples = 2048;
 
   } else {
-    desired.samples = 4096;
+    iSpecSamples = 4096;
   }
 
-  desired.channels = wfe.nChannels;
-  desired.userdata = this;
-  desired.callback = AudioCallback;
+  const SDL_AudioSpec spec = { formatSet, wfe.nChannels, iSpecFreq };
+  m_pAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &SDL3to2_Callback, this);
 
-  // [Cecil] NOTE: Use SDL_GetAudioDeviceName() here to select a specific audio device and report its name below
-  const char *strDevice = NULL;
-  const char *strDeviceName = (strDevice == NULL) ? "[system default playback device]" : strDevice;
-  m_iAudioDevice = SDL_OpenAudioDevice(strDevice, 0, &desired, &obtained, 0);
-
-  if (m_iAudioDevice == 0) {
-    CPrintF(TRANS("SDL_OpenAudioDevice() error: %s\n"), SDL_GetError());
+  if (m_pAudioStream == NULL) {
+    CPrintF(TRANS("SDL_OpenAudioDeviceStream() error: %s\n"), SDL_GetError());
     return FALSE;
   }
 
   // Allocate mixer buffers
   AllocBuffers(TRUE);
 
-  m_ubSilence = obtained.silence;
-  m_slBackBufferAlloc = (obtained.size * 4);
+  // Manually calculate buffer size as a replacement for SDL_AudioSpec::size from SDL2
+  const SLONG iSpecSize = SDL_AUDIO_FRAMESIZE(spec) * iSpecSamples;
+
+  m_ubSilence = SDL_GetSilenceValueForFormat(formatSet);
+  m_slBackBufferAlloc = (iSpecSize * 4);
   m_pBackBuffer = (Uint8 *)AllocMemory(m_slBackBufferAlloc);
   m_slBackBufferRemain = 0;
   m_slBackBufferPos = 0;
 
   // Report success
   if (bReport) {
-    CPrintF(TRANS("  opened device: %s\n"), strDeviceName);
+    CPrintF(TRANS("  opened device: %s\n"), SDL_GetAudioDeviceName(SDL_GetAudioStreamDevice(m_pAudioStream)));
     CPrintF(TRANS("  audio driver: %s\n"), SDL_GetCurrentAudioDriver());
-    CPrintF(TRANS("  output buffers: %d x %d bytes\n"), 2, obtained.size);
+    CPrintF(TRANS("  output buffers: %d x %d bytes\n"), 2, iSpecSize);
     ReportGenericInfo();
   }
 
   // Audio callback can now safely fill the audio stream with silence until there is actual audio data to mix
-  SDL_PauseAudioDevice(m_iAudioDevice, 0);
+  SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_pAudioStream));
   return TRUE;
 };
 
 void CSoundAPI_SDL::ShutDown(void) {
-  SDL_PauseAudioDevice(m_iAudioDevice, 1);
+  SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(m_pAudioStream));
 
   if (m_pBackBuffer != NULL) {
     FreeMemory(m_pBackBuffer);
     m_pBackBuffer = NULL;
   }
 
-  SDL_CloseAudioDevice(m_iAudioDevice);
-  m_iAudioDevice = 0;
+  SDL_DestroyAudioStream(m_pAudioStream);
+  m_pAudioStream = NULL;
 
   CAbstractSoundAPI::ShutDown();
 };
@@ -206,11 +214,11 @@ void CSoundAPI_SDL::CopyMixerBuffer(SLONG slMixedSize) {
   ASSERT(m_slBackBufferRemain <= m_slBackBufferAlloc);
 
   // PrepareSoundBuffer() needs to be called beforehand
-  SDL_UnlockAudioDevice(m_iAudioDevice);
+  SDL_UnlockAudioStream(m_pAudioStream);
 };
 
 SLONG CSoundAPI_SDL::PrepareSoundBuffer(void) {
-  SDL_LockAudioDevice(m_iAudioDevice);
+  SDL_LockAudioStream(m_pAudioStream);
 
   ASSERT(m_slBackBufferRemain >= 0);
   ASSERT(m_slBackBufferRemain <= m_slBackBufferAlloc);
@@ -219,21 +227,21 @@ SLONG CSoundAPI_SDL::PrepareSoundBuffer(void) {
 
   if (slDataToMix <= 0) {
     // It shouldn't end up in CopyMixerBuffer() with 0 data, so it needs to be done here
-    SDL_UnlockAudioDevice(m_iAudioDevice);
+    SDL_UnlockAudioStream(m_pAudioStream);
   }
 
   return slDataToMix;
 };
 
 void CSoundAPI_SDL::Mute(BOOL &bSetSoundMuted) {
-  SDL_LockAudioDevice(m_iAudioDevice);
+  SDL_LockAudioStream(m_pAudioStream);
   bSetSoundMuted = TRUE;
 
   // Ditch pending audio data
   m_slBackBufferRemain = 0;
   m_slBackBufferPos = 0;
 
-  SDL_UnlockAudioDevice(m_iAudioDevice);
+  SDL_UnlockAudioStream(m_pAudioStream);
 };
 
 #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO

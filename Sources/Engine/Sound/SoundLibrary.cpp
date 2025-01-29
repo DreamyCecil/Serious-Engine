@@ -323,11 +323,21 @@ void CSoundLibrary::Init(void)
 
 #if SE1_PREFER_SDL
   // [Cecil] SDL: List available audio devices
-  sl_ctWaveDevices = (INDEX)SDL_GetNumAudioDevices(0);
-  CPrintF(TRANS("  Detected devices: %d\n"), sl_ctWaveDevices);
+  int ctDevices;
+  SDL_AudioDeviceID *aDevices = SDL_GetAudioPlaybackDevices(&ctDevices);
 
-  for (INDEX iDevice = 0; iDevice < sl_ctWaveDevices; iDevice++) {
-    CPrintF(TRANS("    device %d: %s\n"), iDevice, SDL_GetAudioDeviceName(iDevice, 0));
+  if (aDevices != NULL) {
+    sl_ctWaveDevices = ctDevices;
+
+    for (INDEX iDevice = 0; iDevice < sl_ctWaveDevices; iDevice++) {
+      SDL_AudioDeviceID iID = aDevices[iDevice];
+      CPrintF(TRANS("    device %d: %s\n"), iID, SDL_GetAudioDeviceName(iID));
+    }
+
+    SDL_free(aDevices);
+
+  } else {
+    CPrintF(TRANS("Cannot list available audio devices! SDL Error: %s\n"), SDL_GetError());
   }
 
 #else
