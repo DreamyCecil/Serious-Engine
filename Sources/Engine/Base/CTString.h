@@ -88,9 +88,11 @@ struct VATypeVerifier
  * Main string class
  */
 class ENGINE_API CTString {
-public:
+// [Cecil] Use Data() or ConstData() from the outside instead of the field
+private:
   char *str_String;         // pointer to memory holding the character string
 
+public:
   static const size_t npos; // [Cecil] Invalid character index
 
 public:

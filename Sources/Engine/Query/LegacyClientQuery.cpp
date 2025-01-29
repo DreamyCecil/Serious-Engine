@@ -25,7 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 extern unsigned char *gsseckey(u_char *secure, u_char *key, int enctype);
-extern u_int resolv(char *host);
+extern u_int resolv(const char *host); // [Cecil] 'char *' -> 'const char *'
 
 // Buffer lengths
 static const ULONG _ulBufferLength = 8192;
@@ -254,10 +254,10 @@ static void StartInternetSearch(void) {
 #endif
 
   // Connect to the master server
-  char *strMasterServer = _aProtocols[E_MS_LEGACY]->GetMS().str_String;
+  const CTString &strMasterServer = _aProtocols[E_MS_LEGACY]->GetMS();
 
   sockaddr_in addr;
-  addr.sin_addr.s_addr = resolv(strMasterServer);
+  addr.sin_addr.s_addr = resolv(strMasterServer.ConstData());
   addr.sin_port = htons(28900);
   addr.sin_family = AF_INET;
 

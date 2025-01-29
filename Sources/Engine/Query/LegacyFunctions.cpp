@@ -164,7 +164,7 @@ unsigned char *gsseckey(u_char *secure, u_char *key, int enctype) {
 }
 
 /* function resolv */
-u_int resolv(char *host) {
+u_int resolv(const char *host) {
     struct  hostent *hp;
     u_int   host_ip;
 

@@ -1225,7 +1225,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       strParam += " +connect " + _strModServerJoin + " +quickjoin";
     }
 
-    if (!CreateProcessA(strCmd.str_String, strParam.str_String, NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &cif, &pi)) {
+    if (!CreateProcessA(strCmd.ConstData(), strParam.Data(), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &cif, &pi)) {
       // [Cecil] Proper error message
       ErrorMessage(TRANS("Cannot start '%s' mod:\n%s"), strMod.ConstData(), GetWindowsError(GetLastError()).ConstData());
     }

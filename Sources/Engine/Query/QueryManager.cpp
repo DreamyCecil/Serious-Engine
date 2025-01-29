@@ -263,7 +263,7 @@ void SendPacketTo(sockaddr_in *psin, const char *pBuffer, int iLength, SOCKET iS
 
 // Send reply packet with a message
 void SendReply(const CTString &strMessage) {
-  SendPacketTo(&sinFrom, strMessage.str_String, strMessage.Length());
+  SendPacketTo(&sinFrom, strMessage.ConstData(), strMessage.Length());
 };
 
 // Receive some packet
