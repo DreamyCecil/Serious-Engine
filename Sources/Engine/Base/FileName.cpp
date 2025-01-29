@@ -151,9 +151,9 @@ size_t CTString::RootNameLength() const {
 
 #if SE1_WIN
   // Starts with a drive letter and a colon on Windows (e.g. "C:")
-  const char chUpper = ::toupper(static_cast<UBYTE>((*this)[0]));
+  const char chUpper = (char)toupper(static_cast<UBYTE>(str_String[0]));
 
-  if (ctLen >= 2 && chUpper >= 'A' && chUpper <= 'Z' && (*this)[1] == ':') {
+  if (ctLen >= 2 && chUpper >= 'A' && chUpper <= 'Z' && str_String[1] == ':') {
     return 2;
   }
 #endif
@@ -161,7 +161,7 @@ size_t CTString::RootNameLength() const {
   // Starts with a double separator and has any directory right after (e.g. "//abc")
   if (ctLen > 2
    && PathSeparatorAt(0) && PathSeparatorAt(1) && !PathSeparatorAt(2)
-   && ::isprint(static_cast<UBYTE>((*this)[2])))
+   && isprint(static_cast<UBYTE>(str_String[2])))
   {
     // Find the next separator, if there's any
     size_t iNextSep = FindFirstOf("/\\", 3);

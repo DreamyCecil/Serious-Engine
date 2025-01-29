@@ -310,7 +310,7 @@ CTString CTString::ToLower(void) const {
   INDEX i = Length();
 
   while (--i >= 0) {
-    strCopy.Data()[i] = tolower(strCopy[i]);
+    strCopy.str_String[i] = tolower(static_cast<UBYTE>(strCopy[i]));
   }
 
   return strCopy;
@@ -322,7 +322,7 @@ CTString CTString::ToUpper(void) const {
   INDEX i = Length();
 
   while (--i >= 0) {
-    strCopy.Data()[i] = toupper(strCopy[i]);
+    strCopy.str_String[i] = toupper(static_cast<UBYTE>(strCopy[i]));
   }
 
   return strCopy;
@@ -340,7 +340,7 @@ ULONG CTString::GetHash(void) const
   INDEX len = Length();
 
   for(INDEX i=0; i<len; i++) {
-    ulKey = rotl_inline(ulKey, 4) + toupper(str_String[i]);
+    ulKey = rotl_inline(ulKey, 4) + toupper(static_cast<UBYTE>(str_String[i]));
   }
   return ulKey;
 }
