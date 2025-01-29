@@ -21,11 +21,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CTCriticalSection::CTCriticalSection(void) {};
 CTCriticalSection::~CTCriticalSection(void) {};
+
+#if SE1_INCOMPLETE_CPP11
+
 INDEX CTCriticalSection::Lock(void) { return 1; };
 INDEX CTCriticalSection::TryToLock(void) { return 1; };
 INDEX CTCriticalSection::Unlock(void) { return 0; };
 
 CTSingleLock::CTSingleLock(CTCriticalSection *pcs, BOOL bLock) : sl_cs(*pcs) {};
+
+#else
+
+CTSingleLock::CTSingleLock(CTCriticalSection *pcs, BOOL bLock) {};
+
+#endif // !SE1_INCOMPLETE_CPP11
+
 CTSingleLock::~CTSingleLock(void) {};
 void CTSingleLock::Lock(void) {};
 BOOL CTSingleLock::TryToLock(void) { return TRUE; };
