@@ -155,9 +155,10 @@ void CSoundAPI_DSound::PlayBuffers(void) {
   m_pDSSecondary->Play(0, 0, DSBPLAY_LOOPING);
 
   m_iWriteOffset = 0;
-  m_iWriteOffset2 = 0;
 
 #if SE1_SND_EAX
+  m_iWriteOffsetEAX = 0;
+
   // Adjust starting offsets for EAX
   if (m_bUsingEAX) {
     DWORD dwCursor1, dwCursor2;
@@ -181,18 +182,18 @@ void CSoundAPI_DSound::PlayBuffers(void) {
 
     // 2 because of stereo offsets
     if (slMinDelta < 0) m_iWriteOffset  = -slMinDelta * 2;
-    if (slMinDelta > 0) m_iWriteOffset2 = +slMinDelta * 2;
+    if (slMinDelta > 0) m_iWriteOffsetEAX = +slMinDelta * 2;
 
     // Round to 4 bytes
     m_iWriteOffset += m_iWriteOffset & 3;
-    m_iWriteOffset2 += m_iWriteOffset2 & 3;
+    m_iWriteOffsetEAX += m_iWriteOffsetEAX & 3;
 
     // Assure that first writing offsets are inside buffers
     if (m_iWriteOffset >= m_slMixerBufferSize) m_iWriteOffset -= m_slMixerBufferSize;
-    if (m_iWriteOffset2 >= m_slMixerBufferSize) m_iWriteOffset2 -= m_slMixerBufferSize;
+    if (m_iWriteOffsetEAX >= m_slMixerBufferSize) m_iWriteOffsetEAX -= m_slMixerBufferSize;
 
     ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_slMixerBufferSize);
-    ASSERT(m_iWriteOffset2 >= 0 && m_iWriteOffset2 < m_slMixerBufferSize);
+    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_slMixerBufferSize);
   }
 #endif // SE1_SND_EAX
 };
@@ -331,11 +332,12 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
     // Made it
     m_bUsingEAX = TRUE;
   }
+
+  m_iWriteOffsetEAX = 0;
 #endif // SE1_SND_EAX
 
   // Mark that DirectSound is operative and set mixer buffer size (decoder buffer always works at 44khz)
   m_iWriteOffset = 0;
-  m_iWriteOffset2 = 0;
   m_slMixerBufferSize = slBufferSize;
   m_slDecodeBufferSize = CalculateDecoderSize(wfe);
 
@@ -428,17 +430,17 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
     // Lock right buffer and copy first part of the 2nd mono block
     if (!LockBuffer(m_pDSSecondary2, m_slMixerBufferSize, lpData, dwSize)) return;
 
-    slPart1Size = Min(m_slMixerBufferSize - m_iWriteOffset2, slMixedSize);
-    CopyMixerBuffer_mono(2, ((UBYTE *)lpData) + m_iWriteOffset2 / 2, slPart1Size);
+    slPart1Size = Min(m_slMixerBufferSize - m_iWriteOffsetEAX, slMixedSize);
+    CopyMixerBuffer_mono(2, ((UBYTE *)lpData) + m_iWriteOffsetEAX / 2, slPart1Size);
 
     // Copy second part of the 2nd mono block
     slPart2Size = slMixedSize - slPart1Size;
     CopyMixerBuffer_mono(slPart1Size + 2, lpData, slPart2Size);
 
-    m_iWriteOffset2 += slMixedSize;
-    if (m_iWriteOffset2 >= m_slMixerBufferSize) m_iWriteOffset2 -= m_slMixerBufferSize;
+    m_iWriteOffsetEAX += slMixedSize;
+    if (m_iWriteOffsetEAX >= m_slMixerBufferSize) m_iWriteOffsetEAX -= m_slMixerBufferSize;
 
-    ASSERT(m_iWriteOffset2 >= 0 && m_iWriteOffset2 < m_slMixerBufferSize);
+    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_slMixerBufferSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);
     return;
   }
@@ -494,7 +496,7 @@ SLONG CSoundAPI_DSound::PrepareSoundBuffer(void)
     ASSERT(slDataToMix1 >= 0 && slDataToMix1 <= m_slMixerBufferSize);
     slDataToMix1 = Min(slDataToMix1, m_slMixerBufferSize);
 
-    SLONG slDataToMix2 = dwCurrentCursor2 - m_iWriteOffset2;
+    SLONG slDataToMix2 = dwCurrentCursor2 - m_iWriteOffsetEAX;
     if (slDataToMix2 < 0) slDataToMix2 += m_slMixerBufferSize;
 
     ASSERT(slDataToMix2 >= 0 && slDataToMix2 <= m_slMixerBufferSize);
@@ -551,10 +553,11 @@ void CSoundAPI_DSound::Mute(BOOL &bSetSoundMuted) {
 #endif
 };
 
+#if SE1_SND_EAX
+
 // Set listener enviroment properties for EAX
 BOOL CSoundAPI_DSound::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize)
 {
-#if SE1_SND_EAX
   if (!m_bUsingEAX) return FALSE;
 
   // Trim values
@@ -575,16 +578,15 @@ BOOL CSoundAPI_DSound::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize)
   if (hResult != DS_OK) return Fail(TRANS("  ! EAX error: Cannot set environment size.\n"));
 
   return TRUE;
-
-#else
-  return FALSE;
-#endif
 };
+
+#endif // SE1_SND_EAX
 
 void CSoundAPI_DSound::UpdateEAX(void) {
   // Make sure that the buffers are playing
   PlayBuffers();
 
+#if SE1_SND_EAX
   // Determine number of listeners and get listener
   INDEX ctListeners = 0;
   CSoundListener *sli;
@@ -610,7 +612,6 @@ void CSoundAPI_DSound::UpdateEAX(void) {
     SetEnvironment(m_iLastEnvType, m_fLastEnvSize);
   }
 
-#if SE1_SND_EAX
   // Adjust panning if needed
   snd_fEAXPanning = Clamp(snd_fEAXPanning, -1.0f, +1.0f);
 

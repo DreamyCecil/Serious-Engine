@@ -31,36 +31,37 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
   public:
     HINSTANCE m_hDSoundLib;
     OS::Window m_wndCurrent;
+    LPDIRECTSOUND m_pDS; // DirectSound handle
 
-    LPDIRECTSOUND           m_pDS;           // DirectSound handle
-    LPDIRECTSOUNDBUFFER     m_pDSPrimary;
-    LPDIRECTSOUNDBUFFER     m_pDSSecondary;  // 2D usage
+    LPDIRECTSOUNDBUFFER m_pDSPrimary;
+    LPDIRECTSOUNDBUFFER m_pDSSecondary; // 2D usage
+    INDEX m_iWriteOffset;
 
   #if SE1_SND_EAX
     BOOL m_bUsingEAX;
 
-    LPKSPROPERTYSET         m_pKSProperty;   // EAX properties
-    LPDIRECTSOUNDBUFFER     m_pDSSecondary2;
-    LPDIRECTSOUND3DLISTENER m_pDSListener;   // 3D EAX
-    LPDIRECTSOUND3DBUFFER   m_pDSSourceLeft;
-    LPDIRECTSOUND3DBUFFER   m_pDSSourceRight;
-  #endif
+    LPKSPROPERTYSET m_pKSProperty; // EAX properties
+    LPDIRECTSOUNDBUFFER m_pDSSecondary2;
+    LPDIRECTSOUND3DLISTENER m_pDSListener; // 3D EAX
+    LPDIRECTSOUND3DBUFFER m_pDSSourceLeft;
+    LPDIRECTSOUND3DBUFFER m_pDSSourceRight;
+    INDEX m_iWriteOffsetEAX;
 
-    INDEX m_iWriteOffset;
-    INDEX m_iWriteOffset2;
     INDEX m_iLastEnvType;
     FLOAT m_fLastEnvSize;
     FLOAT m_fLastPanning;
+  #endif
 
   public:
     // Constructor
     CSoundAPI_DSound() : CAbstractSoundAPI() {
       m_hDSoundLib = NULL;
       m_wndCurrent = NULL;
+      m_pDS = NULL;
 
-      m_pDS            = NULL;
-      m_pDSPrimary     = NULL;
-      m_pDSSecondary   = NULL;
+      m_pDSPrimary = NULL;
+      m_pDSSecondary = NULL;
+      m_iWriteOffset = 0;
 
     #if SE1_SND_EAX
       m_bUsingEAX = FALSE;
@@ -70,13 +71,12 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
       m_pDSListener    = NULL;
       m_pDSSourceLeft  = NULL;
       m_pDSSourceRight = NULL;
-    #endif
+      m_iWriteOffsetEAX = 0;
 
-      m_iWriteOffset  = 0;
-      m_iWriteOffset2 = 0;
       m_iLastEnvType = 1234;
       m_fLastEnvSize = 1234;
       m_fLastPanning = 1234;
+    #endif
     };
 
     virtual ESoundAPI GetType(void) {
@@ -89,8 +89,10 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
     BOOL LockBuffer(LPDIRECTSOUNDBUFFER pBuffer, SLONG slSize, LPVOID &lpData, DWORD &dwSize);
     void PlayBuffers(void);
 
+  #if SE1_SND_EAX
     // Set listener enviroment properties for EAX
     BOOL SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize);
+  #endif
 
   public:
     virtual BOOL StartUp(BOOL bReport);
