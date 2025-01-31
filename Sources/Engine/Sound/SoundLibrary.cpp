@@ -238,12 +238,16 @@ void CSoundLibrary::SetFormat_internal(CSoundLibrary::SoundFormat EsfNew, BOOL b
 
   // [Cecil] Try creating interfaces until one succeeds
   for (INDEX iCheck = snd_iInterface; iCheck >= 0; iCheck--) {
+    CAbstractSoundAPI::ESoundAPI eAPI = (CAbstractSoundAPI::ESoundAPI)iCheck;
+
     // Create a new interface
     DestroyInterface();
-    sl_pInterface = CAbstractSoundAPI::CreateAPI((CAbstractSoundAPI::ESoundAPI)iCheck);
+    sl_pInterface = CAbstractSoundAPI::CreateAPI(eAPI);
 
     // Set and start it up
-    snd_iInterface = iCheck;
+    snd_iInterface = eAPI;
+    if (bReport) CPrintF(TRANS("%s initialization...\n"), CAbstractSoundAPI::GetApiName(eAPI).ConstData());
+
     bSoundOK = sl_pInterface->StartUp(bReport);
 
     // Setting succeeded
@@ -322,7 +326,7 @@ void CSoundLibrary::Init(void)
   sl_ctWaveDevices = (INDEX)SDL_GetNumAudioDevices(0);
   CPrintF(TRANS("  Detected devices: %d\n"), sl_ctWaveDevices);
 
-  for (int iDevice = 0; iDevice < sl_ctWaveDevices; iDevice++) {
+  for (INDEX iDevice = 0; iDevice < sl_ctWaveDevices; iDevice++) {
     CPrintF(TRANS("    device %d: %s\n"), iDevice, SDL_GetAudioDeviceName(iDevice, 0));
   }
 

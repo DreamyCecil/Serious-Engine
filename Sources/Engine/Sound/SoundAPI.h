@@ -66,16 +66,20 @@ class ENGINE_API CAbstractSoundAPI {
     virtual ~CAbstractSoundAPI();
 
     // Calculate mixer buffer size
-    SLONG CalculateMixerSize(const WAVEFORMATEX &wfe);
+    SLONG CalculateMixerSize(void);
 
     // Calculate decoder buffer size (only after mixer size)
-    SLONG CalculateDecoderSize(const WAVEFORMATEX &wfe);
+    SLONG CalculateDecoderSize(void);
 
     // Allocate new buffer memory
-    void AllocBuffers(void);
+    // Must always be called from interface's StartUp() method
+    void AllocBuffers(BOOL bAlignToBlockSize);
 
     // Free buffer memory
     void FreeBuffers(void);
+
+    // Report generic info about an interface
+    void ReportGenericInfo(void);
 
     // Get API name from type
     static const CTString &GetApiName(ESoundAPI eAPI);

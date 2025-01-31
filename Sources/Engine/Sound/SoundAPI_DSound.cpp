@@ -29,8 +29,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define MINPAN (1.0f)
 #define MAXPAN (9.0f)
 
-extern FLOAT snd_tmMixAhead;
-extern INDEX snd_iDevice;
 extern INDEX snd_iInterface;
 extern FLOAT snd_fEAXPanning;
 
@@ -202,8 +200,6 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   ASSERT(m_hDSoundLib == NULL && m_pDS == NULL);
   ASSERT(m_pDSSecondary == NULL && m_pDSPrimary == NULL);
 
-  if (bReport) CPrintF(TRANS("Direct Sound initialization ...\n"));
-
   m_hDSoundLib = OS::LoadLib("dsound.dll");
 
   if (m_hDSoundLib == NULL) {
@@ -264,21 +260,22 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   if(hResult != DS_OK) return Fail(TRANS("  ! DirectSound error: Cannot create primary sound buffer.\n"));
 
   // Set primary buffer format
-  WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
 
   hResult = m_pDSPrimary->SetFormat(&wfe);
   if (hResult != DS_OK) return Fail(TRANS("  ! DirectSound error: Cannot set primary sound buffer format.\n"));
 
-  // Start up secondary sound buffers
-  SLONG slBufferSize = CalculateMixerSize(wfe);
+  // Allocate mixer buffers
+  AllocBuffers(FALSE);
 
-  if (!InitSecondary(m_pDSSecondary, slBufferSize)) return FALSE;
+  // Start up secondary sound buffers
+  if (!InitSecondary(m_pDSSecondary, m_slMixerBufferSize)) return FALSE;
 
 #if SE1_SND_EAX
   // Set some additionals for EAX
   if (snd_iInterface == E_SND_EAX) {
     // 2nd secondary buffer
-    if (!InitSecondary(m_pDSSecondary2, slBufferSize)) return FALSE;
+    if (!InitSecondary(m_pDSSecondary2, m_slMixerBufferSize)) return FALSE;
 
     // Set 3D for all buffers
     HRESULT hr1, hr2, hr3, hr4;
@@ -334,27 +331,17 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   }
 
   m_iWriteOffsetEAX = 0;
+
+  if (bReport) {
+    CPrintF(TRANS("  EAX: %s\n"), m_bUsingEAX ? TRANS("Enabled") : TRANS("Disabled"));
+  }
 #endif // SE1_SND_EAX
 
-  // Mark that DirectSound is operative and set mixer buffer size (decoder buffer always works at 44khz)
+  // Mark that DirectSound is operative
   m_iWriteOffset = 0;
-  m_slMixerBufferSize = slBufferSize;
-  m_slDecodeBufferSize = CalculateDecoderSize(wfe);
 
-  AllocBuffers();
-
-  // Report success
   if (bReport) {
-    CTString strDevice = TRANS("default device");
-    if (snd_iDevice >= 0) strDevice.PrintF(TRANS("device %d"), snd_iDevice);
-
-    CPrintF(TRANS("  %dHz, %dbit, %s, mix-ahead: %gs\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, strDevice.ConstData(), snd_tmMixAhead);
-    CPrintF(TRANS("  mixer buffer size:  %d KB\n"), m_slMixerBufferSize / 1024);
-    CPrintF(TRANS("  decode buffer size: %d KB\n"), m_slDecodeBufferSize / 1024);
-
-  #if SE1_SND_EAX
-    CPrintF(TRANS("  EAX: %s\n"), m_bUsingEAX ? TRANS("Enabled") : TRANS("Disabled"));
-  #endif
+    ReportGenericInfo();
   }
 
   return TRUE;

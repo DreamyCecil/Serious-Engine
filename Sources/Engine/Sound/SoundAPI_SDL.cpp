@@ -21,9 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
-extern INDEX snd_iDevice;
-extern FLOAT snd_tmMixAhead;
-
 static void AudioCallback(void *pUserData, Uint8 *pubStream, int iLength) {
   CSoundAPI_SDL *pAPI = (CSoundAPI_SDL *)pUserData;
 
@@ -92,10 +89,6 @@ static void AudioCallback(void *pUserData, Uint8 *pubStream, int iLength) {
 };
 
 BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
-  snd_iDevice = 0;
-
-  if (bReport) CPrintF(TRANS("SDL audio initialization ...\n"));
-
   SDL_AudioSpec desired, obtained;
   SDL_zero(desired);
   SDL_zero(obtained);
@@ -147,6 +140,9 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
     return FALSE;
   }
 
+  // Allocate mixer buffers
+  AllocBuffers(TRUE);
+
   m_ubSilence = obtained.silence;
   m_slBackBufferAlloc = (obtained.size * 4);
   m_pBackBuffer = (Uint8 *)AllocMemory(m_slBackBufferAlloc);
@@ -156,24 +152,10 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
   // Report success
   if (bReport) {
     CPrintF(TRANS("  opened device: %s\n"), strDeviceName);
-    CPrintF(TRANS("  %dHz, %dbit, %s\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, SDL_GetCurrentAudioDriver());
-  }
-
-  // Determine whole mixer buffer size
-  m_slMixerBufferSize = CalculateMixerSize(wfe);
-
-  // Align size to be next multiply of WAVEOUTBLOCKSIZE
-  m_slMixerBufferSize += WAVEOUTBLOCKSIZE - (m_slMixerBufferSize % WAVEOUTBLOCKSIZE);
-  m_slDecodeBufferSize = CalculateDecoderSize(wfe);
-
-  if (bReport) {
-    CPrintF(TRANS("  parameters: %d Hz, %d bit, stereo, mix-ahead: %gs\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, snd_tmMixAhead);
+    CPrintF(TRANS("  audio driver: %s\n"), SDL_GetCurrentAudioDriver());
     CPrintF(TRANS("  output buffers: %d x %d bytes\n"), 2, obtained.size);
-    CPrintF(TRANS("  mpx decode: %d bytes\n"), m_slDecodeBufferSize);
+    ReportGenericInfo();
   }
-
-  // Initialize mixing and decoding buffers
-  AllocBuffers();
 
   // Audio callback can now safely fill the audio stream with silence until there is actual audio data to mix
   SDL_PauseAudioDevice(m_iAudioDevice, 0);

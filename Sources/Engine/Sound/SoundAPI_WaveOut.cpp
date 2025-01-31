@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #if SE1_WIN && SE1_SND_WAVEOUT
 
-extern FLOAT snd_tmMixAhead;
 extern INDEX snd_iDevice;
 extern INDEX snd_iMaxOpenRetries;
 extern INDEX snd_iMaxExtraChannels;
@@ -31,9 +30,7 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   static INDEX _ctChannelsOpened;
   _ctChannelsOpened = 0;
 
-  if (bReport) CPrintF(TRANS("WaveOut initialization ...\n"));
-
-  WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
 
   // Set maximum total number of retries for device opening
   INDEX ctMaxRetries = snd_iMaxOpenRetries;
@@ -72,7 +69,7 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
       }
 
       // Wait a bit (probably sound-scheme is playing)
-      _pTimer->Suspend(ULONG(snd_tmOpenFailDelay) * 1000);
+      _pTimer->Suspend(ULONG(snd_tmOpenFailDelay * 1000.0f));
     }
   }
 
@@ -95,36 +92,27 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
     return FALSE;
   }
 
+  // Allocate mixer buffers
+  AllocBuffers(TRUE);
+
   // Get WaveOut capabilities
   WAVEOUTCAPS woc;
   memset(&woc, 0, sizeof(woc));
 
   res = waveOutGetDevCaps((UINT_PTR)m_hwoWaveOut, &woc, sizeof(woc));
 
-  // Report success
-  if (bReport) {
-    CTString strDevice = TRANS("default device");
-    if (snd_iDevice >= 0) strDevice.PrintF(TRANS("device %d"), snd_iDevice);
-
-    CPrintF(TRANS("  opened device: %s\n"), woc.szPname);
-    CPrintF(TRANS("  %dHz, %dbit, %s\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, strDevice.ConstData());
-  }
-
-  // Determine whole mixer buffer size
-  m_slMixerBufferSize = CalculateMixerSize(wfe);
-
-  // Align size to be next multiply of WAVEOUTBLOCKSIZE
-  m_slMixerBufferSize += WAVEOUTBLOCKSIZE - (m_slMixerBufferSize % WAVEOUTBLOCKSIZE);
-  m_slDecodeBufferSize = CalculateDecoderSize(wfe);
-
   // Determine number of WaveOut buffers
   const INDEX ctWOBuffers = m_slMixerBufferSize / WAVEOUTBLOCKSIZE;
 
+  // Report success
   if (bReport) {
-    CPrintF(TRANS("  parameters: %d Hz, %d bit, stereo, mix-ahead: %gs\n"), wfe.nSamplesPerSec, wfe.wBitsPerSample, snd_tmMixAhead);
-    CPrintF(TRANS("  output buffers: %d x %d bytes\n"), ctWOBuffers, WAVEOUTBLOCKSIZE),
-    CPrintF(TRANS("  mpx decode: %d bytes\n"), m_slDecodeBufferSize),
+    CTString strDevice = TRANS("default");
+    if (snd_iDevice >= 0) strDevice.PrintF("%d", snd_iDevice);
+
+    CPrintF(TRANS("  opened device (%s): %s\n"), strDevice.ConstData(), woc.szPname);
+    CPrintF(TRANS("  output buffers: %d x %d bytes\n"), ctWOBuffers, WAVEOUTBLOCKSIZE);
     CPrintF(TRANS("  extra sound channels taken: %d\n"), _ctChannelsOpened-1);
+    ReportGenericInfo();
   }
 
   // Initialize WaveOut sound buffers
@@ -141,7 +129,6 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
     wh.dwFlags = 0;
   }
 
-  AllocBuffers();
   return TRUE;
 };
 

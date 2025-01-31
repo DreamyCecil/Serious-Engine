@@ -23,6 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Sound/SoundAPI_SDL.h>
 #include <Engine/Sound/SoundAPI_WaveOut.h>
 
+extern FLOAT snd_tmMixAhead;
+
 CAbstractSoundAPI::CAbstractSoundAPI() {
   m_pslMixerBuffer = NULL;
   m_slMixerBufferSize = 0;
@@ -36,21 +38,31 @@ CAbstractSoundAPI::~CAbstractSoundAPI() {
 };
 
 // Calculate mixer buffer size
-SLONG CAbstractSoundAPI::CalculateMixerSize(const WAVEFORMATEX &wfe) {
-  extern FLOAT snd_tmMixAhead;
+SLONG CAbstractSoundAPI::CalculateMixerSize(void) {
+  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
   return SLONG(ceil(snd_tmMixAhead * wfe.nSamplesPerSec) * wfe.wBitsPerSample / 8 * wfe.nChannels);
 };
 
 // Calculate decoder buffer size (only after mixer size)
-SLONG CAbstractSoundAPI::CalculateDecoderSize(const WAVEFORMATEX &wfe) {
+SLONG CAbstractSoundAPI::CalculateDecoderSize(void) {
   // Decoder buffer always works at 44khz
+  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
   return m_slMixerBufferSize * ((44100 + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
 };
 
 // Allocate new buffer memory
-void CAbstractSoundAPI::AllocBuffers(void) {
+void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
   ASSERT(m_pslMixerBuffer == NULL);
   ASSERT(m_pswDecodeBuffer == NULL);
+
+  // Determine initial buffer sizes
+  m_slMixerBufferSize = CalculateMixerSize();
+  m_slDecodeBufferSize = CalculateDecoderSize();
+
+  // Align mixer size to be the next multiple of WAVEOUTBLOCKSIZE
+  if (bAlignToBlockSize) {
+    m_slMixerBufferSize += WAVEOUTBLOCKSIZE - (m_slMixerBufferSize % WAVEOUTBLOCKSIZE);
+  }
 
   // Twice as much because of 32-bit buffer
   m_pslMixerBuffer = (SLONG *)AllocMemory(m_slMixerBufferSize * 2);
@@ -68,6 +80,18 @@ void CAbstractSoundAPI::FreeBuffers(void) {
   if (m_pswDecodeBuffer != NULL) FreeMemory(m_pswDecodeBuffer);
   m_pswDecodeBuffer = NULL;
   m_slDecodeBufferSize = 0;
+};
+
+// Report generic info about an interface
+void CAbstractSoundAPI::ReportGenericInfo(void) {
+  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  CPrintF(TRANS("Sound interface info:\n"));
+
+  CPrintF(TRANS("  %d Hz, %d bit, %d channels, mix-ahead: %gs\n"),
+    wfe.nSamplesPerSec, wfe.wBitsPerSample, wfe.nChannels, snd_tmMixAhead);
+
+  CPrintF(TRANS("  mixer buffer size:  %d bytes\n"), m_slMixerBufferSize);
+  CPrintF(TRANS("  decode buffer size: %d bytes\n"), m_slDecodeBufferSize);
 };
 
 // Get API name from type
