@@ -15,22 +15,11 @@ if(SE1_BUILD_X86)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 endif()
 
-# Use system libraries by default
+# Don't use system libraries by default
 option(USE_SYSTEM_SDL3 "Use systems SDL3 development files" OFF)
 option(USE_SYSTEM_ZLIB "Use systems zlib development files" OFF)
 
 option(USE_CCACHE "Set to ON to use ccache if present in the system" ${USE_CCACHE})
-
-# RAKE! Borrowed from dhewm3 project
-# Fallback for CMake versions without add_compile_options()
-if(NOT COMMAND add_compile_options)
-  function(add_compile_options)
-    foreach(arg ${ARGN})
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${arg}" PARENT_SCOPE)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}" PARENT_SCOPE)
-    endforeach()
-  endfunction()
-endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckCXXCompilerFlag)
@@ -96,15 +85,15 @@ add_subdirectory(Shaders)
 add_subdirectory(DedicatedServer)
 add_subdirectory(SeriousSam)
 
-# RAKE! Install Section.
+# Install executable files
 if(DEBUG)
-  install(TARGETS DedicatedServer SeriousSam Engine ${SHADERSLIB} ${GAMELIB} ${ENTITIESLIB}
+  install(TARGETS DedicatedServer SeriousSam
           RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin/Debug"
           LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin/Debug"
           ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin/Debug"
           PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 else()
-  install(TARGETS DedicatedServer SeriousSam Engine ${SHADERSLIB} ${GAMELIB} ${ENTITIESLIB}
+  install(TARGETS DedicatedServer SeriousSam
           RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin"
           LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin"
           ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin"
