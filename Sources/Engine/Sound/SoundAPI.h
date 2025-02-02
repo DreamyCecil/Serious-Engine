@@ -19,8 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // [Cecil] Needed here for EAX_ENVIRONMENT_* enum values
 #include <Engine/Sound/eax_envtypes.h>
 
-#define WAVEOUTBLOCKSIZE 1024
-
 class ENGINE_API CAbstractSoundAPI {
   public:
     enum ESoundAPI {
@@ -52,6 +50,9 @@ class ENGINE_API CAbstractSoundAPI {
     };
 
   public:
+    // Amount of data that can be stored in a single audio buffer in a multi-buffer interface
+    static const int ctBufferBlockSize;
+
     SLONG *m_pslMixerBuffer;     // buffer for mixing sounds (32-bit!)
     SLONG  m_slMixerBufferSize;  // mixer buffer size
 

@@ -25,6 +25,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern FLOAT snd_tmMixAhead;
 
+// Amount of data that can be stored in a single audio buffer in a multi-buffer interface
+const int CAbstractSoundAPI::ctBufferBlockSize = 1024;
+
 CAbstractSoundAPI::CAbstractSoundAPI() {
   m_pslMixerBuffer = NULL;
   m_slMixerBufferSize = 0;
@@ -59,9 +62,9 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
   m_slMixerBufferSize = CalculateMixerSize();
   m_slDecodeBufferSize = CalculateDecoderSize();
 
-  // Align mixer size to be the next multiple of WAVEOUTBLOCKSIZE
+  // Align mixer size to be the next multiple of the block size
   if (bAlignToBlockSize) {
-    m_slMixerBufferSize += WAVEOUTBLOCKSIZE - (m_slMixerBufferSize % WAVEOUTBLOCKSIZE);
+    m_slMixerBufferSize += ctBufferBlockSize - (m_slMixerBufferSize % ctBufferBlockSize);
   }
 
   // Twice as much because of 32-bit buffer
