@@ -120,6 +120,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifndef SE1_SND_EAX
 #define SE1_SND_EAX       0 // Implement EAX support via DirectSound, if it's enabled (0 - Disabled; 1 - Enabled)
 #endif
+
+// Sound API switches for any platform
+
 #ifndef SE1_SND_SDLAUDIO
 #define SE1_SND_SDLAUDIO  1 // Implement sound using SDL Audio regardless of SE1_USE_SDL (0 - Disabled; 1 - Enabled)
 #endif

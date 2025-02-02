@@ -116,9 +116,9 @@ const CTString &CAbstractSoundAPI::GetApiName(CAbstractSoundAPI::ESoundAPI eAPI)
   #endif // SE1_SND_DSOUND
   #endif // SE1_WIN
 
-  #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+  #if SE1_SND_SDLAUDIO
     "SDL Audio",
-  #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+  #endif // SE1_SND_SDLAUDIO
   };
 
   return astrApiNames[eAPI];
@@ -139,9 +139,9 @@ CAbstractSoundAPI *CAbstractSoundAPI::CreateAPI(CAbstractSoundAPI::ESoundAPI eAP
   #endif // SE1_SND_DSOUND
   #endif // SE1_WIN
 
-  #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+  #if SE1_SND_SDLAUDIO
     case E_SND_SDL:     return new CSoundAPI_SDL;
-  #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+  #endif // SE1_SND_SDLAUDIO
 
     // Invalid API
     default: {

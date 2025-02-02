@@ -176,7 +176,7 @@ static void PrintAudioDevices(void) {
     } break;
   #endif // SE1_WIN && SE1_SND_WAVEOUT
 
-  #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+  #if SE1_SND_SDLAUDIO
     case CAbstractSoundAPI::E_SND_SDL: {
       int ctDevices;
       SDL_AudioDeviceID *aDevices = SDL_GetAudioPlaybackDevices(&ctDevices);
@@ -195,7 +195,7 @@ static void PrintAudioDevices(void) {
         CPrintF(TRANS("Cannot detect available audio devices! SDL Error: %s\n"), SDL_GetError());
       }
     } break;
-  #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+  #endif // SE1_SND_SDLAUDIO
 
     default: {
       CPrintF(TRANS("Audio device selection is not available for this sound API.\n"));

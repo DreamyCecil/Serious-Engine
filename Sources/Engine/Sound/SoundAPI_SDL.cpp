@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Sound/SoundAPI_SDL.h>
 #include <Engine/Sound/SoundLibrary.h>
 
-#if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+#if SE1_SND_SDLAUDIO
 
 // Write some audio data into a stream
 void CSoundAPI_SDL::WriteAudioData(UBYTE *pubStream, SLONG slStreamSize) {
@@ -229,4 +229,4 @@ void CSoundAPI_SDL::Mute(BOOL &bSetSoundMuted) {
   SDL_UnlockAudioStream(m_pAudioStream);
 };
 
-#endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+#endif // SE1_SND_SDLAUDIO

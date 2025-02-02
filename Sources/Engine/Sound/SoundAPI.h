@@ -40,9 +40,9 @@ class ENGINE_API CAbstractSoundAPI {
     #endif // SE1_WIN
 
       // Cross-platform APIs
-    #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+    #if SE1_SND_SDLAUDIO
       E_SND_SDL,
-    #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+    #endif // SE1_SND_SDLAUDIO
 
       // [Cecil] NOTE: This should always be at least 1 under any configuration
       E_SND_MAX,
