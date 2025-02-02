@@ -197,6 +197,7 @@
     <Link>
       <ModuleDefinitionFile>ogg.def</ModuleDefinitionFile>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -251,6 +252,7 @@
     <Link>
       <ModuleDefinitionFile>ogg.def</ModuleDefinitionFile>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
@@ -309,6 +311,7 @@
     <Link>
       <ModuleDefinitionFile>ogg.def</ModuleDefinitionFile>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -374,6 +377,7 @@
     <Link>
       <ModuleDefinitionFile>ogg.def</ModuleDefinitionFile>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
