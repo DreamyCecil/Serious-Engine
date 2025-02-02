@@ -57,9 +57,10 @@ class CSoundAPI_SDL : public CAbstractSoundAPI {
     virtual BOOL StartUp(BOOL bReport);
     virtual void ShutDown(void);
 
+    void WriteAudioData(UBYTE *pubStream, SLONG slStreamSize);
+
     virtual void CopyMixerBuffer(SLONG slMixedSize);
     virtual SLONG PrepareSoundBuffer(void);
-
     virtual void Mute(BOOL &bSetSoundMuted);
 };
 
