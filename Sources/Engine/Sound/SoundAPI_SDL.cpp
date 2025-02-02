@@ -21,6 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #if SE1_SND_SDLAUDIO
 
+extern INDEX snd_iDevice;
+
 // Write some audio data into a stream
 void CSoundAPI_SDL::WriteAudioData(UBYTE *pubStream, SLONG slStreamSize) {
   ASSERT(m_pBackBuffer != NULL);
@@ -125,8 +127,26 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
     return FALSE;
   }
 
+  // Determine the audio device to open
+  SDL_AudioDeviceID iDeviceToOpen = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+  CTString strDevice = TRANS("default");
+
+  if (snd_iDevice >= 0) {
+    int ctDevices;
+    SDL_AudioDeviceID *aDevices = SDL_GetAudioPlaybackDevices(&ctDevices);
+
+    if (aDevices != NULL) {
+      int iDevice = ClampUp(snd_iDevice, ctDevices - 1);
+
+      iDeviceToOpen = aDevices[iDevice];
+      strDevice.PrintF("%d", iDevice);
+
+      SDL_free(aDevices);
+    }
+  }
+
   const SDL_AudioSpec spec = { formatSet, wfe.nChannels, wfe.nSamplesPerSec };
-  m_pAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &AudioCallback, this);
+  m_pAudioStream = SDL_OpenAudioDeviceStream(iDeviceToOpen, &spec, &AudioCallback, this);
 
   if (m_pAudioStream == NULL) {
     CPrintF(TRANS("SDL_OpenAudioDeviceStream() error: %s\n"), SDL_GetError());
@@ -144,7 +164,7 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
 
   // Report success
   if (bReport) {
-    CPrintF(TRANS("  opened device: %s\n"), SDL_GetAudioDeviceName(SDL_GetAudioStreamDevice(m_pAudioStream)));
+    CPrintF(TRANS("  opened device (%s): %s\n"), strDevice.ConstData(), SDL_GetAudioDeviceName(SDL_GetAudioStreamDevice(m_pAudioStream)));
     CPrintF(TRANS("  audio driver: %s\n"), SDL_GetCurrentAudioDriver());
     ReportGenericInfo();
   }
