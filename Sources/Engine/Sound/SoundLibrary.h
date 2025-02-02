@@ -71,8 +71,6 @@ public:
 
   SoundFormat sl_EsfFormat; // sound format (external)
   CAbstractSoundAPI *sl_pInterface; // [Cecil] Currently used interface
-
-  INDEX sl_ctWaveDevices; // number of devices detected
   WAVEFORMATEX sl_SwfeFormat; // primary sound buffer format
 
   CListHead sl_ClhAwareList; // list of sound mode aware objects

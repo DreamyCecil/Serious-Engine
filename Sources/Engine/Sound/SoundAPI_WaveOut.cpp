@@ -36,10 +36,24 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   INDEX ctMaxRetries = snd_iMaxOpenRetries;
   MMRESULT res;
 
+  // [Cecil] Limit device number to the available WaveOut devices
+  UINT uDeviceToOpen = WAVE_MAPPER;
+  CTString strDevice = TRANS("default");
+
+  if (snd_iDevice >= 0) {
+    const INDEX ctDevices = (INDEX)waveOutGetNumDevs();
+
+    // Select a specific device only if there are any
+    if (ctDevices != 0) {
+      uDeviceToOpen = (UINT)ClampUp(snd_iDevice, ctDevices - 1);
+      strDevice.PrintF("%u", uDeviceToOpen);
+    }
+  }
+
   FOREVER {
     // Try to open wave device
     HWAVEOUT hwo;
-    res = waveOutOpen(&hwo, (snd_iDevice < 0) ? WAVE_MAPPER : snd_iDevice, &wfe, NULL, NULL, NONE);
+    res = waveOutOpen(&hwo, uDeviceToOpen, &wfe, NULL, NULL, NONE);
 
     if (res == MMSYSERR_NOERROR) {
       _ctChannelsOpened++;
@@ -106,9 +120,6 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
 
   // Report success
   if (bReport) {
-    CTString strDevice = TRANS("default");
-    if (snd_iDevice >= 0) strDevice.PrintF("%d", snd_iDevice);
-
     CPrintF(TRANS("  opened device (%s): %s\n"), strDevice.ConstData(), woc.szPname);
     CPrintF(TRANS("  output buffers: %d x %d bytes\n"), ctWOBuffers, WAVEOUTBLOCKSIZE);
     CPrintF(TRANS("  extra sound channels taken: %d\n"), _ctChannelsOpened-1);

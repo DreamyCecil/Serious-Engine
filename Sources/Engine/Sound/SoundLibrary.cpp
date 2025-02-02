@@ -147,13 +147,59 @@ static void SndPostFunc(void *pArgs)
   // clamp variables
   snd_tmMixAhead = Clamp(snd_tmMixAhead, 0.1f, 0.9f);
   snd_iFormat    = Clamp(snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
-  snd_iDevice    = Clamp(snd_iDevice, -1L, 15L);
+  snd_iDevice    = ClampDn(snd_iDevice, -1); // [Cecil] Only down to -1, which is "default audio device"
   snd_iInterface = Clamp(snd_iInterface, 0L, CAbstractSoundAPI::E_SND_MAX - 1); // [Cecil] Until max interfaces
   // if any variable has been changed
   if( _tmLastMixAhead!=snd_tmMixAhead || _iLastFormat!=snd_iFormat
    || _iLastDevice!=snd_iDevice || _iLastAPI!=snd_iInterface) {
     // reinit sound format
     _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat, TRUE);
+  }
+};
+
+// [Cecil] Display available audio devices for the current sound API
+static void PrintAudioDevices(void) {
+  switch (_pSound->sl_pInterface->GetType())
+  {
+  #if SE1_WIN && SE1_SND_WAVEOUT
+    case CAbstractSoundAPI::E_SND_WAVEOUT: {
+      const INDEX ctDevices = (INDEX)waveOutGetNumDevs();
+      CPrintF(TRANS("WaveOut devices: %d\n"), ctDevices);
+
+      for (INDEX iDevice = 0; iDevice < ctDevices; iDevice++) {
+        WAVEOUTCAPS woc;
+        memset(&woc, 0, sizeof(woc));
+
+        MMRESULT res = waveOutGetDevCaps(iDevice, &woc, sizeof(woc));
+        CPrintF(TRANS("  device %d: %s\n"), iDevice, woc.szPname);
+      }
+    } break;
+  #endif // SE1_WIN && SE1_SND_WAVEOUT
+
+  #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+    case CAbstractSoundAPI::E_SND_SDL: {
+      int ctDevices;
+      SDL_AudioDeviceID *aDevices = SDL_GetAudioPlaybackDevices(&ctDevices);
+
+      if (aDevices != NULL) {
+        CPrintF(TRANS("SDL Audio devices: %d\n"), ctDevices);
+
+        for (int iDevice = 0; iDevice < ctDevices; iDevice++) {
+          SDL_AudioDeviceID iID = aDevices[iDevice];
+          CPrintF(TRANS("  device %d: %s\n"), iDevice, SDL_GetAudioDeviceName(iID));
+        }
+
+        SDL_free(aDevices);
+
+      } else {
+        CPrintF(TRANS("Cannot detect available audio devices! SDL Error: %s\n"), SDL_GetError());
+      }
+    } break;
+  #endif // SE1_PREFER_SDL || SE1_SND_SDLAUDIO
+
+    default: {
+      CPrintF(TRANS("Audio device selection is not available for this sound API.\n"));
+    }
   }
 };
 
@@ -230,7 +276,7 @@ void CSoundLibrary::SetFormat_internal(CSoundLibrary::SoundFormat EsfNew, BOOL b
 
   // set wave format from library format
   SetWaveFormat(EsfNew);
-  snd_iDevice    = Clamp(snd_iDevice, -1L, (INDEX)(sl_ctWaveDevices-1));
+  snd_iDevice    = ClampDn(snd_iDevice, -1); // [Cecil] Only down to -1, which is "default audio device"
   snd_tmMixAhead = Clamp(snd_tmMixAhead, 0.1f, 0.9f);
   snd_iInterface = Clamp(snd_iInterface, 0L, CAbstractSoundAPI::E_SND_MAX - 1); // [Cecil] Until max interfaces
 
@@ -306,6 +352,9 @@ void CSoundLibrary::Init(void)
   _pShell->DeclareSymbol( "persistent user FLOAT snd_tmOpenFailDelay;",   &snd_tmOpenFailDelay);
   _pShell->DeclareSymbol( "persistent user FLOAT snd_fEAXPanning;", &snd_fEAXPanning);
 
+  // [Cecil] Display available audio devices for the current sound API
+  _pShell->DeclareSymbol("user void snd_ListDevices(void);", &PrintAudioDevices);
+
   // [Cecil] Ignore sounds on a dedicated server
   if (_SE1Setup.IsAppServer()) {
     CPrintF(TRANS("Skipping initialization of sound for dedicated servers...\n"));
@@ -320,46 +369,6 @@ void CSoundLibrary::Init(void)
 
   // initialize any installed sound decoders
   CSoundDecoder::InitPlugins();
-
-#if SE1_PREFER_SDL
-  // [Cecil] SDL: List available audio devices
-  int ctDevices;
-  SDL_AudioDeviceID *aDevices = SDL_GetAudioPlaybackDevices(&ctDevices);
-
-  if (aDevices != NULL) {
-    sl_ctWaveDevices = ctDevices;
-
-    for (INDEX iDevice = 0; iDevice < sl_ctWaveDevices; iDevice++) {
-      SDL_AudioDeviceID iID = aDevices[iDevice];
-      CPrintF(TRANS("    device %d: %s\n"), iID, SDL_GetAudioDeviceName(iID));
-    }
-
-    SDL_free(aDevices);
-
-  } else {
-    CPrintF(TRANS("Cannot list available audio devices! SDL Error: %s\n"), SDL_GetError());
-  }
-
-#else
-  // get number of devices
-  const INDEX ctDevices = (INDEX)waveOutGetNumDevs();
-  CPrintF(TRANS("  Detected devices: %d\n"), ctDevices);
-  sl_ctWaveDevices = ctDevices;
-  
-  // for each device
-  for(INDEX iDevice=0; iDevice<ctDevices; iDevice++) {
-    // get description
-    WAVEOUTCAPS woc;
-    memset( &woc, 0, sizeof(woc));
-    MMRESULT res = waveOutGetDevCaps(iDevice, &woc, sizeof(woc));
-    CPrintF(TRANS("    device %d: %s\n"), 
-      iDevice, woc.szPname);
-    CPrintF(TRANS("      ver: %d, id: %d.%d\n"), 
-      woc.vDriverVersion, woc.wMid, woc.wPid);
-    CPrintF(TRANS("      form: 0x%08x, ch: %d, support: 0x%08x\n"), 
-      woc.dwFormats, woc.wChannels, woc.dwSupport);
-  }
-#endif // SE1_PREFER_SDL
 
   CPrintF("\n");
 };
