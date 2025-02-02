@@ -224,7 +224,7 @@
     <CustomBuildStep />
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(OutDir)$(TargetName).pdb" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
@@ -305,7 +305,7 @@
     <CustomBuildStep />
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(OutDir)$(TargetName).pdb" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
@@ -383,7 +383,7 @@
     <CustomBuildStep />
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(OutDir)$(TargetName).pdb" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
@@ -458,7 +458,7 @@
     <CustomBuildStep />
     <PostBuildEvent>
       <Message>Copying $(ProjectName) binaries into Bin</Message>
-      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul</Command>
+      <Command>copy "$(OutDir)$(TargetFileName)" "$(PostBuildCopyDir)" &gt;nul &amp;&amp; copy "$(OutDir)$(TargetName).pdb" "$(PostBuildCopyDir)" &gt;nul</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del "$(PostBuildCopyDir)$(TargetFileName)" /q &gt;nul</Command>
