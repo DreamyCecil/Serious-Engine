@@ -524,16 +524,18 @@ static void GAPInfo(void)
       if( _pGfx->gl_ulFlags&GLF_VSYNC) {
         #if !SE1_PREFER_SDL
           const int gliWaits = (int)pwglGetSwapIntervalEXT();
-          const char *strZero = "not readable\n";
+          const char *strInvalid = "not readable\n";
+
         #else
-          const int gliWaits = SDL_GL_GetSwapInterval();
-          const char *strZero = "adaptive vsync\n";
+          int gliWaits = -1;
+          if (!SDL_GL_GetSwapInterval(&gliWaits)) gliWaits = -1;
+          const char *strInvalid = "adaptive vsync\n";
         #endif
 
         if( gliWaits>=0) {
           ASSERT( gliWaits==_pGfx->gl_iSwapInterval);
           CPrintF( "%d frame(s)\n", gliWaits);
-        } else CPrintF(strZero);
+        } else CPutString(strInvalid);
       } else CPrintF( "not adjustable\n");
     }
     // report T-Buffer support
@@ -902,7 +904,7 @@ static void PrepareTables(void)
 static void InitGLEW(void) {
   // Create window and context for it
 #if SE1_PREFER_SDL
-  SDL_Window *pWnd = SDL_CreateWindow("temp_glew_init", 0, 0, 0, 0, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+  SDL_Window *pWnd = SDL_CreateWindow("temp_glew_init", 0, 0, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
 
   if (pWnd == NULL) {
     FatalError(TRANS("Window could not be created! SDL Error:\n%s"), SDL_GetError());
@@ -956,7 +958,7 @@ static void InitGLEW(void) {
 
   // Cleanup
 #if SE1_PREFER_SDL
-  SDL_GL_DeleteContext(pContext);
+  SDL_GL_DestroyContext(pContext);
   SDL_DestroyWindow(pWnd);
 
 #else
@@ -1070,16 +1072,16 @@ void CGfxLibrary::Init(void)
   CPutString(TRANS("Desktop settings...\n"));
 
   // [Cecil] Get bits per pixel and screen resolution with SDL
-  SDL_DisplayMode mode;
+  const SDL_DisplayMode *pMode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
 
-  if (SDL_GetDesktopDisplayMode(0, &mode) == 0) {
-    SLONG slBPP = SDL_BITSPERPIXEL(mode.format);
+  if (pMode != NULL) {
+    SLONG slBPP = SDL_BITSPERPIXEL(pMode->format);
     CPrintF(TRANS("  Color Depth: %dbit\n"), slBPP);
-    CPrintF(TRANS("  Screen: %dx%d\n"), mode.w, mode.h);
+    CPrintF(TRANS("  Screen: %dx%d\n"), pMode->w, pMode->h);
 
     // Remember monitor resolution
-    gfx_iMonitorW = mode.w;
-    gfx_iMonitorH = mode.h;
+    gfx_iMonitorW = pMode->w;
+    gfx_iMonitorH = pMode->h;
 
   } else {
     CPrintF(TRANS("Couldn't get desktop display mode: %s\n"), SDL_GetError());
@@ -1091,14 +1093,18 @@ void CGfxLibrary::Init(void)
   #endif
 
   // [Cecil] Get amount of displays with SDL and report any errors
-  gfx_ctMonitors = SDL_GetNumVideoDisplays();
+  int ctMonitors;
+  SDL_DisplayID *aDisplays = SDL_GetDisplays(&ctMonitors);
 
-  if (gfx_ctMonitors > 0) {
+  if (aDisplays != NULL) {
+    gfx_ctMonitors = ctMonitors;
     CPrintF(TRANS("  Monitors directly reported: %d\n"), gfx_ctMonitors);
   } else {
+    gfx_ctMonitors = 1; // [Cecil] NOTE: Only relevant for Windows' obsolete multimonitor feature anyway
     CPrintF(TRANS("Couldn't determine the number of video displays: %s\n"), SDL_GetError());
   }
 
+  SDL_free(aDisplays);
   CPutString("\n");
 
   gfx_bMultiMonDisabled = FALSE;
@@ -1627,7 +1633,7 @@ void CGfxLibrary::CreateWindowCanvas(OS::Window hWnd, CViewPort **ppvpNew, CDraw
   pixHeight = int(rectWindow.bottom - rectWindow.top);
 
 #else
-  SDL_GL_GetDrawableSize(hWnd, &pixWidth, &pixHeight);
+  SDL_GetWindowSizeInPixels(hWnd, &pixWidth, &pixHeight);
 #endif
 
   *ppvpNew = NULL;
@@ -1992,9 +1998,9 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
       if (GetCurrentAPI() == GAT_OGL) {
         CTempDC tdc(pvp->vp_hWnd);
 
-      #if SE1_PREFER_SDL
-        SDL_SetWindowGammaRamp(tdc.hdc, _auwGammaTable[0], _auwGammaTable[1], _auwGammaTable[2]);
-      #else
+        // [Cecil] FIXME: Since SDL3 doesn't do this anymore, this whole gamma thing for the monitor needs
+        // to be replaced with post-processing shaders for game windows, if this feature is needed at all
+      #if !SE1_PREFER_SDL
         SetDeviceGammaRamp(tdc.hdc, &_auwGammaTable[0][0]);
       #endif
       } 

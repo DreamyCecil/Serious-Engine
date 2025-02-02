@@ -19,16 +19,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Sound/SoundAPI.h>
 
+// [Cecil] FIXME: You probably don't need SDL features that much if you're using VS2010 but this still sucks
+#if SE1_INCOMPLETE_CPP11
+  #define SE1_ATOMIC(_Type) _Type
+#else
+  #include <atomic>
+  #define SE1_ATOMIC(_Type) std::atomic< _Type >
+#endif
+
 #if SE1_PREFER_SDL || SE1_SND_SDLAUDIO
 
 class CSoundAPI_SDL : public CAbstractSoundAPI {
   public:
     Uint8 m_ubSilence;
-    volatile SLONG m_slBackBufferAlloc;
-    Uint8 *m_pBackBuffer;
-    volatile SLONG m_slBackBufferPos;
-    volatile SLONG m_slBackBufferRemain;
-    SDL_AudioDeviceID m_iAudioDevice;
+    SLONG m_slBackBufferAlloc;
+    SE1_ATOMIC(Uint8 *) m_pBackBuffer;
+    SE1_ATOMIC(SLONG) m_slBackBufferPos;
+    SE1_ATOMIC(SLONG) m_slBackBufferRemain;
+    SDL_AudioStream *m_pAudioStream;
 
   public:
     // Constructor
@@ -38,7 +46,7 @@ class CSoundAPI_SDL : public CAbstractSoundAPI {
       m_pBackBuffer = NULL;
       m_slBackBufferPos = 0;
       m_slBackBufferRemain = 0;
-      m_iAudioDevice = 0;
+      m_pAudioStream = NULL;
     };
 
     virtual ESoundAPI GetType(void) {
@@ -49,9 +57,10 @@ class CSoundAPI_SDL : public CAbstractSoundAPI {
     virtual BOOL StartUp(BOOL bReport);
     virtual void ShutDown(void);
 
+    void WriteAudioData(UBYTE *pubStream, SLONG slStreamSize);
+
     virtual void CopyMixerBuffer(SLONG slMixedSize);
     virtual SLONG PrepareSoundBuffer(void);
-
     virtual void Mute(BOOL &bSetSoundMuted);
 };
 

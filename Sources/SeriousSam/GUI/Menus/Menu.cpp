@@ -64,10 +64,10 @@ void (*_pAfterLevelChosen)(void);
 void FixupBackButton(CGameMenu *pgm);
 
 // mouse cursor position
-PIX _pixCursorPosI = 0;
-PIX _pixCursorPosJ = 0;
-PIX _pixCursorExternPosI = 0;
-PIX _pixCursorExternPosJ = 0;
+FLOAT _fCursorPosI = 0;
+FLOAT _fCursorPosJ = 0;
+FLOAT _fCursorExternPosI = 0;
+FLOAT _fCursorExternPosJ = 0;
 BOOL _bMouseUsedLast = FALSE;
 CMenuGadget *_pmgUnderCursor =  NULL;
 extern BOOL _bDefiningKey;
@@ -534,18 +534,18 @@ void MenuOnMouseMove(PIX pixI, PIX pixJ)
 void MenuUpdateMouseFocus(void)
 {
   // get real cursor position
-  int iMouseX, iMouseY;
-  OS::GetMouseState(&iMouseX, &iMouseY);
+  float fMouseX, fMouseY;
+  OS::GetMouseState(&fMouseX, &fMouseY);
   extern INDEX sam_bWideScreen;
   extern CDrawPort *pdp;
   if( sam_bWideScreen) {
     const PIX pixHeight = pdp->GetHeight();
-    iMouseY -= (pixHeight / 0.75f - pixHeight) / 2;
+    fMouseY -= (pixHeight / 0.75f - pixHeight) / 2;
   }
-  _pixCursorPosI += iMouseX-_pixCursorExternPosI;
-  _pixCursorPosJ  = _pixCursorExternPosJ;
-  _pixCursorExternPosI = iMouseX;
-  _pixCursorExternPosJ = iMouseY;
+  _fCursorPosI += fMouseX - _fCursorExternPosI;
+  _fCursorPosJ  = _fCursorExternPosJ;
+  _fCursorExternPosI = fMouseX;
+  _fCursorExternPosJ = fMouseY;
 
   // if mouse not used last
   if (!_bMouseUsedLast||_bDefiningKey||_bEditingString) {
@@ -566,7 +566,7 @@ void MenuUpdateMouseFocus(void)
 
   // if there is some under cursor
   if (_pmgUnderCursor!=NULL) {
-    _pmgUnderCursor->OnMouseOver(_pixCursorPosI, _pixCursorPosJ);
+    _pmgUnderCursor->OnMouseOver(_fCursorPosI, _fCursorPosJ);
     // if the one under cursor has no neighbours
     if (_pmgUnderCursor->mg_pmgLeft ==NULL 
       &&_pmgUnderCursor->mg_pmgRight==NULL 
@@ -639,7 +639,7 @@ void RenderMouseCursor(CDrawPort *pdp)
     return;
   }
   _pGame->LCDSetDrawport(pdp);
-  _pGame->LCDDrawPointer(_pixCursorPosI, _pixCursorPosJ);
+  _pGame->LCDDrawPointer(_fCursorPosI, _fCursorPosJ);
 }
 
 
@@ -656,13 +656,13 @@ BOOL DoMenu( CDrawPort *pdp)
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen()) {
     // clamp mouse pointer
-    _pixCursorPosI = Clamp(_pixCursorPosI, 0L, dpMenu.GetWidth());
-    _pixCursorPosJ = Clamp(_pixCursorPosJ, 0L, dpMenu.GetHeight());
+    _fCursorPosI = Clamp(_fCursorPosI, 0L, dpMenu.GetWidth());
+    _fCursorPosJ = Clamp(_fCursorPosJ, 0L, dpMenu.GetHeight());
   // if in window
   } else {
     // use same mouse pointer as windows
-    _pixCursorPosI = _pixCursorExternPosI;
-    _pixCursorPosJ = _pixCursorExternPosJ;
+    _fCursorPosI = _fCursorExternPosI;
+    _fCursorPosJ = _fCursorExternPosJ;
   }
 
   pgmCurrentMenu->Think();
@@ -841,7 +841,7 @@ BOOL DoMenu( CDrawPort *pdp)
     if( itmg->mg_bVisible) {
       bStilInMenus = TRUE;
       itmg->Render( &dpMenu);
-      if (FloatBoxToPixBox(&dpMenu, itmg->mg_boxOnScreen)>=PIX2D(_pixCursorPosI, _pixCursorPosJ)) {
+      if (FloatBoxToPixBox(&dpMenu, itmg->mg_boxOnScreen) >= PIX2D(_fCursorPosI, _fCursorPosJ)) {
         _pmgUnderCursor = itmg;
       }
     }

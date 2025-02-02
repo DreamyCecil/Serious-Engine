@@ -575,13 +575,13 @@ BOOL CGfxLibrary::CreateContext_OGL(OS::DvcContext hdc)
   go_hglRC = SDL_GL_CreateContext(hdc);
   if (CheckGenericError(go_hglRC != NULL, "CreateContext")) return FALSE;
 
-  BOOL bMakeCurrent = (SDL_GL_MakeCurrent(hdc, go_hglRC) != -1);
+  BOOL bMakeCurrent = SDL_GL_MakeCurrent(hdc, go_hglRC);
   if (CheckGenericError(bMakeCurrent, "MakeCurrent after CreateContext")) return FALSE;
 
   // Try to keep depth bits
   int iDepth = 0;
 
-  if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &iDepth) != -1) {
+  if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &iDepth)) {
     gl_iCurrentDepth = iDepth;
   } else {
     gl_iCurrentDepth = 16;
@@ -767,7 +767,7 @@ void CGfxLibrary::InitContext_OGL(void)
   // [Cecil] SDL: Check swap control by enabling VSync
   CPutString(TRANS("SDL: Checking swap control...\n"));
 
-  if (SDL_GL_SetSwapInterval(1) == 0) {
+  if (SDL_GL_SetSwapInterval(1)) {
     CPutString(TRANS("  Swap interval can be set.\n"));
     AddExtension_OGL(GLF_VSYNC, "WGL_EXT_swap_control");
 
@@ -776,7 +776,7 @@ void CGfxLibrary::InitContext_OGL(void)
     CPrintF(TRANS("  Swap interval cannot be set. SDL Error: %s\n"), SDL_GetError());
 
     // Try adaptive VSync instead
-    if (SDL_GL_SetSwapInterval(-1) == 0) {
+    if (SDL_GL_SetSwapInterval(-1)) {
       CPutString(TRANS("  Adaptive VSync is available and set.\n"));
     } else {
       CPrintF(TRANS("  Adaptive VSync is not available. SDL Error: %s\n"), SDL_GetError());
@@ -991,7 +991,7 @@ BOOL CGfxLibrary::InitDriver_OGL( BOOL b3Dfx/*=FALSE*/)
 
 #else
   // [Cecil] SDL: Try loading OpenGL
-  BOOL bLoaded = (SDL_GL_LoadLibrary(NULL) != -1);
+  BOOL bLoaded = SDL_GL_LoadLibrary(NULL);
   if (CheckGenericError(bLoaded, "Error starting OpenGL")) return FALSE;
 #endif
 
@@ -1036,7 +1036,7 @@ void CGfxLibrary::EndDriver_OGL(void)
   SDL_GL_MakeCurrent(NULL, NULL);
 
   if (go_hglRC != NULL) {
-    SDL_GL_DeleteContext(go_hglRC);
+    SDL_GL_DestroyContext(go_hglRC);
     go_hglRC = NULL;
   }
 #endif

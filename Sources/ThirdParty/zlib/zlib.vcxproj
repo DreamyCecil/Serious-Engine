@@ -231,7 +231,7 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -255,7 +255,7 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -279,7 +279,7 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -302,7 +302,7 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -328,7 +328,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Midl>
@@ -354,7 +354,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Midl>
@@ -380,7 +380,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Midl>
@@ -405,7 +405,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
-      <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4333;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Midl>

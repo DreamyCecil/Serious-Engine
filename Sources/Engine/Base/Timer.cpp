@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #if SE1_UNIX
   #include <chrono>
   #include <thread>
+  #include <x86intrin.h>
 #endif
 
 // Read the Pentium TimeStampCounter
@@ -150,8 +151,9 @@ void CTimer_TimerFunc_internal(void)
 #if SE1_PREFER_SDL
 
 // [Cecil] SDL: Timer tick function
-Uint32 CTimer_TimerFunc(Uint32 interval, void *param) {
-  (void)param;
+Uint32 CTimer_TimerFunc(void *pUserData, SDL_TimerID iTimerID, Uint32 interval) {
+  (void)pUserData;
+  (void)iTimerID;
 
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
@@ -358,11 +360,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   {
   #if SE1_PREFER_SDL
     // [Cecil] SDL: Add timer
-    if (SDL_Init(SDL_INIT_TIMER) == -1) {
-      FatalError(TRANS("Cannot initialize SDL timer:\n%s"), SDL_GetError());
-    }
-
-    tm_TimerID = SDL_AddTimer(ULONG(TickQuantum * (TIME)1000.0), CTimer_TimerFunc, NULL);
+    tm_TimerID = SDL_AddTimer(ULONG(TickQuantum * (TIME)1000.0), &CTimer_TimerFunc, NULL);
 
   #else
     tm_TimerID = timeSetEvent(

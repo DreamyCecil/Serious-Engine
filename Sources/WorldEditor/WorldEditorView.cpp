@@ -11988,7 +11988,7 @@ void CWorldEditorView::OnAlternativeMovingMode()
     // smooth frame rate
     LimitFrameRate();
   }
-  _pInput->DisableInput();
+  _pInput->DisableInput(m_pvpViewPort);
   // restore rendering range settings from remembered stat view prefs
   m_vpViewPrefs.m_bAutoRenderingRange = vpOrg.m_bAutoRenderingRange;
   m_vpViewPrefs.m_wrpWorldRenderPrefs.SetMinimumRenderRange(vpOrg.m_wrpWorldRenderPrefs.GetMinimumRenderRange());

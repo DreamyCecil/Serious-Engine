@@ -21,8 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "GUI/Menus/MenuManager.h"
 
-extern PIX  _pixCursorPosI;
-extern PIX  _pixCursorPosJ;
+extern FLOAT _fCursorPosI;
+extern FLOAT _fCursorPosJ;
 
 
 BOOL CMGVarButton::IsSeparator(void)
@@ -66,9 +66,9 @@ BOOL CMGVarButton::OnKeyDown(PressedMenuButton pmb)
       // get position of slider box on screen
       PIXaabbox2D boxSlider = GetSliderBox();
       // if mouse is within
-      if (boxSlider >= PIX2D(_pixCursorPosI, _pixCursorPosJ)) {
+      if (boxSlider >= PIX2D(_fCursorPosI, _fCursorPosJ)) {
         // set new position exactly where mouse pointer is
-        mg_pvsVar->vs_iValue = (FLOAT)(_pixCursorPosI - boxSlider.Min()(1)) / boxSlider.Size()(1) * (mg_pvsVar->vs_ctValues);
+        mg_pvsVar->vs_iValue = (FLOAT)(_fCursorPosI - boxSlider.Min()(1)) / boxSlider.Size()(1) * (mg_pvsVar->vs_ctValues);
         _bVarChanged = TRUE;
       }
       // handled

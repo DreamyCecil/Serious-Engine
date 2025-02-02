@@ -30,20 +30,20 @@ GameController_t::~GameController_t() {
 };
 
 // Open a game controller under some slot
-void GameController_t::Connect(INDEX iConnectSlot, INDEX iArraySlot) {
+void GameController_t::Connect(SDL_JoystickID iDevice, INDEX iArraySlot) {
   ASSERT(handle == NULL && iInfoSlot == -1);
 
-  handle = SDL_GameControllerOpen(iConnectSlot);
+  handle = SDL_OpenGamepad(iDevice);
   iInfoSlot = iArraySlot + 1;
 };
 
 // Close an open game controller
 void GameController_t::Disconnect(void) {
   if (handle != NULL) {
-    SDL_Joystick *pJoystick = SDL_GameControllerGetJoystick(handle);
-    CPrintF(TRANS("Disconnected '%s' from controller slot %d\n"), SDL_JoystickName(pJoystick), iInfoSlot);
+    SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(handle);
+    CPrintF(TRANS("Disconnected '%s' from controller slot %d\n"), SDL_GetJoystickName(pJoystick), iInfoSlot);
 
-    SDL_GameControllerClose(handle);
+    SDL_CloseGamepad(handle);
   }
 
   handle = NULL;
@@ -71,30 +71,28 @@ void CInput::PrintJoysticksInfo(void) {
       continue;
     }
 
-    SDL_Joystick *pJoystick = SDL_GameControllerGetJoystick(gctrl.handle);
-    const char *strName = SDL_JoystickName(pJoystick);
+    SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(gctrl.handle);
+    const char *strName = SDL_GetJoystickName(pJoystick);
 
     if (strName == NULL) {
       strName = SDL_GetError();
     }
 
     CPrintF("'%s':", strName);
-    CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), SDL_JoystickNumAxes(pJoystick),
-      SDL_JoystickNumButtons(pJoystick), SDL_JoystickNumHats(pJoystick));
+    CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), SDL_GetNumJoystickAxes(pJoystick),
+      SDL_GetNumJoystickButtons(pJoystick), SDL_GetNumJoystickHats(pJoystick));
   }
 
   CPutString("-\n");
 };
 
-// [Cecil] Open a game controller under some slot
-// Slot index always ranges from 0 to SDL_NumJoysticks()-1
-void CInput::OpenGameController(INDEX iConnectSlot)
+// [Cecil] Open a game controller under some device index
+void CInput::OpenGameController(SDL_JoystickID iDevice)
 {
   // Not a game controller
-  if (!SDL_IsGameController(iConnectSlot)) return;
+  if (!SDL_IsGamepad(iDevice)) return;
 
   // Check if this controller is already connected
-  const SDL_JoystickID iDevice = SDL_JoystickGetDeviceInstanceID(iConnectSlot);
   if (GetControllerSlotForDevice(iDevice) != -1) return;
 
   // Find an empty slot for opening a new controller
@@ -117,7 +115,7 @@ void CInput::OpenGameController(INDEX iConnectSlot)
     return;
   }
 
-  pToOpen->Connect(iConnectSlot, iArraySlot);
+  pToOpen->Connect(iDevice, iArraySlot);
 
   if (!pToOpen->IsConnected()) {
     CPrintF(TRANS("Cannot open another game controller! SDL Error: %s\n"), SDL_GetError());
@@ -125,8 +123,8 @@ void CInput::OpenGameController(INDEX iConnectSlot)
   }
 
   // Report controller info
-  SDL_Joystick *pJoystick = SDL_GameControllerGetJoystick(pToOpen->handle);
-  const char *strName = SDL_JoystickName(pJoystick);
+  SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(pToOpen->handle);
+  const char *strName = SDL_GetJoystickName(pJoystick);
 
   if (strName == NULL) {
     strName = SDL_GetError();
@@ -134,21 +132,19 @@ void CInput::OpenGameController(INDEX iConnectSlot)
 
   CPrintF(TRANS("Connected '%s' to controller slot %d\n"), strName, pToOpen->iInfoSlot);
 
-  int ctAxes = SDL_JoystickNumAxes(pJoystick);
-  CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), ctAxes, SDL_JoystickNumButtons(pJoystick), SDL_JoystickNumHats(pJoystick));
+  int ctAxes = SDL_GetNumJoystickAxes(pJoystick);
+  CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), ctAxes, SDL_GetNumJoystickButtons(pJoystick), SDL_GetNumJoystickHats(pJoystick));
 
   // Check whether all axes exist
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iArraySlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iArraySlot * SDL_GAMEPAD_AXIS_COUNT;
 
-  for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
+  for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
     InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
     ida.ida_bExists = (iAxis < ctAxes);
   }
 };
 
 // [Cecil] Close a game controller under some device index
-// This device index is NOT the same as a slot and it's always unique for each added controller
-// Use GetControllerSlotForDevice() to retrieve a slot from a device index, if there's any
 void CInput::CloseGameController(SDL_JoystickID iDevice)
 {
   INDEX iSlot = GetControllerSlotForDevice(iDevice);
@@ -169,8 +165,8 @@ INDEX CInput::GetControllerSlotForDevice(SDL_JoystickID iDevice) {
     if (!gctrl.IsConnected()) continue;
 
     // Get device ID from the controller
-    SDL_Joystick *pJoystick = SDL_GameControllerGetJoystick(gctrl.handle);
-    SDL_JoystickID id = SDL_JoystickInstanceID(pJoystick);
+    SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(gctrl.handle);
+    SDL_JoystickID id = SDL_GetJoystickID(pJoystick);
 
     // Found matching ID
     if (id == iDevice) {
@@ -190,13 +186,18 @@ void CInput::SetJoyPolling(BOOL bPoll) {
 // [Cecil] Update SDL joysticks manually (if SDL_PollEvent() isn't being used)
 void CInput::UpdateJoysticks(void) {
   // Update SDL joysticks
-  SDL_JoystickUpdate();
+  SDL_UpdateJoysticks();
 
   // Open all valid controllers
-  const INDEX ctControllers = (INDEX)SDL_NumJoysticks();
+  int ctJoysticks;
+  SDL_JoystickID *aJoysticks = SDL_GetJoysticks(&ctJoysticks);
 
-  for (INDEX iController = 0; iController < ctControllers; iController++) {
-    OpenGameController(iController);
+  if (aJoysticks != NULL) {
+    for (int iJoy = 0; iJoy < ctJoysticks; iJoy++) {
+      OpenGameController(aJoysticks[iJoy]);
+    }
+
+    SDL_free(aJoysticks);
   }
 
   // Go through connected controllers
@@ -204,9 +205,9 @@ void CInput::UpdateJoysticks(void) {
     if (!it->IsConnected()) continue;
 
     // Disconnect this controller if it has been detached
-    SDL_Joystick *pJoystick = SDL_GameControllerGetJoystick(it->handle);
+    SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(it->handle);
 
-    if (!SDL_JoystickGetAttached(pJoystick)) {
+    if (!SDL_JoystickConnected(pJoystick)) {
       it->Disconnect();
     }
   }
@@ -228,8 +229,16 @@ void CInput::StartupJoysticks(void) {
   inp_aControllers.New(MAX_JOYSTICKS);
 
   // Report on available controller amounts
-  const INDEX ct = SDL_NumJoysticks();
-  CPrintF(TRANS("  joysticks found: %d\n"), ct);
+  int ctJoysticks;
+  SDL_JoystickID *aJoysticks = SDL_GetJoysticks(&ctJoysticks);
+
+  if (aJoysticks != NULL) {
+    CPrintF(TRANS("  joysticks found: %d\n"), ctJoysticks);
+    SDL_free(aJoysticks);
+
+  } else {
+    CPrintF(TRANS("  Cannot retrieve an array of joysticks! SDL Error: %s\n"), SDL_GetError());
+  }
 
   const INDEX ctAllowed = Min(inp_aControllers.Count(), inp_ctJoysticksAllowed);
   CPrintF(TRANS("  joysticks allowed: %d\n"), ctAllowed);
@@ -247,68 +256,72 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
   const CTString strJoystickNameTra(0, TRANS("[C%d] "), iSlot + 1);
 
   // Set proper names for axes
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_GAMEPAD_AXIS_COUNT;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
     inp_aInputActions[iFirstAxis + _Axis].ida_strNameInt = strJoystickNameInt + _Name; \
     inp_aInputActions[iFirstAxis + _Axis].ida_strNameTra = strJoystickNameTra + _Translated;
 
   // Set default names for all axes
-  for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
+  for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
     SET_AXIS_NAMES(iAxis, CTString(0, "Unknown %d", iAxis), CTString(0, TRANS("Unknown %d"), iAxis));
   }
 
   // Set proper names for axes
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_LEFTX,        "L Stick X", TRANS("L Stick X"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_LEFTY,        "L Stick Y", TRANS("L Stick Y"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_RIGHTX,       "R Stick X", TRANS("R Stick X"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_RIGHTY,       "R Stick Y", TRANS("R Stick Y"));
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERLEFT,  "L2",              "L2");
-  SET_AXIS_NAMES(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, "R2",              "R2");
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFTX,         "L Stick X", TRANS("L Stick X"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFTY,         "L Stick Y", TRANS("L Stick Y"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHTX,        "R Stick X", TRANS("R Stick X"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHTY,        "R Stick Y", TRANS("R Stick Y"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFT_TRIGGER,  "L2",              "L2");
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, "R2",              "R2");
 
-  const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
+  const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_GAMEPAD_BUTTON_COUNT;
 
   #define SET_BUTTON_NAMES(_Button, _Name, _Translated) \
     inp_aInputActions[iFirstButton + _Button].ida_strNameInt = strJoystickNameInt + _Name; \
     inp_aInputActions[iFirstButton + _Button].ida_strNameTra = strJoystickNameTra + _Translated;
 
   // Set default names for all buttons
-  for (INDEX iButton = 0; iButton < SDL_CONTROLLER_BUTTON_MAX; iButton++) {
+  for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
     SET_BUTTON_NAMES(iButton, CTString(0, "Unknown %d", iButton), CTString(0, TRANS("Unknown %d"), iButton));
   }
 
   // Set proper names for buttons
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_A,             "A",                 "A");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_B,             "B",                 "B");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_X,             "X",                 "X");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_Y,             "Y",                 "Y");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_BACK,          "Back",        TRANS("Back"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_GUIDE,         "Guide",       TRANS("Guide"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_START,         "Start",       TRANS("Start"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_LEFTSTICK,     "L3",                "L3");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_RIGHTSTICK,    "R3",                "R3");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_LEFTSHOULDER,  "L1",                "L1");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, "R1",                "R1");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_UP,       "D-pad Up",    TRANS("D-pad Up"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_DOWN,     "D-pad Down",  TRANS("D-pad Down"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_LEFT,     "D-pad Left",  TRANS("D-pad Left"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_DPAD_RIGHT,    "D-pad Right", TRANS("D-pad Right"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_MISC1,         "Misc",        TRANS("Misc"));
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE1,       "L4",                "L4");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE2,       "R4",                "R4");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE3,       "L5",                "L5");
-  SET_BUTTON_NAMES(SDL_CONTROLLER_BUTTON_PADDLE4,       "R5",                "R5");
-
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_SOUTH,          "A",                 "A");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_EAST,           "B",                 "B");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_WEST,           "X",                 "X");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_NORTH,          "Y",                 "Y");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_BACK,           "Back",        TRANS("Back"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_GUIDE,          "Guide",       TRANS("Guide"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_START,          "Start",       TRANS("Start"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_STICK,     "L3",                "L3");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_STICK,    "R3",                "R3");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  "L1",                "L1");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, "R1",                "R1");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_UP,        "D-pad Up",    TRANS("D-pad Up"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_DOWN,      "D-pad Down",  TRANS("D-pad Down"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_LEFT,      "D-pad Left",  TRANS("D-pad Left"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_RIGHT,     "D-pad Right", TRANS("D-pad Right"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC1,          "Misc 1",      TRANS("Misc 1"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,  "R4",                "R4");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,   "L4",                "L4");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,  "R5",                "R5");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,   "L5",                "L5");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC2,          "Misc 2",      TRANS("Misc 2"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC3,          "Misc 3",      TRANS("Misc 3"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC4,          "Misc 4",      TRANS("Misc 4"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC5,          "Misc 5",      TRANS("Misc 5"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC6,          "Misc 6",      TRANS("Misc 6"));
 };
 
 // Scans axis and buttons for given joystick
 void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
-  SDL_GameController *pController = inp_aControllers[iSlot].handle;
+  SDL_Gamepad *pController = inp_aControllers[iSlot].handle;
 
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_CONTROLLER_AXIS_MAX;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_GAMEPAD_AXIS_COUNT;
 
   // For each available axis
-  for (INDEX iAxis = 0; iAxis < SDL_CONTROLLER_AXIS_MAX; iAxis++) {
+  for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
     InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
 
     // If the axis is not present
@@ -335,7 +348,7 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
     }
 
     // Read its state
-    SLONG slAxisReading = SDL_GameControllerGetAxis(pController, (SDL_GameControllerAxis)iAxis);
+    SLONG slAxisReading = SDL_GetGamepadAxis(pController, (SDL_GamepadAxis)iAxis);
 
     // Set current axis value from -1 to +1
     const DOUBLE fCurrentValue = DOUBLE(slAxisReading - SDL_JOYSTICK_AXIS_MIN);
@@ -345,12 +358,12 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
   }
 
   if (!bPreScan) {
-    const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_CONTROLLER_BUTTON_MAX;
+    const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_GAMEPAD_BUTTON_COUNT;
 
     // For each available button
-    for (INDEX iButton = 0; iButton < SDL_CONTROLLER_BUTTON_MAX; iButton++) {
+    for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
       // Test if the button is pressed
-      const BOOL bJoyButtonPressed = SDL_GameControllerGetButton(pController, (SDL_GameControllerButton)iButton);
+      const BOOL bJoyButtonPressed = SDL_GetGamepadButton(pController, (SDL_GamepadButton)iButton);
 
       if (bJoyButtonPressed) {
         inp_aInputActions[iFirstButton + iButton].ida_fReading = 1;

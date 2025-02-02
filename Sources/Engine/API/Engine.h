@@ -62,8 +62,8 @@ ENGINE_API void SE_UpdateWindowHandle(OS::Window hwndWindowed);
 ENGINE_API void SE_PretouchIfNeeded(void);
 
 // [Cecil] Separate methods for determining and restoring gamma adjustment
-ENGINE_API void SE_DetermineGamma(OS::Window hwnd);
-ENGINE_API void SE_RestoreGamma(OS::Window hwnd = NULL);
+ENGINE_API void SE_DetermineGamma(void);
+ENGINE_API void SE_RestoreGamma(void);
 
 // [Cecil] Engine properties after full initialization
 ENGINE_API extern const SeriousEngineSetup &_SE1Setup;

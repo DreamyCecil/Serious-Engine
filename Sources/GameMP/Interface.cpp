@@ -44,7 +44,7 @@ void UpdateInputEnabledState(CViewPort *pvp)
   // if should be turned off
   if (!bShouldBeEnabled && _bInputEnabled) {
     // disable it
-    _pInput->DisableInput();
+    _pInput->DisableInput(pvp);
 
     // remember new state
     _bInputEnabled = FALSE;
@@ -142,12 +142,12 @@ BOOL CGame::ShouldStopRunning(const OS::SE1Event &event, BOOL bOnDeactivation) {
 // [Cecil] Check if pressed the key to go back
 BOOL CGame::IsEscapeKeyPressed(const OS::SE1Event &event) {
   return (event.type == WM_KEYDOWN && event.key.code == SE1K_ESCAPE)
-      || (event.type == WM_CTRLBUTTONDOWN && event.ctrl.action == SDL_CONTROLLER_BUTTON_START);
+      || (event.type == WM_CTRLBUTTONDOWN && event.ctrl.action == SDL_GAMEPAD_BUTTON_START);
 };
 
 // [Cecil] Check if pressed any of the console opening keys
 BOOL CGame::IsConsoleKeyPressed(const OS::SE1Event &event) {
-  return (event.type == WM_KEYDOWN && (event.key.code == SE1K_F1 || event.key.code == SE1K_BACKQUOTE));
+  return (event.type == WM_KEYDOWN && (event.key.code == SE1K_F1 || event.key.code == SE1K_GRAVE));
 };
 
 // [Cecil] Toggle console state and return TRUE if console is being opened
@@ -251,9 +251,9 @@ void CGame::QuickTest(const CTFileName &fnMapName,
 
     // get real cursor position
     if (gm_csComputerState != CS_OFF) {
-      int iMouseX, iMouseY;
-      OS::GetMouseState(&iMouseX, &iMouseY);
-      ComputerMouseMove(iMouseX, iMouseY);
+      float fMouseX, fMouseY;
+      OS::GetMouseState(&fMouseX, &fMouseY);
+      ComputerMouseMove(fMouseX, fMouseY);
     }
 
     UpdatePauseState();
@@ -296,7 +296,7 @@ void CGame::QuickTest(const CTFileName &fnMapName,
     cmp_ppenPlayer = NULL;
   }
 
-  _pInput->DisableInput();
+  _pInput->DisableInput(pvp);
   StopGame();
   DisableLoadingHook();
 }

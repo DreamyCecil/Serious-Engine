@@ -9,6 +9,10 @@ set -e
 set -x
 
 # Delete Bison/Flex generated files
+rm -f ./Ecc/Parser.cpp
+rm -f ./Ecc/Parser.h
+rm -f ./Ecc/Parser.hpp
+rm -f ./Ecc/Scanner.cpp
 rm -f ./Engine/Base/Parser.cpp
 rm -f ./Engine/Base/Parser.h
 rm -f ./Engine/Base/Parser.hpp
@@ -39,7 +43,7 @@ fi
 # - Release
 # - MinSizeRel
 # - RelWithDebInfo
-cmake -DCMAKE_BUILD_TYPE=Release -DSE1_BUILD_X86=1 -DUSE_SYSTEM_ZLIB=0 -DSE1_COMPILE_ES=1 ..
+cmake -DCMAKE_BUILD_TYPE=Release -DSE1_BUILD_X86=1 -DSDL_SHARED=0 -DSDL_STATIC=1 -DSE1_COMPILE_ES=1 ..
 
 echo "ECC first"
 make ecc

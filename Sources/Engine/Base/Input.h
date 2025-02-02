@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Base/CTString.h>
+#include <Engine/Graphics/ViewPort.h>
 #include <Engine/Templates/StaticArray.h>
 
 // Maximum amount of supported game controllers
@@ -30,7 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define KID_TOTALCOUNT 256
 
 #define FIRST_JOYBUTTON (KID_TOTALCOUNT)
-#define MAX_OVERALL_BUTTONS (KID_TOTALCOUNT + MAX_JOYSTICKS * SDL_CONTROLLER_BUTTON_MAX)
+#define MAX_OVERALL_BUTTONS (KID_TOTALCOUNT + MAX_JOYSTICKS * SDL_GAMEPAD_BUTTON_COUNT)
 #define FIRST_AXIS_ACTION (MAX_OVERALL_BUTTONS)
 
 enum EInputAxis {
@@ -46,7 +47,7 @@ enum EInputAxis {
   EIA_CONTROLLER_OFFSET = EIA_MAX_MOUSE,
 
   // Amount of axes (mouse axes + all controller axes * all controllers)
-  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_CONTROLLER_AXIS_MAX * MAX_JOYSTICKS),
+  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_GAMEPAD_AXIS_COUNT * MAX_JOYSTICKS),
 };
 
 // All possible input actions
@@ -66,13 +67,13 @@ struct InputDeviceAction {
 
 // [Cecil] Individual game controller
 struct GameController_t {
-  SDL_GameController *handle; // Opened controller
+  SDL_Gamepad *handle; // Opened controller
   INDEX iInfoSlot; // Used controller slot for info output
 
   GameController_t();
   ~GameController_t();
 
-  void Connect(INDEX iConnectSlot, INDEX iArraySlot);
+  void Connect(SDL_JoystickID iDevice, INDEX iArraySlot);
   void Disconnect(void);
   BOOL IsConnected(void);
 };
@@ -97,7 +98,7 @@ public:
 #if !SE1_PREFER_SDL
   SLONG inp_slScreenCenterX; // Screen center X in pixels
   SLONG inp_slScreenCenterY; // Screen center Y in pixels
-  int   inp_aOldMousePos[2]; // Old mouse position
+  FLOAT inp_aOldMousePos[2]; // Old mouse position
 
   // System mouse settings
   struct MouseSpeedControl {
@@ -112,17 +113,24 @@ public:
 
   // Sets name for every key
   void SetKeyNames(void);
+
   // Initializes all available devices and enumerates available controls
   void Initialize(void);
-  // Enable input inside one viewport, or window
-  void EnableInput(CViewPort *pvp);
-  void EnableInput(OS::Window hWnd);
-  // Disable input
-  void DisableInput(void);
+
+  // Enable input inside one window
+  void EnableInput(OS::Window hwnd);
+  __forceinline void EnableInput(CViewPort *pvp) { EnableInput(pvp->vp_hWnd); };
+
+  // [Cecil] Disable input inside one window instead of generally
+  void DisableInput(OS::Window hwnd);
+  __forceinline void DisableInput(CViewPort *pvp) { DisableInput(pvp->vp_hWnd); };
+
   // Test input activity
   BOOL IsInputEnabled( void) const { return inp_bInputEnabled; };
+
   // Scan states of all available input sources
   void GetInput(BOOL bPreScan);
+
   // Clear all input states (keys become not pressed, axes are reset to zero)
   void ClearInput(void);
 
@@ -140,13 +148,10 @@ public:
   // [Cecil] Display info about current joysticks
   static void PrintJoysticksInfo(void);
 
-  // [Cecil] Open a game controller under some slot
-  // Slot index always ranges from 0 to SDL_NumJoysticks()-1
-  void OpenGameController(INDEX iConnectSlot);
+  // [Cecil] Open a game controller under some device index
+  void OpenGameController(SDL_JoystickID iDevice);
 
   // [Cecil] Close a game controller under some device index
-  // This device index is NOT the same as a slot and it's always unique for each added controller
-  // Use GetControllerSlotForDevice() to retrieve a slot from a device index, if there's any
   void CloseGameController(SDL_JoystickID iDevice);
 
   // [Cecil] Find controller slot from its device index

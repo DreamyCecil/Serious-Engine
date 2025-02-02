@@ -10,23 +10,20 @@ if(USE_CCACHE)
   endif()
 endif()
 
-# Use systemwide SDL2 or custom build
-# RAKE!: Find a way to use their custom built library if
-# they want to use that instead or if their system only
-# allows for a setup like this. Maybe use a SDL2_DIR var or
-# some thing set in the system enviroment.
-if(NOT USE_SYSTEM_SDL2)
-  include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/SDL2)
+# [Cecil] Build SDL locally, if not using system libraries
+if(NOT USE_SYSTEM_SDL3)
+  add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/SDL EXCLUDE_FROM_ALL)
 else()
-  find_package(SDL2 REQUIRED)
+  find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 
-  if(SDL2_FOUND)
-    include_directories(${SDL2_INCLUDE_DIR})
+  if(SDL3_FOUND)
+    include_directories(${SDL3_INCLUDE_DIR})
   else()
-    message(FATAL_ERROR "Error USE_SYSTEM_SDL2 is set but neccessary developer files are missing")
+    message(FATAL_ERROR "Error USE_SYSTEM_SDL3 is set but neccessary developer files are missing")
   endif()
 endif()
 
+# [Cecil] Uses engine's zlib sources included with other third party sources, if not using system libraries
 if(USE_SYSTEM_ZLIB)
   find_package(ZLIB REQUIRED)
 

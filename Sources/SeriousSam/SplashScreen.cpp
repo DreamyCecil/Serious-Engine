@@ -39,40 +39,31 @@ void ShowSplashScreen(void) {
   if (surMask != NULL) {
     // Mismatching sizes
     if (surMask->w != surSplash->w || surMask->h != surSplash->h) {
-      SDL_FreeSurface(surMask);
-      SDL_FreeSurface(surSplash);
+      SDL_DestroySurface(surMask);
+      SDL_DestroySurface(surSplash);
       return;
     }
 
-    _window = SDL_CreateShapedWindow(SPLASH_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                     surSplash->w, surSplash->h, SDL_WINDOW_BORDERLESS | SDL_WINDOW_SKIP_TASKBAR);
+    _window = SDL_CreateWindow(SPLASH_TITLE, surSplash->w, surSplash->h, SDL_WINDOW_BORDERLESS | SDL_WINDOW_UTILITY | SDL_WINDOW_TRANSPARENT);
 
     if (_window != NULL) {
-      SDL_WindowShapeMode mode;
-      SDL_zero(mode);
-      mode.mode = ShapeModeColorKey;
-
       // Apply shape mask to the window
-      SDL_Color &col = mode.parameters.colorKey;
-      SDL_GetRGBA(SDL_MapRGB(surMask->format, 0xFF, 0xFF, 0xFF), surMask->format, &col.r, &col.g, &col.b, &col.a);
-
-      if (SDL_SetWindowShape(_window, surMask, &mode) != 0) {
+      if (!SDL_SetWindowShape(_window, surMask)) {
         _window.Destroy();
       }
     }
 
-    SDL_FreeSurface(surMask);
+    SDL_DestroySurface(surMask);
 
   } else {
     // Simple splash without a mask
-    _window = SDL_CreateWindow(SPLASH_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               surSplash->w, surSplash->h, SDL_WINDOW_BORDERLESS | SDL_WINDOW_SKIP_TASKBAR);
+    _window = SDL_CreateWindow(SPLASH_TITLE, surSplash->w, surSplash->h, SDL_WINDOW_BORDERLESS | SDL_WINDOW_UTILITY);
   }
 
   BOOL bSuccess = FALSE;
 
   if (_window != NULL) {
-    _pRenderer = SDL_CreateRenderer(_window, -1, 0);
+    _pRenderer = SDL_CreateRenderer(_window, NULL);
 
     if (_pRenderer != NULL) {
       SDL_SetRenderDrawColor(_pRenderer, 0, 0, 0, 0);
@@ -85,11 +76,11 @@ void ShowSplashScreen(void) {
     }
   }
 
-  SDL_FreeSurface(surSplash);
+  SDL_DestroySurface(surSplash);
 
   // Render the final splash screen or discard it
   if (bSuccess) {
-    SDL_RenderCopy(_pRenderer, _pTexture, NULL, NULL);
+    SDL_RenderTexture(_pRenderer, _pTexture, NULL, NULL);
     SDL_RenderPresent(_pRenderer);
 
   } else {

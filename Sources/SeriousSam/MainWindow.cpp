@@ -237,10 +237,12 @@ void OpenMainWindowNormal( PIX pixSizeI, PIX pixSizeJ)
 #else
   // [Cecil] SDL: Create normal window
   _snprintf(_achWindowTitle, sizeof(_achWindowTitle), TRANS("Serious Sam (Window %dx%d)"), pixSizeI, pixSizeJ);
-  _hwndMain = SDL_CreateWindow(_achWindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, pixSizeI, pixSizeJ,
-    SDL_WINDOW_OPENGL);
+  _hwndMain = SDL_CreateWindow(_achWindowTitle, pixSizeI, pixSizeJ, SDL_WINDOW_OPENGL);
 
   AssertWindowCreation();
+
+  // Enable text input events
+  SDL_StartTextInput(_hwndMain);
 #endif // !SE1_PREFER_SDL
 
   SE_UpdateWindowHandle(_hwndMain);
@@ -276,10 +278,12 @@ void OpenMainWindowFullScreen( PIX pixSizeI, PIX pixSizeJ)
 #else
   // [Cecil] SDL: Create fullscreen window
   _snprintf(_achWindowTitle, sizeof(_achWindowTitle), TRANS("Serious Sam (FullScreen %dx%d)"), pixSizeI, pixSizeJ);
-  _hwndMain = SDL_CreateWindow(_achWindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, pixSizeI, pixSizeJ,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+  _hwndMain = SDL_CreateWindow(_achWindowTitle, pixSizeI, pixSizeJ, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
 
   AssertWindowCreation();
+
+  // Enable text input events
+  SDL_StartTextInput(_hwndMain);
 #endif // !SE1_PREFER_SDL
 
   SE_UpdateWindowHandle(_hwndMain);
@@ -308,10 +312,12 @@ void OpenMainWindowBorderless(PIX pixSizeI, PIX pixSizeJ) {
 #else
   // [Cecil] SDL: Create normal window
   _snprintf(_achWindowTitle, sizeof(_achWindowTitle), TRANS("Serious Sam (Borderless %dx%d)"), pixSizeI, pixSizeJ);
-  _hwndMain = SDL_CreateWindow(_achWindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, pixSizeI, pixSizeJ,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS);
+  _hwndMain = SDL_CreateWindow(_achWindowTitle, pixSizeI, pixSizeJ, SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS);
 
   AssertWindowCreation();
+
+  // Enable text input events
+  SDL_StartTextInput(_hwndMain);
 #endif // !SE1_PREFER_SDL
 
   SE_UpdateWindowHandle(_hwndMain);
@@ -344,7 +350,7 @@ void OpenMainWindowInvisible(void)
 
 #else
   // [Cecil] SDL: Create invisible window
-  _hwndMain = SDL_CreateWindow("Serious Sam", 0, 0, 10, 10, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+  _hwndMain = SDL_CreateWindow("Serious Sam", 10, 10, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
   AssertWindowCreation();
 #endif // !SE1_PREFER_SDL
 

@@ -48,11 +48,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #endif
 #endif // SE1_WIN
 
-// [Cecil] SDL: Include SDL2 in its entirety
-#define SDL_MAIN_HANDLED
-#include <SDL2/include/SDL.h>
+// [Cecil] SDL: Include SDL in its entirety
+#define SDL_FUNCTION_POINTER_IS_VOID_POINTER
+#include <SDL3/SDL.h>
 
-#pragma comment(lib, "SDL2.lib")
+#pragma comment(lib, "SDL3.lib")
+
+#if defined(SE1_STATIC_BUILD)
+  #pragma comment(lib, "setupapi.lib")
+  #pragma comment(lib, "imm32.lib")
+  #pragma comment(lib, "version.lib")
+#endif
 
 // [Cecil] GLEW: Include glew in its entirety
 #if SE1_GLEW

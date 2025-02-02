@@ -31,25 +31,25 @@ struct PressedMenuButton {
   // Cancel / Go back to the previous menu
   inline bool Back(BOOL bMouse) {
     return iKey == SE1K_ESCAPE || (bMouse && iMouse == SDL_BUTTON_RIGHT)
-        || iCtrl == SDL_CONTROLLER_BUTTON_B || iCtrl == SDL_CONTROLLER_BUTTON_BACK;
+        || iCtrl == SDL_GAMEPAD_BUTTON_EAST || iCtrl == SDL_GAMEPAD_BUTTON_BACK;
   };
 
   // Apply / Enter the next menu
   inline bool Apply(BOOL bMouse) {
     return iKey == SE1K_RETURN || (bMouse && iMouse == SDL_BUTTON_LEFT)
-        || iCtrl == SDL_CONTROLLER_BUTTON_A || iCtrl == SDL_CONTROLLER_BUTTON_START;
+        || iCtrl == SDL_GAMEPAD_BUTTON_SOUTH || iCtrl == SDL_GAMEPAD_BUTTON_START;
   };
 
   // Decrease value
   inline bool Decrease(void) {
     return iKey == SE1K_BACKSPACE || iKey == SE1K_LEFT
-        || iCtrl == SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+        || iCtrl == SDL_GAMEPAD_BUTTON_DPAD_LEFT;
   };
 
   // Increase value
   inline bool Increase(void) {
     return iKey == SE1K_RETURN || iKey == SE1K_RIGHT
-        || iCtrl == SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+        || iCtrl == SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
   };
 
   inline INDEX ChangeValue(void) {
@@ -58,8 +58,8 @@ struct PressedMenuButton {
     if (Increase()) return +1;
 
     // Strong
-    if (iCtrl == SDL_CONTROLLER_BUTTON_X) return -5;
-    if (iCtrl == SDL_CONTROLLER_BUTTON_A) return +5;
+    if (iCtrl == SDL_GAMEPAD_BUTTON_WEST) return -5;
+    if (iCtrl == SDL_GAMEPAD_BUTTON_SOUTH) return +5;
 
     // None
     return 0;
@@ -76,15 +76,15 @@ struct PressedMenuButton {
   };
 
   // Directions
-  inline bool Up(void)    { return iKey == SE1K_UP    || iCtrl == SDL_CONTROLLER_BUTTON_DPAD_UP; };
-  inline bool Down(void)  { return iKey == SE1K_DOWN  || iCtrl == SDL_CONTROLLER_BUTTON_DPAD_DOWN; };
-  inline bool Left(void)  { return iKey == SE1K_LEFT  || iCtrl == SDL_CONTROLLER_BUTTON_DPAD_LEFT; };
-  inline bool Right(void) { return iKey == SE1K_RIGHT || iCtrl == SDL_CONTROLLER_BUTTON_DPAD_RIGHT; };
+  inline bool Up(void)    { return iKey == SE1K_UP    || iCtrl == SDL_GAMEPAD_BUTTON_DPAD_UP; };
+  inline bool Down(void)  { return iKey == SE1K_DOWN  || iCtrl == SDL_GAMEPAD_BUTTON_DPAD_DOWN; };
+  inline bool Left(void)  { return iKey == SE1K_LEFT  || iCtrl == SDL_GAMEPAD_BUTTON_DPAD_LEFT; };
+  inline bool Right(void) { return iKey == SE1K_RIGHT || iCtrl == SDL_GAMEPAD_BUTTON_DPAD_RIGHT; };
 
   inline INDEX ScrollPower(void) {
     // Weak
-    if (iKey == SE1K_PAGEUP   || iCtrl == SDL_CONTROLLER_BUTTON_LEFTSHOULDER)  return -1;
-    if (iKey == SE1K_PAGEDOWN || iCtrl == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) return +1;
+    if (iKey == SE1K_PAGEUP   || iCtrl == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)  return -1;
+    if (iKey == SE1K_PAGEDOWN || iCtrl == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) return +1;
 
     // Strong
     if (iMouse == MOUSEWHEEL_UP) return -2;
