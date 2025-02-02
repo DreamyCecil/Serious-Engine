@@ -72,10 +72,6 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
       m_pDSSourceLeft  = NULL;
       m_pDSSourceRight = NULL;
       m_iWriteOffsetEAX = 0;
-
-      m_iLastEnvType = 1234;
-      m_fLastEnvSize = 1234;
-      m_fLastPanning = 1234;
     #endif
     };
 
@@ -100,9 +96,9 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
 
     virtual void CopyMixerBuffer(SLONG slMixedSize);
     virtual SLONG PrepareSoundBuffer(void);
-
     virtual void Mute(BOOL &bSetSoundMuted);
-    virtual void UpdateEAX(void);
+
+    virtual void Update(void);
 };
 
 #endif // SE1_WIN && SE1_SND_DSOUND

@@ -90,7 +90,7 @@ void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize)
   }
 
 #else
-  memset(pvMixerBuffer, 0, slMixerBufferSize * 8);
+  memset(pvMixerBuffer, 0, slMixerBufferSize * 2 * sizeof(SLONG));
 #endif
 }
 
@@ -219,6 +219,13 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   SLONG *pslSrc = (SLONG*)pvMixerBuffer;
   const INDEX iSamples = slBytes/2; // 16-bit was assumed -> samples (treat as mono)
   for( i=0; i<iSamples; i++) slPeak = Max( Abs(pslSrc[i]), slPeak);
+
+  // [Cecil] Avoid potential division by zero
+  if (slPeak == 0) {
+    fLastNormValue = 1.0f;
+    ConvertMixerBuffer(slBytes);
+    return;
+  }
 
   // determine normalize value and skip normalization if maximize is required (do not increase volume!)
   FLOAT fNormValue = 32767.0f / (FLOAT)slPeak;

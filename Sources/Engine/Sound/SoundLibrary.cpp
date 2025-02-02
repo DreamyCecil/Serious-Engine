@@ -506,7 +506,8 @@ void CSoundLibrary::UpdateSounds(void)
   // synchronize access to sounds
   CTSingleLock slSounds( &_pSound->sl_csSound, TRUE);
 
-  _pSound->sl_pInterface->UpdateEAX();
+  // [Cecil] Common update method, not strictly EAX-related
+  _pSound->sl_pInterface->Update();
 
   // for each sound
   {FOREACHINLIST( CSoundData, sd_Node, _pSound->sl_ClhAwareList, itCsdSoundData) {

@@ -309,9 +309,9 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
     if (hResult != DS_OK) return Fail(TRANS("  ! DirectSound3D error: Cannot apply 3D parameters.\n"));
 
     // Reset EAX parameters
-    m_fLastPanning = 1234;
-    m_iLastEnvType = 1234;
-    m_fLastEnvSize = 1234;
+    m_iLastEnvType = -999;
+    m_fLastEnvSize = -999;
+    m_fLastPanning = -999;
 
     // Query property interface to EAX
     hResult = m_pDSSourceLeft->QueryInterface(IID_IKsPropertySet, (LPVOID *)&m_pKSProperty);
@@ -552,7 +552,8 @@ BOOL CSoundAPI_DSound::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize)
     iEnvNo = 1;
   }
 
-  if (fEnvSize < 1 || fEnvSize > 99) {
+  // [Cecil] 99 -> 100 to allow "Big canyon" sector type (EAX_ENVIRONMENT_MOUNTAINS) to use its size of 100 meters
+  if (fEnvSize < 1 || fEnvSize > 100) {
     fEnvSize = 8;
   }
 
@@ -569,7 +570,7 @@ BOOL CSoundAPI_DSound::SetEnvironment(INDEX iEnvNo, FLOAT fEnvSize)
 
 #endif // SE1_SND_EAX
 
-void CSoundAPI_DSound::UpdateEAX(void) {
+void CSoundAPI_DSound::Update(void) {
   // Make sure that the buffers are playing
   PlayBuffers();
 

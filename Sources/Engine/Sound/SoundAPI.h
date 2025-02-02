@@ -101,17 +101,17 @@ class ENGINE_API CAbstractSoundAPI {
       FreeBuffers();
     };
 
-    // Copy mixer buffer to sound buffers
-    virtual void CopyMixerBuffer(SLONG slMixedSize) = 0;
-
-    // Find room in sound buffer to copy in next crop of samples
+    // Determine how much space is available in the sound buffers for new samples
     virtual SLONG PrepareSoundBuffer(void) = 0;
+
+    // Copy samples from the mixer buffer into the sound buffers
+    virtual void CopyMixerBuffer(SLONG slMixedSize) = 0;
 
     // Assume that it will mute itself eventually by default
     virtual void Mute(BOOL &bSetSoundMuted) {};
 
-    // No EAX support by default
-    virtual void UpdateEAX(void) {};
+    // Update API every frame
+    virtual void Update(void) {};
 };
 
 #endif // include-once check
