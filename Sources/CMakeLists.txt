@@ -15,6 +15,9 @@ if(SE1_BUILD_X86)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 endif()
 
+# Disable in order to remove OpenAL support from the engine
+option(SE1_OPENAL_SUPPORT "Implement OpenAL sound API" ON)
+
 # Don't use system libraries by default
 option(USE_SYSTEM_SDL3 "Use systems SDL3 development files" OFF)
 option(USE_SYSTEM_ZLIB "Use systems zlib development files" OFF)

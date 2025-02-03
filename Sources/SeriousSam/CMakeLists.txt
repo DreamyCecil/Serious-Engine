@@ -79,4 +79,8 @@ if(LINUX)
   target_link_libraries(SeriousSam "dl")
   target_link_libraries(SeriousSam "pthread")
   target_link_libraries(SeriousSam SDL3::SDL3 ${ZLIB_LIBRARIES})
+
+  if (SE1_OPENAL_SUPPORT)
+    target_link_libraries(SeriousSam ${OPENAL_LIBRARY})
+  endif()
 endif()

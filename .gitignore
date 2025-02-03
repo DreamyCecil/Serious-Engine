@@ -14,7 +14,7 @@
 *.dll
 *.p
 !Sources/ThirdParty/glew/bin/**/*.dll
-!Sources/ThirdParty/SDL2/lib/**/*.dll
+!Sources/ThirdParty/OpenAL-Soft/**/*.dll
 
 # Fortran module files
 *.mod
@@ -25,7 +25,8 @@
 *.a
 *.lib
 !Sources/ThirdParty/glew/lib/**/*.lib
-!Sources/ThirdParty/SDL2/lib/**/*.lib
+!Sources/ThirdParty/OpenAL-Soft/**/*.a
+!Sources/ThirdParty/OpenAL-Soft/**/*.lib
 
 # Executables
 Bin/*
@@ -37,6 +38,7 @@ Bin/*
 !Bison.exe
 !Flex.exe
 !Sources/ThirdParty/glew/bin/**/*.exe
+!Sources/ThirdParty/OpenAL-Soft/**/*.exe
 
 # CMake Build dirs (temp)
 Build/*

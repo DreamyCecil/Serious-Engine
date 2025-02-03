@@ -3,6 +3,8 @@
   <PropertyGroup Label="UserMacros">
     <SE1Platform Condition="'$(PlatformShortName)'=='x86'  Or '$(PlatformShortName)'=='Win32'">x86</SE1Platform>
     <SE1Platform Condition="'$(PlatformShortName)'!='x86' And '$(PlatformShortName)'!='Win32'">x64</SE1Platform>
+    <SE1PlatformAlt Condition="'$(SE1Platform)'=='x86'">Win32</SE1PlatformAlt>
+    <SE1PlatformAlt Condition="'$(SE1Platform)'!='x86'">Win64</SE1PlatformAlt>
     <FullConfigurationName>$(Configuration).$(SE1Platform)</FullConfigurationName>
 
     <BinDir>$(SolutionDir)Bin\$(FullConfigurationName)\</BinDir>
@@ -14,10 +16,13 @@
     <GLEWInclPath>$(SolutionDir)ThirdParty\glew\include\GL\</GLEWInclPath>
     <GLEWLibPath>$(SolutionDir)ThirdParty\glew\lib\Release\$(PlatformName)\</GLEWLibPath>
     <GLEWBinPath>$(SolutionDir)ThirdParty\glew\bin\Release\$(PlatformName)\</GLEWBinPath>
+    <OALInclPath>$(SolutionDir)ThirdParty\OpenAL-Soft\include\</OALInclPath>
+    <OALLibPath>$(SolutionDir)ThirdParty\OpenAL-Soft\libs\$(SE1PlatformAlt)\</OALLibPath>
+    <OALBinPath>$(SolutionDir)ThirdParty\OpenAL-Soft\bin\$(SE1PlatformAlt)\</OALBinPath>
 
     <SE1Exe>$(BinDir);$(SolutionDir)..\Tools.Win32;</SE1Exe>
-    <SE1Incl>$(SolutionDir);$(SolutionDir)ThirdParty\;$(ProjectDir);$(DX8InclPath);$(SDLInclPath);$(GLEWInclPath);</SE1Incl>
-    <SE1Libs>$(BinDir);$(DX8LibPath);$(GLEWLibPath);</SE1Libs>
+    <SE1Incl>$(SolutionDir);$(SolutionDir)ThirdParty\;$(ProjectDir);$(DX8InclPath);$(SDLInclPath);$(GLEWInclPath);$(OALInclPath);</SE1Incl>
+    <SE1Libs>$(BinDir);$(DX8LibPath);$(GLEWLibPath);$(OALLibPath);</SE1Libs>
 
     <SE1GenericPreproc>SE1_INCLUDE_CURRENTCOMMITHASH;DIRECT3D_VERSION=0x0800;</SE1GenericPreproc>
   </PropertyGroup>

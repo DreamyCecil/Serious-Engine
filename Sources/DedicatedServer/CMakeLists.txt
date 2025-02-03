@@ -16,4 +16,8 @@ if(LINUX)
   target_link_libraries(DedicatedServer "dl")
   target_link_libraries(DedicatedServer "pthread")
   target_link_libraries(DedicatedServer SDL3::SDL3 ${ZLIB_LIBRARIES})
+
+  if (SE1_OPENAL_SUPPORT)
+    target_link_libraries(DedicatedServer ${OPENAL_LIBRARY})
+  endif()
 endif()

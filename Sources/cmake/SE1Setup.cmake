@@ -10,6 +10,17 @@ if(USE_CCACHE)
   endif()
 endif()
 
+# [Cecil] OpenAL support
+if(SE1_OPENAL_SUPPORT)
+  find_package(OpenAL REQUIRED)
+  include_directories(${OPENAL_INCLUDE_DIR})
+
+else()
+  # Disable OpenAL features
+  add_definitions(-DSE1_SND_OPENAL=0)
+  add_definitions(-DSE1_OPENAL_EFX=0)
+endif()
+
 # [Cecil] Build SDL locally, if not using system libraries
 if(NOT USE_SYSTEM_SDL3)
   add_subdirectory(${CMAKE_SOURCE_DIR}/ThirdParty/SDL EXCLUDE_FROM_ALL)
