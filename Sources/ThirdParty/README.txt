@@ -1,4 +1,5 @@
 Third party modules used by Serious Engine.
+Additional Visual Studio project files for building specific submodules are included in the "VS-Projects" folder.
 
 
 Current module versions:
