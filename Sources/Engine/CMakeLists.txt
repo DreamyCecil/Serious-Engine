@@ -190,6 +190,7 @@ set(ENGINE_SRCS
 
   "Sound/SoundAPI.cpp"
   "Sound/SoundAPI_DSound.cpp"
+  "Sound/SoundAPI_OpenAL.cpp"
   "Sound/SoundAPI_SDL.cpp"
   "Sound/SoundAPI_WaveOut.cpp"
   "Sound/SoundData.cpp"

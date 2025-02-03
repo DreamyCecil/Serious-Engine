@@ -145,7 +145,7 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
     }
   }
 
-  const SDL_AudioSpec spec = { formatSet, wfe.nChannels, wfe.nSamplesPerSec };
+  const SDL_AudioSpec spec = { formatSet, (int)wfe.nChannels, (int)wfe.nSamplesPerSec };
   m_pAudioStream = SDL_OpenAudioDeviceStream(iDeviceToOpen, &spec, &AudioCallback, this);
 
   if (m_pAudioStream == NULL) {

@@ -734,6 +734,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClCompile Include="Ska\ModelConfig.cpp" />
     <ClCompile Include="Sound\SoundAPI.cpp" />
     <ClCompile Include="Sound\SoundAPI_DSound.cpp" />
+    <ClCompile Include="Sound\SoundAPI_OpenAL.cpp" />
     <ClCompile Include="Sound\SoundAPI_SDL.cpp" />
     <ClCompile Include="Sound\SoundAPI_WaveOut.cpp" />
     <ClCompile Include="Sound\SoundData.cpp" />
@@ -1162,6 +1163,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClInclude Include="Sound\ov_functions.h" />
     <ClInclude Include="Sound\SoundAPI.h" />
     <ClInclude Include="Sound\SoundAPI_DSound.h" />
+    <ClInclude Include="Sound\SoundAPI_OpenAL.h" />
     <ClInclude Include="Sound\SoundAPI_SDL.h" />
     <ClInclude Include="Sound\SoundAPI_WaveOut.h" />
     <ClInclude Include="Sound\SoundData.h" />

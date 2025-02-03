@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // Available sound interfaces
 #include <Engine/Sound/SoundAPI_DSound.h>
+#include <Engine/Sound/SoundAPI_OpenAL.h>
 #include <Engine/Sound/SoundAPI_SDL.h>
 #include <Engine/Sound/SoundAPI_WaveOut.h>
 
@@ -122,6 +123,10 @@ const CTString &CAbstractSoundAPI::GetApiName(CAbstractSoundAPI::ESoundAPI eAPI)
   #if SE1_SND_SDLAUDIO
     "SDL Audio",
   #endif // SE1_SND_SDLAUDIO
+
+  #if SE1_SND_OPENAL
+    "OpenAL",
+  #endif // SE1_SND_OPENAL
   };
 
   return astrApiNames[eAPI];
@@ -145,6 +150,10 @@ CAbstractSoundAPI *CAbstractSoundAPI::CreateAPI(CAbstractSoundAPI::ESoundAPI eAP
   #if SE1_SND_SDLAUDIO
     case E_SND_SDL:     return new CSoundAPI_SDL;
   #endif // SE1_SND_SDLAUDIO
+
+  #if SE1_SND_OPENAL
+    case E_SND_OPENAL:  return new CSoundAPI_OpenAL;
+  #endif // SE1_SND_OPENAL
 
     // Invalid API
     default: {

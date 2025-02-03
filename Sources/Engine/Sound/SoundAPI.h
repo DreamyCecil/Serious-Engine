@@ -42,6 +42,10 @@ class ENGINE_API CAbstractSoundAPI {
       E_SND_SDL,
     #endif // SE1_SND_SDLAUDIO
 
+    #if SE1_SND_OPENAL
+      E_SND_OPENAL,
+    #endif // SE1_SND_OPENAL
+
       // [Cecil] NOTE: This should always be at least 1 under any configuration
       E_SND_MAX,
 

@@ -757,6 +757,9 @@
     <ClCompile Include="API\CurrentVersion.cpp">
       <Filter>Source Files\API</Filter>
     </ClCompile>
+    <ClCompile Include="Sound\SoundAPI_OpenAL.cpp">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base\Anim.h">
@@ -1400,6 +1403,9 @@
     </ClInclude>
     <ClInclude Include="API\CurrentVersion.h">
       <Filter>Header Files\API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound\SoundAPI_OpenAL.h">
+      <Filter>Header Files\Sound Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
