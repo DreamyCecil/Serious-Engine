@@ -52,12 +52,21 @@ These have been modified to run correctly under the recent versions of Windows. 
 
 ## Windows
 
+### Prerequisite
+Before building, you need to update all submodules in the repository:
+```
+git submodule update --init --recursive
+```
+
 ### Instructions
 1. Install **Visual Studio 2010** or later.
 2. Open `Sources/All.sln` solution.
 3. Press F7 or **Build** -> **Build solution** to build the entire project.
 
 Once the project is built, the libraries and executables will be copied under the `Bin/` directory.
+
+> [!TIP]
+> - To temporarily prevent all projects from rebuilding each time `Engine` project is built, set the first value in the `Sources/Engine/GenerateCommitHash.ps1` script to `$false`.
 
 ## Linux
 
@@ -67,8 +76,9 @@ Before building, you need to install certain modules if they aren't already ther
 1. Install **Git** and **CMake** tools with `sudo apt install git cmake`
 2. Install **GCC** and other build tools with `sudo apt install build-essential` (if you don't already have GCC)
 3. Install **Bison** and **Flex** tools with `sudo apt install bison flex` (if you've installed GCC separately without them)
-4. Install **SDL2** library by following [these official instructions](https://wiki.libsdl.org/SDL2/Installation#linuxunix) or with `sudo apt-get install libsdl2-dev`
+4. Install **OpenAL** library with `sudo apt-get install libopenal-dev`
 5. Clone the repository in any directory with `git clone https://github.com/DreamyCecil/Serious-Engine.git`
+6. Update all submodules in the repository with `git submodule update --init --recursive`
 
 ### Instructions
 1. Navigate to the `Sources/` directory and open the terminal from there.
@@ -79,7 +89,8 @@ You can modify the build scripts to suit your needs, e.g. select a different bui
 Once the project is built, you can install it into the `Bin/` directory by running `Sources/deploy-linux.sh` script.
 
 > [!TIP]
-> To rebuild the project from scratch, you can add `rebuild` argument to the script like this: `./build-linux64.sh rebuild`.
+> - To rebuild the project from scratch, you can add `rebuild` argument to the script like this: `./build-linux64.sh rebuild`.
+> - To temporarily prevent all projects from rebuilding each time, add `-DSE1_DUMMY_BUILD_INFO=1` to the CMake command.
 
 # Optional features
 
@@ -98,6 +109,9 @@ Its functionality is disabled by default. To enable it, you need to switch the `
 It's included with the source code and is initialized by the engine but its functionality is mostly unused by default for the Windows platform. To prioritize it over Win32 API, you need to switch the `SE1_USE_SDL` macro to `1` (or define it as such for all projects).
 - It is always prioritized on non-Windows platforms because cross-platform code cannot function without it.
 - SDL is incompatible with Microsoft's MFC library, which is used for tool applications (such as Serious Editor), making it impossible to build them with the game on Windows.
+
+### OpenAL
+The engine can optionally implement cross-platform sound playback using OpenAL. Under Windows platforms, it relies on prebuilt binaries of the OpenAL Soft library.
 
 ## Windows-only features
 
@@ -151,7 +165,7 @@ Serious Engine is licensed under the GNU GPL v2 license (see `LICENSE` file).
 
 ### Serious Engine forks
 
-Some code in this fork has been borrowed from other Serious Engine projects:
+Some ideas and code in this fork have been borrowed from other Serious Engine projects:
 
 - [Original Linux port](https://github.com/icculus/Serious-Engine) by icculus
 - [Serious Engine: Ray Traced](https://github.com/sultim-t/Serious-Engine-RT) by Sultim
@@ -164,5 +178,6 @@ Some of the code included with the engine sources under `Sources/ThirdParty/` is
 - **GLEW** (`glew/`) from https://glew.sourceforge.net/
 - **libogg** & **libvorbis** (`libogg/`, `libvorbis/`) by Xiph.Org Foundation ( https://xiph.org/vorbis/ )
 - **LightWave SDK** (`LWSkaExporter/SDK/`) by NewTek Inc.
-- **SDL2** (`SDL2/`) from https://libsdl.org/
+- **OpenAL Soft** (`OpenAL-Soft`) by kcat ( https://github.com/kcat/openal-soft )
+- **SDL** (`SDL/`) from https://libsdl.org/
 - **zlib** (`zlib/`) by Jean-loup Gailly and Mark Adler ( https://zlib.net/ )
