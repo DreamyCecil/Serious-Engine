@@ -269,6 +269,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>$(ObjDir)..\EngineGUI\Graphics.res;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -425,6 +426,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalDependencies>$(ObjDir)..\EngineGUI\Graphics.res;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>

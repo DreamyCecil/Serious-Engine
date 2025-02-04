@@ -244,6 +244,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
@@ -392,6 +393,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateMapFile>true</GenerateMapFile>
       <AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <CustomBuildStep />
     <PostBuildEvent>
