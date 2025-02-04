@@ -33,6 +33,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #include <x86intrin.h>
 #endif
 
+// [Cecil] TODO: Get rid of __rdtsc(), which is only used in a fallback scenario in GetCPUSpeedHz() in the entire codebase
 // Read the Pentium TimeStampCounter
 static inline SQUAD ReadTSC(void)
 {
@@ -496,9 +497,10 @@ void CTimer::DisableLerp(void)
   tm_fLerpFactor2=1.0f;
 }
 
-// Get current timer value of high precision timer
+// [Cecil] Get current timer value since the engine start in nanoseconds
 CTimerValue CTimer::GetHighPrecisionTimer(void) {
-  return ReadTSC();
+  // Measure precise time in nanoseconds instead of the current CPU cycles
+  return static_cast<SQUAD>(SDL_GetTicksNS());
 };
 
 // [Cecil] Suspend current thread execution for some time (cross-platform replacement for Sleep() from Windows API)

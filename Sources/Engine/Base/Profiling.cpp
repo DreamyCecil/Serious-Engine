@@ -17,30 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Base/Profiling.h>
 
-#include <Engine/Templates/StaticArray.cpp>
-
-#if SE1_UNIX
-  #include <x86intrin.h>
-#endif
-
-static inline SQUAD ReadTSC_profile(void)
-{
-// [Cecil] Prioritize old compiler
-#if SE1_OLD_COMPILER || SE1_USE_ASM
-  SQUAD mmRet;
-  __asm {
-    rdtsc
-    mov   dword ptr [mmRet+0],eax
-    mov   dword ptr [mmRet+4],edx
-  }
-  return mmRet;
-
-#else
-  return __rdtsc();
-#endif
-}
-
-
 /////////////////////////////////////////////////////////////////////
 // CProfileForm
 // how much it takes to start a profiling timer
@@ -196,7 +172,7 @@ void CProfileForm::StartTimer_internal(INDEX iTimer)
 {
   CProfileTimer &pt = pf_aptTimers[iTimer];
   //ASSERT(pt.pt_tvStarted.tv_llValue<0);
-  CTimerValue tvNow = CTimerValue(ReadTSC_profile())-_tvCurrentProfilingEpsilon;
+  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer() - _tvCurrentProfilingEpsilon;
   pt.pt_tvStarted = tvNow;
   pf_ctRunningTimers++;
   if (pf_ctRunningTimers==1) {
@@ -210,7 +186,7 @@ void CProfileForm::StopTimer_internal(INDEX iTimer)
 {
   CProfileTimer &pt = pf_aptTimers[iTimer];
   //ASSERT(pt.pt_tvStarted.tv_llValue>0);
-  CTimerValue tvNow = CTimerValue(ReadTSC_profile())-_tvCurrentProfilingEpsilon;
+  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer() - _tvCurrentProfilingEpsilon;
   pt.pt_tvElapsed +=
     tvNow - pf_aptTimers[iTimer].pt_tvStarted - _tvStartStopEpsilon + _tvStartEpsilon;
   pf_ctRunningTimers--;

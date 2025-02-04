@@ -27,6 +27,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Synchronization.h>
 
+// [Cecil] Timer value units (nanoseconds) in one second
+const SQUAD _llTimerValueSecondLen = SQUAD(1e9);
+
 /*
  * Class that holds and manipulates with high-precision timer values.
  */
@@ -139,7 +142,7 @@ public:
   // Get current factor used for lerping between game ticks.
   inline FLOAT GetLerpFactor2(void) const { return tm_fLerpFactor2; };
 
-  /* Get current timer value of high precision timer. */
+  // [Cecil] Get current timer value since the engine start in nanoseconds
   CTimerValue GetHighPrecisionTimer(void);
 
   // [Cecil] Suspend current thread execution for some time (cross-platform replacement for Sleep() from Windows API)
