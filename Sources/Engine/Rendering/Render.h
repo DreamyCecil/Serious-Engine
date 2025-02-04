@@ -86,11 +86,24 @@ public:
 
   FLOAT wrp_fMinimumRenderRange; // range (in meters) around viewer that is always drawn
 
-  CModelObject *wrp_pmoSelectedEntity; // model used for marking selected entities
-  CModelObject *wrp_pmoSelectedPortal; // model used for marking selected portals
-  CModelObject *wrp_pmoEmptyBrush;     // model used for marking brushes with no sectors
-
+  // [Cecil] Moved this field here from the end to align it with the previous ones (28th 4 byte long field)
   enum SelectionType wrp_stSelection;   // what kind of selection is shown
+
+  // [Cecil] Make sure that these pointer fields don't affect the class size and are aligned the same way across any configuration
+  union {
+    CModelObject *wrp_pmoSelectedEntity; // model used for marking selected entities
+    UBYTE __wrp_SelectedEntityPointerAlignment__[8];
+  };
+
+  union {
+    CModelObject *wrp_pmoSelectedPortal; // model used for marking selected portals
+    UBYTE __wrp_SelectedPortalPointerAlignment__[8];
+  };
+
+  union {
+    CModelObject *wrp_pmoEmptyBrush;     // model used for marking brushes with no sectors
+    UBYTE __wrp_EmptyBrushPointerAlignment__[8];
+  };
 
 public:
   /* Constructor -- sets default values. */

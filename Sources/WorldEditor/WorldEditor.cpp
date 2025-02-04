@@ -1672,8 +1672,14 @@ BOOL CWorldEditorApp::LoadRenderingPreferences()
     {
       throw( "Invalid version of rendering preferences, switching to defaults.");
     }
+
+    // [Cecil] Expected length of data
+    SLONG slData;
+    strmFile >> slData;
+    ASSERT(slData == sizeof(m_vpViewPrefs));
+
     // read view rendering preferences
-    strmFile.Read_t( &m_vpViewPrefs, sizeof( m_vpViewPrefs));
+    strmFile.Read_t( &m_vpViewPrefs, slData);
     for(INDEX i=0; i<ARRAYCOUNT(m_vpViewPrefs); i++) {
       m_vpViewPrefs[i].ClearInvalidConfigPointers();
     }
@@ -1704,8 +1710,13 @@ void CWorldEditorApp::SaveRenderingPreferences(void)
     strmFile.WriteID_t( CChunkID( "RPRF"));  // child configurations
     // write version number
     strmFile.WriteID_t( CChunkID( VIEW_PREFERENCES_VER));
+
+    // [Cecil] Write length of data
+    const SLONG slData = sizeof(m_vpViewPrefs);
+    strmFile << slData;
+
     // write child configurations array
-    strmFile.Write_t( &m_vpViewPrefs, sizeof( m_vpViewPrefs));
+    strmFile.Write_t( &m_vpViewPrefs, slData);
     // write ID for end of rendering prefs
     strmFile.WriteID_t( CChunkID( "RPED"));  // rendering preferences end
   }
@@ -1767,8 +1778,14 @@ BOOL CWorldEditorApp::LoadChildConfigurations(void)
     }
     // clear configurations
     m_ccChildConfigurations->SetDefaultValues();
+
+    // [Cecil] Expected length of data
+    SLONG slData;
+    strmFile >> slData;
+    ASSERT(slData == sizeof(m_ccChildConfigurations));
+
     // read child configurations array
-    strmFile.Read_t( &m_ccChildConfigurations, sizeof( m_ccChildConfigurations));
+    strmFile.Read_t( &m_ccChildConfigurations, slData);
     // read end of file ID
     strmFile.ExpectID_t( CChunkID( "CCED"));  // end of child configurations ID
   }
@@ -1798,8 +1815,13 @@ void CWorldEditorApp::SaveChildConfigurations(void)
     strmFile.WriteID_t( CChunkID( "CCFG"));  // child configurations
     // write version number
     strmFile.WriteID_t( CChunkID( CHILD_CONFIGURATION_VER));
+
+    // [Cecil] Write length of data
+    const SLONG slData = sizeof(m_ccChildConfigurations);
+    strmFile << slData;
+
     // write child configurations array
-    strmFile.Write_t( &m_ccChildConfigurations, sizeof( m_ccChildConfigurations));
+    strmFile.Write_t( &m_ccChildConfigurations, slData);
     // write end of file ID
     strmFile.WriteID_t( CChunkID( "CCED"));  // end of child configurations ID
   }

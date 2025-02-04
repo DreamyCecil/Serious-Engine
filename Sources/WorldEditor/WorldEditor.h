@@ -25,9 +25,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "resource.h"       // main symbols
 #include "Viewers.h"
 
-
-#define CHILD_CONFIGURATION_VER "V012"
-#define VIEW_PREFERENCES_VER "V012"
+// [Cecil] Version 13 because of proper field alignment and data length serialization
+#define CHILD_CONFIGURATION_VER "V013"
+#define VIEW_PREFERENCES_VER    "V013"
 
 #define VIEW_PREFERENCES_CT 10
 #define CHILD_CONFIGURATIONS_CT 10
@@ -288,6 +288,12 @@ public:
   FLOAT m_fPercentageTop;
   // grid on/off flag
   BOOL m_bGridOn;
+
+private:
+  // [Cecil] Dummy padding for aligning the structure to 8-byte boundaries
+  UBYTE __dummy_padding__[4];
+
+public:
   // view prefs
   CViewPrefs m_vpViewPrefs[4];
   // type of projection
