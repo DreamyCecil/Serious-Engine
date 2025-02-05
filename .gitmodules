@@ -1,3 +1,6 @@
 [submodule "Sources/ThirdParty/SDL"]
 	path = Sources/ThirdParty/SDL
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "Sources/ThirdParty/ECC"]
+	path = Sources/ThirdParty/ECC
+	url = https://github.com/DreamyCecil/SE1-ECC.git

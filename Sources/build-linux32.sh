@@ -9,10 +9,6 @@ set -e
 set -x
 
 # Delete Bison/Flex generated files
-rm -f ./Ecc/Parser.cpp
-rm -f ./Ecc/Parser.h
-rm -f ./Ecc/Parser.hpp
-rm -f ./Ecc/Scanner.cpp
 rm -f ./Engine/Base/Parser.cpp
 rm -f ./Engine/Base/Parser.h
 rm -f ./Engine/Base/Parser.hpp
@@ -21,6 +17,10 @@ rm -f ./Engine/Ska/smcPars.cpp
 rm -f ./Engine/Ska/smcPars.h
 rm -f ./Engine/Ska/smcPars.hpp
 rm -f ./Engine/Ska/smcScan.cpp
+rm -f ./ThirdParty/ECC/Source/Parser.cpp
+rm -f ./ThirdParty/ECC/Source/Parser.h
+rm -f ./ThirdParty/ECC/Source/Parser.hpp
+rm -f ./ThirdParty/ECC/Source/Scanner.cpp
 
 # NOTE: To rebuild everything from scratch, add "rebuild" argument to the script
 

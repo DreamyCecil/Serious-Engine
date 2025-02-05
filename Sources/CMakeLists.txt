@@ -51,7 +51,7 @@ if(ECC)
 elseif(CMAKE_CROSSCOMPILING)
   message(FATAL_ERROR "ECC variable must point to native ecc binary when cross-compiling.")
 else()
-  add_subdirectory(Ecc)
+  add_subdirectory(ThirdParty/ECC)
   set(ECC ecc)
 endif()
 

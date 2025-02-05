@@ -22,35 +22,35 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Parser.c">
+    <ClCompile Include="..\ECC\Source\Parser.c">
       <Filter>Source Files\Dummy</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="..\ECC\Source\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Parser.cpp">
+    <ClCompile Include="..\ECC\Source\Parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Scanner.cpp">
+    <ClCompile Include="..\ECC\Source\Scanner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Main.h">
+    <ClInclude Include="..\ECC\Source\Main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StdH.h">
+    <ClInclude Include="..\ECC\Source\StdH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Win32\unistd.h">
+    <ClInclude Include="..\ECC\Win32\unistd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Parser.y">
+    <CustomBuild Include="..\ECC\Source\Compiler\110_Parser.y">
       <Filter>Source Files\Grammar files</Filter>
     </CustomBuild>
-    <CustomBuild Include="Scanner.l">
+    <CustomBuild Include="..\ECC\Source\Compiler\Scanner.l">
       <Filter>Source Files\Grammar files</Filter>
     </CustomBuild>
   </ItemGroup>

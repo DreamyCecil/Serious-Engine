@@ -184,7 +184,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Debug\Ecc.tlb</TypeLibraryName>
@@ -218,7 +218,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Debug\Ecc.tlb</TypeLibraryName>
@@ -252,7 +252,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Debug\Ecc.tlb</TypeLibraryName>
@@ -286,7 +286,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Debug\Ecc.tlb</TypeLibraryName>
@@ -324,7 +324,7 @@
       <StringPooling>true</StringPooling>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\Ecc.tlb</TypeLibraryName>
@@ -362,7 +362,7 @@
       <StringPooling>true</StringPooling>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\Ecc.tlb</TypeLibraryName>
@@ -400,7 +400,7 @@
       <StringPooling>true</StringPooling>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\Ecc.tlb</TypeLibraryName>
@@ -438,7 +438,7 @@
       <StringPooling>true</StringPooling>
       <PreprocessorDefinitions>$(SE1Preproc);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996;4333</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir)Win32\;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ECC\Win32\;</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\Ecc.tlb</TypeLibraryName>
@@ -464,91 +464,107 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="Parser.y">
+    <CustomBuild Include="..\ECC\Source\Compiler\110_Parser.y">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">Creating parser source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">Creating parser source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">Creating parser source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">Creating parser source</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">pushd $(SolutionDir)
-bison -o$(ProjectName)/Parser.c $(ProjectName)/Parser.y -d  
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">pushd $(ProjectDir)..\ECC\
+bison -o%(RootDir)%(Directory)..\Parser.c Source/Compiler/%(Filename).y -d
 popd
-copy %(RootDir)%(Directory)\Parser.c %(RootDir)%(Directory)\Parser.cpp  
-del %(RootDir)%(Directory)\Parser.c /q</Command>
+copy %(RootDir)%(Directory)..\Parser.c %(RootDir)%(Directory)..\Parser.cpp
+del %(RootDir)%(Directory)..\Parser.c /q
+copy %(RootDir)%(Directory)..\Parser.h %(RootDir)%(Directory)..\Parser.hpp
+del %(RootDir)%(Directory)..\Parser.h /q</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">Creating parser source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">Creating parser source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">Creating parser source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">Creating parser source</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">%(RootDir)%(Directory)\Parser.cpp;%(RootDir)%(Directory)\Parser.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">%(RootDir)%(Directory)..\Parser.cpp;%(RootDir)%(Directory)..\Parser.hpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="Scanner.l">
+    <CustomBuild Include="..\ECC\Source\Compiler\Scanner.l">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">Creating scanner source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">Creating scanner source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">Creating scanner source</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">Creating scanner source</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">flex -o%(RootDir)%(Directory)\Scanner.cpp  %(RootDir)%(Directory)\Scanner.l</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">.\Scanner.cpp;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">.\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">flex -o%(RootDir)%(Directory)\..\Scanner.cpp  %(RootDir)%(Directory)%(Filename).l</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">%(RootDir)%(Directory)\..\Scanner.cpp;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Parser.c">
+    <ClCompile Include="..\ECC\Source\Parser.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">true</ExcludedFromBuild>
@@ -558,14 +574,14 @@ del %(RootDir)%(Directory)\Parser.c /q</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="Scanner.cpp" />
+    <ClCompile Include="..\ECC\Source\Main.cpp" />
+    <ClCompile Include="..\ECC\Source\Parser.cpp" />
+    <ClCompile Include="..\ECC\Source\Scanner.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Main.h" />
-    <ClInclude Include="StdH.h" />
-    <ClInclude Include="Win32\unistd.h" />
+    <ClInclude Include="..\ECC\Source\Main.h" />
+    <ClInclude Include="..\ECC\Source\StdH.h" />
+    <ClInclude Include="..\ECC\Win32\unistd.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
