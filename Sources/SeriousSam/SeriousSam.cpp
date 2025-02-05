@@ -863,6 +863,8 @@ static void SetDPIAwareness(void) {
 #endif // SE1_WIN
 };
 
+static void SetupRestartArgs(void); // [Cecil]
+
 int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   // [Cecil] Set DPI awareness
   SetDPIAwareness();
@@ -1210,28 +1212,8 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   _pInput->DisableInput(_hwndMain);
   _pGame->StopGame();
 
-#if SE1_WIN
-  if (_fnmModToLoad != "") {
-    STARTUPINFOA cif;
-    ZeroMemory(&cif, sizeof(STARTUPINFOA));
-    PROCESS_INFORMATION pi;
-
-    const CTString strMod = _fnmModToLoad.FileName();
-
-    // [Cecil] Use executable filename
-    CTString strCmd = _fnmApplicationPath + _fnmApplicationExe;
-    CTString strParam = " +game " + strMod;
-
-    if (_strModServerJoin != "") {
-      strParam += " +connect " + _strModServerJoin + " +quickjoin";
-    }
-
-    if (!CreateProcessA(strCmd.ConstData(), strParam.Data(), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &cif, &pi)) {
-      // [Cecil] Proper error message
-      ErrorMessage(TRANS("Cannot start '%s' mod:\n%s"), strMod.ConstData(), GetWindowsError(GetLastError()).ConstData());
-    }
-  }
-#endif
+  // [Cecil] Setup arguments for restarting the application, if needed
+  SetupRestartArgs();
 
   // invoke quit screen if needed
   if( _bQuitScreen && _fnmModToLoad=="") QuitScreenLoop();
@@ -1239,6 +1221,55 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   End();
   return TRUE;
 }
+
+// [Cecil] Command line arguments for restarting the game
+static CStaticStackArray<CTString> _aRestartArgs;
+
+// [Cecil] Setup command line arguments for restarting the game with the mod
+void SetupRestartArgs(void) {
+  // No mod to start
+  if (_fnmModToLoad == "") return;
+
+  _aRestartArgs.PopAll();
+
+  // Executable filename as the first argument
+  CTString &strApp = _aRestartArgs.Push();
+  strApp = _fnmApplicationPath + _fnmApplicationExe;
+  strApp.ReplaceChar('\\', '/'); // [Cecil] NOTE: For execv()
+
+  // Add mod to start
+  _aRestartArgs.Add("+game");
+  _aRestartArgs.Add(_fnmModToLoad.FileName());
+
+  // Add server to connect to
+  if (_strModServerJoin != "") {
+    _aRestartArgs.Add("+connect");
+    _aRestartArgs.Add(_strModServerJoin);
+    _aRestartArgs.Add("+quickjoin");
+  }
+};
+
+// [Cecil] Restart the game with the mod, if the arguments have been set up
+static void RestartWithMod(void) {
+  const INDEX ctArgs = _aRestartArgs.Count();
+  if (ctArgs == 0) return;
+
+  // Copy arguments into a null-terminated array
+  char **aArgs = new char *[ctArgs + 1];
+  aArgs[ctArgs] = NULL;
+
+  for (INDEX i = 0; i < ctArgs; i++) {
+    aArgs[i] = _aRestartArgs[i].Data();
+  }
+
+  // Run new game instance
+  execv(aArgs[0], aArgs);
+  delete[] aArgs;
+
+  // Couldn't restart
+  ErrorMessage(TRANS("Cannot start '%s' mod:\n%s"), _fnmModToLoad.FileName().ConstData(), strerror(errno));
+  exit(EXIT_FAILURE);
+};
 
 void CheckBrowser(void)
 {
@@ -1257,6 +1288,9 @@ int GameEntryPoint(HINSTANCE hInstance, CommandLineSetup &cmd)
     SetupCommandLine(cmd);
     iResult = SubMain(hInstance, cmd);
   } CTSTREAM_END;
+
+  // [Cecil] Restart the game if needed
+  RestartWithMod();
 
   CheckBrowser();
 
