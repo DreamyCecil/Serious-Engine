@@ -454,7 +454,17 @@ ULONG OS::GetMouseState(float *pfX, float *pfY, BOOL bRelativeToWindow) {
     pt.x = pt.y = 0;
 
   } else if (bRelativeToWindow) {
-    bResult = ::ScreenToClient(GetActiveWindow(), &pt);
+    extern OS::Window _hwndCurrent;
+    HWND hwnd = NULL;
+
+    // Use current window, if it's available
+    if (_hwndCurrent != NULL) {
+      hwnd = _hwndCurrent;
+    } else {
+      hwnd = GetActiveWindow();
+    }
+
+    bResult = ::ScreenToClient(hwnd, &pt);
   }
 
   if (pfX != NULL) *pfX = (float)pt.x;
