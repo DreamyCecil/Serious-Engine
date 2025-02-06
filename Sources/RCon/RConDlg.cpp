@@ -126,6 +126,76 @@ static const INDEX _ctCommands = ARRAYCOUNT(_aCommandHistory);
 // [Cecil] Currently selected command in history (-1 allows going up to 0 and retrieving the first command)
 static INDEX _iInCommandHistory = -1;
 
+// [Cecil] Special command parsers
+static CString *_pLogString = NULL;
+
+static void OptionConnect(const CommandLineArgs_t &aArgs) {
+  // Connect to a new server
+  theApp.m_ulHost = StringToAddress(aArgs[0]);
+  theApp.m_uwPort = strtoul(aArgs[1].ConstData(), NULL, 10);
+  theApp.m_strPass = aArgs[2];
+
+  CTString strReport(0, "Server: %s:%u\r\nReady for commands...\r\n", aArgs[0].ConstData(), theApp.m_uwPort);
+  *_pLogString += strReport.ConstData();
+};
+
+static BOOL ParseSpecialCommands(CTString &strCommand, CString &strLog) {
+  if (strCommand == "") return FALSE;
+
+  // Start a new dedicated server with any arguments
+  if (strCommand.RemovePrefix("/start ")) {
+    STARTUPINFOA si;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&pi, sizeof(pi));
+
+    CTString strCmd = _fnmApplicationPath + _fnmApplicationExe.FileDir();
+    strCommand = " " + strCommand;
+
+  #if defined(SE1_STATIC_BUILD)
+    strCmd += "DedicatedServer-Static.exe";
+  #else
+    strCmd += "DedicatedServer-Dynamic.exe";
+  #endif
+
+    if (CreateProcessA(strCmd.ConstData(), strCommand.Data(), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &si, &pi)) {
+      // Close unnecessarily opened handles
+      CloseHandle(pi.hProcess);
+      CloseHandle(pi.hThread);
+
+    } else {
+      // Report error
+      CTString strError(0, "Cannot start dedicated server: %s\r\n", GetWindowsError(GetLastError()).ConstData());
+      strLog += strError.ConstData();
+    }
+    return TRUE;
+
+  // Show usage example of some commands
+  } else if (strCommand == "/start") {
+    strLog += "Usage: /start <configname> [<modname>]\r\n";
+    return TRUE;
+
+  } else if (strCommand == "/connect") {
+    strLog += "Usage: /connect <hostname> <port> <password>\r\n";
+    return TRUE;
+
+  // List available commands
+  } else if (strCommand == "/help") {
+    strLog += "RCon can be used to remotely run console commands on a dedicated server that you are connected to. "
+      "It also offers its own special commands that are parsed by RCon itself instead of the engine shell.\r\n"
+      "\r\n"
+      "Available commands:\r\n"
+      "    /connect - connect to a different server with a different password\r\n"
+      "    /help - display this help text\r\n"
+      "    /start - start a new dedicated server\r\n"
+      "Type any command without arguments to see its usage example.\r\n";
+  }
+
+  return FALSE;
+};
+
 BOOL CRConDlg::PreTranslateMessage(MSG* pMsg) 
 {
   CWnd *pwndCommand = GetDlgItem(IDC_COMMAND);
@@ -143,7 +213,6 @@ BOOL CRConDlg::PreTranslateMessage(MSG* pMsg)
       // send chat string to user(s)
       m_strLog += ">" + strConCommand + "\r\n";
       pwndCommand->SetWindowText(L"");
-      UpdateData(FALSE);
 
       // [Cecil] Get a meaningful command from the console
       CTString strCommand = CStringA(strConCommand).GetString();
@@ -167,13 +236,36 @@ BOOL CRConDlg::PreTranslateMessage(MSG* pMsg)
       // [Cecil] Reset selected command
       _iInCommandHistory = -1;
 
-      // Send command to the server
-      {
-        CNetworkMessage nm(MSG_EXTRA);
-        nm << CTString(0, "rcmd %u \"%s\" %s\n", theApp.m_ulCode, theApp.m_strPass.ConstData(), strCommand.ConstData());
-        _pNetwork->SendBroadcast(nm, theApp.m_ulHost, theApp.m_uwPort);
-        _cmiComm.Client_Update();
+      // [Cecil] Try to parse special RCon commands with variable arguments
+      _pLogString = &m_strLog;
+
+      if (!ParseSpecialCommands(strCommand, m_strLog)) {
+        // Try the command line with fixed amounts of arguments
+        CommandLineSetup cmd(strCommand.ConstData());
+        cmd.AddCommand("/connect", &OptionConnect, 3);
+
+        CTString strCmdOutput = "";
+
+        // Parse command line and display the result
+        if (cmd.Parse(strCmdOutput)) {
+          strCmdOutput.ReplaceSubstr("\n", "\r\n");
+          m_strLog += strCmdOutput.ConstData();
+
+        // Display the error if couldn't parse
+        } else if (strCmdOutput != "") {
+          strCmdOutput.ReplaceSubstr("\n", "\r\n");
+          m_strLog += strCmdOutput.ConstData();
+
+        // Send the command to the server
+        } else {
+          CNetworkMessage nm(MSG_EXTRA);
+          nm << CTString(0, "rcmd %u \"%s\" %s\n", theApp.m_ulCode, theApp.m_strPass.ConstData(), strCommand.ConstData());
+          _pNetwork->SendBroadcast(nm, theApp.m_ulHost, theApp.m_uwPort);
+          _cmiComm.Client_Update();
+        }
       }
+
+      UpdateData(FALSE);
 
     // [Cecil] Go up the command history
     } else if (iKey == VK_UP) {

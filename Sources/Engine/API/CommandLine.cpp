@@ -235,7 +235,7 @@ BOOL CommandLineSetup::Parse(CTString &strOutput) const {
     FCommandLineCallback pFunc = pCmdFunc->pFunc;
 
     INDEX ctArgs = pCmdFunc->ctArgs;
-    INDEX ctLeft = ct - i;
+    INDEX ctLeft = ct - (i + 1);
 
     // Not enough arguments for the last command
     if (ctArgs > ctLeft) {
