@@ -142,11 +142,13 @@ public:
   // strip decorations from the string
   CTString Undecorated(void) const;
 
-  /* Replace a substring in a string. */
-  BOOL ReplaceSubstr(const CTString &strSub, const CTString &strNewSub);
+  // [Cecil] Replace all occurrences of a specific string with another string, instead of just the first one
+  // Returns the amount of replaced substrings
+  size_t ReplaceSubstr(const CTString &strOld, const CTString &strNew);
 
   // [Cecil] Replace specific character in the entire string
-  void ReplaceChar(char chOld, char chNew);
+  // Returns the amount of replaced characters
+  size_t ReplaceChar(char chOld, char chNew);
 
   /* Check if has given prefix */
   BOOL HasPrefix( const CTString &strPrefix) const;

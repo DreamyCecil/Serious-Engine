@@ -24,6 +24,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/Console.h>
 
+#include <list>
+
 // [Cecil] Invalid character index
 const size_t CTString::npos = size_t(-1);
 
@@ -120,34 +122,61 @@ BOOL CTString::HasPrefix( const CTString &strPrefix) const
   return TRUE;
 }
 
-/* Replace a substring in a string. */
-BOOL CTString::ReplaceSubstr(const CTString &strSub, const CTString &strNewSub)
-{
-  size_t iPos = Find(strSub);
+// [Cecil] Replace all occurrences of a specific string with another string, instead of just the first one
+size_t CTString::ReplaceSubstr(const CTString &strOld, const CTString &strNew) {
+  size_t ctReplaced = 0;
+  const size_t ctOld = strOld.Length();
+  const size_t ctNew = strNew.Length();
 
-  if (iPos == npos) {
-    return FALSE;
+  // Simply replace characters if lengths match
+  if (ctOld == ctNew) {
+    // Search for the first occurrence
+    size_t iPos = Find(strOld);
+
+    while (iPos != npos) {
+      memcpy(Data() + iPos, strNew.ConstData(), ctNew);
+      ++ctReplaced;
+
+      // Search for the next occurrence past the replacement
+      iPos = Find(strOld, iPos + ctNew);
+    }
+
+  // Split the string and reassemble it with new substrings
+  } else {
+    std::list<CTString> aStrings;
+    StringSplit(strOld, aStrings);
+
+    // Amount of replaced substrings is equal to the amount of separators between the strings
+    ctReplaced = aStrings.size() - 1;
+
+    std::list<CTString>::const_iterator it;
+    CTString strResult = "";
+
+    for (it = aStrings.begin(); it != aStrings.end(); it++) {
+      if (strResult != "") strResult += strNew;
+      strResult += *it;
+    }
+
+    *this = strResult;
   }
 
-  CTString strPart1, strPart2;
-  Split((INDEX)iPos, strPart1, strPart2);
-  strPart2.RemovePrefix(strSub);
-
-  *this = strPart1+strNewSub+strPart2;
-
-  return TRUE;
-}
+  return ctReplaced;
+};
 
 // [Cecil] Replace specific character in the entire string
-void CTString::ReplaceChar(char chOld, char chNew) {
+size_t CTString::ReplaceChar(char chOld, char chNew) {
+  size_t ctReplaced = 0;
   char *str = str_String;
 
   while (*str != '\0') {
     if (*str == chOld) {
       *str = chNew;
+      ++ctReplaced;
     }
     ++str;
   }
+
+  return ctReplaced;
 };
 
 /* Trim the string from left to contain at most given number of characters. */

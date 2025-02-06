@@ -138,7 +138,7 @@ BOOL FileSystem::IsDirectory(const char *strFilename)
 BOOL FileSystem::PathMatches(CTString strPath, CTString strMatch) {
   // Match backward slashes for consistency
   strPath.ReplaceChar('/', '\\');
-  while (strMatch.ReplaceSubstr("/", "\\\\")); // Replaces all
+  strMatch.ReplaceSubstr("/", "\\\\");
 
   return strPath.Matches(strMatch);
 };

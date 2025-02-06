@@ -95,13 +95,11 @@ BOOL CRConApp::SubInitInstance()
 	m_pMainWnd = &dlg;
 
   // [Cecil] Append command line output
-  CTString strCmd = SE_CommandLineOutput();
-  strCmd.ReplaceChar('\n', '\x1A'); // Use "substitute character"
-  while (strCmd.ReplaceSubstr("\x1A", "\r\n"));
+  CTString strHeader(0, "Serious Sam RCON v1.0\n%sServer: %s:%u\nReady for commands...\nType /help for more info.\n",
+    SE_CommandLineOutput().ConstData(), _strHost.ConstData(), _ulPort);
 
-  CTString strHeader(0, "Serious Sam RCON v1.0\r\n%sServer: %s:%u\r\nReady for commands...\r\n",
-    strCmd.ConstData(), _strHost.ConstData(), _ulPort);
-
+  // [Cecil] Convert line breaks
+  strHeader.ReplaceSubstr("\n", "\r\n");
   dlg.m_strLog = strHeader.ConstData();
 
 	int nResponse = dlg.DoModal();
