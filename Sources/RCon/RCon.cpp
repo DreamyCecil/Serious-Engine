@@ -55,9 +55,9 @@ CRConApp theApp;
 /////////////////////////////////////////////////////////////////////////////
 // CRConApp initialization
 
-// [Cecil] Command line arguments
-static CTString _strHost = "";
-static ULONG _ulPort = 0;
+// [Cecil] Command line arguments with default values instead of blanks
+static CTString _strHost = "localhost";
+static ULONG _ulPort = 25600;
 static CTString _strPass = "";
 
 // [Cecil] Handle program's launch arguments
