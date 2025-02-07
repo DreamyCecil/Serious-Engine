@@ -133,6 +133,12 @@ class IGfxNull : public IGfxInterface
   // Miscellaneous
   public:
 
+    // Set viewport limits from a drawport
+    virtual void SetViewport(const CDrawPort *pdp) { NOTHING; };
+
+    // Read depth buffer and update visibility flag of depth points
+    virtual void UpdateDepthPointsVisibility(const CDrawPort *pdp, INDEX iMirrorLevel, DepthInfo *pdi, INDEX ctCount) { NOTHING; };
+
     // Force finish of rendering queue
     virtual void Finish(void) { NOTHING; };
 
@@ -144,6 +150,42 @@ class IGfxNull : public IGfxInterface
     virtual void EnableTruform(void) { NOTHING; };
     virtual void DisableTruform(void) { NOTHING; };
   #endif
+
+  // Drawing methods
+  public:
+
+    // Draw a point on screen
+    virtual void DrawPoint(PIX pixX, PIX pixY, COLOR col, FLOAT fRadius) { NOTHING; };
+
+    // Draw a point during 3D rendering
+    virtual void DrawPoint3D(FLOAT3D v, COLOR col, FLOAT fRadius) { NOTHING; };
+
+    // Draw a line on screen
+    virtual void DrawLine(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, FLOAT fD = 0.0f) { NOTHING; };
+
+    // Draw a line during 3D rendering
+    virtual void DrawLine3D(FLOAT3D v0, FLOAT3D v1, COLOR col) { NOTHING; };
+
+    // Draw a square border
+    virtual void DrawBorder(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR col, FLOAT fD = 0.0f) { NOTHING; };
+
+    // Fill a part of the drawport with a given color with blending
+    virtual void Fill(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, const CDrawPort *pdpReference) { NOTHING; };
+
+    // Fill a part of the drawport with four corner colors with blending
+    virtual void Fill(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR colUL, COLOR colUR, COLOR colDL, COLOR colDR) { NOTHING; };
+
+    // Fill the entire drawport with a given color without blending
+    virtual void Fill(COLOR col) { NOTHING; };
+
+    // Fill a part of the z-buffer with a given value
+    virtual void FillZBuffer(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, FLOAT fZ, const CDrawPort *pdpReference) { NOTHING; };
+
+    // Fill the entire z-buffer with a given value
+    virtual void FillZBuffer(FLOAT fZ) { NOTHING; };
+
+    // Save drawport pixels as an image
+    virtual void GrabScreen(class CImageInfo &iiOutput, const CDrawPort *pdpInput, BOOL bGrabDepth) { NOTHING; };
 };
 
 #endif // include-once check

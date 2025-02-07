@@ -1186,8 +1186,168 @@ void IGfxD3D8::DrawElements( INDEX ctElem, INDEX *pidx)
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
+// Set viewport limits from a drawport
+void IGfxD3D8::SetViewport(const CDrawPort *pdp) {
+  // set viewport
+  const PIX pixMinSI = pdp->dp_ScissorMinI;
+  const PIX pixMaxSI = pdp->dp_ScissorMaxI;
+  const PIX pixMinSJ = pdp->dp_ScissorMinJ;
+  const PIX pixMaxSJ = pdp->dp_ScissorMaxJ;
 
+  D3DVIEWPORT8 d3dViewPort = { pixMinSI, pixMinSJ, pixMaxSI - pixMinSI + 1, pixMaxSJ - pixMinSJ + 1, 0, 1 };
+  HRESULT hr = _pGfx->gl_pd3dDevice->SetViewport(&d3dViewPort);
+  D3D_CHECKERROR(hr);
+};
 
+// Read depth buffer and update visibility flag of depth points
+void IGfxD3D8::UpdateDepthPointsVisibility(const CDrawPort *pdp, INDEX iMirrorLevel, DepthInfo *pdi, INDEX ctCount) {
+  ASSERT(pdp != NULL && ctCount > 0);
+  _sfStats.StartTimer(CStatForm::STI_GFXAPI);
+
+  extern COLOR UnpackColor_D3D(UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slColorSize);
+  extern INDEX _iCheckIteration;
+  static CStaticStackArray<CTVERTEX> avtxDelayed;
+  static CStaticStackArray<COLOR> acolDelayed;
+
+  // ok, this will get really complicated ...
+  // We'll have to do it thru back buffer because darn DX8 won't let us have values from z-buffer;
+  // Anyway, we'll lock backbuffer, read color from the lens location and try to write little triangle there
+  // with slightly modified color. Then we'll readout that color and see if triangle passes z-test. Voila! :)
+  // P.S. To avoid lock-modify-lock, we need to batch all the locks in one. Uhhhh ... :(
+  COLOR col;
+  INDEX idi;
+  SLONG slColSize;
+  HRESULT hr;
+  D3DLOCKED_RECT rectLocked;
+  D3DSURFACE_DESC surfDesc;
+  LPDIRECT3DSURFACE8 pBackBuffer;
+
+  // fetch back buffer (different for full screen and windowed mode)
+  const BOOL bFullScreen = _pGfx->gl_ulFlags & GLF_FULLSCREEN;
+  const CRaster *pra = pdp->dp_Raster;
+
+  if (bFullScreen) {
+    hr = _pGfx->gl_pd3dDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+  } else {
+    hr = pra->ra_pvpViewPort->vp_pSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+  }
+
+  // what, cannot get a back buffer?
+  if (hr != D3D_OK) { 
+    // to hell with it all
+    _sfStats.StopTimer(CStatForm::STI_GFXAPI);
+    return;
+  }
+
+  // keep format of back-buffer
+  pBackBuffer->GetDesc(&surfDesc);
+  const D3DFORMAT d3dfBack = surfDesc.Format;
+
+  // prepare array that'll back-buffer colors from depth point locations
+  acolDelayed.Push(ctCount);
+
+  // store all colors
+  for (idi = 0; idi < ctCount; idi++) {
+    IGfxInterface::DepthInfo &di = pdi[idi];
+
+    // skip if not in required mirror level or was already checked in this iteration
+    if (iMirrorLevel != di.di_iMirrorLevel || _iCheckIteration != di.di_iSwapLastRequest) continue;
+
+    // fetch pixel
+    acolDelayed[idi] = 0;
+    const RECT rectToLock = { di.di_pixI, di.di_pixJ, di.di_pixI + 1, di.di_pixJ + 1 };
+
+    hr = pBackBuffer->LockRect(&rectLocked, &rectToLock, D3DLOCK_READONLY);
+    if (hr != D3D_OK) continue; // skip if lock didn't make it
+
+    // read, convert and store original color
+    acolDelayed[idi] = UnpackColor_D3D((UBYTE *)rectLocked.pBits, d3dfBack, slColSize) | CT_OPAQUE;
+    pBackBuffer->UnlockRect();
+  }
+
+  // prepare to draw little triangles there with slightly adjusted colors
+  _sfStats.StopTimer(CStatForm::STI_GFXAPI);
+  gfxEnableDepthTest();
+  gfxDisableDepthWrite();
+  gfxDisableBlend();
+  gfxDisableAlphaTest();
+  gfxDisableTexture();
+  _sfStats.StartTimer(CStatForm::STI_GFXAPI);
+
+  // prepare array and shader
+  avtxDelayed.Push(ctCount * 3);
+  d3dSetVertexShader(D3DFVF_CTVERTEX);
+
+  // draw one trianle around each depth point
+  INDEX ctVertex = 0;
+
+  for (idi = 0; idi < ctCount; idi++) {
+    IGfxInterface::DepthInfo &di = pdi[idi];
+    col = acolDelayed[idi];
+
+    // skip if not in required mirror level or was already checked in this iteration, or wasn't fetched at all
+    if (iMirrorLevel != di.di_iMirrorLevel || _iCheckIteration != di.di_iSwapLastRequest || col == 0) continue;
+
+    const ULONG d3dCol = rgba2argb(col ^ 0x20103000);
+    const PIX pixI = di.di_pixI - pdp->dp_MinI; // convert raster loc to drawport loc
+    const PIX pixJ = di.di_pixJ - pdp->dp_MinJ;
+
+    // batch it and advance to next triangle
+    CTVERTEX &vtx0 = avtxDelayed[ctVertex++];
+    CTVERTEX &vtx1 = avtxDelayed[ctVertex++];
+    CTVERTEX &vtx2 = avtxDelayed[ctVertex++];
+
+    vtx0.fX = pixI;
+    vtx0.fY = pixJ - 2;
+    vtx0.fZ = di.di_fOoK;
+    vtx0.ulColor = d3dCol;
+    vtx0.fU = vtx0.fV = 0;
+
+    vtx1.fX = pixI - 2;
+    vtx1.fY = pixJ + 2;
+    vtx1.fZ = di.di_fOoK;
+    vtx1.ulColor = d3dCol;
+    vtx1.fU = vtx0.fV = 0;
+
+    vtx2.fX = pixI + 2;
+    vtx2.fY = pixJ;
+    vtx2.fZ = di.di_fOoK;
+    vtx2.ulColor = d3dCol;
+    vtx2.fU = vtx0.fV = 0;
+  }
+
+  // draw a bunch
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, ctVertex / 3, &avtxDelayed[0], sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+
+  // readout colors again and compare to old ones
+  for (idi = 0; idi < ctCount; idi++) {
+    IGfxInterface::DepthInfo &di = pdi[idi];
+    col = acolDelayed[idi];
+
+    // skip if not in required mirror level or was already checked in this iteration, or wasn't fetched at all
+    if (iMirrorLevel != di.di_iMirrorLevel || _iCheckIteration != di.di_iSwapLastRequest || col == 0) continue;
+
+    // fetch pixel
+    const RECT rectToLock = { di.di_pixI, di.di_pixJ, di.di_pixI + 1, di.di_pixJ + 1 };
+
+    hr = pBackBuffer->LockRect(&rectLocked, &rectToLock, D3DLOCK_READONLY);
+    if (hr != D3D_OK) continue; // skip if lock didn't make it
+
+    // read new color
+    const COLOR colNew = UnpackColor_D3D((UBYTE *)rectLocked.pBits, d3dfBack, slColSize) | CT_OPAQUE;
+    pBackBuffer->UnlockRect();
+
+    // if we managed to write adjusted color, point is visible!
+    di.di_bVisible = (col != colNew);
+  }
+
+  // phew, done! :)
+  D3DRELEASE(pBackBuffer, TRUE);
+  acolDelayed.PopAll();
+  avtxDelayed.PopAll();
+  _sfStats.StopTimer(CStatForm::STI_GFXAPI);
+};
 
 // force finish of API rendering queue
 void IGfxD3D8::Finish(void)
@@ -1211,19 +1371,11 @@ void IGfxD3D8::Finish(void)
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
-
-
-
-
 void IGfxD3D8::LockArrays(void)
 {
   // only for OpenGL
   ASSERT( GFX_ctVertices>0 && !_bCVAReallyLocked);
 }
-
-
-// SPECIAL FUNCTIONS FOR Direct3D ONLY !
-
 
 // Set D3D vertex shader only if it has changed since last time
 void IGfxInterface::SetVertexShader( DWORD dwHandle)
@@ -1233,5 +1385,224 @@ void IGfxInterface::SetVertexShader( DWORD dwHandle)
   D3D_CHECKERROR(hr);
   _pGfx->gl_dwVertexShader = dwHandle;
 }
+
+// Draw a point on screen
+void IGfxD3D8::DrawPoint(PIX pixX, PIX pixY, COLOR col, FLOAT fRadius) {
+  HRESULT hr;
+  const FLOAT fX = pixX + 0.75f;
+  const FLOAT fY = pixY + 0.75f;
+  const ULONG d3dColor = rgba2argb(col);
+  CTVERTEX avtx = { fX, fY, 0, d3dColor, 0, 0 };
+
+  hr = _pGfx->gl_pd3dDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&fRadius));
+  D3D_CHECKERROR(hr);
+
+  // set vertex shader and draw
+  SetVertexShader(D3DFVF_CTVERTEX);
+
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_POINTLIST, 1, &avtx, sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+};
+
+// Draw a point during 3D rendering
+void IGfxD3D8::DrawPoint3D(FLOAT3D v, COLOR col, FLOAT fRadius) {
+  HRESULT hr;
+  const ULONG d3dColor = rgba2argb(col);
+  CTVERTEX avtx = { v(1), v(2), v(3), d3dColor, 0, 0 };
+
+  hr = _pGfx->gl_pd3dDevice->SetRenderState(D3DRS_POINTSIZE, *((DWORD*)&fRadius));
+  D3D_CHECKERROR(hr);
+
+  // set vertex shader and draw
+  SetVertexShader(D3DFVF_CTVERTEX);
+
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_POINTLIST, 1, &avtx, sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+};
+
+// Draw a line on screen
+void IGfxD3D8::DrawLine(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, FLOAT fD) {
+  HRESULT hr;
+  const FLOAT fX0 = pixX0 + 0.75f;
+  const FLOAT fY0 = pixY0 + 0.75f;
+  const FLOAT fX1 = pixX1 + 0.75f;
+  const FLOAT fY1 = pixY1 + 0.75f;
+  const ULONG d3dColor = rgba2argb(col);
+
+  CTVERTEX avtxLine[2] = {
+    { fX0, fY0, 0, d3dColor,  0, 0},
+    { fX1, fY1, 0, d3dColor, fD, 0},
+  };
+
+  // set vertex shader and draw
+  SetVertexShader(D3DFVF_CTVERTEX);
+
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, 1, avtxLine, sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+};
+
+// Draw a line during 3D rendering
+void IGfxD3D8::DrawLine3D(FLOAT3D v0, FLOAT3D v1, COLOR col) {
+  HRESULT hr;
+  const ULONG d3dColor = rgba2argb(col);
+
+  CTVERTEX avtxLine[2] = {
+    { v0(1), v0(2), v0(3), d3dColor, 0, 0},
+    { v1(1), v1(2), v1(3), d3dColor, 0, 0},
+  };
+
+  // set vertex shader and draw
+  SetVertexShader(D3DFVF_CTVERTEX);
+
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, 1, avtxLine, sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+};
+
+// Draw a square border
+void IGfxD3D8::DrawBorder(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR col, FLOAT fD) {
+  HRESULT hr;
+  const ULONG d3dColor = rgba2argb(col);
+
+  CTVERTEX avtxLines[8] = { // setup lines
+    { fX0, fY0,     0, d3dColor, 0, 0 }, { fX1,     fY0, 0, d3dColor, fD, 0 }, // up
+    { fX1, fY0,     0, d3dColor, 0, 0 }, { fX1,     fY1, 0, d3dColor, fD, 0 }, // right
+    { fX0, fY1,     0, d3dColor, 0, 0 }, { fX1 + 1, fY1, 0, d3dColor, fD, 0 }, // down
+    { fX0, fY0 + 1, 0, d3dColor, 0, 0 }, { fX0,     fY1, 0, d3dColor, fD, 0 }, // left
+  };
+
+  // set vertex shader and draw
+  SetVertexShader(D3DFVF_CTVERTEX);
+
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, 4, avtxLines, sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+};
+
+// Fill a part of the drawport with a given color with blending
+void IGfxD3D8::Fill(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, const CDrawPort *pdpReference) {
+  HRESULT hr;
+  const PIX pixW = pixX1 - pixX0;
+  const PIX pixH = pixY1 - pixY0;
+
+  // must convert coordinates to raster (i.e. surface)
+  pixX0 += pdpReference->dp_MinI;
+  pixY0 += pdpReference->dp_MinJ;
+
+  const PIX pixRasterW = pdpReference->dp_Raster->ra_Width;
+  const PIX pixRasterH = pdpReference->dp_Raster->ra_Height;
+  const ULONG d3dColor = rgba2argb(col);
+
+  // do fast filling
+  if (pixX0 == 0 && pixY0 == 0 && pixW == pixRasterW && pixH == pixRasterH) {
+    hr = _pGfx->gl_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, d3dColor, 0, 0);
+
+  } else {
+    D3DRECT d3dRect = { pixX0, pixY0, pixX1, pixY1 };
+    hr = _pGfx->gl_pd3dDevice->Clear(1, &d3dRect, D3DCLEAR_TARGET, d3dColor, 0, 0);
+  }
+
+  D3D_CHECKERROR(hr);
+};
+
+// Fill a part of the drawport with four corner colors with blending
+void IGfxD3D8::Fill(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR colUL, COLOR colUR, COLOR colDL, COLOR colDR) {
+  // thru Direct3D
+  HRESULT hr;
+
+  const ULONG d3dColUL = rgba2argb(colUL);
+  const ULONG d3dColUR = rgba2argb(colUR);
+  const ULONG d3dColDL = rgba2argb(colDL);
+  const ULONG d3dColDR = rgba2argb(colDR);
+
+  CTVERTEX avtxTris[6] = {
+    { fX0, fY0,0, d3dColUL, 0, 0}, { fX0, fY1, 0, d3dColDL, 0, 1 }, { fX1, fY1, 0, d3dColDR, 1, 1 },
+    { fX0, fY0,0, d3dColUL, 0, 0}, { fX1, fY1, 0, d3dColDR, 1, 1 }, { fX1, fY0, 0, d3dColUR, 1, 0 },
+  };
+
+  // set vertex shader and draw
+  SetVertexShader(D3DFVF_CTVERTEX);
+
+  hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, avtxTris, sizeof(CTVERTEX));
+  D3D_CHECKERROR(hr);
+};
+
+// Fill the entire drawport with a given color without blending
+void IGfxD3D8::Fill(COLOR col) {
+  const ULONG d3dColor = rgba2argb(col);
+  HRESULT hr = _pGfx->gl_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, d3dColor, 0, 0);
+  D3D_CHECKERROR(hr);
+};
+
+// Fill a part of the z-buffer with a given value
+void IGfxD3D8::FillZBuffer(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, FLOAT fZ, const CDrawPort *pdpReference) {
+  (void)pdpReference;
+
+  D3DRECT d3dRect = { pixX0, pixY0, pixX1, pixY1 };
+  HRESULT hr = _pGfx->gl_pd3dDevice->Clear(1, &d3dRect, D3DCLEAR_ZBUFFER, 0, fZ, 0);
+  D3D_CHECKERROR(hr);
+};
+
+// Fill the entire z-buffer with a given value
+void IGfxD3D8::FillZBuffer(FLOAT fZ) {
+  HRESULT hr = _pGfx->gl_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, fZ, 0);
+  D3D_CHECKERROR(hr);
+};
+
+// Save screen pixels as an image
+void IGfxD3D8::GrabScreen(CImageInfo &iiOutput, const CDrawPort *pdpInput, BOOL bGrabDepth) {
+  (void)bGrabDepth; // [Cecil] FIXME: Unused
+
+  HRESULT hr;
+
+  // get back buffer
+  D3DLOCKED_RECT rectLocked;
+  D3DSURFACE_DESC surfDesc;
+  LPDIRECT3DSURFACE8 pBackBuffer;
+
+  const BOOL bFullScreen = _pGfx->gl_ulFlags & GLF_FULLSCREEN;
+
+  if (bFullScreen) {
+    hr = _pGfx->gl_pd3dDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+  } else {
+    hr = pdpInput->dp_Raster->ra_pvpViewPort->vp_pSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+  }
+  D3D_CHECKERROR(hr);
+
+  pBackBuffer->GetDesc(&surfDesc);
+  ASSERT(surfDesc.Width == dp_Raster->ra_Width && surfDesc.Height == dp_Raster->ra_Height);
+
+  const RECT rectToLock = { pdpInput->dp_MinI, pdpInput->dp_MinJ, pdpInput->dp_MaxI + 1, pdpInput->dp_MaxJ + 1 };
+  hr = pBackBuffer->LockRect(&rectLocked, &rectToLock, D3DLOCK_READONLY);
+  D3D_CHECKERROR(hr);
+
+  // prepare to copy and convert
+  SLONG slColSize;    
+  UBYTE *pubSrc = (UBYTE*)rectLocked.pBits;
+  UBYTE *pubDst = iiOutput.ii_Picture;
+
+  // loop thru rows
+  for (INDEX j = 0; j < pdpInput->dp_Height; j++)
+  {
+    // loop thru pixles in row
+    for (INDEX i = 0; i < pdpInput->dp_Width; i++)
+    {
+      extern COLOR UnpackColor_D3D(UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slColorSize);
+      COLOR col = UnpackColor_D3D(pubSrc, surfDesc.Format, slColSize);
+
+      UBYTE ubR,ubG,ubB;
+      ColorToRGB(col, ubR,ubG,ubB);
+      *pubDst++ = ubR;
+      *pubDst++ = ubG;
+      *pubDst++ = ubB;
+      pubSrc += slColSize;
+    }
+
+    // advance modulo
+    pubSrc += rectLocked.Pitch - (pdpInput->dp_Width * slColSize);
+  }
+
+  // all done
+  pBackBuffer->UnlockRect();
+  D3DRELEASE(pBackBuffer, TRUE);
+};
 
 #endif // SE1_DIRECT3D

@@ -1559,9 +1559,6 @@ BOOL CGfxLibrary::SetCurrentViewport(CViewPort *pvp)
 // Lock a drawport for drawing
 BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
 {
-  // check API
-  CheckAPI();
-
   // don't allow locking if drawport is too small
   if( pdpToLock->dp_Width<1 || pdpToLock->dp_Height<1) return FALSE;
 
@@ -1573,32 +1570,8 @@ BOOL CGfxLibrary::LockDrawPort( CDrawPort *pdpToLock)
     return TRUE;
   }
 
-  // OpenGL ...
-  if (GetCurrentAPI() == GAT_OGL)
-  {
-    // pass drawport dimensions to OpenGL
-    const PIX pixMinSI = pdpToLock->dp_ScissorMinI;
-    const PIX pixMaxSI = pdpToLock->dp_ScissorMaxI;
-    const PIX pixMinSJ = pdpToLock->dp_Raster->ra_Height -1 - pdpToLock->dp_ScissorMaxJ;
-    const PIX pixMaxSJ = pdpToLock->dp_Raster->ra_Height -1 - pdpToLock->dp_ScissorMinJ;
-    pglViewport( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI+1, pixMaxSJ-pixMinSJ+1);
-    pglScissor(  pixMinSI, pixMinSJ, pixMaxSI-pixMinSI+1, pixMaxSJ-pixMinSJ+1);
-    OGL_CHECKERROR;
-  }
-  // Direct3D ...
-#if SE1_DIRECT3D
-  else if (GetCurrentAPI() == GAT_D3D)
-  { 
-    // set viewport
-    const PIX pixMinSI = pdpToLock->dp_ScissorMinI;
-    const PIX pixMaxSI = pdpToLock->dp_ScissorMaxI;
-    const PIX pixMinSJ = pdpToLock->dp_ScissorMinJ;
-    const PIX pixMaxSJ = pdpToLock->dp_ScissorMaxJ;
-    D3DVIEWPORT8 d3dViewPort = { pixMinSI, pixMinSJ, pixMaxSI-pixMinSI+1, pixMaxSJ-pixMinSJ+1, 0,1 };
-    HRESULT hr = gl_pd3dDevice->SetViewport( &d3dViewPort);
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  GetInterface()->SetViewport(pdpToLock);
 
   // mark and set default projection
   GFX_ulLastDrawPortID = ulThisDrawPortID;

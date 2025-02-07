@@ -61,35 +61,6 @@ static BOOL ClipToDrawPort( const CDrawPort *pdp, PIX &pixI, PIX &pixJ, PIX &pix
   return TRUE;
 }
 
-
-// set scissor (clipping) to window inside drawport
-static void SetScissor( const CDrawPort *pdp, PIX pixI, PIX pixJ, PIX pixW, PIX pixH)
-{
-  ASSERT( pixI>=0 && pixI<pdp->dp_Width);
-  ASSERT( pixJ>=0 && pixJ<pdp->dp_Height);
-  ASSERT( pixW>0  && pixH>0);
-
-  const PIX pixInvMinJ = pdp->dp_Raster->ra_Height - (pdp->dp_MinJ+pixJ+pixH);
-  pglScissor( pdp->dp_MinI+pixI, pixInvMinJ, pixW, pixH);
-  ASSERT( pglIsEnabled(GL_SCISSOR_TEST));
-  OGL_CHECKERROR;
-}
-
-
-// reset scissor (clipping) to whole drawport
-static void ResetScissor( const CDrawPort *pdp)
-{
-  const PIX pixMinSI = pdp->dp_ScissorMinI;
-  const PIX pixMaxSI = pdp->dp_ScissorMaxI;
-  const PIX pixMinSJ = pdp->dp_Raster->ra_Height-1 - pdp->dp_ScissorMaxJ;
-  const PIX pixMaxSJ = pdp->dp_Raster->ra_Height-1 - pdp->dp_ScissorMinJ;
-
-  pglScissor( pixMinSI, pixMinSJ, pixMaxSI-pixMinSI+1, pixMaxSJ-pixMinSJ+1);
-  ASSERT( pglIsEnabled(GL_SCISSOR_TEST));
-  OGL_CHECKERROR;
-}
-
-
 // DRAWPORT ROUTINES
 
 // set cloned drawport dimensions
@@ -445,10 +416,6 @@ BOOL CDrawPort::Lock(void)
 // draw one point
 void CDrawPort::DrawPoint( PIX pixI, PIX pixJ, COLOR col, PIX pixRadius/*=1*/) const
 {
-  // check API and radius
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
   ASSERT( pixRadius>=0);
   if( pixRadius==0) return; // do nothing if radius is 0
 
@@ -462,44 +429,15 @@ void CDrawPort::DrawPoint( PIX pixI, PIX pixJ, COLOR col, PIX pixRadius/*=1*/) c
 
   // set point color/alpha and radius
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
-  const FLOAT fR = pixRadius;
 
-  // OpenGL
-  if( eAPI==GAT_OGL) {
-    const FLOAT fI = pixI+0.5f;
-    const FLOAT fJ = pixJ+0.5f;
-    glCOLOR(col);
-    pglPointSize(fR);
-    pglBegin(GL_POINTS);
-      pglVertex2f(fI,fJ);
-    pglEnd();
-    OGL_CHECKERROR;
-  } // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D) {
-    HRESULT hr;
-    const FLOAT fI = pixI+0.75f;
-    const FLOAT fJ = pixJ+0.75f;
-    const ULONG d3dColor = rgba2argb(col);
-    CTVERTEX avtx = {fI,fJ,0, d3dColor, 0,0};
-    hr = _pGfx->gl_pd3dDevice->SetRenderState( D3DRS_POINTSIZE, *((DWORD*)&fR));
-    D3D_CHECKERROR(hr);
-    // set vertex shader and draw
-    d3dSetVertexShader(D3DFVF_CTVERTEX);
-    hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP( D3DPT_POINTLIST, 1, &avtx, sizeof(CTVERTEX));
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->DrawPoint(pixI, pixJ, col, (FLOAT)pixRadius);
 }
 
 
 // draw one point in 3D
 void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
 {
-  // check API and radius
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
   ASSERT( fRadius>=0);
   if( fRadius==0) return; // do nothing if radius is 0
 
@@ -513,28 +451,8 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
   // set point color/alpha
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
 
-  // OpenGL
-  if( eAPI==GAT_OGL) {
-    glCOLOR(col);
-    pglPointSize(fRadius);
-    pglBegin(GL_POINTS);
-      pglVertex3f( v(1),v(2),v(3));
-    pglEnd();
-    OGL_CHECKERROR;
-  } // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D) {
-    HRESULT hr;
-    const ULONG d3dColor = rgba2argb(col);
-    CTVERTEX avtx = {v(1),v(2),v(3), d3dColor, 0,0};
-    hr = _pGfx->gl_pd3dDevice->SetRenderState( D3DRS_POINTSIZE, *((DWORD*)&fRadius));
-    D3D_CHECKERROR(hr);
-    // set vertex shader and draw
-    d3dSetVertexShader(D3DFVF_CTVERTEX);
-    hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP( D3DPT_POINTLIST, 1, &avtx, sizeof(CTVERTEX));
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->DrawPoint3D(v, col, fRadius);
 }
 
 
@@ -542,10 +460,6 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
 // draw one line
 void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col, ULONG typ/*=_FULL*/) const
 {
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
   // setup rendering mode
   gfxDisableDepthTest();
   gfxDisableDepthWrite();
@@ -572,32 +486,10 @@ void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col,
 
   // set line color/alpha and go go go 
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
-  // OpenGL
-  if( eAPI==GAT_OGL) {
-    const FLOAT fI0 = pixI0+0.5f;  const FLOAT fJ0 = pixJ0+0.5f;
-    const FLOAT fI1 = pixI1+0.5f;  const FLOAT fJ1 = pixJ1+0.5f;
-    glCOLOR(col);
-    pglBegin( GL_LINES);
-      pglTexCoord2f( 0,0); pglVertex2f(fI0,fJ0);
-      pglTexCoord2f(fD,0); pglVertex2f(fI1,fJ1);
-    pglEnd();
-    OGL_CHECKERROR;
-  } // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D) {
-    HRESULT hr;
-    const FLOAT fI0 = pixI0+0.75f;  const FLOAT fJ0 = pixJ0+0.75f;
-    const FLOAT fI1 = pixI1+0.75f;  const FLOAT fJ1 = pixJ1+0.75f;
-    const ULONG d3dColor = rgba2argb(col);
-    CTVERTEX avtxLine[2] = {
-      {fI0,fJ0,0, d3dColor,  0,0},
-      {fI1,fJ1,0, d3dColor, fD,0} };
-    // set vertex shader and draw
-    d3dSetVertexShader(D3DFVF_CTVERTEX);
-    hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP( D3DPT_LINELIST, 1, avtxLine, sizeof(CTVERTEX));
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->DrawLine(pixI0, pixJ0, pixI1, pixJ1, col, fD);
+
   // revert to old filtering
   if( typ!=_FULL_) gfxSetTextureFiltering( iTexFilter, iTexAnisotropy);
 }
@@ -607,10 +499,6 @@ void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col,
 // draw one line in 3D
 void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 {
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
   // setup rendering mode
   gfxDisableTexture(); 
   gfxDisableDepthWrite();
@@ -620,28 +508,9 @@ void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 
   // set line color/alpha and go go go 
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
-  // OpenGL
-  if( eAPI==GAT_OGL) {
-    glCOLOR(col);
-    pglBegin( GL_LINES);
-      pglVertex3f( v0(1),v0(2),v0(3));
-      pglVertex3f( v1(1),v1(2),v1(3));
-    pglEnd();
-    OGL_CHECKERROR;
-  } // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D) {
-    HRESULT hr;
-    const ULONG d3dColor = rgba2argb(col);
-    CTVERTEX avtxLine[2] = {
-      {v0(1),v0(2),v0(3), d3dColor, 0,0},
-      {v1(1),v1(2),v1(3), d3dColor, 0,0} };
-    // set vertex shader and draw
-    d3dSetVertexShader(D3DFVF_CTVERTEX);
-    hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP( D3DPT_LINELIST, 1, avtxLine, sizeof(CTVERTEX));
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->DrawLine3D(v0, v1, col);
 }
 
 
@@ -649,10 +518,6 @@ void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 // draw border
 void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COLOR col, ULONG typ/*=_FULL_*/) const
 {
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
   // setup rendering mode
   gfxDisableDepthTest();
   gfxDisableDepthWrite();
@@ -680,38 +545,14 @@ void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COL
 
   // set line color/alpha and go go go 
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
-  const FLOAT fI0 = pixI+0.5f;
-  const FLOAT fJ0 = pixJ+0.5f;
-  const FLOAT fI1 = pixI-0.5f +pixWidth;
-  const FLOAT fJ1 = pixJ-0.5f +pixHeight;
+  const FLOAT fX0 = pixI+0.5f;
+  const FLOAT fY0 = pixJ+0.5f;
+  const FLOAT fX1 = pixI-0.5f +pixWidth;
+  const FLOAT fY1 = pixJ-0.5f +pixHeight;
 
-  // OpenGL
-  if( eAPI==GAT_OGL) {
-    glCOLOR(col);
-    pglBegin( GL_LINES);
-      pglTexCoord2f(0,0); pglVertex2f(fI0,fJ0);   pglTexCoord2f(fD,0);  pglVertex2f(fI1,  fJ0);  // up
-      pglTexCoord2f(0,0); pglVertex2f(fI1,fJ0);   pglTexCoord2f(fD,0);  pglVertex2f(fI1,  fJ1);  // right
-      pglTexCoord2f(0,0); pglVertex2f(fI0,fJ1);   pglTexCoord2f(fD,0);  pglVertex2f(fI1+1,fJ1);  // down
-      pglTexCoord2f(0,0); pglVertex2f(fI0,fJ0+1); pglTexCoord2f(fD,0);  pglVertex2f(fI0,  fJ1);  // left
-    pglEnd();
-    OGL_CHECKERROR;
-  }
-  // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D) {
-    HRESULT hr;
-    const ULONG d3dColor = rgba2argb(col);
-    CTVERTEX avtxLines[8] = { // setup lines
-      {fI0,fJ0,  0, d3dColor, 0,0}, {fI1,  fJ0,0, d3dColor, fD,0},   // up
-      {fI1,fJ0,  0, d3dColor, 0,0}, {fI1,  fJ1,0, d3dColor, fD,0},   // right
-      {fI0,fJ1,  0, d3dColor, 0,0}, {fI1+1,fJ1,0, d3dColor, fD,0},   // down
-      {fI0,fJ0+1,0, d3dColor, 0,0}, {fI0,  fJ1,0, d3dColor, fD,0} }; // left
-    // set vertex shader and draw
-    d3dSetVertexShader(D3DFVF_CTVERTEX);
-    hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP( D3DPT_LINELIST, 4, avtxLines, sizeof(CTVERTEX));
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->DrawBorder(fX0, fY0, fX1, fY1, col, fD);
+
   // revert to old filtering
   if( typ!=_FULL_) gfxSetTextureFiltering( iTexFilter, iTexAnisotropy);
 }
@@ -735,42 +576,8 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COLOR col
   // draw thru fast clear for opaque colors
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
 
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
-  // OpenGL
-  if( eAPI==GAT_OGL)
-  { 
-    // do fast filling
-    SetScissor( this, pixI, pixJ, pixWidth, pixHeight);
-    UBYTE ubR, ubG, ubB;
-    ColorToRGB( col, ubR,ubG,ubB);
-    pglClearColor( ubR/255.0f, ubG/255.0f, ubB/255.0f, 1.0f);
-    pglClear( GL_COLOR_BUFFER_BIT);
-    ResetScissor(this);
-  }
-  // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D)
-  {
-    HRESULT hr;
-    // must convert coordinates to raster (i.e. surface)
-    pixI += dp_MinI;
-    pixJ += dp_MinJ;
-    const PIX pixRasterW = dp_Raster->ra_Width;
-    const PIX pixRasterH = dp_Raster->ra_Height;
-    const ULONG d3dColor = rgba2argb(col);
-    // do fast filling
-    if( pixI==0 && pixJ==0 && pixWidth==pixRasterW && pixHeight==pixRasterH) {
-      hr = _pGfx->gl_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, d3dColor,0,0);
-    } else {
-      D3DRECT d3dRect = { pixI, pixJ, pixI+pixWidth, pixJ+pixHeight };
-      hr = _pGfx->gl_pd3dDevice->Clear( 1, &d3dRect, D3DCLEAR_TARGET, d3dColor,0,0);
-    } // done
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->Fill(pixI, pixJ, pixI + pixWidth, pixJ + pixHeight, col, this);
 }
 
 
@@ -781,10 +588,6 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight,
   // clip and eventually reject
   const BOOL bInside = ClipToDrawPort( this, pixI, pixJ, pixWidth, pixHeight);
   if( !bInside) return;
-
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
 
   // setup rendering mode
   gfxDisableDepthTest();
@@ -798,40 +601,11 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight,
   colUR = AdjustColor( colUR, _slTexHueShift, _slTexSaturation);
   colDL = AdjustColor( colDL, _slTexHueShift, _slTexSaturation);
   colDR = AdjustColor( colDR, _slTexHueShift, _slTexSaturation);
-  const FLOAT fI0 = pixI;  const FLOAT fI1 = pixI +pixWidth; 
-  const FLOAT fJ0 = pixJ;  const FLOAT fJ1 = pixJ +pixHeight;
+  const FLOAT fX0 = pixI;  const FLOAT fX1 = pixI +pixWidth; 
+  const FLOAT fY0 = pixJ;  const FLOAT fY1 = pixJ +pixHeight;
 
-  // render rectangle
-  if( eAPI==GAT_OGL) {
-    // thru OpenGL
-    gfxResetArrays();
-    GFXVertex   *pvtx = _avtxCommon.Push(4);
-    GFXTexCoord *ptex = _atexCommon.Push(4);
-    GFXColor    *pcol = _acolCommon.Push(4);
-    const GFXColor glcolUL(colUL);  const GFXColor glcolUR(colUR);
-    const GFXColor glcolDL(colDL);  const GFXColor glcolDR(colDR);
-    // add to element list and flush (the toilet!:)
-    pvtx[0].x = fI0;  pvtx[0].y = fJ0;  pvtx[0].z = 0;  pcol[0] = glcolUL;
-    pvtx[1].x = fI0;  pvtx[1].y = fJ1;  pvtx[1].z = 0;  pcol[1] = glcolDL;
-    pvtx[2].x = fI1;  pvtx[2].y = fJ1;  pvtx[2].z = 0;  pcol[2] = glcolDR;
-    pvtx[3].x = fI1;  pvtx[3].y = fJ0;  pvtx[3].z = 0;  pcol[3] = glcolUR;
-    gfxFlushQuads();
-  }
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D) { 
-    // thru Direct3D
-    HRESULT hr;
-    const ULONG d3dColUL = rgba2argb(colUL);  const ULONG d3dColUR = rgba2argb(colUR);
-    const ULONG d3dColDL = rgba2argb(colDL);  const ULONG d3dColDR = rgba2argb(colDR);
-    CTVERTEX avtxTris[6] = {
-      {fI0,fJ0,0, d3dColUL, 0,0}, {fI0,fJ1,0, d3dColDL, 0,1}, {fI1,fJ1,0, d3dColDR, 1,1},
-      {fI0,fJ0,0, d3dColUL, 0,0}, {fI1,fJ1,0, d3dColDR, 1,1}, {fI1,fJ0,0, d3dColUR, 1,0} };
-    // set vertex shader and draw
-    d3dSetVertexShader(D3DFVF_CTVERTEX);
-    hr = _pGfx->gl_pd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLELIST, 2, avtxTris, sizeof(CTVERTEX));
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->Fill(fX0, fY0, fX1, fY1, colUL, colUR, colDL, colDR);
 }
 
 
@@ -848,102 +622,39 @@ void CDrawPort::Fill( COLOR col) const
   // draw thru fast clear for opaque colors
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
 
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
-  // OpenGL
-  if( eAPI==GAT_OGL)
-  { 
-    // do fast filling
-    UBYTE ubR, ubG, ubB;
-    ColorToRGB( col, ubR,ubG,ubB);
-    pglClearColor( ubR/255.0f, ubG/255.0f, ubB/255.0f, 1.0f);
-    pglClear( GL_COLOR_BUFFER_BIT);
-  }
-  // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D)
-  {
-    const ULONG d3dColor = rgba2argb(col);
-    HRESULT hr = _pGfx->gl_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, d3dColor,0,0);
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->Fill(col);
 }
 
 
 // fill a part of Z-Buffer with a given value
 void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FLOAT zval) const
-{ 
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
+{
   // clip and eventually reject
   const BOOL bInside = ClipToDrawPort( this, pixI, pixJ, pixWidth, pixHeight);
   if( !bInside) return;
 
   gfxEnableDepthWrite();
 
-  // OpenGL
-  if( eAPI==GAT_OGL)
-  {
-    // fast clearing thru scissor
-    SetScissor( this, pixI, pixJ, pixWidth, pixHeight);
-    pglClearDepth(zval);
-    pglClearStencil(0);
-    // must clear stencil buffer too in case it exist (we don't need it) for the performance sake
-    pglClear( GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-    ResetScissor(this);
-    OGL_CHECKERROR;
-  }
-  // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D)
-  {
-    D3DRECT d3dRect = { pixI, pixJ, pixI+pixWidth, pixJ+pixHeight };
-    HRESULT hr = _pGfx->gl_pd3dDevice->Clear( 1, &d3dRect, D3DCLEAR_ZBUFFER, 0,zval,0);
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->FillZBuffer(pixI, pixJ, pixI + pixWidth, pixJ + pixHeight, zval, this);
 }
 
 
 // fill an entire Z-Buffer with a given value
 void CDrawPort::FillZBuffer( FLOAT zval) const
-{ 
-  // check API
-  const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
-
+{
   gfxEnableDepthWrite();
 
-  // OpenGL
-  if( eAPI==GAT_OGL)
-  {
-    // fill whole z-buffer
-    pglClearDepth(zval);
-    pglClearStencil(0);
-    pglClear( GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-  }
-  // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D)
-  {
-    HRESULT hr = _pGfx->gl_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0,zval,0);
-    D3D_CHECKERROR(hr);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->FillZBuffer(zval);
 }
 
 
 // grab screen
 void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer/*=0*/) const
 {
-  // check API
   const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  _pGfx->CheckAPI();
 
   extern INDEX ogl_bGrabDepthBuffer;
   const BOOL bGrabDepth = eAPI==GAT_OGL && ((iGrabZBuffer==1 && ogl_bGrabDepthBuffer) || iGrabZBuffer==2);
@@ -959,76 +670,9 @@ void CDrawPort::GrabScreen( class CImageInfo &iiGrabbedImage, INDEX iGrabZBuffer
   const SLONG slBytes  = pixPicSize * iiGrabbedImage.ii_BitsPerPixel/8;
   iiGrabbedImage.ii_Picture = (UBYTE*)AllocMemory( slBytes);
   memset( iiGrabbedImage.ii_Picture, 128, slBytes);
-  
-  // OpenGL
-  if( eAPI==GAT_OGL)
-  {
-    // determine drawport starting location inside raster
-    const PIX pixStartI = dp_MinI;
-    const PIX pixStartJ = dp_Raster->ra_Height-(dp_MinJ+dp_Height);
-    pglReadPixels( pixStartI, pixStartJ, dp_Width, dp_Height, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)iiGrabbedImage.ii_Picture);
-    OGL_CHECKERROR;
-    // grab z-buffer to alpha channel, if needed
-    if( bGrabDepth) {
-      // grab
-      FLOAT *pfZBuffer = (FLOAT*)AllocMemory( pixPicSize*sizeof(FLOAT));
-      pglReadPixels( pixStartI, pixStartJ, dp_Width, dp_Height, GL_DEPTH_COMPONENT, GL_FLOAT, (GLvoid*)pfZBuffer);
-      OGL_CHECKERROR;
-      // convert
-      UBYTE *pubZBuffer = (UBYTE*)pfZBuffer;
-      for( INDEX i=0; i<pixPicSize; i++) pubZBuffer[i] = 255-NormFloatToByte(pfZBuffer[i]);
-      // add as alpha channel
-      AddAlphaChannel( iiGrabbedImage.ii_Picture, (ULONG*)iiGrabbedImage.ii_Picture,
-                       iiGrabbedImage.ii_Width * iiGrabbedImage.ii_Height, pubZBuffer);
-      FreeMemory(pfZBuffer);
-    }
-    // flip image vertically  
-    FlipBitmap( iiGrabbedImage.ii_Picture, iiGrabbedImage.ii_Picture,
-                iiGrabbedImage.ii_Width, iiGrabbedImage.ii_Height, 1, iiGrabbedImage.ii_BitsPerPixel==32);
-  }
 
-  // Direct3D
-#if SE1_DIRECT3D
-  else if( eAPI==GAT_D3D)
-  {
-    // get back buffer
-    HRESULT hr;
-    D3DLOCKED_RECT rectLocked;
-    D3DSURFACE_DESC surfDesc;
-    LPDIRECT3DSURFACE8 pBackBuffer;
-    const BOOL bFullScreen = _pGfx->gl_ulFlags & GLF_FULLSCREEN;
-    if( bFullScreen) hr = _pGfx->gl_pd3dDevice->GetBackBuffer( 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
-    else hr = dp_Raster->ra_pvpViewPort->vp_pSwapChain->GetBackBuffer( 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
-    D3D_CHECKERROR(hr);
-    pBackBuffer->GetDesc(&surfDesc);
-    ASSERT( surfDesc.Width==dp_Raster->ra_Width && surfDesc.Height==dp_Raster->ra_Height);
-    const RECT rectToLock = { dp_MinI, dp_MinJ, dp_MaxI+1, dp_MaxJ+1 };
-    hr = pBackBuffer->LockRect( &rectLocked, &rectToLock, D3DLOCK_READONLY);
-    D3D_CHECKERROR(hr);
-
-    // prepare to copy'n'convert
-    SLONG slColSize;    
-    UBYTE *pubSrc = (UBYTE*)rectLocked.pBits;
-    UBYTE *pubDst = iiGrabbedImage.ii_Picture;
-    // loop thru rows
-    for( INDEX j=0; j<dp_Height; j++) {
-      // loop thru pixles in row
-      for( INDEX i=0; i<dp_Width; i++) {
-        UBYTE ubR,ubG,ubB;
-        extern COLOR UnpackColor_D3D( UBYTE *pd3dColor, D3DFORMAT d3dFormat, SLONG &slColorSize);
-        COLOR col = UnpackColor_D3D( pubSrc, surfDesc.Format, slColSize);
-        ColorToRGB( col, ubR,ubG,ubB);
-        *pubDst++ = ubR;
-        *pubDst++ = ubG;
-        *pubDst++ = ubB;
-        pubSrc += slColSize;
-      } // advance modulo
-      pubSrc += rectLocked.Pitch - (dp_Width*slColSize);
-    } // all done
-    pBackBuffer->UnlockRect();
-    D3DRELEASE( pBackBuffer, TRUE);
-  }
-#endif // SE1_DIRECT3D
+  // [Cecil] Abstraction
+  _pGfx->GetInterface()->GrabScreen(iiGrabbedImage, this, bGrabDepth);
 }
 
 

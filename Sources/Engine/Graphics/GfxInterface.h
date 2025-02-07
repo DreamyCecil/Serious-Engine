@@ -20,6 +20,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class IGfxInterface
 {
+  public:
+    // Info of one point for delayed depth buffer lookup
+    struct DepthInfo {
+      INDEX di_iID;               // Unique identifier
+      PIX   di_pixI, di_pixJ;     // Last requested coordinates
+      FLOAT di_fOoK;              // Last requested depth
+      INDEX di_iSwapLastRequest;  // Index of swap when last requested
+      INDEX di_iMirrorLevel;      // Level of mirror recursion in which the flare is
+      BOOL  di_bVisible;          // Whether the point was visible
+    };
+
   protected:
     ULONG _ulCurrentColorMask; // Current color mask
 
@@ -185,6 +196,12 @@ class IGfxInterface
   // Miscellaneous
   public:
 
+    // Set viewport limits from a drawport
+    virtual void SetViewport(const CDrawPort *pdp) = 0;
+
+    // Read depth buffer and update visibility flag of depth points
+    virtual void UpdateDepthPointsVisibility(const CDrawPort *pdp, INDEX iMirrorLevel, DepthInfo *pdi, INDEX ctCount) = 0;
+
     // Force finish of rendering queue
     virtual void Finish(void) = 0;
 
@@ -218,6 +235,42 @@ class IGfxInterface
 
     // Set D3D vertex shader only if it has changed since last time
     void SetVertexShader(DWORD dwHandle);
+
+  // Drawing methods
+  public:
+
+    // Draw a point on screen
+    virtual void DrawPoint(PIX pixX, PIX pixY, COLOR col, FLOAT fRadius) = 0;
+
+    // Draw a point during 3D rendering
+    virtual void DrawPoint3D(FLOAT3D v, COLOR col, FLOAT fRadius) = 0;
+
+    // Draw a line on screen
+    virtual void DrawLine(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, FLOAT fD = 0.0f) = 0;
+
+    // Draw a line during 3D rendering
+    virtual void DrawLine3D(FLOAT3D v0, FLOAT3D v1, COLOR col) = 0;
+
+    // Draw a square border
+    virtual void DrawBorder(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR col, FLOAT fD = 0.0f) = 0;
+
+    // Fill a part of the drawport with a given color with blending
+    virtual void Fill(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, const CDrawPort *pdpReference) = 0;
+
+    // Fill a part of the drawport with four corner colors with blending
+    virtual void Fill(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR colUL, COLOR colUR, COLOR colDL, COLOR colDR) = 0;
+
+    // Fill the entire drawport with a given color without blending
+    virtual void Fill(COLOR col) = 0;
+
+    // Fill a part of the z-buffer with a given value
+    virtual void FillZBuffer(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, FLOAT fZ, const CDrawPort *pdpReference) = 0;
+
+    // Fill the entire z-buffer with a given value
+    virtual void FillZBuffer(FLOAT fZ) = 0;
+
+    // Save drawport pixels as an image
+    virtual void GrabScreen(class CImageInfo &iiOutput, const CDrawPort *pdpInput, BOOL bGrabDepth) = 0;
 };
 
 // Method compatibility

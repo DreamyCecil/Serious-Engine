@@ -1066,7 +1066,47 @@ void IGfxOpenGL::DrawElements( INDEX ctElem, INDEX *pidx)
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
+// Set viewport limits from a drawport
+void IGfxOpenGL::SetViewport(const CDrawPort *pdp) {
+  // pass drawport dimensions to OpenGL
+  const PIX pixMinSI = pdp->dp_ScissorMinI;
+  const PIX pixMaxSI = pdp->dp_ScissorMaxI;
+  const PIX pixMinSJ = pdp->dp_Raster->ra_Height - 1 - pdp->dp_ScissorMaxJ;
+  const PIX pixMaxSJ = pdp->dp_Raster->ra_Height - 1 - pdp->dp_ScissorMinJ;
 
+  pglViewport(pixMinSI, pixMinSJ, pixMaxSI - pixMinSI + 1, pixMaxSJ - pixMinSJ + 1);
+  pglScissor( pixMinSI, pixMinSJ, pixMaxSI - pixMinSI + 1, pixMaxSJ - pixMinSJ + 1);
+  OGL_CHECKERROR;
+};
+
+// Read depth buffer and update visibility flag of depth points
+void IGfxOpenGL::UpdateDepthPointsVisibility(const CDrawPort *pdp, INDEX iMirrorLevel, DepthInfo *pdi, INDEX ctCount) {
+  ASSERT(pdp != NULL && ctCount > 0);
+  _sfStats.StartTimer(CStatForm::STI_GFXAPI);
+
+  extern INDEX _iCheckIteration;
+
+  const CRaster *pra = pdp->dp_Raster;
+  FLOAT fPointOoK;
+
+  // for each stored point
+  for (INDEX idi = 0; idi < ctCount; idi++) {
+    DepthInfo &di = pdi[idi];
+
+    // skip if not in required mirror level or was already checked in this iteration
+    if (iMirrorLevel != di.di_iMirrorLevel || _iCheckIteration != di.di_iSwapLastRequest) continue;
+
+    const PIX pixJ = pra->ra_Height-1 - di.di_pixJ; // OpenGL has Y-inversed buffer!
+    pglReadPixels( di.di_pixI, pixJ, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &fPointOoK);
+    OGL_CHECKERROR;
+
+    // it is visible if there is nothing nearer in z-buffer already
+    di.di_bVisible = (di.di_fOoK<fPointOoK);
+  }
+
+  // done
+  _sfStats.StopTimer(CStatForm::STI_GFXAPI);
+};
 
 // force finish of API rendering queue
 void IGfxOpenGL::Finish(void)
@@ -1079,9 +1119,6 @@ void IGfxOpenGL::Finish(void)
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
 }
 
-
-
-
 // routines for locking and unlocking compiled vertex arrays
 void IGfxOpenGL::LockArrays(void)
 {
@@ -1092,3 +1129,243 @@ void IGfxOpenGL::LockArrays(void)
   OGL_CHECKERROR;
  _bCVAReallyLocked = TRUE;
 }
+
+// [Cecil] Structure for temporarily changing the scissor box
+struct TempScissor {
+  // Previous scissor box parameters
+  union {
+    GLint aOldParams[4];
+
+    struct {
+      GLint iOldX, iOldY, iOldW, iOldH;
+    };
+  };
+
+  TempScissor() {
+    memset(aOldParams, 0, sizeof(aOldParams));
+  };
+
+  // Remember old scissor box and set a new one (SetScissor() previously)
+  inline void Set(GLint iSetX, GLint iSetY, GLsizei iSetW, GLsizei iSetH) {
+    pglGetIntegerv(GL_SCISSOR_BOX, aOldParams);
+    OGL_CHECKERROR;
+
+    pglScissor(iSetX, iSetY, iSetW, iSetH);
+    ASSERT(pglIsEnabled(GL_SCISSOR_TEST));
+    OGL_CHECKERROR;
+  };
+
+  // Restore previous scissor box (ResetScissor() previously)
+  inline void Restore(void) {
+    pglScissor(iOldX, iOldY, iOldW, iOldH);
+    ASSERT(pglIsEnabled(GL_SCISSOR_TEST));
+    OGL_CHECKERROR;
+  };
+};
+
+// Draw a point on screen
+void IGfxOpenGL::DrawPoint(PIX pixX, PIX pixY, COLOR col, FLOAT fRadius) {
+  const FLOAT fX = pixX + 0.5f;
+  const FLOAT fY = pixY + 0.5f;
+
+  glCOLOR(col);
+  pglPointSize(fRadius);
+
+  pglBegin(GL_POINTS);
+  pglVertex2f(fX, fY);
+  pglEnd();
+  OGL_CHECKERROR;
+};
+
+// Draw a point during 3D rendering
+void IGfxOpenGL::DrawPoint3D(FLOAT3D v, COLOR col, FLOAT fRadius) {
+  glCOLOR(col);
+  pglPointSize(fRadius);
+
+  pglBegin(GL_POINTS);
+  pglVertex3f(v(1), v(2), v(3));
+  pglEnd();
+  OGL_CHECKERROR;
+};
+
+// Draw a line on screen
+void IGfxOpenGL::DrawLine(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, FLOAT fD) {
+  const FLOAT fX0 = pixX0 + 0.5f;
+  const FLOAT fY0 = pixY0 + 0.5f;
+  const FLOAT fX1 = pixX1 + 0.5f;
+  const FLOAT fY1 = pixY1 + 0.5f;
+  glCOLOR(col);
+
+  pglBegin(GL_LINES);
+
+  pglTexCoord2f(0, 0);
+  pglVertex2f(fX0, fY0);
+
+  pglTexCoord2f(fD, 0);
+  pglVertex2f(fX1, fY1);
+
+  pglEnd();
+  OGL_CHECKERROR;
+};
+
+// Draw a line during 3D rendering
+void IGfxOpenGL::DrawLine3D(FLOAT3D v0, FLOAT3D v1, COLOR col) {
+  glCOLOR(col);
+
+  pglBegin(GL_LINES);
+  pglVertex3f(v0(1), v0(2), v0(3));
+  pglVertex3f(v1(1), v1(2), v1(3));
+  pglEnd();
+  OGL_CHECKERROR;
+};
+
+// Draw a square border
+void IGfxOpenGL::DrawBorder(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR col, FLOAT fD) {
+  glCOLOR(col);
+  pglBegin(GL_LINES);
+
+  // up
+  pglTexCoord2f( 0, 0); pglVertex2f(fX0, fY0);
+  pglTexCoord2f(fD, 0); pglVertex2f(fX1, fY0);
+
+  // right
+  pglTexCoord2f( 0, 0); pglVertex2f(fX1, fY0);
+  pglTexCoord2f(fD, 0); pglVertex2f(fX1, fY1);
+
+  // down
+  pglTexCoord2f( 0, 0); pglVertex2f(fX0,     fY1);
+  pglTexCoord2f(fD, 0); pglVertex2f(fX1 + 1, fY1);
+
+  // left
+  pglTexCoord2f( 0, 0); pglVertex2f(fX0, fY0 + 1);
+  pglTexCoord2f(fD, 0); pglVertex2f(fX0, fY1);
+
+  pglEnd();
+  OGL_CHECKERROR;
+};
+
+// Fill a part of the drawport with a given color with blending
+void IGfxOpenGL::Fill(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, const CDrawPort *pdpReference) {
+  TempScissor scissor;
+
+  // do fast filling
+  const PIX pixInvMinY = pdpReference->dp_Raster->ra_Height - (pdpReference->dp_MinJ + pixY1);
+  scissor.Set(pdpReference->dp_MinI + pixX0, pixInvMinY, pixX1 - pixX0, pixY1 - pixY0);
+
+  UBYTE ubR, ubG, ubB;
+  ColorToRGB(col, ubR, ubG, ubB);
+
+  pglClearColor(NormByteToFloat(ubR), NormByteToFloat(ubG), NormByteToFloat(ubB), 1.0f);
+  pglClear(GL_COLOR_BUFFER_BIT);
+
+  scissor.Restore();
+};
+
+// Fill a part of the drawport with four corner colors with blending
+void IGfxOpenGL::Fill(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR colUL, COLOR colUR, COLOR colDL, COLOR colDR) {
+  // thru OpenGL
+  gfxResetArrays();
+
+  GFXVertex   *pvtx = _avtxCommon.Push(4);
+  GFXTexCoord *ptex = _atexCommon.Push(4);
+  GFXColor    *pcol = _acolCommon.Push(4);
+
+  const GFXColor glcolUL(colUL);
+  const GFXColor glcolUR(colUR);
+  const GFXColor glcolDL(colDL);
+  const GFXColor glcolDR(colDR);
+
+  // add to element list and flush
+  pvtx[0].x = fX0;
+  pvtx[0].y = fY0;
+  pvtx[0].z = 0;
+  pcol[0] = glcolUL;
+
+  pvtx[1].x = fX0;
+  pvtx[1].y = fY1;
+  pvtx[1].z = 0;
+  pcol[1] = glcolDL;
+
+  pvtx[2].x = fX1;
+  pvtx[2].y = fY1;
+  pvtx[2].z = 0;
+  pcol[2] = glcolDR;
+
+  pvtx[3].x = fX1;
+  pvtx[3].y = fY0;
+  pvtx[3].z = 0;
+  pcol[3] = glcolUR;
+
+  gfxFlushQuads();
+};
+
+// Fill the entire drawport with a given color without blending
+void IGfxOpenGL::Fill(COLOR col) {
+  // do fast filling
+  UBYTE ubR, ubG, ubB;
+  ColorToRGB(col, ubR, ubG, ubB);
+
+  pglClearColor(NormByteToFloat(ubR), NormByteToFloat(ubG), NormByteToFloat(ubB), 1.0f);
+  pglClear(GL_COLOR_BUFFER_BIT);
+};
+
+// Fill a part of the z-buffer with a given value
+void IGfxOpenGL::FillZBuffer(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, FLOAT fZ, const CDrawPort *pdpReference) {
+  TempScissor scissor;
+
+  // fast clearing thru scissor
+  const PIX pixInvMinY = pdpReference->dp_Raster->ra_Height - (pdpReference->dp_MinJ + pixY1);
+  scissor.Set(pdpReference->dp_MinI + pixX0, pixInvMinY, pixX1 - pixX0, pixY1 - pixY0);
+
+  pglClearDepth(fZ);
+  pglClearStencil(0);
+
+  // must clear stencil buffer too in case it exist (we don't need it) for the performance sake
+  pglClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  scissor.Restore();
+};
+
+// Fill the entire z-buffer with a given value
+void IGfxOpenGL::FillZBuffer(FLOAT fZ) {
+  // fill whole z-buffer
+  pglClearDepth(fZ);
+  pglClearStencil(0);
+  pglClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+};
+
+// Save screen pixels as an image
+void IGfxOpenGL::GrabScreen(CImageInfo &iiOutput, const CDrawPort *pdpInput, BOOL bGrabDepth) {
+  const PIX pixW = pdpInput->dp_Width;
+  const PIX pixH = pdpInput->dp_Height;
+
+  // determine drawport starting location inside raster
+  const PIX pixX = pdpInput->dp_MinI;
+  const PIX pixY = pdpInput->dp_Raster->ra_Height - (pdpInput->dp_MinJ + pixH);
+
+  pglReadPixels(pixX, pixY, pixW, pixH, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid *)iiOutput.ii_Picture);
+  OGL_CHECKERROR;
+
+  // grab z-buffer to alpha channel, if needed
+  if (bGrabDepth) {
+    const PIX pixPicSize = iiOutput.ii_Width * iiOutput.ii_Height;
+
+    // grab
+    FLOAT *pfZBuffer = (FLOAT *)AllocMemory(pixPicSize * sizeof(FLOAT));
+    pglReadPixels(pixX, pixY, pixW, pixH, GL_DEPTH_COMPONENT, GL_FLOAT, (GLvoid *)pfZBuffer);
+    OGL_CHECKERROR;
+
+    // convert
+    UBYTE *pubZBuffer = (UBYTE *)pfZBuffer;
+
+    for (INDEX i = 0; i < pixPicSize; i++) {
+      pubZBuffer[i] = 255 - NormFloatToByte(pfZBuffer[i]);
+    }
+
+    // add as alpha channel
+    AddAlphaChannel(iiOutput.ii_Picture, (ULONG *)iiOutput.ii_Picture, iiOutput.ii_Width * iiOutput.ii_Height, pubZBuffer);
+    FreeMemory(pfZBuffer);
+  }
+
+  // flip image vertically  
+  FlipBitmap(iiOutput.ii_Picture, iiOutput.ii_Picture, iiOutput.ii_Width, iiOutput.ii_Height, 1, iiOutput.ii_BitsPerPixel == 32);
+};
