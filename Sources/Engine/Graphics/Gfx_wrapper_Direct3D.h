@@ -151,6 +151,9 @@ class IGfxD3D8 : public IGfxInterface
     virtual void DisableTruform(void);
   #endif
 
+    // Set D3D vertex shader only if it has changed since last time
+    void SetVertexShader(DWORD dwHandle);
+
   // Drawing methods
   public:
 

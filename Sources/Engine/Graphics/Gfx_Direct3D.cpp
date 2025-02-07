@@ -417,8 +417,8 @@ void CGfxLibrary::EndDriver_D3D(void)
     }}
   }
   // unbind fog, haze and flat texture
-  gfxDeleteTexture( _fog_ulTexture); 
-  gfxDeleteTexture( _haze_ulTexture);
+  _pGfx->GetInterface()->DeleteTexture(_fog_ulTexture); 
+  _pGfx->GetInterface()->DeleteTexture(_haze_ulTexture);
   ASSERT( _ptdFlat!=NULL);
   _ptdFlat->td_tpLocal.Clear();
   _ptdFlat->Unbind();
@@ -725,8 +725,8 @@ void CGfxLibrary::InitContext_D3D()
   extern INDEX gap_iTextureFiltering;
   extern INDEX gap_iTextureAnisotropy;
   extern FLOAT gap_fTextureLODBias;
-  gfxSetTextureFiltering( gap_iTextureFiltering, gap_iTextureAnisotropy);
-  gfxSetTextureBiasing( gap_fTextureLODBias);
+  _pGfx->GetInterface()->SetTextureFiltering(gap_iTextureFiltering, gap_iTextureAnisotropy);
+  _pGfx->GetInterface()->SetTextureBiasing(gap_fTextureLODBias);
 
   // mark pretouching and probing
   extern BOOL _bNeedPretouch;

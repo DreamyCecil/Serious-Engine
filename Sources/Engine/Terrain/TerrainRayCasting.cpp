@@ -512,26 +512,26 @@ void ShowRayPath(CDrawPort *pdp)
   INDEX ctVertices = _avRCVertices.Count();
   INDEX ctIndices  = _aiRCIndices.Count();
   if(ctVertices>0 && ctIndices>0) {
-    gfxDisableTexture();
-    gfxDisableBlend();
-    gfxEnableDepthBias();
-    gfxPolygonMode(GFX_LINE);
-    gfxSetVertexArray(&_avRCVertices[0],_avRCVertices.Count());
-    gfxSetConstantColor(0xFFFFFFFF);
-    gfxDrawElements(_aiRCIndices.Count(),&_aiRCIndices[0]);
-    gfxDisableDepthBias();
-    gfxPolygonMode(GFX_FILL);
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->EnableDepthBias();
+    _pGfx->GetInterface()->PolygonMode(GFX_LINE);
+    _pGfx->GetInterface()->SetVertexArray(&_avRCVertices[0], _avRCVertices.Count());
+    _pGfx->GetInterface()->SetConstantColor(0xFFFFFFFF);
+    _pGfx->GetInterface()->DrawElements(_aiRCIndices.Count(), &_aiRCIndices[0]);
+    _pGfx->GetInterface()->DisableDepthBias();
+    _pGfx->GetInterface()->PolygonMode(GFX_FILL);
   }
 
-  gfxEnableDepthBias();
-  gfxDisableDepthTest();
+  _pGfx->GetInterface()->EnableDepthBias();
+  _pGfx->GetInterface()->DisableDepthTest();
   pdp->DrawPoint3D(_vHitBegin,0x00FF00FF,8);
   pdp->DrawPoint3D(_vHitEnd,0xFF0000FF,8);
   pdp->DrawPoint3D(_vHitExact,0x00FFFF,8);
   pdp->DrawLine3D(_vHitBegin,_vHitEnd,0xFFFF00FF);
   pdp->DrawLine3D(FLOAT3D(_vHitBegin(1),_vHitEnd(2),_vHitBegin(3)),_vHitEnd,0xFF0000FF);
-  gfxEnableDepthTest();
-  gfxDisableDepthBias();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DisableDepthBias();
 
   /*
   extern void gfxDrawWireBox(FLOATaabbox3D &bbox, COLOR col);

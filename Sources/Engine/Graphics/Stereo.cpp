@@ -42,11 +42,11 @@ void Stereo_SetBuffer(INDEX iEye)
   const ULONG ulRightMask = gfx_bStereoInvert ? CT_RMASK : CT_BMASK|CT_GMASK;
 
   if( iEye==STEREO_BOTH || gfx_iStereo==0) {
-    gfxSetColorMask(CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
+    _pGfx->GetInterface()->SetColorMask(CT_RMASK|CT_GMASK|CT_BMASK|CT_AMASK);
   } else if (iEye==STEREO_LEFT) {
-    gfxSetColorMask(ulLeftMask);
+    _pGfx->GetInterface()->SetColorMask(ulLeftMask);
   } else if (iEye==STEREO_RIGHT) {
-    gfxSetColorMask(ulRightMask);
+    _pGfx->GetInterface()->SetColorMask(ulRightMask);
   }
 }
 

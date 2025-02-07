@@ -104,22 +104,22 @@ void shaRender(void)
   ASSERT(_paIndices!=NULL);
 
   // Set vertices
-  gfxSetVertexArray(_paVertices,_ctVertices);
-  gfxLockArrays();
+  _pGfx->GetInterface()->SetVertexArray(_paVertices,_ctVertices);
+  _pGfx->GetInterface()->LockArrays();
 
   // if there is valid UVMap
   if(_pCurrentUVMap!=NULL) {
-    gfxSetTexCoordArray(_pCurrentUVMap, FALSE);
+    _pGfx->GetInterface()->SetTexCoordArray(_pCurrentUVMap, FALSE);
   }
 
   // if there is valid vertex color array
   if(_pcolVtxColors!=NULL) {
-    gfxSetColorArray(_pcolVtxColors);
+    _pGfx->GetInterface()->SetColorArray(_pcolVtxColors);
   }
 
   // draw model with set params
-  gfxDrawElements( _ctIndices, _paIndices);
-  gfxUnlockArrays();
+  _pGfx->GetInterface()->DrawElements(_ctIndices, _paIndices);
+  _pGfx->GetInterface()->UnlockArrays();
 }
 
 // Render aditional pass for fog and haze
@@ -139,33 +139,33 @@ void shaDoFogPass(void)
   // if fog uvmap has been given
   if(_paFogUVMap!=NULL) {
     // setup texture/color arrays and rendering mode
-    gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-    gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
-    gfxSetTexCoordArray(_paFogUVMap, FALSE);
-    gfxSetConstantColor(_fog_fp.fp_colColor);
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxEnableBlend();
+    _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+    _pGfx->GetInterface()->SetTexture(_fog_ulTexture, _fog_tpLocal);
+    _pGfx->GetInterface()->SetTexCoordArray(_paFogUVMap, FALSE);
+    _pGfx->GetInterface()->SetConstantColor(_fog_fp.fp_colColor);
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->EnableBlend();
     // render fog pass
-    gfxDrawElements( _ctIndices, _paIndices);
+    _pGfx->GetInterface()->DrawElements( _ctIndices, _paIndices);
   }
   // if haze uvmap has been given
   if(_paHazeUVMap!=NULL) {
-    gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-    gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
-    gfxSetTexCoordArray(_paHazeUVMap, FALSE);
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxEnableBlend();
+    _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+    _pGfx->GetInterface()->SetTexture(_haze_ulTexture, _haze_tpLocal);
+    _pGfx->GetInterface()->SetTexCoordArray(_paHazeUVMap, FALSE);
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->EnableBlend();
     // set vertex color array for haze
     if(_pacolVtxHaze !=NULL ) {
-      gfxSetColorArray( _pacolVtxHaze);
+      _pGfx->GetInterface()->SetColorArray(_pacolVtxHaze);
     }
 
     // render fog pass
-    gfxDrawElements( _ctIndices, _paIndices);
+    _pGfx->GetInterface()->DrawElements(_ctIndices, _paIndices);
   }
 
   // [Cecil] Restore texture wrapping set by the shader
-  gfxSetTextureWrapping(_aTexWrapping[0], _aTexWrapping[1]);
+  _pGfx->GetInterface()->SetTextureWrapping(_aTexWrapping[0], _aTexWrapping[1]);
 }
 
 // Modify color for fog
@@ -444,7 +444,7 @@ void shaSetObjToAbsMatrix(Matrix12 &mat)
 void shaSetTexture(INDEX iTextureIndex)
 {
   if(_paTextures==NULL || iTextureIndex<0 || iTextureIndex>=_ctTextures ||  _paTextures[iTextureIndex] == NULL) {
-    gfxDisableTexture();
+    _pGfx->GetInterface()->DisableTexture();
     return;
   }
   ASSERT(iTextureIndex<_ctTextures);
@@ -477,7 +477,7 @@ void shaSetColor(INDEX icolIndex)
     _colConstant = _paColors[icolIndex];
   }
   // Set this color as constant color
-  gfxSetConstantColor(_colConstant);
+  _pGfx->GetInterface()->SetConstantColor(_colConstant);
 }
 
 // Set array of texcoords index
@@ -495,7 +495,7 @@ void shaSetVertexColors(GFXColor *paColors)
 // Set constant color
 void shaSetConstantColor(const COLOR colConstant)
 {
-  gfxSetConstantColor(colConstant);
+  _pGfx->GetInterface()->SetConstantColor(colConstant);
 }
 
 
@@ -664,69 +664,69 @@ Matrix12 *shaGetObjToAbsMatrix(void)
 void shaCullFace(GfxFace eFace)
 {
   if(_paprProjection !=NULL && (*_paprProjection)->pr_bMirror) {
-    gfxFrontFace( GFX_CW);
+    _pGfx->GetInterface()->FrontFace(GFX_CW);
   } else {
-    gfxFrontFace( GFX_CCW);
+    _pGfx->GetInterface()->FrontFace(GFX_CCW);
   }
-  gfxCullFace(eFace);
+  _pGfx->GetInterface()->CullFace(eFace);
 }
 
 // Set blending operations
 void shaBlendFunc(GfxBlend eSrc, GfxBlend eDst)
 {
-  gfxBlendFunc(eSrc,eDst);
+  _pGfx->GetInterface()->BlendFunc(eSrc, eDst);
 }
 
 // Set texture modulation mode
 void shaSetTextureModulation(INDEX iScale) 
 {
-  gfxSetTextureModulation(iScale);
+  _pGfx->GetInterface()->SetTextureModulation(iScale);
 }
 
 // Enable/Disable blening
 void shaEnableBlend(void)
 {
-  gfxEnableBlend();
+  _pGfx->GetInterface()->EnableBlend();
 }
 void shaDisableBlend(void)
 {
-  gfxDisableBlend();
+  _pGfx->GetInterface()->DisableBlend();
 }
 
 // Enable/Disable alpha test
 void shaEnableAlphaTest(void)
 {
-  gfxEnableAlphaTest();
+  _pGfx->GetInterface()->EnableAlphaTest();
 }
 void shaDisableAlphaTest(void)
 {
-  gfxDisableAlphaTest();
+  _pGfx->GetInterface()->DisableAlphaTest();
 }
 
 // Enable/Disable depth test
 void shaEnableDepthTest(void)
 {
-  gfxEnableDepthTest();
+  _pGfx->GetInterface()->EnableDepthTest();
 }
 void shaDisableDepthTest(void)
 {
-  gfxDisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthTest();
 }
 
 // Enable/Disable depth write
 void shaEnableDepthWrite(void)
 {
-  gfxEnableDepthWrite();
+  _pGfx->GetInterface()->EnableDepthWrite();
 }
 void shaDisableDepthWrite(void)
 {
-  gfxDisableDepthWrite();
+  _pGfx->GetInterface()->DisableDepthWrite();
 }
 
 // Set depth buffer compare mode
 void shaDepthFunc(GfxComp eComp)
 {
-  gfxDepthFunc(eComp);
+  _pGfx->GetInterface()->DepthFunc(eComp);
 }
 
 // Set texture wrapping 
@@ -736,7 +736,7 @@ void shaSetTextureWrapping( enum GfxWrap eWrapU, enum GfxWrap eWrapV)
   _aTexWrapping[0] = eWrapU;
   _aTexWrapping[1] = eWrapV;
 
-  gfxSetTextureWrapping(eWrapU,eWrapV);
+  _pGfx->GetInterface()->SetTextureWrapping(eWrapU, eWrapV);
 }
 
 

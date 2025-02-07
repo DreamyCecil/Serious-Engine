@@ -90,53 +90,55 @@ static DOUBLE FillRatePass(INDEX ct)
   GFXTexCoord atex[4] = { {0,0}, {0,1}, {1,1}, {1,0} };
   GFXColor    acol[4] = { 0xFF0000FF, 0xFF00FF00, 0xFFFF0000, 0xFFFF00FF };
   INDEX       aidx[6] = { 0,1,2, 0,2,3};
-  gfxSetVertexArray( &avtx[0], 4);
-  gfxSetTexCoordArray( &atex[0], FALSE);
-  gfxSetColorArray( &acol[0]);
+  _pGfx->GetInterface()->SetVertexArray(&avtx[0], 4);
+  _pGfx->GetInterface()->SetTexCoordArray(&atex[0], FALSE);
+  _pGfx->GetInterface()->SetColorArray(&acol[0]);
 
   if(_bTexture) {
-    gfxEnableTexture();
+    _pGfx->GetInterface()->EnableTexture();
     if(_bMultiTexture) {
-      gfxSetTextureUnit(1);
-      gfxEnableTexture();
-      gfxSetTexture( _ulTexObject, _tpLocal);
-      gfxSetTexCoordArray(atex, FALSE);
-      gfxSetTextureUnit(0);
+      _pGfx->GetInterface()->SetTextureUnit(1);
+      _pGfx->GetInterface()->EnableTexture();
+      _pGfx->GetInterface()->SetTexture(_ulTexObject, _tpLocal);
+      _pGfx->GetInterface()->SetTexCoordArray(atex, FALSE);
+      _pGfx->GetInterface()->SetTextureUnit(0);
     }
   } else {
-    gfxDisableTexture();
+    _pGfx->GetInterface()->DisableTexture();
   }
 
   if(_bBlend) {
-    gfxEnableBlend();
+    _pGfx->GetInterface()->EnableBlend();
     if(_bTexture) {
-      gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA); 
+      _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA); 
     } else {
-      gfxBlendFunc( GFX_ONE, GFX_ONE);
+      _pGfx->GetInterface()->BlendFunc(GFX_ONE, GFX_ONE);
     }
   } else {
-    gfxDisableBlend();
+    _pGfx->GetInterface()->DisableBlend();
   }
 
   if(_bDepth) {
-    gfxEnableDepthTest();
-    gfxEnableDepthWrite();
+    _pGfx->GetInterface()->EnableDepthTest();
+    _pGfx->GetInterface()->EnableDepthWrite();
   } else {
-    gfxDisableDepthTest();
-    gfxDisableDepthWrite();
+    _pGfx->GetInterface()->DisableDepthTest();
+    _pGfx->GetInterface()->DisableDepthWrite();
   }
-  gfxDisableAlphaTest();
+  _pGfx->GetInterface()->DisableAlphaTest();
 
-  for( INDEX i=0; i<ct; i++) gfxDrawElements( 6, &aidx[0]);
+  for (INDEX i = 0; i < ct; i++) {
+    _pGfx->GetInterface()->DrawElements(6, &aidx[0]);
+  }
 
   if(_bMultiTexture) {
-    gfxSetTextureUnit(1);
-    gfxDisableTexture();
-    gfxSetTextureUnit(0);
+    _pGfx->GetInterface()->SetTextureUnit(1);
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->SetTextureUnit(0);
   }
   _pdp->Unlock();
 
-  gfxFinish();
+  _pGfx->GetInterface()->Finish();
   _pvp->SwapBuffers();
 
   return StopTimer();
@@ -179,14 +181,14 @@ static void InitTexture(void)
   }
   MakeMipmaps( 15, (ULONG*)_pubTexture, 256,256);
   _tpLocal.tp_bSingleMipmap = FALSE;
-  gfxGenerateTexture( _ulTexObject);
-  gfxSetTexture( _ulTexObject, _tpLocal);
+  _pGfx->GetInterface()->GenerateTexture(_ulTexObject);
+  _pGfx->GetInterface()->SetTexture(_ulTexObject, _tpLocal);
 }
 
 
 static void EndTexture(void)
 {
-  gfxDeleteTexture( _ulTexObject);
+  _pGfx->GetInterface()->DeleteTexture(_ulTexObject);
   FreeMemory(_pubTexture);
   _pubTexture = NULL;
 }
@@ -244,58 +246,60 @@ static DOUBLE TrisTroughputPass(INDEX ct)
 
   StartTimer();
 
-  gfxSetFrustum( -0.5f, +0.5f, -0.5f, +0.5f, 0.5f, 2.0f);
-  gfxSetViewMatrix(NULL);
-  gfxCullFace(GFX_NONE);
+  _pGfx->GetInterface()->SetFrustum(-0.5f, +0.5f, -0.5f, +0.5f, 0.5f, 2.0f);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
+  _pGfx->GetInterface()->CullFace(GFX_NONE);
 
   _pdp->Fill(C_GRAY|255);
   _pdp->FillZBuffer(1.0f);
 
   if(_bTexture) {
-    gfxEnableTexture();
+    _pGfx->GetInterface()->EnableTexture();
   } else {
-    gfxDisableTexture();
+    _pGfx->GetInterface()->DisableTexture();
   }
 
   if(_bBlend) {
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_ONE, GFX_ONE);
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_ONE, GFX_ONE);
   } else {
-    gfxDisableBlend();
+    _pGfx->GetInterface()->DisableBlend();
   }
 
   if(_bDepth) {
-    gfxEnableDepthTest();
-    gfxEnableDepthWrite();
+    _pGfx->GetInterface()->EnableDepthTest();
+    _pGfx->GetInterface()->EnableDepthWrite();
   } else {
-    gfxDisableDepthTest();
-    gfxDisableDepthWrite();
+    _pGfx->GetInterface()->DisableDepthTest();
+    _pGfx->GetInterface()->DisableDepthWrite();
   }
-  gfxDisableAlphaTest();
+  _pGfx->GetInterface()->DisableAlphaTest();
 
-  gfxSetVertexArray( &_avtx[0], _avtx.Count());
-  gfxLockArrays();
-  gfxSetTexCoordArray( &_atex[0], FALSE);
-  gfxSetColorArray( &_acol[0]);
+  _pGfx->GetInterface()->SetVertexArray(&_avtx[0], _avtx.Count());
+  _pGfx->GetInterface()->LockArrays();
+  _pGfx->GetInterface()->SetTexCoordArray(&_atex[0], FALSE);
+  _pGfx->GetInterface()->SetColorArray(&_acol[0]);
 
   if(_bMultiTexture) {
-    gfxSetTextureUnit(1);
-    gfxEnableTexture();
-    gfxSetTexture( _ulTexObject, _tpLocal);
-    gfxSetTexCoordArray( &_atex[0], FALSE);
-    gfxSetTextureUnit(0);
+    _pGfx->GetInterface()->SetTextureUnit(1);
+    _pGfx->GetInterface()->EnableTexture();
+    _pGfx->GetInterface()->SetTexture(_ulTexObject, _tpLocal);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atex[0], FALSE);
+    _pGfx->GetInterface()->SetTextureUnit(0);
   }
-  for( INDEX i=0; i<ct; i++) gfxDrawElements( _aiElements.Count(), &_aiElements[0]);
-  gfxUnlockArrays();
+  for (INDEX i = 0; i < ct; i++) {
+    _pGfx->GetInterface()->DrawElements(_aiElements.Count(), &_aiElements[0]);
+  }
+  _pGfx->GetInterface()->UnlockArrays();
 
   if(_bMultiTexture) {
-    gfxSetTextureUnit(1);
-    gfxDisableTexture();
-    gfxSetTextureUnit(0);
+    _pGfx->GetInterface()->SetTextureUnit(1);
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->SetTextureUnit(0);
   }
   _pdp->Unlock();
 
-  gfxFinish();
+  _pGfx->GetInterface()->Finish();
   _pvp->SwapBuffers();
 
   return StopTimer();
@@ -317,7 +321,7 @@ static DOUBLE TrisTroughput(void)
 static DOUBLE TextureUpload(void)
 {
   StartTimer();
-  gfxUploadTexture( (ULONG*)_pubTexture, 256, 256, _ulTexFormat, _bSubImage);
+  _pGfx->GetInterface()->UploadTexture((ULONG *)_pubTexture, 256, 256, _ulTexFormat, _bSubImage);
   const SLONG slTotal = 256*256*4 *4/3;
   return slTotal/StopTimer();
 }

@@ -634,7 +634,7 @@ void CGfxLibrary::InitContext_OGL(void)
   pglDepthRange( 0.0f, 1.0f);     GFX_fMinDepthRange = 0.0f;
                                   GFX_fMaxDepthRange = 1.0f;
   // (re)set some OpenGL defaults
-  gfxPolygonMode( GFX_FILL);
+  _pGfx->GetInterface()->PolygonMode(GFX_FILL);
   pglShadeModel( GL_SMOOTH);
   pglEnable( GL_SCISSOR_TEST);
   pglDrawBuffer( GL_BACK);
@@ -895,8 +895,8 @@ void CGfxLibrary::InitContext_OGL(void)
   extern INDEX gap_iTextureFiltering;
   extern INDEX gap_iTextureAnisotropy;
   extern FLOAT gap_fTextureLODBias;
-  gfxSetTextureFiltering( gap_iTextureFiltering, gap_iTextureAnisotropy);
-  gfxSetTextureBiasing( gap_fTextureLODBias);
+  _pGfx->GetInterface()->SetTextureFiltering(gap_iTextureFiltering, gap_iTextureAnisotropy);
+  _pGfx->GetInterface()->SetTextureBiasing(gap_fTextureLODBias);
 
   // mark pretouching and probing
   extern BOOL _bNeedPretouch;
@@ -1012,8 +1012,8 @@ void CGfxLibrary::EndDriver_OGL(void)
     }}
   }
   // unbind fog, haze and flat texture
-  gfxDeleteTexture( _fog_ulTexture); 
-  gfxDeleteTexture( _haze_ulTexture);
+  _pGfx->GetInterface()->DeleteTexture(_fog_ulTexture); 
+  _pGfx->GetInterface()->DeleteTexture(_haze_ulTexture);
   ASSERT( _ptdFlat!=NULL);
   _ptdFlat->td_tpLocal.Clear();
   _ptdFlat->Unbind();

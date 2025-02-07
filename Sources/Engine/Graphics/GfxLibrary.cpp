@@ -1811,8 +1811,8 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   ReduceShadows();
 
   // check and eventually adjust texture filtering and LOD biasing
-  gfxSetTextureFiltering( gap_iTextureFiltering, gap_iTextureAnisotropy);
-  gfxSetTextureBiasing( gap_fTextureLODBias);
+  _pGfx->GetInterface()->SetTextureFiltering(gap_iTextureFiltering, gap_iTextureAnisotropy);
+  _pGfx->GetInterface()->SetTextureBiasing(gap_fTextureLODBias);
 
   // [Cecil] Allow adaptive VSync with -1 using SDL
   #if SE1_PREFER_SDL
@@ -1833,7 +1833,7 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   if (GetCurrentAPI() == GAT_OGL)
   {
     // force finishing of all rendering operations (if required)
-    if( ogl_iFinish==2) gfxFinish();
+    if (ogl_iFinish == 2) _pGfx->GetInterface()->Finish();
 
     // check state of swap interval extension usage
     if( gl_ulFlags & GLF_VSYNC) {
@@ -1857,7 +1857,7 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
     #endif
 
     // force finishing of all rendering operations (if required)
-    if( ogl_iFinish==3) gfxFinish();
+    if (ogl_iFinish == 3) _pGfx->GetInterface()->Finish();
 
     // reset CVA usage if ext is not present
     if( !(gl_ulFlags&GLF_EXT_COMPILEDVERTEXARRAY)) ogl_bUseCompiledVertexArrays = 0;
@@ -1868,7 +1868,7 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
   else if (GetCurrentAPI() == GAT_D3D)
   {
     // force finishing of all rendering operations (if required)
-    if( d3d_iFinish==2) gfxFinish();
+    if (d3d_iFinish == 2) _pGfx->GetInterface()->Finish();
 
     // end scene rendering
     HRESULT hr;
@@ -1889,7 +1889,7 @@ void CGfxLibrary::SwapBuffers(CViewPort *pvp)
     D3D_CHECKERROR(hr); 
 
     // force finishing of all rendering operations (if required)
-    if( d3d_iFinish==3) gfxFinish();
+    if (d3d_iFinish == 3) _pGfx->GetInterface()->Finish();
 
     // eventually reset vertex buffer if something got changed
     if( _iLastVertexBufferSize!=d3d_iVertexBuffersSize

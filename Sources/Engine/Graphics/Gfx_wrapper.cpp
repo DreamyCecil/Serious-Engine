@@ -292,7 +292,7 @@ void IGfxInterface::SetTexture( ULONG &ulTexObject, CTexParams &tpLocal)
   const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
   _pGfx->CheckAPI();
 
-  gfxEnableTexture();
+  _pGfx->GetInterface()->EnableTexture();
 
   _sfStats.StartTimer(CStatForm::STI_BINDTEXTURE);
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
@@ -383,7 +383,7 @@ SLONG IGfxInterface::GetTextureSize( ULONG ulTexObject, BOOL bHasMipmaps/*=TRUE*
       pglGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH,  (GLint*)&pixWidth);
       pglGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, (GLint*)&pixHeight);
       OGL_CHECKERROR;
-      slMipSize = pixWidth*pixHeight * gfxGetTexturePixRatio(ulTexObject);
+      slMipSize = pixWidth*pixHeight * _pGfx->GetInterface()->GetTexturePixRatio(ulTexObject);
     }
   }
   // Direct3D
@@ -454,8 +454,8 @@ extern void gfxSetPattern( ULONG ulPattern)
 {
   // set pattern to be current texture
   _tpPattern.tp_bSingleMipmap = TRUE;
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
-  gfxSetTexture( _ulPatternTexture, _tpPattern);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetTexture(_ulPatternTexture, _tpPattern);
 
   // if this pattern is currently uploaded, do nothing
   if( _ulLastUploadedPattern==ulPattern) return;
@@ -468,7 +468,7 @@ extern void gfxSetPattern( ULONG ulPattern)
   }
   // remember new pattern and upload
   _ulLastUploadedPattern = ulPattern;
-  gfxUploadTexture( &aulPattern[0], 32, 1, TS.ts_tfRGBA8, FALSE);
+  _pGfx->GetInterface()->UploadTexture(&aulPattern[0], 32, 1, TS.ts_tfRGBA8, FALSE);
 }
 
 
@@ -524,12 +524,12 @@ static void FlushArrays( INDEX *piElements, INDEX ctElements)
   ASSERT( _atexCommon.Count()==ctVertices);
   ASSERT( _acolCommon.Count()==ctVertices);
   extern BOOL CVA_b2D;
-  gfxSetVertexArray( &_avtxCommon[0], ctVertices);
-  if(CVA_b2D) gfxLockArrays();
-  gfxSetTexCoordArray( &_atexCommon[0], FALSE);
-  gfxSetColorArray( &_acolCommon[0]);
-  gfxDrawElements( ctElements, piElements);
-  gfxUnlockArrays();
+  _pGfx->GetInterface()->SetVertexArray(&_avtxCommon[0], ctVertices);
+  if (CVA_b2D) _pGfx->GetInterface()->LockArrays();
+  _pGfx->GetInterface()->SetTexCoordArray(&_atexCommon[0], FALSE);
+  _pGfx->GetInterface()->SetColorArray(&_acolCommon[0]);
+  _pGfx->GetInterface()->DrawElements(ctElements, piElements);
+  _pGfx->GetInterface()->UnlockArrays();
 }
 
 

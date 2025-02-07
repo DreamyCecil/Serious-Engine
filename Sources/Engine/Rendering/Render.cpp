@@ -714,7 +714,7 @@ void CRenderer::Render(void)
   extern INDEX d3d_iFinish;  d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
   if ((ogl_iFinish == 1 && _pGfx->GetCurrentAPI() == GAT_OGL)
    || (d3d_iFinish == 1 && _pGfx->GetCurrentAPI() == GAT_D3D)) {
-    gfxFinish();
+    _pGfx->GetInterface()->Finish();
   }
 
   // check any eventual delayed depth points outside the mirror (if API and time allows)

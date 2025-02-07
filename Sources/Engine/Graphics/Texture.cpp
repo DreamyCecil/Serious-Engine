@@ -1308,28 +1308,32 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     if( td_ctFrames>1) {
       // animation textures
       td_pulObjects = (ULONG*)AllocMemory( td_ctFrames *sizeof(td_ulProbeObject));
-      for( INDEX i=0; i<td_ctFrames; i++) gfxGenerateTexture( td_pulObjects[i]);
+      for (INDEX i = 0; i < td_ctFrames; i++) {
+        _pGfx->GetInterface()->GenerateTexture(td_pulObjects[i]);
+      }
     } else {
       // single-frame textures
-      gfxGenerateTexture( td_ulObject);
+      _pGfx->GetInterface()->GenerateTexture(td_ulObject);
     }
     // generate probe texture (if needed)
     ASSERT( td_ulProbeObject==NONE);
-    if( td_ptegEffect==NULL && pixTextureSize>16*16) gfxGenerateTexture( td_ulProbeObject);
+    if (td_ptegEffect == NULL && pixTextureSize > 16*16) {
+      _pGfx->GetInterface()->GenerateTexture(td_ulProbeObject);
+    }
     // must do initial uploading
     bNeedUpload = TRUE;
     bNoDiscard  = FALSE;
   }
 
   // constant textures cannot be probed either
-  if( td_ulFlags&TEX_CONSTANT) gfxDeleteTexture(td_ulProbeObject);
+  if( td_ulFlags&TEX_CONSTANT) _pGfx->GetInterface()->DeleteTexture(td_ulProbeObject);
   if( td_ulProbeObject==NONE)  bUseProbe = FALSE;
 
   // update statistics if not updated already for this frame
   if( td_iRenderFrame != _pGfx->gl_iFrameNumber) {
     td_iRenderFrame = _pGfx->gl_iFrameNumber;
     // determine size and update
-    SLONG slBytes = pixWidth*pixHeight * gfxGetFormatPixRatio(td_ulInternalFormat);
+    SLONG slBytes = pixWidth*pixHeight * _pGfx->GetInterface()->GetFormatPixRatio(td_ulInternalFormat);
     if( !td_tpLocal.tp_bSingleMipmap) slBytes = slBytes *4/3;
     _sfStats.IncrementCounter( CStatForm::SCI_TEXTUREBINDS, 1);
     _sfStats.IncrementCounter( CStatForm::SCI_TEXTUREBINDBYTES, slBytes);
@@ -1355,13 +1359,13 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
       for( INDEX iFr=0; iFr<td_ctFrames; iFr++)
       { // determine frame offset and upload texture frame
         ULONG *pulCurrentFrame = td_pulFrames + (iFr * td_slFrameSize/BYTES_PER_TEXEL);
-        gfxSetTexture(td_pulObjects[iFr], td_tpLocal);
-        gfxUploadTexture( pulCurrentFrame, pixWidth, pixHeight, td_ulInternalFormat, bNoDiscard);
+        _pGfx->GetInterface()->SetTexture(td_pulObjects[iFr], td_tpLocal);
+        _pGfx->GetInterface()->UploadTexture(pulCurrentFrame, pixWidth, pixHeight, td_ulInternalFormat, bNoDiscard);
       }
     } else {
       // single-frame textures
-      gfxSetTexture( td_ulObject, td_tpLocal);
-      gfxUploadTexture( td_pulFrames, pixWidth, pixHeight, td_ulInternalFormat, bNoDiscard);
+      _pGfx->GetInterface()->SetTexture(td_ulObject, td_tpLocal);
+      _pGfx->GetInterface()->UploadTexture(td_pulFrames, pixWidth, pixHeight, td_ulInternalFormat, bNoDiscard);
     }
     // upload probe texture if exist
     if( td_ulProbeObject!=NONE) {
@@ -1369,8 +1373,8 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
       PIX pixProbeHeight = pixHeight;
       ULONG *pulProbeFrame = td_pulFrames;
       GetMipmapOfSize( 16*16, pulProbeFrame, pixProbeWidth, pixProbeHeight);
-      gfxSetTexture( td_ulProbeObject, td_tpLocal);
-      gfxUploadTexture( pulProbeFrame, pixProbeWidth, pixProbeHeight, TS.ts_tfRGBA4, FALSE);
+      _pGfx->GetInterface()->SetTexture(td_ulProbeObject, td_tpLocal);
+      _pGfx->GetInterface()->UploadTexture(pulProbeFrame, pixProbeWidth, pixProbeHeight, TS.ts_tfRGBA4, FALSE);
     }
     // clear local texture parameters because we need to correct later texture setting
     td_tpLocal.Clear();
@@ -1389,7 +1393,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     // must reset local texture parameters for each frame of animated texture
     for( INDEX iFr=0; iFr<td_ctFrames; iFr++) {
       td_tpLocal.Clear();
-      gfxSetTexture(td_pulObjects[iFr], td_tpLocal);
+      _pGfx->GetInterface()->SetTexture(td_pulObjects[iFr], td_tpLocal);
     }
   } 
   // set corresponding probe or texture frame as current
@@ -1401,7 +1405,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     if( _pGfx->gl_slAllowedUploadBurst<0) {  
       CTexParams tpTmp = td_tpLocal;
       ASSERT( td_ulProbeObject!=NONE);
-      gfxSetTexture( td_ulProbeObject, tpTmp);
+      _pGfx->GetInterface()->SetTexture(td_ulProbeObject, tpTmp);
       //extern INDEX _ctProbeTexs;
       //_ctProbeTexs++;
       //CPrintF( "Probed!\n");
@@ -1411,7 +1415,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     _pGfx->gl_slAllowedUploadBurst -= pixWidth*pixHeight *4; // assume 32-bit textures (don't ask driver!)
   } 
   // set real texture and mark that this texture has been drawn
-  gfxSetTexture( ulTexObject, td_tpLocal);
+  _pGfx->GetInterface()->SetTexture(ulTexObject, td_tpLocal);
   MarkDrawn();
 
   // debug check
@@ -1433,14 +1437,16 @@ void CTextureData::Unbind(void)
   }
   // free frame number(s)
   if( td_ctFrames>1) { // animation
-    for( INDEX iFrame=0; iFrame<td_ctFrames; iFrame++) gfxDeleteTexture( td_pulObjects[iFrame]);
+    for (INDEX iFrame = 0; iFrame < td_ctFrames; iFrame++) {
+      _pGfx->GetInterface()->DeleteTexture(td_pulObjects[iFrame]);
+    }
     FreeMemory( td_pulObjects);
     td_pulObjects = NULL;
   } else { // single-frame
-    gfxDeleteTexture(td_ulObject);
+    _pGfx->GetInterface()->DeleteTexture(td_ulObject);
   }
   // delete probe texture, too
-  gfxDeleteTexture(td_ulProbeObject);
+  _pGfx->GetInterface()->DeleteTexture(td_ulProbeObject);
 }
 
 
@@ -1723,7 +1729,7 @@ SLONG CTextureData::GetUsedMemory(void)
   }
 
   // add eventual uploaded size and finito
-  const SLONG slUploadSize = gfxGetTextureSize( ulTexObject, !td_tpLocal.tp_bSingleMipmap);
+  const SLONG slUploadSize = _pGfx->GetInterface()->GetTextureSize(ulTexObject, !td_tpLocal.tp_bSingleMipmap);
   return slUsed + td_ctFrames*slUploadSize; 
 }
 

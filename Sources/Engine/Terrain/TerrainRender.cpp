@@ -198,18 +198,18 @@ void PrepareScene(CAnyProjection3D &apr, CDrawPort *pdp, CTerrain *ptrTerrain)
   glm[1] = m(2,1);  glm[5] = m(2,2);  glm[ 9] = m(2,3);  glm[13] = v(2);
   glm[2] = m(3,1);  glm[6] = m(3,2);  glm[10] = m(3,3);  glm[14] = v(3);
   glm[3] = 0;       glm[7] = 0;       glm[11] = 0;       glm[15] = 1;
-  gfxSetViewMatrix(glm);
+  _pGfx->GetInterface()->SetViewMatrix(glm);
 
   // Get viewer in absolute space
   _vViewerAbs = (_aprProjection->ViewerPlacementR().pl_PositionVector - 
                  pen->en_plPlacement.pl_PositionVector) * !pen->en_mRotation;
 
-  gfxDisableBlend();
-  gfxDisableTexture();
-  gfxDisableAlphaTest();
-  gfxEnableDepthTest();
-  gfxEnableDepthWrite();
-  gfxCullFace(GFX_BACK);
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->DisableTexture();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->EnableDepthWrite();
+  _pGfx->GetInterface()->CullFace(GFX_BACK);
 }
 
 
@@ -789,7 +789,7 @@ void PrepareSmothVerticesOnTileLayer(INDEX iTerrainTile, INDEX iTileLayer)
 static void RenderBatchedTiles(void)
 {
   // Set texture wrapping
-  gfxSetTextureWrapping(GFX_CLAMP,GFX_CLAMP);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
   // Use terrains global top map as texture
   _ptrTerrain->tr_tdTopMap.SetAsCurrent();
 
@@ -804,26 +804,26 @@ static void RenderBatchedTiles(void)
   FillConstColorArray(ctVertices);
   GFXColor    *pacolColors     = &_acolVtxConstColors[0];
 
-  gfxEnableAlphaTest();
-  gfxDisableBlend();
-  gfxSetVertexArray(pavVertices,ctVertices);
-  gfxSetTexCoordArray(pauvTexCoords, FALSE);
-  gfxSetColorArray(pacolColors);
-  gfxLockArrays();
-  gfxDrawElements(ctIndices,paiIndices);
-  gfxDisableAlphaTest();
+  _pGfx->GetInterface()->EnableAlphaTest();
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->SetVertexArray(pavVertices, ctVertices);
+  _pGfx->GetInterface()->SetTexCoordArray(pauvTexCoords, FALSE);
+  _pGfx->GetInterface()->SetColorArray(pacolColors);
+  _pGfx->GetInterface()->LockArrays();
+  _pGfx->GetInterface()->DrawElements(ctIndices, paiIndices);
+  _pGfx->GetInterface()->DisableAlphaTest();
   _ctTris +=ctIndices/2;
 
   // if shadows are visible
   if(_wrpWorldRenderPrefs.wrp_shtShadows!=CWorldRenderPrefs::SHT_NONE) {
-    gfxDepthFunc(GFX_EQUAL);
+    _pGfx->GetInterface()->DepthFunc(GFX_EQUAL);
 
-    gfxBlendFunc(GFX_DST_COLOR,GFX_SRC_COLOR);
-    gfxEnableBlend();
-    gfxSetTexCoordArray(pauvShadowMapTC, FALSE);
+    _pGfx->GetInterface()->BlendFunc(GFX_DST_COLOR, GFX_SRC_COLOR);
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->SetTexCoordArray(pauvShadowMapTC, FALSE);
     _ptrTerrain->tr_tdShadowMap.SetAsCurrent();
-    gfxDrawElements(ctIndices,paiIndices);
-    gfxDepthFunc(GFX_LESS_EQUAL);
+    _pGfx->GetInterface()->DrawElements(ctIndices, paiIndices);
+    _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
   }
 
   if(_ptrTerrain->GetFlags()&TR_HAS_FOG) {
@@ -832,7 +832,7 @@ static void RenderBatchedTiles(void)
   if(_ptrTerrain->GetFlags()&TR_HAS_HAZE) {
     RenderHazeLayer(-1);
   }
-  gfxUnlockArrays();
+  _pGfx->GetInterface()->UnlockArrays();
 
   // Popall delayed arrays 
   _avDelayedVertices.PopAll();
@@ -948,16 +948,16 @@ static void RenderFogLayer(INDEX itt)
   }
 
   // render fog layer
-  gfxDepthFunc(GFX_EQUAL);
-  gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-  gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
-  gfxSetTexCoordArray(pfFogTC, FALSE);
-  gfxSetColorArray(pcolFog);
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxEnableBlend();
-  gfxDisableAlphaTest();
-  gfxDrawElements(ctIndices,piIndices);
-  gfxDepthFunc(GFX_LESS_EQUAL);
+  _pGfx->GetInterface()->DepthFunc(GFX_EQUAL);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+  _pGfx->GetInterface()->SetTexture(_fog_ulTexture, _fog_tpLocal);
+  _pGfx->GetInterface()->SetTexCoordArray(pfFogTC, FALSE);
+  _pGfx->GetInterface()->SetColorArray(pcolFog);
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DrawElements(ctIndices, piIndices);
+  _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
 
   _atcHaze.PopAll();
   _acolHaze.PopAll();
@@ -1003,15 +1003,15 @@ static void RenderHazeLayer(INDEX itt)
   }
 
   // render haze layer
-  gfxDepthFunc(GFX_EQUAL);
-  gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-  gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
-  gfxSetTexCoordArray(pfHazeTC, FALSE);
-  gfxSetColorArray(pcolHaze);
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxEnableBlend();
-  gfxDrawElements(ctIndices,piIndices);
-  gfxDepthFunc(GFX_LESS_EQUAL);
+  _pGfx->GetInterface()->DepthFunc(GFX_EQUAL);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+  _pGfx->GetInterface()->SetTexture(_haze_ulTexture, _haze_tpLocal);
+  _pGfx->GetInterface()->SetTexCoordArray(pfHazeTC, FALSE);
+  _pGfx->GetInterface()->SetColorArray(pcolHaze);
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->DrawElements(ctIndices, piIndices);
+  _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
 
   _atcHaze.PopAll();
   _acolHaze.PopAll();
@@ -1045,10 +1045,10 @@ static void RenderTile(INDEX itt)
 
   // if tile is in highest lod
   if(tt.tt_iLod==0) {
-    gfxBlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxSetVertexArray(pavVertices,ctVertices);
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->SetVertexArray(pavVertices,ctVertices);
 
-    gfxLockArrays();
+    _pGfx->GetInterface()->LockArrays();
     // for each tile layer
     INDEX cttl= tt.GetTileLayers().Count();
     for(INDEX itl=0;itl<cttl;itl++) {
@@ -1067,22 +1067,22 @@ static void RenderTile(INDEX itt)
 
       // Set tile blend mode
       if(tl.tl_fSmoothness==0) {
-        gfxDisableBlend();
-        gfxEnableAlphaTest();
+        _pGfx->GetInterface()->DisableBlend();
+        _pGfx->GetInterface()->EnableAlphaTest();
       } else {
-        gfxEnableBlend();
-        gfxDisableAlphaTest();
+        _pGfx->GetInterface()->EnableBlend();
+        _pGfx->GetInterface()->DisableAlphaTest();
       }
 
       // if this tile has any polygons in this layer
       INDEX ctIndices = ttl.tl_auiIndices.Count();
       if(ctIndices>0) {
-        gfxSetTextureWrapping(GFX_REPEAT,GFX_REPEAT);
+        _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
         tl.tl_ptdTexture->SetAsCurrent();
 
         // if this is tile layer 
         if(tl.tl_ltType==LT_TILE) {
-          gfxUnlockArrays();
+          _pGfx->GetInterface()->UnlockArrays();
           GFXVertex4 *pavLayerVertices;
           if(ter_bLerpVertices==1) {
             PrepareSmothVerticesOnTileLayer(itt,itl);
@@ -1090,38 +1090,38 @@ static void RenderTile(INDEX itt)
           } else {
             pavLayerVertices = &ttl.tl_avVertices[0];
           }
-          gfxSetVertexArray(pavLayerVertices,ttl.tl_avVertices.Count());
-          gfxLockArrays();
-          // gfxSetColorArray(&ttl.tl_acColors[0]);
-          gfxSetTexCoordArray(&ttl.tl_atcTexCoords[0], FALSE);
+          _pGfx->GetInterface()->SetVertexArray(pavLayerVertices, ttl.tl_avVertices.Count());
+          _pGfx->GetInterface()->LockArrays();
+          //_pGfx->GetInterface()->SetColorArray(&ttl.tl_acColors[0]);
+          _pGfx->GetInterface()->SetTexCoordArray(&ttl.tl_atcTexCoords[0], FALSE);
 
           
           // set wireframe mode
           /*
-          gfxEnableDepthBias();
-          gfxPolygonMode(GFX_LINE);
-          gfxDisableTexture();*/
-          gfxSetConstantColor(0xFFFFFFFF);
+          _pGfx->GetInterface()->EnableDepthBias();
+          _pGfx->GetInterface()->PolygonMode(GFX_LINE);
+          _pGfx->GetInterface()->DisableTexture();*/
+          _pGfx->GetInterface()->SetConstantColor(0xFFFFFFFF);
 
           // Draw tiled layer
-          gfxDrawElements(ttl.tl_auiIndices.Count(),&ttl.tl_auiIndices[0]);
+          _pGfx->GetInterface()->DrawElements(ttl.tl_auiIndices.Count(), &ttl.tl_auiIndices[0]);
           _ctTris +=ttl.tl_auiIndices.Count()/2;
 
           /*
           // set fill mode
-          gfxDisableDepthBias();
-          gfxPolygonMode(GFX_FILL);*/
+          _pGfx->GetInterface()->DisableDepthBias();
+          _pGfx->GetInterface()->PolygonMode(GFX_FILL);*/
 
           // Set old vertex array
-          gfxUnlockArrays();
-          gfxSetVertexArray(pavVertices,ctVertices);
-          gfxLockArrays();
+          _pGfx->GetInterface()->UnlockArrays();
+          _pGfx->GetInterface()->SetVertexArray(pavVertices, ctVertices);
+          _pGfx->GetInterface()->LockArrays();
         // if this is normal layer
         } else {
           // render layer
-          gfxSetColorArray(&ttl.tl_acColors[0]);
-          gfxSetTexCoordArray(&ttl.tl_atcTexCoords[0], FALSE);
-          gfxDrawElements(ctIndices,&ttl.tl_auiIndices[0]);
+          _pGfx->GetInterface()->SetColorArray(&ttl.tl_acColors[0]);
+          _pGfx->GetInterface()->SetTexCoordArray(&ttl.tl_atcTexCoords[0], FALSE);
+          _pGfx->GetInterface()->DrawElements(ctIndices, &ttl.tl_auiIndices[0]);
           _ctTris +=ctIndices/2;
         }
       }
@@ -1133,29 +1133,29 @@ static void RenderTile(INDEX itt)
 
       // if detail map exists
       if(_ptrTerrain->tr_ptdDetailMap!=NULL) {
-        gfxSetTextureWrapping(GFX_REPEAT,GFX_REPEAT);
-        gfxDisableAlphaTest();
+        _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
+        _pGfx->GetInterface()->DisableAlphaTest();
         shaBlendFunc( GFX_DST_COLOR, GFX_SRC_COLOR);
-        gfxEnableBlend();
-        gfxSetTexCoordArray(&tt.GetDetailTC()[0], FALSE);
+        _pGfx->GetInterface()->EnableBlend();
+        _pGfx->GetInterface()->SetTexCoordArray(&tt.GetDetailTC()[0], FALSE);
         _ptrTerrain->tr_ptdDetailMap->SetAsCurrent();
-        gfxDrawElements(ctIndices,paiIndices);
+        _pGfx->GetInterface()->DrawElements(ctIndices, paiIndices);
       }
 
       // if shadows are visible
       if(_wrpWorldRenderPrefs.wrp_shtShadows!=CWorldRenderPrefs::SHT_NONE) {
-        gfxDisableAlphaTest();
+        _pGfx->GetInterface()->DisableAlphaTest();
         shaBlendFunc( GFX_DST_COLOR, GFX_SRC_COLOR);
-        gfxEnableBlend();
-        gfxSetTextureWrapping(GFX_CLAMP,GFX_CLAMP);
-        gfxSetTexCoordArray(&tt.GetShadowMapTC()[0], FALSE);
+        _pGfx->GetInterface()->EnableBlend();
+        _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+        _pGfx->GetInterface()->SetTexCoordArray(&tt.GetShadowMapTC()[0], FALSE);
         _ptrTerrain->tr_tdShadowMap.SetAsCurrent();
-        gfxDrawElements(ctIndices,paiIndices);
+        _pGfx->GetInterface()->DrawElements(ctIndices, paiIndices);
       }
     }
   // if tile is not in highest lod
   } else {
-    gfxSetTextureWrapping(GFX_CLAMP,GFX_CLAMP);
+    _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
     // if tile is in lowest lod
     if(tt.tt_iLod == _ptrTerrain->tr_iMaxTileLod) {
       // use terrains global top map
@@ -1168,30 +1168,30 @@ static void RenderTile(INDEX itt)
 
     // Render tile
     INDEX ctIndices = tt.GetIndices().Count();
-    gfxEnableAlphaTest();
-    gfxDisableBlend();
-    gfxSetVertexArray(pavVertices,ctVertices);
-    gfxSetTexCoordArray(&tt.GetTexCoords()[0], FALSE);
+    _pGfx->GetInterface()->EnableAlphaTest();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->SetVertexArray(pavVertices, ctVertices);
+    _pGfx->GetInterface()->SetTexCoordArray(&tt.GetTexCoords()[0], FALSE);
     FillConstColorArray(ctVertices);
-    gfxSetColorArray(&_acolVtxConstColors[0]);
-    gfxLockArrays();
-    gfxDrawElements(ctIndices,&tt.GetIndices()[0]);
+    _pGfx->GetInterface()->SetColorArray(&_acolVtxConstColors[0]);
+    _pGfx->GetInterface()->LockArrays();
+    _pGfx->GetInterface()->DrawElements(ctIndices, &tt.GetIndices()[0]);
     _ctTris +=ctIndices/2;
-    gfxDisableAlphaTest();
+    _pGfx->GetInterface()->DisableAlphaTest();
 
     // if shadows are visible
     if(_wrpWorldRenderPrefs.wrp_shtShadows!=CWorldRenderPrefs::SHT_NONE) {
-      gfxDepthFunc(GFX_EQUAL);
+      _pGfx->GetInterface()->DepthFunc(GFX_EQUAL);
       INDEX ctIndices = tt.GetIndices().Count();
       INDEX *paiIndices = &tt.GetIndices()[0];
 
-      gfxSetTextureWrapping(GFX_CLAMP,GFX_CLAMP);
-      gfxBlendFunc(GFX_DST_COLOR,GFX_SRC_COLOR);
-      gfxEnableBlend();
-      gfxSetTexCoordArray(&tt.GetShadowMapTC()[0], FALSE);
+      _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+      _pGfx->GetInterface()->BlendFunc(GFX_DST_COLOR, GFX_SRC_COLOR);
+      _pGfx->GetInterface()->EnableBlend();
+      _pGfx->GetInterface()->SetTexCoordArray(&tt.GetShadowMapTC()[0], FALSE);
       _ptrTerrain->tr_tdShadowMap.SetAsCurrent();
-      gfxDrawElements(ctIndices,paiIndices);
-      gfxDepthFunc(GFX_LESS_EQUAL);
+      _pGfx->GetInterface()->DrawElements(ctIndices, paiIndices);
+      _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
     }
   }
 
@@ -1202,7 +1202,7 @@ static void RenderTile(INDEX itt)
     RenderHazeLayer(itt);
   }
 
-  gfxUnlockArrays();
+  _pGfx->GetInterface()->UnlockArrays();
 }
 
 // Draw one quad tree node ( draws terrain tile if leaf node )
@@ -1277,8 +1277,8 @@ void RenderTerrain(void)
   _ptrTerrain->GetAllTerrainBBox(bboxAllTerrain);
   gfxDrawWireBox(bboxAllTerrain,0xFFFF00FF);
   
-  gfxEnableDepthBias();
-  gfxDisableDepthTest();
+  _pGfx->GetInterface()->EnableDepthBias();
+  _pGfx->GetInterface()->DisableDepthTest();
   _pdp->DrawPoint3D(_vHitBegin,0x00FF00FF,8);
   _pdp->DrawPoint3D(_vHitEnd,0xFF0000FF,8);
   _pdp->DrawPoint3D(_vHitExact,0x00FFFF,8);
@@ -1286,8 +1286,8 @@ void RenderTerrain(void)
   _pdp->DrawLine3D(_vHitBegin,FLOAT3D(_vHitEnd(1),_vHitBegin(2),_vHitEnd(3)),0x00FF00FF);
   _pdp->DrawLine3D(FLOAT3D(_vHitBegin(1),_vHitEnd(2),_vHitBegin(3)),_vHitEnd,0xFF0000FF);
   _pdp->DrawLine3D(_vHitBegin,_vHitEnd,0xFFFF00FF);
-  gfxEnableDepthTest();
-  gfxDisableDepthBias();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DisableDepthBias();
 */
 
   //gfxDrawWireBox(_bboxDrawOne,0xFF0000FF);
@@ -1312,13 +1312,13 @@ static void RenderWireTile(INDEX itt)
 
   INDEX ctIndices = tt.GetIndices().Count();
   if(ctIndices>0) {
-    gfxDisableBlend();
-    gfxDisableTexture();
-    gfxSetConstantColor(_colTerrainEdges);
-    gfxSetVertexArray(pavVertices,ctVertices);
-    gfxLockArrays();
-    gfxDrawElements(ctIndices,&tt.GetIndices()[0]);
-    gfxUnlockArrays();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->SetConstantColor(_colTerrainEdges);
+    _pGfx->GetInterface()->SetVertexArray(pavVertices, ctVertices);
+    _pGfx->GetInterface()->LockArrays();
+    _pGfx->GetInterface()->DrawElements(ctIndices, &tt.GetIndices()[0]);
+    _pGfx->GetInterface()->UnlockArrays();
   }
 }
 
@@ -1358,8 +1358,8 @@ static void DrawWireQuadTreeNode(INDEX iqtn)
 void RenderTerrainWire(COLOR &colEdges)
 {
   // set wireframe mode
-  gfxEnableDepthBias();
-  gfxPolygonMode(GFX_LINE);
+  _pGfx->GetInterface()->EnableDepthBias();
+  _pGfx->GetInterface()->PolygonMode(GFX_LINE);
   
   // remember edges color
   _colTerrainEdges = colEdges;
@@ -1371,8 +1371,8 @@ void RenderTerrainWire(COLOR &colEdges)
   DrawWireQuadTreeNode(qtl.qtl_iFirstNode);
 
   // set fill mode
-  gfxDisableDepthBias();
-  gfxPolygonMode(GFX_FILL);
+  _pGfx->GetInterface()->DisableDepthBias();
+  _pGfx->GetInterface()->PolygonMode(GFX_FILL);
 }
 
 // Draw terrain quad tree
@@ -1380,7 +1380,7 @@ void DrawQuadTree(void)
 {
   ASSERT(_ptrTerrain!=NULL);
   QuadTreeLevel &qtl = _ptrTerrain->tr_aqtlQuadTreeLevels[0];
-  gfxDisableTexture();
+  _pGfx->GetInterface()->DisableTexture();
   // for each quad tree node 
   for(INDEX iqtn=qtl.qtl_iFirstNode;iqtn<qtl.qtl_iFirstNode+qtl.qtl_ctNodes;iqtn++) {
     // draw node
@@ -1391,7 +1391,7 @@ void DrawQuadTree(void)
 
 void DrawSelectedVertices(GFXVertex *pavVertices, GFXColor *pacolColors, INDEX ctVertices)
 {
-  gfxEnableDepthBias();
+  _pGfx->GetInterface()->EnableDepthBias();
   // for each vertex
   for(INDEX ivx=0;ivx<ctVertices;ivx++) {
     GFXVertex &vtx = pavVertices[ivx];
@@ -1399,7 +1399,7 @@ void DrawSelectedVertices(GFXVertex *pavVertices, GFXColor *pacolColors, INDEX c
     // draw vertex
     _pdp->DrawPoint3D(FLOAT3D(vtx.x,vtx.y,vtx.z),ByteSwap32(col.abgr),3);
   }
-  gfxDisableDepthBias();
+  _pGfx->GetInterface()->DisableDepthBias();
 }
 
 // TEMP - Draw one AABBox

@@ -263,8 +263,8 @@ SLONG CShadowMap::Uncache( void)
   _bShadowsUpdated = TRUE;
   // discard uploaded portion
   if( sm_ulObject!=NONE) {
-    gfxDeleteTexture(sm_ulObject);
-    gfxDeleteTexture(sm_ulProbeObject);
+    _pGfx->GetInterface()->DeleteTexture(sm_ulObject);
+    _pGfx->GetInterface()->DeleteTexture(sm_ulProbeObject);
     sm_ulInternalFormat = NONE;
   }
   SLONG slFreed = 0;
@@ -512,7 +512,7 @@ void CShadowMap::Prepare(void)
   if( sm_iRenderFrame != _pGfx->gl_iFrameNumber) {
     sm_iRenderFrame = _pGfx->gl_iFrameNumber;
     // determine size and update
-    SLONG slBytes = pixShadowSize * gfxGetFormatPixRatio(sm_ulInternalFormat);
+    SLONG slBytes = pixShadowSize * _pGfx->GetInterface()->GetFormatPixRatio(sm_ulInternalFormat);
     if( !sm_tpLocal.tp_bSingleMipmap) slBytes = slBytes *4/3;
     _sfStats.IncrementCounter( CStatForm::SCI_SHADOWBINDS, 1);
     _sfStats.IncrementCounter( CStatForm::SCI_SHADOWBINDBYTES, slBytes);
@@ -562,7 +562,7 @@ void CShadowMap::SetAsCurrent(void)
   { 
     // generate bind number(s) if needed
     if( sm_ulObject==NONE) {
-      gfxGenerateTexture( sm_ulObject); 
+      _pGfx->GetInterface()->GenerateTexture(sm_ulObject); 
       sm_pixUploadWidth = sm_pixUploadHeight = 0;
       sm_ulInternalFormat = NONE;
     }
@@ -611,10 +611,10 @@ void CShadowMap::SetAsCurrent(void)
     // upload probe (if needed)
     if( bUseProbe) {
       sm_ulFlags |= SMF_PROBED;
-      if( sm_ulProbeObject==NONE) gfxGenerateTexture( sm_ulProbeObject); 
+      if (sm_ulProbeObject == NONE) _pGfx->GetInterface()->GenerateTexture(sm_ulProbeObject); 
       CTexParams tpTmp = sm_tpLocal;
-      gfxSetTexture( sm_ulProbeObject, tpTmp);
-      gfxUploadTexture( pulShadowMap, pixWidth, pixHeight, TS.ts_tfRGB5, FALSE);
+      _pGfx->GetInterface()->SetTexture(sm_ulProbeObject, tpTmp);
+      _pGfx->GetInterface()->UploadTexture(pulShadowMap, pixWidth, pixHeight, TS.ts_tfRGB5, FALSE);
     } else {
       // upload shadow in required format and size
       if( sm_ulFlags&SMF_PROBED) { // cannot subimage shadowmap that has been probed
@@ -625,8 +625,8 @@ void CShadowMap::SetAsCurrent(void)
       extern INDEX tex_bColorizeMipmaps;
       if( tex_bColorizeMipmaps && pixWidth>1 && pixHeight>1) ColorizeMipmaps( 1, pulShadowMap, pixWidth, pixHeight);
       MarkDrawn(); // mark that shadowmap has been referenced
-      gfxSetTexture( sm_ulObject, sm_tpLocal);
-      gfxUploadTexture( pulShadowMap, pixWidth, pixHeight, ulInternalFormat, bUseSubImage);
+      _pGfx->GetInterface()->SetTexture(sm_ulObject, sm_tpLocal);
+      _pGfx->GetInterface()->UploadTexture(pulShadowMap, pixWidth, pixHeight, ulInternalFormat, bUseSubImage);
     }
     // paranoid android
     ASSERT( sm_iFirstCachedMipLevel<31 && sm_pulCachedShadowMap!=NULL);
@@ -636,12 +636,12 @@ void CShadowMap::SetAsCurrent(void)
   // set corresponding probe or texture frame as current
   if( bUseProbe && sm_ulProbeObject!=NONE && (_pGfx->gl_slAllowedUploadBurst<0 || (sm_ulFlags&SMF_PROBED))) {  
     CTexParams tpTmp = sm_tpLocal;
-    gfxSetTexture( sm_ulProbeObject, tpTmp);
+    _pGfx->GetInterface()->SetTexture(sm_ulProbeObject, tpTmp);
     return;
   } 
 
   // set non-probe shadowmap and mark that this shadowmap has been drawn
-  gfxSetTexture( sm_ulObject, sm_tpLocal);
+  _pGfx->GetInterface()->SetTexture(sm_ulObject, sm_tpLocal);
   MarkDrawn();
 }
 
@@ -668,7 +668,7 @@ BOOL CShadowMap::GetUsedMemory( SLONG &slStaticSize, SLONG &slDynamicSize, SLONG
   if( pixMemoryUsed==0) return bFlat; // done if no memory is used
 
   if( sm_ulObject!=NONE) {
-    slUploadSize = gfxGetTexturePixRatio(sm_ulObject);
+    slUploadSize = _pGfx->GetInterface()->GetTexturePixRatio(sm_ulObject);
     if( !bFlat || slDynamicSize!=0) slUploadSize *= pixMemoryUsed;
   }
   

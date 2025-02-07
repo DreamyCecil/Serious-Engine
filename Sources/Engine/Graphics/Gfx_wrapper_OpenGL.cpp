@@ -1264,7 +1264,7 @@ void IGfxOpenGL::Fill(PIX pixX0, PIX pixY0, PIX pixX1, PIX pixY1, COLOR col, con
 // Fill a part of the drawport with four corner colors with blending
 void IGfxOpenGL::Fill(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR colUL, COLOR colUR, COLOR colDL, COLOR colDR) {
   // thru OpenGL
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
 
   GFXVertex   *pvtx = _avtxCommon.Push(4);
   GFXTexCoord *ptex = _atexCommon.Push(4);
@@ -1296,7 +1296,7 @@ void IGfxOpenGL::Fill(FLOAT fX0, FLOAT fY0, FLOAT fX1, FLOAT fY1, COLOR colUL, C
   pvtx[3].z = 0;
   pcol[3] = glcolUR;
 
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
 };
 
 // Fill the entire drawport with a given color without blending

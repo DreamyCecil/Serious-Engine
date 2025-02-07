@@ -80,7 +80,7 @@ void BeginModelRenderingView( CAnyProjection3D &prProjection, CDrawPort *pdp)
   if( ogl_bTruformLinearNormals) ogl_bTruformLinearNormals = 1;
   if( gap_bForceTruform) {
     gap_bForceTruform = 1;
-    gfxSetTruform( _pGfx->gl_iTessellationLevel, ogl_bTruformLinearNormals);
+    _pGfx->GetInterface()->SetTruform(_pGfx->gl_iTessellationLevel, ogl_bTruformLinearNormals);
   }
 #endif
 }
@@ -93,7 +93,7 @@ void EndModelRenderingView( BOOL bRestoreOrtho/*=TRUE*/)
   ASSERT( GetFPUPrecision()==FPT_24BIT);
   SetFPUPrecision(_fpuOldPrecision);
   // restore front face direction
-  gfxFrontFace(GFX_CCW);
+  _pGfx->GetInterface()->FrontFace(GFX_CCW);
   // render all batched shadows
   extern void RenderBatchedSimpleShadows_View(void);
   RenderBatchedSimpleShadows_View();
@@ -102,8 +102,10 @@ void EndModelRenderingView( BOOL bRestoreOrtho/*=TRUE*/)
   _iRenderingType = 0;
   _pdp = NULL;
   // eventually disable re-enable clipping
-  gfxEnableClipping();
-  if( _aprProjection->pr_bMirror || _aprProjection->pr_bWarp) gfxEnableClipPlane();
+  _pGfx->GetInterface()->EnableClipping();
+  if (_aprProjection->pr_bMirror || _aprProjection->pr_bWarp) {
+    _pGfx->GetInterface()->EnableClipPlane();
+  }
 }
 
 
@@ -187,14 +189,20 @@ void CRenderModel::SetModelView(void)
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_SETMODELVIEW);
 
   // adjust clipping to frustum
-  if( rm_ulFlags & RMF_INSIDE) gfxDisableClipping();
-  else gfxEnableClipping();
+  if (rm_ulFlags & RMF_INSIDE) {
+    _pGfx->GetInterface()->DisableClipping();
+  } else {
+    _pGfx->GetInterface()->EnableClipping();
+  }
 
   // adjust clipping to mirror-plane (if any)
   extern INDEX gap_iOptimizeClipping;
   if( gap_iOptimizeClipping>0 && (_aprProjection->pr_bMirror || _aprProjection->pr_bWarp)) {
-    if( rm_ulFlags & RMF_INMIRROR) gfxDisableClipPlane();
-    else gfxEnableClipPlane();
+    if (rm_ulFlags & RMF_INMIRROR) {
+      _pGfx->GetInterface()->DisableClipPlane();
+    } else {
+      _pGfx->GetInterface()->EnableClipPlane();
+    }
   }
 
   // make transform matrix 
@@ -205,7 +213,7 @@ void CRenderModel::SetModelView(void)
   glm[1] = m(2,1);  glm[5] = m(2,2);  glm[ 9] = m(2,3);  glm[13] = v(2);
   glm[2] = m(3,1);  glm[6] = m(3,2);  glm[10] = m(3,3);  glm[14] = v(3);
   glm[3] = 0;       glm[7] = 0;       glm[11] = 0;       glm[15] = 1;
-  gfxSetViewMatrix(glm);
+  _pGfx->GetInterface()->SetViewMatrix(glm);
 
   // all done
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_SETMODELVIEW);
@@ -418,11 +426,11 @@ static void RenderWireframeBox( FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
   if (_pGfx->GetCurrentAPI() != GAT_OGL) return;
 
   // prepare wireframe OpenGL settings
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableBlend();
-  gfxDisableAlphaTest();
-  gfxDisableTexture();
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableTexture();
   // fill vertex array so it represents bounding box
   FLOAT3D vBoxVtxs[8];
   vBoxVtxs[0] = FLOAT3D( vMinVtx(1), vMinVtx(2), vMinVtx(3));

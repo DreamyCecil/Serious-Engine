@@ -1057,7 +1057,7 @@ void IGfxD3D8::SetTextureModulation( INDEX iScale)
 
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
-  // set only if texturing is enabled - will be auto-set at gfxEnableTexture
+  // set only if texturing is enabled - will be auto-set at IGfxInterface::EnableTexture
   if( GFX_abTexture[GFX_iActiveTexUnit]) {
     D3DTEXTUREOP d3dTexOp = (iScale==2) ? D3DTOP_MODULATE2X : D3DTOP_MODULATE;
     hr = _pGfx->gl_pd3dDevice->SetTextureStageState( GFX_iActiveTexUnit, D3DTSS_COLOROP, d3dTexOp);
@@ -1189,10 +1189,10 @@ void IGfxD3D8::DrawElements( INDEX ctElem, INDEX *pidx)
 // Set viewport limits from a drawport
 void IGfxD3D8::SetViewport(const CDrawPort *pdp) {
   // set viewport
-  const PIX pixMinSI = pdp->dp_ScissorMinI;
-  const PIX pixMaxSI = pdp->dp_ScissorMaxI;
-  const PIX pixMinSJ = pdp->dp_ScissorMinJ;
-  const PIX pixMaxSJ = pdp->dp_ScissorMaxJ;
+  const DWORD pixMinSI = (DWORD)pdp->dp_ScissorMinI;
+  const DWORD pixMaxSI = (DWORD)pdp->dp_ScissorMaxI;
+  const DWORD pixMinSJ = (DWORD)pdp->dp_ScissorMinJ;
+  const DWORD pixMaxSJ = (DWORD)pdp->dp_ScissorMaxJ;
 
   D3DVIEWPORT8 d3dViewPort = { pixMinSI, pixMinSJ, pixMaxSI - pixMinSI + 1, pixMaxSJ - pixMinSJ + 1, 0, 1 };
   HRESULT hr = _pGfx->gl_pd3dDevice->SetViewport(&d3dViewPort);
@@ -1267,16 +1267,16 @@ void IGfxD3D8::UpdateDepthPointsVisibility(const CDrawPort *pdp, INDEX iMirrorLe
 
   // prepare to draw little triangles there with slightly adjusted colors
   _sfStats.StopTimer(CStatForm::STI_GFXAPI);
-  gfxEnableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableBlend();
-  gfxDisableAlphaTest();
-  gfxDisableTexture();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableTexture();
   _sfStats.StartTimer(CStatForm::STI_GFXAPI);
 
   // prepare array and shader
   avtxDelayed.Push(ctCount * 3);
-  d3dSetVertexShader(D3DFVF_CTVERTEX);
+  SetVertexShader(D3DFVF_CTVERTEX);
 
   // draw one trianle around each depth point
   INDEX ctVertex = 0;
@@ -1378,7 +1378,7 @@ void IGfxD3D8::LockArrays(void)
 }
 
 // Set D3D vertex shader only if it has changed since last time
-void IGfxInterface::SetVertexShader( DWORD dwHandle)
+void IGfxD3D8::SetVertexShader(DWORD dwHandle)
 {
   if( _pGfx->gl_dwVertexShader==dwHandle) return;
   HRESULT hr = _pGfx->gl_pd3dDevice->SetVertexShader(dwHandle);
@@ -1568,7 +1568,7 @@ void IGfxD3D8::GrabScreen(CImageInfo &iiOutput, const CDrawPort *pdpInput, BOOL 
   D3D_CHECKERROR(hr);
 
   pBackBuffer->GetDesc(&surfDesc);
-  ASSERT(surfDesc.Width == dp_Raster->ra_Width && surfDesc.Height == dp_Raster->ra_Height);
+  ASSERT(surfDesc.Width == pdpInput->dp_Raster->ra_Width && surfDesc.Height == pdpInput->dp_Raster->ra_Height);
 
   const RECT rectToLock = { pdpInput->dp_MinI, pdpInput->dp_MinJ, pdpInput->dp_MaxI + 1, pdpInput->dp_MaxJ + 1 };
   hr = pBackBuffer->LockRect(&rectLocked, &rectToLock, D3DLOCK_READONLY);

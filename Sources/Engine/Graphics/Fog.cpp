@@ -316,10 +316,10 @@ void StartFog( CFogParameters &fp, const FLOAT3D &vViewPosAbs, const FLOATmatrix
     _fog_ulFormat = ulFormat;
     bNoDiscard = FALSE;
   } // set'n'upload
-  gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-  gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
-  gfxUploadTexture( (ULONG*)(_fog_pubTable + _fog_pixSizeL*_fog_pixSizeH),
-                   _fog_pixSizeL, _fog_pixSizeH, ulFormat, bNoDiscard);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+  _pGfx->GetInterface()->SetTexture(_fog_ulTexture, _fog_tpLocal);
+  _pGfx->GetInterface()->UploadTexture((ULONG *)(_fog_pubTable + _fog_pixSizeL*_fog_pixSizeH),
+    _fog_pixSizeL, _fog_pixSizeH, ulFormat, bNoDiscard);
 }
 
 
@@ -417,9 +417,9 @@ void StartHaze( CHazeParameters &hp,
     _haze_ulFormat = ulFormat;
     bNoDiscard = FALSE;
   } // set'n'upload
-  gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-  gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
-  gfxUploadTexture( (ULONG*)(_haze_pubTable + _haze_pixSize*1), _haze_pixSize, 1, ulFormat, bNoDiscard);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+  _pGfx->GetInterface()->SetTexture(_haze_ulTexture, _haze_tpLocal);
+  _pGfx->GetInterface()->UploadTexture((ULONG *)(_haze_pubTable + _haze_pixSize*1), _haze_pixSize, 1, ulFormat, bNoDiscard);
 }
 
 

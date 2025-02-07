@@ -717,12 +717,12 @@ void RM_SetShaderParamsAdjustCallback(void (*pAdjustShaderParams)(void *pData, I
 // show gound for ska studio
 void RM_RenderGround(CTextureObject &to)
 {
-  gfxSetConstantColor(0xFFFFFFFF);
-  gfxEnableDepthTest();
-  gfxEnableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxDisableBlend();
-  gfxCullFace(GFX_NONE);
+  _pGfx->GetInterface()->SetConstantColor(0xFFFFFFFF);
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->EnableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->CullFace(GFX_NONE);
   CTextureData *ptd = (CTextureData *)to.GetData();
   ptd->SetAsCurrent();
 
@@ -749,16 +749,16 @@ void RM_RenderGround(CTextureObject &to)
   aiIndices[0] = 0; aiIndices[1] = 2; aiIndices[2] = 1;
   aiIndices[3] = 0; aiIndices[4] = 3; aiIndices[5] = 2;
 
-  gfxSetVertexArray(vBoxVtxs,4);
-  gfxSetTexCoordArray(tcBoxTex, FALSE);
-  gfxDrawElements(6,aiIndices);
+  _pGfx->GetInterface()->SetVertexArray(vBoxVtxs, 4);
+  _pGfx->GetInterface()->SetTexCoordArray(tcBoxTex, FALSE);
+  _pGfx->GetInterface()->DrawElements(6, aiIndices);
 }
 
 // render wirerame bounding box
 static void RenderWireframeBox(FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
 {
   // prepare wireframe settings
-  gfxDisableTexture();
+  _pGfx->GetInterface()->DisableTexture();
   // fill vertex array so it represents bounding box
   FLOAT3D vBoxVtxs[8];
   vBoxVtxs[0] = FLOAT3D( vMinVtx(1), vMinVtx(2), vMinVtx(3));
@@ -793,13 +793,13 @@ static void RenderWireframeBox(FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
 static void RenderBox(FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
 {
   // prepare settings
-  gfxDisableTexture();
-  gfxEnableBlend();
-  gfxBlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxCullFace(GFX_NONE);
-  gfxDisableDepthWrite();
+  _pGfx->GetInterface()->DisableTexture();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->CullFace(GFX_NONE);
+  _pGfx->GetInterface()->DisableDepthWrite();
 
-  gfxSetConstantColor(col);
+  _pGfx->GetInterface()->SetConstantColor(col);
   // fill vertex array so it represents bounding box
   GFXVertex vBoxVtxs[8];
   vBoxVtxs[0].x = vMinVtx(1); vBoxVtxs[0].y = vMaxVtx(2); vBoxVtxs[0].z = vMinVtx(3);
@@ -829,29 +829,29 @@ static void RenderBox(FLOAT3D vMinVtx, FLOAT3D vMaxVtx, COLOR col)
   aiIndices[30] = 4; aiIndices[31] = 5; aiIndices[32] = 7;
   aiIndices[33] = 6; aiIndices[34] = 4; aiIndices[35] = 7;
 
-  gfxSetVertexArray(vBoxVtxs,8);
-  gfxDrawElements(36,aiIndices);
+  _pGfx->GetInterface()->SetVertexArray(vBoxVtxs, 8);
+  _pGfx->GetInterface()->DrawElements(36, aiIndices);
 
-  gfxDisableBlend();
-  gfxEnableDepthTest();
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->EnableDepthTest();
 
   RenderWireframeBox(vMinVtx,vMaxVtx,C_BLACK|CT_OPAQUE);
-  gfxEnableDepthWrite();
-  gfxDisableDepthBias();
+  _pGfx->GetInterface()->EnableDepthWrite();
+  _pGfx->GetInterface()->DisableDepthBias();
 }
 
 // render bounding box on screen
 void RM_RenderColisionBox(CModelInstance &mi,ColisionBox &cb, COLOR col)
 {
   //ColisionBox &cb = mi.GetColisionBox(icb);
-  gfxSetViewMatrix(NULL);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
   if(RM_GetFlags() & RMF_WIREFRAME) {
     RenderWireframeBox(cb.Min(),cb.Max(),col|CT_OPAQUE);
   } else {
-    gfxEnableBlend();
-    gfxBlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
     RenderBox(cb.Min(),cb.Max(),col|0x7F);
-    gfxDisableBlend();
+    _pGfx->GetInterface()->DisableBlend();
   }
 }
 
@@ -898,7 +898,7 @@ static void RenderNormals()
   // only if rendering to view
   if( _iRenderingType!=1) return;
 
-  gfxDisableTexture();
+  _pGfx->GetInterface()->DisableTexture();
   INDEX ctNormals = _aFinalNormals.Count();
   for(INDEX ivx=0;ivx<ctNormals;ivx++)
   {
@@ -951,8 +951,8 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
 
   CalculateRenderingData(mi);
 
-  gfxEnableBlend();
-  gfxEnableDepthTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->EnableDepthTest();
 
   INDEX iBoneIndex = -1; // index of selected bone in renbone array
   INDEX iWeightIndex = -1; // index of weight that have same id as bone
@@ -1054,13 +1054,13 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
   
   // draw bone
   if(iBoneIndex>=0) {
-    gfxSetViewMatrix(NULL);
-    gfxDisableDepthTest();
+    _pGfx->GetInterface()->SetViewMatrix(NULL);
+    _pGfx->GetInterface()->DisableDepthTest();
     // show bone in yellow color
     RenderBone(_aRenBones[iBoneIndex],0xFFFF00FF);
   }
 
-  gfxDisableBlend();
+  _pGfx->GetInterface()->DisableBlend();
   aiRenModelIndices.Clear();
   aiRenMeshIndices.Clear();     
   ClearRenArrays();
@@ -1069,7 +1069,7 @@ void RM_RenderBone(CModelInstance &mi,INDEX iBoneID)
 // render skeleton hierarchy
 static void RenderSkeleton(void)
 {
-  gfxSetViewMatrix(NULL);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
   // for each bone, except the dummy one
   for(int irb=1; irb<_aRenBones.Count(); irb++)
   {
@@ -1127,7 +1127,7 @@ static void RenderActiveBones(RenModel &rm)
 
 static void RenderActiveBones(void)
 {
-  gfxSetViewMatrix(NULL);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
   // for each renmodel
   INDEX ctrm = _aRenModels.Count();
   for (INDEX irm = 0; irm < ctrm; irm++) {
@@ -1431,8 +1431,11 @@ void RM_SetObjectMatrices(CModelInstance &mi)
   ULONG ulFlags = RM_GetRenderFlags();
 
   // adjust clipping to frustum
-  if( ulFlags & SRMF_INSIDE) gfxDisableClipping();
-  else gfxEnableClipping();
+  if (ulFlags & SRMF_INSIDE) {
+    _pGfx->GetInterface()->DisableClipping();
+  } else {
+    _pGfx->GetInterface()->EnableClipping();
+  }
 
   // adjust clipping to mirror-plane (if any)
   extern INDEX gap_iOptimizeClipping;
@@ -1440,11 +1443,11 @@ void RM_SetObjectMatrices(CModelInstance &mi)
 	if((CProjection3D *)_aprProjection != NULL) {
 		if( gap_iOptimizeClipping>0 && (_aprProjection->pr_bMirror || _aprProjection->pr_bWarp)) {
 			if( ulFlags & SRMF_INMIRROR) {
-				gfxDisableClipPlane();
-				gfxFrontFace( GFX_CCW);
+				_pGfx->GetInterface()->DisableClipPlane();
+				_pGfx->GetInterface()->FrontFace(GFX_CCW);
 			} else {
-				gfxEnableClipPlane();
-				gfxFrontFace( GFX_CW);
+				_pGfx->GetInterface()->EnableClipPlane();
+				_pGfx->GetInterface()->FrontFace(GFX_CW);
 			}
 		}
 	}
@@ -2294,7 +2297,7 @@ static void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod)
     // set flag that mesh is in view space
     rmsh.rmsh_bTransToViewSpace = TRUE;
     // reset view matrix bacause model is allready transformed in view space
-    gfxSetViewMatrix(NULL);
+    _pGfx->GetInterface()->SetViewMatrix(NULL);
   // if no skeleton
   } else {
     // if flag is set to transform all vertices to view space
@@ -2332,7 +2335,7 @@ static void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod)
       // set flag that mesh is in view space
       rmsh.rmsh_bTransToViewSpace = TRUE;
       // reset view matrix bacause model is allready transformed in view space
-      gfxSetViewMatrix(NULL);
+      _pGfx->GetInterface()->SetViewMatrix(NULL);
     // leave vertices in obj space
     } else {
       Matrix12 &m12 = _aRenModels[rmsh.rmsh_iRenModelIndex].rm_mStrTransform;
@@ -2344,7 +2347,7 @@ static void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod)
       gfxm[ 4] = m12[ 1];  gfxm[ 5] = m12[ 5];  gfxm[ 6] = m12[ 9];  gfxm[ 7] = 0;
       gfxm[ 8] = m12[ 2];  gfxm[ 9] = m12[ 6];  gfxm[10] = m12[10];  gfxm[11] = 0;
       gfxm[12] = m12[ 3];  gfxm[13] = m12[ 7];  gfxm[14] = m12[11];  gfxm[15] = 1;
-      gfxSetViewMatrix(gfxm);
+      _pGfx->GetInterface()->SetViewMatrix(gfxm);
 
       RenModel &rm = _aRenModels[rmsh.rmsh_iRenModelIndex];
       RenBone &rb = _aRenBones[rm.rm_iParentBoneIndex];
@@ -2499,11 +2502,11 @@ void RM_RenderSKA(CModelInstance &mi)
 
   // if render wireframe is requested
   if(RM_GetFlags() & RMF_WIREFRAME) {
-    gfxDisableTexture();
-    
+    _pGfx->GetInterface()->DisableTexture();
+
     // set polygon offset
-    gfxPolygonMode(GFX_LINE);
-    gfxEnableDepthBias();
+    _pGfx->GetInterface()->PolygonMode(GFX_LINE);
+    _pGfx->GetInterface()->EnableDepthBias();
 
     // for each ren model 
     INDEX ctrmsh = _aRenModels.Count();
@@ -2515,8 +2518,8 @@ void RM_RenderSKA(CModelInstance &mi)
     }
 
     // restore polygon offset
-    gfxDisableDepthBias();
-    gfxPolygonMode(GFX_FILL);
+    _pGfx->GetInterface()->DisableDepthBias();
+    _pGfx->GetInterface()->PolygonMode(GFX_FILL);
   }
 
   extern INDEX ska_bShowColision;
@@ -2524,19 +2527,19 @@ void RM_RenderSKA(CModelInstance &mi)
 
   // show skeleton
   if(ska_bShowSkeleton || RM_GetFlags() & RMF_SHOWSKELETON) {
-    gfxDisableTexture();
-    gfxDisableDepthTest();
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->DisableDepthTest();
     // render skeleton
     RenderSkeleton();
-    gfxEnableDepthTest();
+    _pGfx->GetInterface()->EnableDepthTest();
   }
   #pragma message(">> Add ska_bShowActiveBones")
   if(/*ska_bShowActiveBones || */ RM_GetFlags() & RMF_SHOWACTIVEBONES) {
-    gfxDisableTexture();
-    gfxDisableDepthTest();
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->DisableDepthTest();
     // render only active bones
     RenderActiveBones();
-    gfxEnableDepthTest();
+    _pGfx->GetInterface()->EnableDepthTest();
   }
 
   // show root model instance colision box

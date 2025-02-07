@@ -233,9 +233,6 @@ class IGfxInterface
     virtual void SetTruform(const INDEX iLevel, BOOL bLinearNormals);
   #endif
 
-    // Set D3D vertex shader only if it has changed since last time
-    void SetVertexShader(DWORD dwHandle);
-
   // Drawing methods
   public:
 
@@ -272,74 +269,5 @@ class IGfxInterface
     // Save drawport pixels as an image
     virtual void GrabScreen(class CImageInfo &iiOutput, const CDrawPort *pdpInput, BOOL bGrabDepth) = 0;
 };
-
-// Method compatibility
-#define gfxEnableDepthWrite     _pGfx->GetInterface()->EnableDepthWrite
-#define gfxEnableDepthBias      _pGfx->GetInterface()->EnableDepthBias
-#define gfxEnableDepthTest      _pGfx->GetInterface()->EnableDepthTest
-#define gfxEnableAlphaTest      _pGfx->GetInterface()->EnableAlphaTest
-#define gfxEnableBlend          _pGfx->GetInterface()->EnableBlend
-#define gfxEnableDither         _pGfx->GetInterface()->EnableDither
-#define gfxEnableTexture        _pGfx->GetInterface()->EnableTexture
-#define gfxEnableClipping       _pGfx->GetInterface()->EnableClipping
-#define gfxEnableClipPlane      _pGfx->GetInterface()->EnableClipPlane
-#define gfxDisableDepthWrite    _pGfx->GetInterface()->DisableDepthWrite
-#define gfxDisableDepthBias     _pGfx->GetInterface()->DisableDepthBias
-#define gfxDisableDepthTest     _pGfx->GetInterface()->DisableDepthTest
-#define gfxDisableAlphaTest     _pGfx->GetInterface()->DisableAlphaTest
-#define gfxDisableBlend         _pGfx->GetInterface()->DisableBlend
-#define gfxDisableDither        _pGfx->GetInterface()->DisableDither
-#define gfxDisableTexture       _pGfx->GetInterface()->DisableTexture
-#define gfxDisableClipping      _pGfx->GetInterface()->DisableClipping
-#define gfxDisableClipPlane     _pGfx->GetInterface()->DisableClipPlane
-#define gfxBlendFunc            _pGfx->GetInterface()->BlendFunc
-#define gfxDepthFunc            _pGfx->GetInterface()->DepthFunc
-#define gfxDepthRange           _pGfx->GetInterface()->DepthRange
-#define gfxSetColorMask         _pGfx->GetInterface()->SetColorMask
-#define gfxGetColorMask         _pGfx->GetInterface()->GetColorMask
-#define gfxCullFace             _pGfx->GetInterface()->CullFace
-#define gfxFrontFace            _pGfx->GetInterface()->FrontFace
-#define gfxClipPlane            _pGfx->GetInterface()->ClipPlane
-#define gfxSetOrtho             _pGfx->GetInterface()->SetOrtho
-#define gfxSetFrustum           _pGfx->GetInterface()->SetFrustum
-#define gfxSetViewMatrix        _pGfx->GetInterface()->SetViewMatrix
-#define gfxSetTextureMatrix     _pGfx->GetInterface()->SetTextureMatrix
-#define gfxPolygonMode          _pGfx->GetInterface()->PolygonMode
-#define gfxGetTextureFiltering  _pGfx->GetInterface()->GetTextureFiltering
-#define gfxSetTextureFiltering  _pGfx->GetInterface()->SetTextureFiltering
-#define gfxSetTextureBiasing    _pGfx->GetInterface()->SetTextureBiasing
-#define gfxSetTextureWrapping   _pGfx->GetInterface()->SetTextureWrapping
-#define gfxSetTextureModulation _pGfx->GetInterface()->SetTextureModulation
-#define gfxSetTextureUnit       _pGfx->GetInterface()->SetTextureUnit
-#define gfxGenerateTexture      _pGfx->GetInterface()->GenerateTexture
-#define gfxDeleteTexture        _pGfx->GetInterface()->DeleteTexture
-#define gfxSetTexture           _pGfx->GetInterface()->SetTexture
-#define gfxUploadTexture        _pGfx->GetInterface()->UploadTexture
-#define gfxGetTextureSize       _pGfx->GetInterface()->GetTextureSize
-#define gfxGetTexturePixRatio   _pGfx->GetInterface()->GetTexturePixRatio
-#define gfxGetFormatPixRatio    _pGfx->GetInterface()->GetFormatPixRatio
-#define gfxSetVertexArray       _pGfx->GetInterface()->SetVertexArray
-#define gfxSetTexCoordArray     _pGfx->GetInterface()->SetTexCoordArray
-#define gfxSetColorArray        _pGfx->GetInterface()->SetColorArray
-#define gfxDrawElements         _pGfx->GetInterface()->DrawElements
-#define gfxSetConstantColor     _pGfx->GetInterface()->SetConstantColor
-#define gfxEnableColorArray     _pGfx->GetInterface()->EnableColorArray
-#define gfxDisableColorArray    _pGfx->GetInterface()->DisableColorArray
-#define gfxFinish               _pGfx->GetInterface()->Finish
-#define gfxLockArrays           _pGfx->GetInterface()->LockArrays
-#define gfxUnlockArrays         _pGfx->GetInterface()->UnlockArrays
-#define gfxResetArrays          _pGfx->GetInterface()->ResetArrays
-#define gfxFlushElements        _pGfx->GetInterface()->FlushElements
-#define gfxFlushQuads           _pGfx->GetInterface()->FlushQuads
-
-// Truform
-#if SE1_TRUFORM
-#define gfxEnableTruform        _pGfx->GetInterface()->EnableTruform
-#define gfxDisableTruform       _pGfx->GetInterface()->DisableTruform
-#define gfxSetTruform           _pGfx->GetInterface()->SetTruform
-#define gfxSetNormalArray       _pGfx->GetInterface()->SetNormalArray
-#endif
-
-#define d3dSetVertexShader      _pGfx->GetInterface()->SetVertexShader
 
 #endif // include-once check

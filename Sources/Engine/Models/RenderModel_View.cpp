@@ -123,8 +123,11 @@ static __forceinline void SetCurrentTexture( CTextureData *ptd, INDEX iFrame)
 {
   _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_SETTEXTURE);
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_SETTEXTURE);
-  if( ptd==NULL || _bFlatFill) gfxDisableTexture();
-  else ptd->SetAsCurrent(iFrame);
+  if (ptd == NULL || _bFlatFill) {
+    _pGfx->GetInterface()->DisableTexture();
+  } else {
+    ptd->SetAsCurrent(iFrame);
+  }
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_SETTEXTURE);
 }
 
@@ -619,7 +622,7 @@ static void DrawStrips( const INDEX ct, const INDEX *pai)
 {
   // set strip color
   pglDisableClientState( GL_COLOR_ARRAY);
-  gfxDisableTexture();
+  _pGfx->GetInterface()->DisableTexture();
   SetCol();
 
   // render elements as strips
@@ -797,15 +800,15 @@ static void FlushElements( INDEX ctElem, INDEX *pai)
     _pfModelProfile.StartTimer( CModelProfile::PTI_VIEW_DRAWELEMENTS);
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_DRAWELEMENTS, ctElem/3);
     _pGfx->gl_ctModelTriangles += ctElem/3;
-    gfxDrawElements( ctElem, pai);
+    _pGfx->GetInterface()->DrawElements(ctElem, pai);
     extern INDEX mdl_bShowTriangles;
     if( _bMultiPlayer) mdl_bShowTriangles = 0; // don't allow in multiplayer mode!
     if( mdl_bShowTriangles) {
-      gfxSetConstantColor(C_YELLOW|222); // this also disables color array
-      gfxPolygonMode(GFX_LINE);
-      gfxDrawElements( ctElem, pai);
-      gfxPolygonMode(GFX_FILL);
-      gfxEnableColorArray(); // need to re-enable color array
+      _pGfx->GetInterface()->SetConstantColor(C_YELLOW|222); // this also disables color array
+      _pGfx->GetInterface()->PolygonMode(GFX_LINE);
+      _pGfx->GetInterface()->DrawElements(ctElem, pai);
+      _pGfx->GetInterface()->PolygonMode(GFX_FILL);
+      _pGfx->GetInterface()->EnableColorArray(); // need to re-enable color array
     } // done
     _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_DRAWELEMENTS);
   }
@@ -824,38 +827,38 @@ static void SetRenderingParameters( SurfaceTranslucencyType stt, BOOL bHasBump)
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_ONESIDE_GLSETUP);
 
   if( stt==STT_TRANSLUCENT || (_bForceTranslucency && ((stt==STT_OPAQUE) || (stt==STT_TRANSPARENT)))) {
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxDisableAlphaTest();
-    gfxDisableDepthWrite();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->DisableDepthWrite();
   } else if( stt==STT_OPAQUE) {
-    gfxDisableAlphaTest();
+    _pGfx->GetInterface()->DisableAlphaTest();
     /*
-    gfxDisableBlend();
-    gfxEnableDepthWrite();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->EnableDepthWrite();
     */
     if( bHasBump) {
-      gfxEnableBlend();
-      gfxBlendFunc( GFX_DST_COLOR, GFX_SRC_COLOR);
-      gfxDisableDepthWrite();
+      _pGfx->GetInterface()->EnableBlend();
+      _pGfx->GetInterface()->BlendFunc(GFX_DST_COLOR, GFX_SRC_COLOR);
+      _pGfx->GetInterface()->DisableDepthWrite();
     } else {
-      gfxDisableBlend();
-      gfxEnableDepthWrite();
+      _pGfx->GetInterface()->DisableBlend();
+      _pGfx->GetInterface()->EnableDepthWrite();
     }
   } else if( stt==STT_TRANSPARENT) {
-    gfxDisableBlend();
-    gfxEnableAlphaTest();
-    gfxEnableDepthWrite();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->EnableAlphaTest();
+    _pGfx->GetInterface()->EnableDepthWrite();
   } else if( stt==STT_ADD) {
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_ONE);
-    gfxDisableAlphaTest();
-    gfxDisableDepthWrite();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_ONE);
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->DisableDepthWrite();
   } else if( stt==STT_MULTIPLY) {
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_ZERO, GFX_INV_SRC_COLOR);
-    gfxDisableAlphaTest();
-    gfxDisableDepthWrite();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_ZERO, GFX_INV_SRC_COLOR);
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->DisableDepthWrite();
   } else {
     ASSERTALWAYS( "Unsupported model rendering mode.");
   }
@@ -876,8 +879,12 @@ static void RenderOneSide( CRenderModel &rm, BOOL bBackSide, ULONG ulLayerFlags)
     if( !(_ulMipLayerFlags&SRF_DOUBLESIDED)) {
       _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_ONESIDE);
       return;
-    } else gfxCullFace(GFX_FRONT);
-  } else gfxCullFace(GFX_BACK);
+    } else {
+      _pGfx->GetInterface()->CullFace(GFX_FRONT);
+    }
+  } else {
+    _pGfx->GetInterface()->CullFace(GFX_BACK);
+  }
 
   // start with invalid rendering parameters
   SurfaceTranslucencyType sttLast = STT_INVALID;
@@ -940,14 +947,14 @@ static void RenderColors( CRenderModel &rm)
   _icol = 0;
 
   // parameters
-  gfxCullFace(GFX_BACK);
-  gfxDisableBlend();
-  gfxDisableAlphaTest();
-  gfxDisableTexture();
-  gfxEnableDepthWrite();
+  _pGfx->GetInterface()->CullFace(GFX_BACK);
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableTexture();
+  _pGfx->GetInterface()->EnableDepthWrite();
 
-  gfxSetVertexArray( &_avtxSrfBase[0], _avtxSrfBase.Count());
-  gfxSetColorArray(  &_acolSrfBase[0]);
+  _pGfx->GetInterface()->SetVertexArray(&_avtxSrfBase[0], _avtxSrfBase.Count());
+  _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
 
   // for each surface in current mip model
   INDEX iStartElem=0;
@@ -993,14 +1000,14 @@ static void RenderWireframe(CRenderModel &rm)
   _icol = 0;
 
   // parameters
-  gfxPolygonMode(GFX_LINE);
-  gfxDisableBlend();
-  gfxDisableAlphaTest();
-  gfxDisableTexture();
-  gfxDisableDepthTest();
+  _pGfx->GetInterface()->PolygonMode(GFX_LINE);
+  _pGfx->GetInterface()->DisableBlend();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableTexture();
+  _pGfx->GetInterface()->DisableDepthTest();
 
-  gfxSetVertexArray( &_avtxSrfBase[0], _avtxSrfBase.Count());
-  gfxSetColorArray(  &_acolSrfBase[0]);
+  _pGfx->GetInterface()->SetVertexArray(&_avtxSrfBase[0], _avtxSrfBase.Count());
+  _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
 
   COLOR colWire = _mrpModelRenderPrefs.GetInkColor()|CT_OPAQUE;
   ModelMipInfo &mmi = *rm.rm_pmmiMip;
@@ -1008,7 +1015,7 @@ static void RenderWireframe(CRenderModel &rm)
   // first, render hidden lines (if required)
   if( rm.rm_rtRenderType&RT_HIDDEN_LINES)
   {
-    gfxCullFace(GFX_FRONT);
+    _pGfx->GetInterface()->CullFace(GFX_FRONT);
     INDEX iStartElem=0;
     INDEX ctElements=0;
     // for each surface in current mip model
@@ -1028,12 +1035,12 @@ static void RenderWireframe(CRenderModel &rm)
     }
     // all done
     if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
-    gfxCullFace(GFX_BACK);
+    _pGfx->GetInterface()->CullFace(GFX_BACK);
   }
   // then, render visible lines (if required)
   if( rm.rm_rtRenderType&RT_WIRE_ON)
   {
-    gfxCullFace(GFX_BACK);
+    _pGfx->GetInterface()->CullFace(GFX_BACK);
     INDEX iStartElem=0;
     INDEX ctElements=0;
     // for each surface in current mip model
@@ -1055,7 +1062,7 @@ static void RenderWireframe(CRenderModel &rm)
     if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
   }
   // all done
-  gfxPolygonMode(GFX_FILL);
+  _pGfx->GetInterface()->PolygonMode(GFX_FILL);
 }
 
 
@@ -1766,26 +1773,31 @@ void CModelObject::RenderModel_View( CRenderModel &rm)
   // if weapon models don't allow tessellation or no tessellation has been set at all
   if( ((rm.rm_ulFlags&RMF_WEAPON) && !mdl_bTruformWeapons) || _pGfx->gl_iTessellationLevel<1) {
     // just disable truform
-    gfxDisableTruform();
+    _pGfx->GetInterface()->DisableTruform();
   } else {
     // enable truform for everything?
-    if( gap_bForceTruform) gfxEnableTruform();
-    else {
+    if (gap_bForceTruform) {
+      _pGfx->GetInterface()->EnableTruform();
+    } else {
       // enable truform only for truform-ready models!
       const INDEX iTesselationLevel = Min( rm.rm_iTesselationLevel, _pGfx->gl_iTessellationLevel);
       if( iTesselationLevel>0) {
         extern INDEX ogl_bTruformLinearNormals;
-        gfxSetTruform( iTesselationLevel, ogl_bTruformLinearNormals);
-        gfxEnableTruform();
+        _pGfx->GetInterface()->SetTruform(iTesselationLevel, ogl_bTruformLinearNormals);
+        _pGfx->GetInterface()->EnableTruform();
+      } else {
+        _pGfx->GetInterface()->DisableTruform();
       }
-      else gfxDisableTruform();
     }
   }
 #endif
 
   // setup drawing direction (in case of mirror)
-  if( rm.rm_ulFlags & RMF_INVERTED) gfxFrontFace(GFX_CW);
-  else gfxFrontFace(GFX_CCW);
+  if (rm.rm_ulFlags & RMF_INVERTED) {
+    _pGfx->GetInterface()->FrontFace(GFX_CW);
+  } else {
+    _pGfx->GetInterface()->FrontFace(GFX_CCW);
+  }
 
   // declare pointers for general usage
   INDEX iSrfVx0, ctSrfVx;
@@ -2058,19 +2070,19 @@ srfVtxLoop:
   #endif
   }}
   // prepare (and lock) vertex array
-  gfxEnableDepthTest();
-  gfxSetVertexArray( &_avtxSrfBase[0], _ctAllSrfVx);
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->SetVertexArray(&_avtxSrfBase[0], _ctAllSrfVx);
 
 #if SE1_TRUFORM
-  if(GFX_bTruform) gfxSetNormalArray( &_anorSrfBase[0]);
+  if (GFX_bTruform) _pGfx->GetInterface()->SetNormalArray(&_anorSrfBase[0]);
 #endif
 
-  if(CVA_bModels) gfxLockArrays();
+  if (CVA_bModels) _pGfx->GetInterface()->LockArrays();
   // cache light in object space (for reflection, specular and/or bump mapping)
   _vLightObj = rm.rm_vLightObj;
   // texture mapping correction factors (mex -> norm float)
   FLOAT fTexCorrU, fTexCorrV;
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
   // color and fill mode setup
   _bFlatFill = (rm.rm_rtRenderType&RT_WHITE_TEXTURE) || mo_toTexture.GetData()==NULL;
   const BOOL bTexMode = rm.rm_rtRenderType & (RT_TEXTURE|RT_WHITE_TEXTURE);
@@ -2162,22 +2174,22 @@ srfVtxLoop:
 
     // setup texture/color arrays and rendering mode for 1st pass
     SetCurrentTexture( ptdBump, mo_toBump.GetFrame());
-    gfxSetTexCoordArray(&_atexSrfBump[0], FALSE);  // pglTexCoordPointer( 2, GL_FLOAT,      0, &_atexSrfBump[0]);
-    gfxSetColorArray( &_acolSrfBase[0]);           // pglColorPointer( 4, GL_UNSIGNED_BYTE, 0, &_acolSrfBase[0]);
-    gfxDisableAlphaTest();
-    gfxDisableBlend();
-    gfxEnableDepthWrite();  //pglDepthMask( GL_TRUE);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBump[0], FALSE);  // pglTexCoordPointer( 2, GL_FLOAT,      0, &_atexSrfBump[0]);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);            // pglColorPointer( 4, GL_UNSIGNED_BYTE, 0, &_acolSrfBase[0]);
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->EnableDepthWrite();  //pglDepthMask( GL_TRUE);
 
     // render 1st pass
     RenderOneSide( rm, TRUE,  SRF_BUMP);
     RenderOneSide( rm, FALSE, SRF_BUMP);
 
     // setup texture array and rendering mode for 2nd pass
-    gfxSetTexCoordArray(&_atexSrfBase[0], FALSE); // pglTexCoordPointer( 2, GL_FLOAT, 0, &_atexSrfBase[0]);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE); // pglTexCoordPointer( 2, GL_FLOAT, 0, &_atexSrfBase[0]);
     pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-    gfxEnableBlend();
-    gfxBlendFunc(GFX_ONE, GFX_ONE); //pglBlendFunc( GL_ONE, GL_ONE);
-    gfxDisableDepthWrite();  //pglDepthMask( GL_FALSE);
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_ONE, GFX_ONE); //pglBlendFunc( GL_ONE, GL_ONE);
+    _pGfx->GetInterface()->DisableDepthWrite();  //pglDepthMask( GL_FALSE);
 
     // render 2nd pass
     RenderOneSide( rm, TRUE,  SRF_BUMP);
@@ -2349,14 +2361,14 @@ diffColLoop:
 
   // if no texture mode is active
   if( !bTexMode && _eAPI==GAT_OGL) { 
-    gfxUnlockArrays();
+    _pGfx->GetInterface()->UnlockArrays();
     // just render colors
     RenderColors(rm);
     // and eventually wireframe
     RenderWireframe(rm);
     // done
-    gfxDepthFunc( GFX_LESS_EQUAL);
-    gfxCullFace(GFX_BACK);
+    _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+    _pGfx->GetInterface()->CullFace(GFX_BACK);
     // reset to defaults
     ResetVertexArrays();
     // done
@@ -2374,26 +2386,29 @@ diffColLoop:
   if( (_ulMipLayerFlags&SRF_DIFFUSE) || ptdDiff==NULL)
   { 
     // prepare overbrighting if supported
-    if( bOverbright) gfxSetTextureModulation(2);
+    if (bOverbright) _pGfx->GetInterface()->SetTextureModulation(2);
     // set texture/color arrays 
     INDEX iFrame=0;
     if( ptdDiff!=NULL) iFrame = mo_toTexture.GetFrame();;
     SetCurrentTexture( ptdDiff, iFrame);
-    gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
-    gfxSetColorArray(    &_acolSrfBase[0]);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
     // do rendering
     RenderOneSide( rm, TRUE,  SRF_DIFFUSE);
     RenderOneSide( rm, FALSE, SRF_DIFFUSE);
     // revert to normal brightness if overbrighting was on
-    if( bOverbright) gfxSetTextureModulation(1);
+    if (bOverbright) _pGfx->GetInterface()->SetTextureModulation(1);
   }
 
   // adjust z-buffer and blending functions
-  if( _ulMipLayerFlags&MMI_OPAQUE) gfxDepthFunc( GFX_EQUAL);
-  else gfxDepthFunc( GFX_LESS_EQUAL);
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest(); // disable alpha testing if enabled after some surface
-  gfxEnableBlend();
+  if (_ulMipLayerFlags & MMI_OPAQUE) {
+    _pGfx->GetInterface()->DepthFunc(GFX_EQUAL);
+  } else {
+    _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+  }
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest(); // disable alpha testing if enabled after some surface
+  _pGfx->GetInterface()->EnableBlend();
 
   // done with diffuse
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_RENDER_DIFFUSE);
@@ -2469,10 +2484,10 @@ diffColLoop:
 
     // setup texture/color arrays and rendering mode
     SetCurrentTexture( ptdBump, mo_toBump.GetFrame());
-    gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
-    gfxSetColorArray(    &_acolSrfBase[0]);
-    gfxDisableAlphaTest();
-    gfxBlendFunc( GFX_DST_COLOR, GFX_SRC_COLOR);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->BlendFunc( GFX_DST_COLOR, GFX_SRC_COLOR);
     // do rendering
     RenderOneSide( rm, TRUE,  SRF_DETAIL);
     RenderOneSide( rm, FALSE, SRF_DETAIL);
@@ -2666,9 +2681,9 @@ reflMipLoop:
 
     // setup texture/color arrays and rendering mode
     SetCurrentTexture( ptdReflection, mo_toReflection.GetFrame());
-    gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
-    gfxSetColorArray(    &_acolSrfBase[0]);
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
     // do rendering
     RenderOneSide( rm, TRUE,  SRF_REFLECTIONS);
     RenderOneSide( rm, FALSE, SRF_REFLECTIONS);
@@ -2862,9 +2877,9 @@ specMipLoop:
 
     // setup texture/color arrays and rendering mode
     SetCurrentTexture( ptdSpecular, mo_toSpecular.GetFrame());
-    gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
-    gfxSetColorArray(    &_acolSrfBase[0]);
-    gfxBlendFunc( GFX_INV_SRC_ALPHA, GFX_ONE);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
+    _pGfx->GetInterface()->BlendFunc(GFX_INV_SRC_ALPHA, GFX_ONE);
     // do rendering
     RenderOneSide( rm, TRUE , SRF_SPECULAR);
     RenderOneSide( rm, FALSE, SRF_SPECULAR);
@@ -2918,11 +2933,11 @@ specMipLoop:
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_RENDER_HAZE);
 
     // setup texture/color arrays and rendering mode
-    gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-    gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
-    gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
-    gfxSetColorArray(    &_acolSrfBase[0]);
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+    _pGfx->GetInterface()->SetTexture(_haze_ulTexture, _haze_tpLocal);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
     // do rendering
     RenderOneSide( rm, TRUE,  SRF_HAZE);
     RenderOneSide( rm, FALSE, SRF_HAZE);
@@ -2975,12 +2990,12 @@ specMipLoop:
     _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_RENDER_FOG);
 
     // setup texture/color arrays and rendering mode
-    gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-    gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
-    gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
-    gfxSetColorArray(    &_acolSrfBase[0]);
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxDisableAlphaTest();
+    _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+    _pGfx->GetInterface()->SetTexture(_fog_ulTexture, _fog_tpLocal);
+    _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
+    _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->DisableAlphaTest();
     // do rendering
     RenderOneSide( rm, TRUE,  SRF_FOG);
     RenderOneSide( rm, FALSE, SRF_FOG);
@@ -2990,8 +3005,8 @@ specMipLoop:
   }
 
   // almost done
-  gfxDepthFunc( GFX_LESS_EQUAL);
-  gfxUnlockArrays();
+  _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+  _pGfx->GetInterface()->UnlockArrays();
 
   // eventually render wireframe
   RenderWireframe(rm);
@@ -3000,7 +3015,7 @@ specMipLoop:
   ResetVertexArrays();
   
   // model rendered (restore cull mode)
-  gfxCullFace(GFX_BACK);
+  _pGfx->GetInterface()->CullFace(GFX_BACK);
   _sfStats.StopTimer(CStatForm::STI_MODELRENDERING);
   if( bModelSetupTimer) _sfStats.StartTimer(CStatForm::STI_MODELSETUP);
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_RENDERMODEL);
@@ -3020,13 +3035,13 @@ void CModelObject::RenderPatches_View( CRenderModel &rm)
   _pfModelProfile.IncrementTimerAveragingCounter( CModelProfile::PTI_VIEW_RENDERPATCHES);
 
   // setup API rendering functions
-  gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
-  gfxDepthFunc( GFX_LESS_EQUAL);
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxDisableAlphaTest();
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
+  _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableAlphaTest();
 
   pglMatrixMode( GL_TEXTURE);
-  gfxSetColorArray( &_acolSrfBase[0]);
+  _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
   CModelData   *pmd  =  rm.rm_pmdModelData;
   ModelMipInfo *pmmi = &rm.rm_pmdModelData->md_MipInfos[rm.rm_iMipLevel];
 
@@ -3061,7 +3076,7 @@ void CModelObject::RenderPatches_View( CRenderModel &rm)
       pglLoadIdentity();
       pglScalef( fmexMainSizeU/fmexSizeU*fSizeDivider, fmexMainSizeV/fmexSizeV*fSizeDivider, 0);
       pglTranslatef( -mexPatchOffset(1)*f1oMainSizeU, -mexPatchOffset(2)*f1oMainSizeV, 0);
-      gfxSetTexCoordArray( &_atexSrfBase[0], FALSE);
+      _pGfx->GetInterface()->SetTexCoordArray(&_atexSrfBase[0], FALSE);
       //AddElements( &ppp.ppp_auwElements[0], ppp.ppp_auwElements.Count());
       //FlushElements();
     }
@@ -3271,30 +3286,30 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
   _sfStats.StartTimer(CStatForm::STI_MODELRENDERING);
 
   // prepare vertex arrays for API
-  gfxSetVertexArray( &_avtxSrfBase[0], _avtxSrfBase.Count());
-  if(CVA_bModels) gfxLockArrays();
-  gfxSetTexCoordArray( (GFXTexCoord*)&_atx4SrfShad[0], TRUE); // projective mapping!
-  gfxSetColorArray( &_acolSrfBase[0]);
+  _pGfx->GetInterface()->SetVertexArray(&_avtxSrfBase[0], _avtxSrfBase.Count());
+  if (CVA_bModels) _pGfx->GetInterface()->LockArrays();
+  _pGfx->GetInterface()->SetTexCoordArray((GFXTexCoord *)&_atx4SrfShad[0], TRUE); // projective mapping!
+  _pGfx->GetInterface()->SetColorArray(&_acolSrfBase[0]);
 
   // set projection and texture for API
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
   INDEX iFrame=0;
   if( ptd!=NULL) iFrame = mo_toTexture.GetFrame();
   SetCurrentTexture( ptd, iFrame);
 
-  gfxEnableDepthTest();
-  gfxDepthFunc( GFX_LESS_EQUAL);
-  gfxDisableDepthWrite();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_ZERO, GFX_INV_SRC_ALPHA);
-  gfxDisableAlphaTest();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_ZERO, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableAlphaTest();
 
 #if SE1_TRUFORM
-  gfxDisableTruform();
+  _pGfx->GetInterface()->DisableTruform();
 #endif
 
-  gfxEnableClipping();
-  gfxCullFace(GFX_BACK);
+  _pGfx->GetInterface()->EnableClipping();
+  _pGfx->GetInterface()->CullFace(GFX_BACK);
 
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_SHAD_GLSETUP);
 
@@ -3322,7 +3337,7 @@ void CModelObject::RenderShadow_View( CRenderModel &rm, const CPlacement3D &plLi
   if( ctElements>0) FlushElements( ctElements, &mmi.mmpi_aiElements[iStartElem]);
 
   // done
-  gfxUnlockArrays();
+  _pGfx->GetInterface()->UnlockArrays();
 
   // reset vertex arrays
   _avtxMipBase.PopAll();
@@ -3462,31 +3477,31 @@ void RenderBatchedSimpleShadows_View(void)
 
   // setup texture and projection
   _bFlatFill = FALSE;
-  gfxSetViewMatrix(NULL);
-  gfxCullFace(GFX_BACK);
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
+  _pGfx->GetInterface()->CullFace(GFX_BACK);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
   CTextureData *ptd = (CTextureData*)_toSimpleModelShadow.GetData();
   SetCurrentTexture( ptd, _toSimpleModelShadow.GetFrame());
 
   // setup rendering mode
-  gfxEnableDepthTest();
-  gfxDepthFunc( GFX_LESS_EQUAL);
-  gfxDisableDepthWrite();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_ZERO, GFX_INV_SRC_COLOR);
-  gfxDisableAlphaTest();
-  gfxEnableClipping();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_ZERO, GFX_INV_SRC_COLOR);
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableClipping();
 
 #if SE1_TRUFORM
-  gfxDisableTruform();
+  _pGfx->GetInterface()->DisableTruform();
 #endif
 
   // draw!
   _pGfx->gl_ctModelTriangles += ctVertices/2; 
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
 
   // all simple shadows rendered
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
   _sfStats.StopTimer(CStatForm::STI_MODELRENDERING);
   if( bModelSetupTimer) _sfStats.StartTimer(CStatForm::STI_MODELSETUP);
   _pfModelProfile.StopTimer( CModelProfile::PTI_VIEW_SIMP_BATCHED);

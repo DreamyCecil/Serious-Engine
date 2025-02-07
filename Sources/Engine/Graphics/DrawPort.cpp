@@ -286,7 +286,7 @@ void CDrawPort::SetOrtho(void) const
   d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
   if ((ogl_iFinish == 3 && _pGfx->GetCurrentAPI() == GAT_OGL)
    || (d3d_iFinish == 3 && _pGfx->GetCurrentAPI() == GAT_D3D)) {
-    gfxFinish();
+    _pGfx->GetInterface()->Finish();
   }
 
   // prepare ortho dimensions
@@ -298,15 +298,15 @@ void CDrawPort::SetOrtho(void) const
   const PIX pixMaxSJ = dp_Raster->ra_Height -1 - dp_ScissorMinJ;
 
   // init matrices (D3D needs sub-pixel adjustment)
-  gfxSetOrtho( pixMinSI-pixMinI, pixMaxSI-pixMinI+1, pixMaxJ-pixMaxSJ, pixMaxJ-pixMinSJ+1, 0.0f, -1.0f, TRUE);
-  gfxDepthRange(0,1);
-  gfxSetViewMatrix(NULL);
+  _pGfx->GetInterface()->SetOrtho(pixMinSI-pixMinI, pixMaxSI-pixMinI+1, pixMaxJ-pixMaxSJ, pixMaxJ-pixMinSJ+1, 0.0f, -1.0f, TRUE);
+  _pGfx->GetInterface()->DepthRange(0, 1);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
   // disable face culling, custom clip plane and truform
-  gfxCullFace(GFX_NONE);
-  gfxDisableClipPlane();
+  _pGfx->GetInterface()->CullFace(GFX_NONE);
+  _pGfx->GetInterface()->DisableClipPlane();
 
 #if SE1_TRUFORM
-  gfxDisableTruform();
+  _pGfx->GetInterface()->DisableTruform();
 #endif
 }
 
@@ -319,7 +319,7 @@ void CDrawPort::SetProjection(CAnyProjection3D &apr) const
   d3d_iFinish = Clamp( d3d_iFinish, 0L, 3L);
   if ((ogl_iFinish == 3 && _pGfx->GetCurrentAPI() == GAT_OGL)
    || (d3d_iFinish == 3 && _pGfx->GetCurrentAPI() == GAT_D3D)) {
-    gfxFinish();
+    _pGfx->GetInterface()->Finish();
   }
 
   // if isometric projection
@@ -336,7 +336,7 @@ void CDrawPort::SetProjection(CAnyProjection3D &apr) const
     // if far clip plane is not specified use maximum expected dimension of the world
     FLOAT fFar = ipr.pr_FarClipDistance;
     if( fFar<0) fFar = 1E5f;  // max size 32768, 3D (sqrt(3)), rounded up
-    gfxSetOrtho( fLeft, fRight, fTop, fBottom, fNear, fFar, FALSE);
+    _pGfx->GetInterface()->SetOrtho(fLeft, fRight, fTop, fBottom, fNear, fFar, FALSE);
   }
   // if perspective projection
   else {
@@ -350,33 +350,33 @@ void CDrawPort::SetProjection(CAnyProjection3D &apr) const
     // if far clip plane is not specified use maximum expected dimension of the world
     FLOAT fFar = ppr.pr_FarClipDistance;
     if( fFar<0) fFar = 1E5f;  // max size 32768, 3D (sqrt(3)), rounded up
-    gfxSetFrustum( fLeft, fRight, fTop, fBottom, fNear, fFar);
+    _pGfx->GetInterface()->SetFrustum(fLeft, fRight, fTop, fBottom, fNear, fFar);
   }
   
   // set some rendering params
-  gfxDepthRange( apr->pr_fDepthBufferNear, apr->pr_fDepthBufferFar);
-  gfxCullFace(GFX_BACK);
-  gfxSetViewMatrix(NULL);
+  _pGfx->GetInterface()->DepthRange(apr->pr_fDepthBufferNear, apr->pr_fDepthBufferFar);
+  _pGfx->GetInterface()->CullFace(GFX_BACK);
+  _pGfx->GetInterface()->SetViewMatrix(NULL);
 
 #if SE1_TRUFORM
-  gfxDisableTruform();
+  _pGfx->GetInterface()->DisableTruform();
 #endif
   
   // if projection is mirrored/warped and mirroring is allowed
   if( apr->pr_bMirror || apr->pr_bWarp) {
     // set custom clip plane 0 to mirror plane
-    gfxEnableClipPlane();
+    _pGfx->GetInterface()->EnableClipPlane();
     DOUBLE adViewPlane[4];
     adViewPlane[0] = +apr->pr_plMirrorView(1); 
     adViewPlane[1] = +apr->pr_plMirrorView(2); 
     adViewPlane[2] = +apr->pr_plMirrorView(3); 
     adViewPlane[3] = -apr->pr_plMirrorView.Distance(); 
-    gfxClipPlane(adViewPlane); // NOTE: view clip plane is multiplied by inverse modelview matrix at time when specified
+    _pGfx->GetInterface()->ClipPlane(adViewPlane); // NOTE: view clip plane is multiplied by inverse modelview matrix at time when specified
   }
   // if projection is not mirrored
   else {
     // just disable custom clip plane 0
-    gfxDisableClipPlane();
+    _pGfx->GetInterface()->DisableClipPlane();
   }
 }
 
@@ -420,12 +420,12 @@ void CDrawPort::DrawPoint( PIX pixI, PIX pixJ, COLOR col, PIX pixRadius/*=1*/) c
   if( pixRadius==0) return; // do nothing if radius is 0
 
   // setup rendering mode
-  gfxDisableTexture(); 
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableTexture(); 
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
 
   // set point color/alpha and radius
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
@@ -442,11 +442,11 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
   if( fRadius==0) return; // do nothing if radius is 0
 
   // setup rendering mode
-  gfxDisableTexture(); 
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableTexture(); 
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
 
   // set point color/alpha
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
@@ -461,23 +461,23 @@ void CDrawPort::DrawPoint3D( FLOAT3D v, COLOR col, FLOAT fRadius/*=1.0f*/) const
 void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col, ULONG typ/*=_FULL*/) const
 {
   // setup rendering mode
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
 
   FLOAT fD;
   INDEX iTexFilter, iTexAnisotropy;
   if( typ==_FULL_) {
     // no pattern - just disable texturing
-    gfxDisableTexture(); 
+    _pGfx->GetInterface()->DisableTexture(); 
     fD = 0;
   } else {
     // revert to simple point-sample filtering without mipmaps
     INDEX iNewFilter=10, iNewAnisotropy=1;
-    gfxGetTextureFiltering( iTexFilter, iTexAnisotropy);
-    gfxSetTextureFiltering( iNewFilter, iNewAnisotropy);
+    _pGfx->GetInterface()->GetTextureFiltering(iTexFilter, iTexAnisotropy);
+    _pGfx->GetInterface()->SetTextureFiltering(iNewFilter, iNewAnisotropy);
     // prepare line pattern and mapping
     extern void gfxSetPattern( ULONG ulPattern); 
     gfxSetPattern(typ);
@@ -491,7 +491,7 @@ void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col,
   _pGfx->GetInterface()->DrawLine(pixI0, pixJ0, pixI1, pixJ1, col, fD);
 
   // revert to old filtering
-  if( typ!=_FULL_) gfxSetTextureFiltering( iTexFilter, iTexAnisotropy);
+  if( typ!=_FULL_) _pGfx->GetInterface()->SetTextureFiltering(iTexFilter, iTexAnisotropy);
 }
 
 
@@ -500,11 +500,11 @@ void CDrawPort::DrawLine( PIX pixI0, PIX pixJ0, PIX pixI1, PIX pixJ1, COLOR col,
 void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 {
   // setup rendering mode
-  gfxDisableTexture(); 
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableTexture(); 
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
 
   // set line color/alpha and go go go 
   col = AdjustColor( col, _slTexHueShift, _slTexSaturation);
@@ -519,24 +519,24 @@ void CDrawPort::DrawLine3D( FLOAT3D v0, FLOAT3D v1, COLOR col) const
 void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COLOR col, ULONG typ/*=_FULL_*/) const
 {
   // setup rendering mode
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
 
   // for non-full lines, must have 
   FLOAT fD;
   INDEX iTexFilter, iTexAnisotropy;
   if( typ==_FULL_) {
     // no pattern - just disable texturing
-    gfxDisableTexture(); 
+    _pGfx->GetInterface()->DisableTexture(); 
     fD = 0;
   } else {
     // revert to simple point-sample filtering without mipmaps
     INDEX iNewFilter=10, iNewAnisotropy=1;
-    gfxGetTextureFiltering( iTexFilter, iTexAnisotropy);
-    gfxSetTextureFiltering( iNewFilter, iNewAnisotropy);
+    _pGfx->GetInterface()->GetTextureFiltering(iTexFilter, iTexAnisotropy);
+    _pGfx->GetInterface()->SetTextureFiltering(iNewFilter, iNewAnisotropy);
     // prepare line pattern
     extern void gfxSetPattern( ULONG ulPattern); 
     gfxSetPattern(typ);
@@ -554,7 +554,7 @@ void CDrawPort::DrawBorder( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, COL
   _pGfx->GetInterface()->DrawBorder(fX0, fY0, fX1, fY1, col, fD);
 
   // revert to old filtering
-  if( typ!=_FULL_) gfxSetTextureFiltering( iTexFilter, iTexAnisotropy);
+  if( typ!=_FULL_) _pGfx->GetInterface()->SetTextureFiltering(iTexFilter, iTexAnisotropy);
 }
  
 
@@ -590,12 +590,12 @@ void CDrawPort::Fill( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight,
   if( !bInside) return;
 
   // setup rendering mode
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxDisableAlphaTest();
-  gfxDisableTexture();
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableTexture();
   // prepare colors and coords
   colUL = AdjustColor( colUL, _slTexHueShift, _slTexSaturation);
   colUR = AdjustColor( colUR, _slTexHueShift, _slTexSaturation);
@@ -634,7 +634,7 @@ void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FL
   const BOOL bInside = ClipToDrawPort( this, pixI, pixJ, pixWidth, pixHeight);
   if( !bInside) return;
 
-  gfxEnableDepthWrite();
+  _pGfx->GetInterface()->EnableDepthWrite();
 
   // [Cecil] Abstraction
   _pGfx->GetInterface()->FillZBuffer(pixI, pixJ, pixI + pixWidth, pixJ + pixHeight, zval, this);
@@ -644,7 +644,7 @@ void CDrawPort::FillZBuffer( PIX pixI, PIX pixJ, PIX pixWidth, PIX pixHeight, FL
 // fill an entire Z-Buffer with a given value
 void CDrawPort::FillZBuffer( FLOAT zval) const
 {
-  gfxEnableDepthWrite();
+  _pGfx->GetInterface()->EnableDepthWrite();
 
   // [Cecil] Abstraction
   _pGfx->GetInterface()->FillZBuffer(zval);
@@ -702,12 +702,12 @@ void CDrawPort::RenderLensFlare( CTextureObject *pto, FLOAT fI, FLOAT fJ,
   _pGfx->CheckAPI();
 
   // setup rendering mode
-  gfxEnableDepthTest();
-  gfxDisableDepthWrite();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_ONE, GFX_ONE);
-  gfxDisableAlphaTest();
-  gfxResetArrays();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_ONE, GFX_ONE);
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->ResetArrays();
   GFXVertex   *pvtx = _avtxCommon.Push(4);
   GFXTexCoord *ptex = _atexCommon.Push(4);
   GFXColor    *pcol = _acolCommon.Push(4);
@@ -744,7 +744,7 @@ void CDrawPort::RenderLensFlare( CTextureObject *pto, FLOAT fI, FLOAT fJ,
   pcol[3] = glcol;
   // render it
   _pGfx->gl_ctWorldTriangles += 2; 
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
 }
 
 
@@ -845,15 +845,15 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
   PIX pixScaledHeight = (pixCharHeight*fixTextScalingY)>>16;
 
   // prepare font texture
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
   CTextureData &td = *dp_FontData->fd_ptdTextureData;
   td.SetAsCurrent();
   // setup rendering mode
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
 
   // calculate and apply correction factor
   FLOAT fCorrectionU = 1.0f / td.GetPixWidth();
@@ -875,7 +875,7 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
   BOOL bParse = dp_iTextMode==1;
 
   // prepare arrays
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
   GFXVertex   *pvtx = _avtxCommon.Push( 2*ctMaxChars*4);  // 2* because of bold
   GFXTexCoord *ptex = _atexCommon.Push( 2*ctMaxChars*4);
   GFXColor    *pcol = _acolCommon.Push( 2*ctMaxChars*4);
@@ -1040,7 +1040,7 @@ void CDrawPort::PutText( const CTString &strText, PIX pixX0, PIX pixY0, const CO
   _avtxCommon.PopUntil( ctCharsPrinted*4-1);
   _atexCommon.PopUntil( ctCharsPrinted*4-1);
   _acolCommon.PopUntil( ctCharsPrinted*4-1);
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
 
   // all done
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_PUTTEXT);
@@ -1121,17 +1121,17 @@ void CDrawPort::PutTexture( class CTextureObject *pTO,
   FLOAT fJ0 = pixJ0;  FLOAT fJ1 = pixJ1;
 
   // prepare texture
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
   CTextureData *ptd = (CTextureData*)pTO->GetData();
   ptd->SetAsCurrent(pTO->GetFrame());
 
   // setup rendering mode
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxResetArrays();
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->ResetArrays();
   GFXVertex   *pvtx = _avtxCommon.Push(4);
   GFXTexCoord *ptex = _atexCommon.Push(4);
   GFXColor    *pcol = _acolCommon.Push(4);
@@ -1175,7 +1175,7 @@ void CDrawPort::PutTexture( class CTextureObject *pTO,
   pcol[1] = glcolDL;
   pcol[2] = glcolDR;
   pcol[3] = glcolUR;
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
   _pfGfxProfile.StopTimer( CGfxProfile::PTI_PUTTEXTURE);
 }
 
@@ -1190,20 +1190,20 @@ void CDrawPort::InitTexture( class CTextureObject *pTO, const BOOL bClamp/*=FALS
     CTextureData *ptd = (CTextureData*)pTO->GetData();
     GfxWrap eWrap = GFX_REPEAT;
     if( bClamp) eWrap = GFX_CLAMP;
-    gfxSetTextureWrapping( eWrap, eWrap);
+    _pGfx->GetInterface()->SetTextureWrapping(eWrap, eWrap);
     ptd->SetAsCurrent(pTO->GetFrame());
   } else {
     // no texture
-    gfxDisableTexture();
+    _pGfx->GetInterface()->DisableTexture();
   }
   // setup rendering mode
-  gfxDisableDepthTest();
-  gfxDisableDepthWrite();
-  gfxDisableAlphaTest();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
   // prepare arrays
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
 }
 
 
@@ -1316,8 +1316,8 @@ void CDrawPort::AddTexture( const FLOAT fI0, const FLOAT fJ0, const FLOAT fU0, c
 // renders all textures from rendering queue and flushed rendering arrays
 void CDrawPort::FlushRenderingQueue(void) const
 { 
-  gfxFlushElements(); 
-  gfxResetArrays(); 
+  _pGfx->GetInterface()->FlushElements(); 
+  _pGfx->GetInterface()->ResetArrays(); 
 }
 
 
@@ -1335,18 +1335,18 @@ void CDrawPort::BlendScreen(void)
   COLOR colBlending = RGBAToColor( ulRA, ulGA, ulBA, ulA);
                                     
   // blend drawport (thru z-buffer because of elimination of pixel artefacts)
-  gfxEnableDepthTest();
-  gfxDisableDepthWrite();
-  gfxEnableBlend();
-  gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-  gfxDisableAlphaTest();
-  gfxDisableTexture();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->DisableDepthWrite();
+  _pGfx->GetInterface()->EnableBlend();
+  _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+  _pGfx->GetInterface()->DisableAlphaTest();
+  _pGfx->GetInterface()->DisableTexture();
   // prepare color
   colBlending = AdjustColor( colBlending, _slTexHueShift, _slTexSaturation);
   GFXColor glcol(colBlending);
 
   // set arrays
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
   GFXVertex   *pvtx = _avtxCommon.Push(4);
   GFXTexCoord *ptex = _atexCommon.Push(4);
   GFXColor    *pcol = _acolCommon.Push(4);
@@ -1360,7 +1360,7 @@ void CDrawPort::BlendScreen(void)
   pcol[1] = glcol;
   pcol[2] = glcol;
   pcol[3] = glcol;
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
   // reset accumulation color
   dp_ulBlendingRA = 0;
   dp_ulBlendingGA = 0;

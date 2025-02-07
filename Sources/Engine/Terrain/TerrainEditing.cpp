@@ -199,27 +199,27 @@ void ShowSelectionInternal(CTerrain *ptrTerrain, Rect &rcExtract, CTextureData *
 
   // Render selected polygons for selection preview
   if(sfFill == SF_WIREFRAME) {
-    gfxPolygonMode(GFX_LINE);
-    gfxEnableDepthBias();
+    _pGfx->GetInterface()->PolygonMode(GFX_LINE);
+    _pGfx->GetInterface()->EnableDepthBias();
   }
 
   if(sfFill != SF_POINTS) {
     // Draw selection
-    gfxDisableTexture();
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxSetVertexArray(pavVertices,ctVertices);
-    gfxSetColorArray(&_aiExtColors[0]);
-    gfxLockArrays();
-    gfxDrawElements(ctIndices,paiIndices);
-    gfxUnlockArrays();
-    gfxDisableBlend();
+    _pGfx->GetInterface()->DisableTexture();
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->SetVertexArray(pavVertices, ctVertices);
+    _pGfx->GetInterface()->SetColorArray(&_aiExtColors[0]);
+    _pGfx->GetInterface()->LockArrays();
+    _pGfx->GetInterface()->DrawElements(ctIndices, paiIndices);
+    _pGfx->GetInterface()->UnlockArrays();
+    _pGfx->GetInterface()->DisableBlend();
   }
 
   if(sfFill == SF_WIREFRAME) {
-    gfxDisableDepthBias();
-    gfxPolygonMode(GFX_FILL);
+    _pGfx->GetInterface()->DisableDepthBias();
+    _pGfx->GetInterface()->PolygonMode(GFX_FILL);
   }
 
   if(sfFill == SF_POINTS) {

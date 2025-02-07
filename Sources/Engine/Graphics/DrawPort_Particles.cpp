@@ -68,20 +68,20 @@ void Particle_PrepareSystem( CDrawPort *pdpDrawPort, CAnyProjection3D &prProject
   if( prProjection.IsPerspective()) _fPerspectiveFactor = ((CPerspectiveProjection3D*)&*prProjection)->ppr_PerspectiveRatios(1);
   
   // setup rendering mode
-  gfxEnableDepthTest();
-  gfxCullFace(GFX_NONE);
-  gfxEnableTexture();
+  _pGfx->GetInterface()->EnableDepthTest();
+  _pGfx->GetInterface()->CullFace(GFX_NONE);
+  _pGfx->GetInterface()->EnableTexture();
   // prepare general texture parameters
-  gfxSetTextureWrapping( GFX_REPEAT, GFX_REPEAT);
+  _pGfx->GetInterface()->SetTextureWrapping(GFX_REPEAT, GFX_REPEAT);
   // prepare arrays to draw from begining
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
 }
 
 void Particle_EndSystem( BOOL bRestoreOrtho/*=TRUE*/)
 {
   // reset projection and re-enable clipping
   if( bRestoreOrtho) _pDP->SetOrtho();
-  gfxEnableClipping();
+  _pGfx->GetInterface()->EnableClipping();
 }
 
 
@@ -111,44 +111,44 @@ void Particle_PrepareTexture( CTextureObject *pto, enum ParticleBlendType pbt)
   // determine blend type
   switch( pbt) {
   case PBT_BLEND:
-    gfxDisableDepthWrite();
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->DisableDepthWrite();
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
     _colAttMask = 0xFFFFFF00; // attenuate alpha
     break;
   case PBT_ADD:
-    gfxDisableDepthWrite();
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_ONE, GFX_ONE);
+    _pGfx->GetInterface()->DisableDepthWrite();
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_ONE, GFX_ONE);
     _colAttMask = 0x000000FF; // attenuate color
     break;
   case PBT_MULTIPLY:
-    gfxDisableDepthWrite();
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_ZERO, GFX_INV_SRC_COLOR);
+    _pGfx->GetInterface()->DisableDepthWrite();
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_ZERO, GFX_INV_SRC_COLOR);
     _colAttMask = 0x000000FF; // attenuate color
     break;
   case PBT_ADDALPHA:
-    gfxDisableDepthWrite();
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_ONE);
+    _pGfx->GetInterface()->DisableDepthWrite();
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_ONE);
     _colAttMask = 0xFFFFFF00; // attenuate alpha
     break;
   case PBT_FLEX:
-    gfxDisableDepthWrite();
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_ONE, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->DisableDepthWrite();
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_ONE, GFX_INV_SRC_ALPHA);
     _colAttMask = 0xFFFFFFFF; // attenuate alpha
     break;
   case PBT_TRANSPARENT:
-    gfxEnableDepthWrite();
-    gfxEnableAlphaTest();
-    gfxDisableBlend();
+    _pGfx->GetInterface()->EnableDepthWrite();
+    _pGfx->GetInterface()->EnableAlphaTest();
+    _pGfx->GetInterface()->DisableBlend();
     _colAttMask = 0; // no attenuation - texture instead
     break;
   }
@@ -512,46 +512,49 @@ void Particle_Flush(void)
   _pGfx->gl_ctParticleTriangles += ctParticles*2;
 
   // determine need for clipping
-  if( _bNeedsClipping) gfxEnableClipping();
-  else gfxDisableClipping();
+  if (_bNeedsClipping) {
+    _pGfx->GetInterface()->EnableClipping();
+  } else {
+    _pGfx->GetInterface()->DisableClipping();
+  }
 
   // flush 1st layer
-  gfxFlushQuads();
+  _pGfx->GetInterface()->FlushQuads();
   // maybe we need to render fog/haze layer
   if( _bTransFogHaze)
   { // setup haze/fog color and texture
     GFXColor glcolFH;        
-    gfxSetTextureWrapping( GFX_CLAMP, GFX_CLAMP);
+    _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
     if( _Particle_bHasHaze) {
-      gfxSetTexture( _haze_ulTexture, _haze_tpLocal);
+      _pGfx->GetInterface()->SetTexture(_haze_ulTexture, _haze_tpLocal);
       glcolFH.abgr = ByteSwap32( AdjustColor( _haze_hp.hp_colColor, _slTexHueShift, _slTexSaturation));
     } else {
-      gfxSetTexture( _fog_ulTexture, _fog_tpLocal);
+      _pGfx->GetInterface()->SetTexture(_fog_ulTexture, _fog_tpLocal);
       glcolFH.abgr = ByteSwap32( AdjustColor( _fog_fp.fp_colColor, _slTexHueShift, _slTexSaturation));
     }
     // prepare haze rendering parameters
-    gfxDisableAlphaTest();
-    gfxEnableBlend();
-    gfxBlendFunc( GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
-    gfxDisableDepthWrite();
-    gfxDepthFunc( GFX_EQUAL); // adjust z-buffer compare
+    _pGfx->GetInterface()->DisableAlphaTest();
+    _pGfx->GetInterface()->EnableBlend();
+    _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
+    _pGfx->GetInterface()->DisableDepthWrite();
+    _pGfx->GetInterface()->DepthFunc(GFX_EQUAL); // adjust z-buffer compare
     // copy fog/haze texture array to main texture array and set color to fog/haze
     const INDEX ctVertices = _atexCommon.Count();
     ASSERT( _atexFogHaze.Count()==ctVertices+4);
     memcpy( &_atexCommon[0], &_atexFogHaze[0], ctVertices*sizeof(GFXTexCoord)); 
     for( INDEX i=0; i<ctVertices; i++) _acolCommon[i] = glcolFH;
     // render it
-    gfxFlushQuads();
+    _pGfx->GetInterface()->FlushQuads();
     // revert to old settings
-    gfxEnableAlphaTest();
-    gfxDisableBlend();
-    gfxDepthFunc( GFX_LESS_EQUAL);
-   _ptd->SetAsCurrent(_iFrame);
-   _pGfx->gl_ctParticleTriangles += ctParticles*2;
+    _pGfx->GetInterface()->EnableAlphaTest();
+    _pGfx->GetInterface()->DisableBlend();
+    _pGfx->GetInterface()->DepthFunc(GFX_LESS_EQUAL);
+    _ptd->SetAsCurrent(_iFrame);
+    _pGfx->gl_ctParticleTriangles += ctParticles*2;
   }
 
   // all done
-  gfxResetArrays();
+  _pGfx->GetInterface()->ResetArrays();
   _atexFogHaze.PopAll();
   _bNeedsClipping = FALSE;
 }
