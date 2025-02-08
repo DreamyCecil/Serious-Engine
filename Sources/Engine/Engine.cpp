@@ -100,7 +100,6 @@ static INDEX sys_iHDDMisc = 0;
 
 // MOD info
 static CTString sys_strModName = "";
-static CTString sys_strModExt  = "";
 
 // enables paranoia checks for allocation array
 BOOL _bAllocationArrayParanoiaCheck = FALSE;
@@ -503,7 +502,6 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   _pShell->DeclareSymbol("     const INDEX sys_iHDDMisc;", &sys_iHDDMisc);
   // MOD info
   _pShell->DeclareSymbol("user const CTString sys_strModName;", &sys_strModName);
-  _pShell->DeclareSymbol("user const CTString sys_strModExt;",  &sys_strModExt);
 
   // Timer tick quantum
   _pShell->DeclareSymbol("user const FLOAT fTickQuantum;", (FLOAT*)&_pTimer->TickQuantum);
@@ -522,7 +520,6 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   InitStreams();
   // keep mod name in sys cvar
   sys_strModName = _strModName;
-  sys_strModExt  = _strModExt;
 
 // checking of crc
 #if 0

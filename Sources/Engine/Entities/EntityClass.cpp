@@ -219,11 +219,12 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
   CTString strClassName;
   strClassName.ReadFromText_t(*istr, "Class: ");
 
+  // [Cecil] TEMP: Use "MP" binary suffix for compatibility
   // create name of dll
   #ifndef NDEBUG
-    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+_strModExt+"D"+fnmDLL.FileExt();
+    fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + "MPD" + fnmDLL.FileExt();
   #else
-    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+_strModExt+fnmDLL.FileExt();
+    fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + "MP" + fnmDLL.FileExt();
   #endif
 
   // load the DLL

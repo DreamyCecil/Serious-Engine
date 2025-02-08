@@ -460,12 +460,9 @@ BOOL CWorldEditorApp::SubInitInstance()
   SE_InitEngine(se1setup);
   SE_LoadDefaultFonts();
 
+  // [Cecil] TEMP: Use "MP" binary suffix for compatibility
   // settings will be saved into registry instead of ini file
-  if (_strModExt=="") {
-    SetRegistryKey( CString("CroTeam"));
-  } else {
-    SetRegistryKey( CString("CroTeam\\"+_strModExt));
-  }
+  SetRegistryKey(_T("CroTeam\\MP"));
 
   // if the registry is not set yet
   CString strDefaultTexture = GetProfileString( L"World editor prefs", L"Default primitive texture", L"");

@@ -817,9 +817,9 @@ void CShader::Read_t(CTStream *istrFile)
 
   // create name of dll
   #ifndef NDEBUG
-    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+/*_strModExt+*/"D"+fnmDLL.FileExt();
+    fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + "D" + fnmDLL.FileExt();
   #else
-    fnmDLL = _fnmApplicationExe.FileDir()+fnmDLL.FileName()+/*_strModExt+*/fnmDLL.FileExt();
+    fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + fnmDLL.FileExt();
   #endif
 
   CTFileName fnmExpanded;

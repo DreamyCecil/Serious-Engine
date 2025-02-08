@@ -62,8 +62,6 @@ CTString _strModName;
 // global string with url to be shown to users that don't have the mod installed
 // (should be set by game.dll)
 CTString _strModURL;
-// global string with current MOD extension (for adding to dlls)
-CTString _strModExt;
 
 // [Cecil] List of extra content directories
 CDynamicStackArray<ExtraContentDir_t> _aContentDirs;
@@ -195,16 +193,6 @@ void InitStreams(void)
       _strModName.DeleteChar(_strModName.Length()-1);
       _strModName = CTFileName(_strModName).FileName();
     }
-  }
-  // find eventual extension for the mod's dlls
-  _strModExt = "";
-
-  // [Cecil] TODO: Get rid of binary suffixes (a.k.a. mod extensions) and stop using this file
-  CTString strFullPathTemp;
-  if (ExpandFilePath(EFP_READ, CTString("ModEXT.txt"), strFullPathTemp) != EFP_NONE) {
-    LoadStringVar(CTString("ModEXT.txt"), _strModExt);
-  } else {
-    LoadStringVar(CTString("ModExt.txt"), _strModExt);
   }
 
   CPrintF(TRANS("Loading group files...\n"));

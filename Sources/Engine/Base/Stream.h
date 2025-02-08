@@ -421,8 +421,6 @@ ENGINE_API extern CTString _strModName;
 // global string with url to be shown to users that don't have the mod installed
 // (should be set by game.dll)
 ENGINE_API extern CTString _strModURL;
-// global string with current MOD extension (for adding to dlls)
-ENGINE_API extern CTString _strModExt;
 
 // [Cecil] Extra content directory
 struct ExtraContentDir_t {
