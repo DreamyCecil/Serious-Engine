@@ -66,15 +66,13 @@ CTString _strModURL;
 // [Cecil] List of extra content directories
 CDynamicStackArray<ExtraContentDir_t> _aContentDirs;
 
-// include/exclude lists for base dir writing/browsing
-CDynamicStackArray<CTFileName> _afnmBaseWriteInc;
-CDynamicStackArray<CTFileName> _afnmBaseWriteExc;
-CDynamicStackArray<CTFileName> _afnmBaseBrowseInc;
-CDynamicStackArray<CTFileName> _afnmBaseBrowseExc;
+// [Cecil] Included/excluded "base" lists have been replaced with included "mod" lists
+CDynamicStackArray<CTFileName> _afnmModWrite;
+CDynamicStackArray<CTFileName> _afnmModRead;
+
 // list of paths or patterns that are not included when making CRCs for network connection
 // this is used to enable connection between different localized versions
 CDynamicStackArray<CTFileName> _afnmNoCRC;
-
 
 // load a filelist
 static BOOL LoadFileList(CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnmList)
@@ -176,10 +174,13 @@ void InitStreams(void)
     // load mod's include/exclude lists
     CPrintF(TRANS("Loading mod include/exclude lists...\n"));
     BOOL bOK = FALSE;
-    bOK |= LoadFileList(_afnmBaseWriteInc , CTString("BaseWriteInclude.lst"));
-    bOK |= LoadFileList(_afnmBaseWriteExc , CTString("BaseWriteExclude.lst"));
-    bOK |= LoadFileList(_afnmBaseBrowseInc, CTString("BaseBrowseInclude.lst"));
-    bOK |= LoadFileList(_afnmBaseBrowseExc, CTString("BaseBrowseExclude.lst"));
+
+    // [Cecil] TEMP: Load old vanilla lists and construct actual new lists below
+    // that consist only of specific directories that can be browsed/written into
+    CDynamicStackArray<CTString> aWriteList;
+    CDynamicStackArray<CTString> aReadList;
+    bOK |= LoadFileList(aWriteList, "BaseWriteExclude.lst");
+    bOK |= LoadFileList(aReadList, "BaseBrowseExclude.lst");
 
     // if none found
     if (!bOK) {
@@ -192,6 +193,46 @@ void InitStreams(void)
       _strModName = _fnmMod;
       _strModName.DeleteChar(_strModName.Length()-1);
       _strModName = CTFileName(_strModName).FileName();
+
+      // [Cecil] Try to match specific kinds of files
+      // Should match such entries: 'Levels', 'Levels\\', 'Levels\\LevelsMP', 'Levels\\LevelsMP\\'
+      const BOOL bLevels = (FileMatchesList(aReadList, "Levels\\testmatch.wld")
+                         || FileMatchesList(aReadList, "Levels\\LevelsMP\\testmatch.wld"));
+      // Should match such entries: 'Savegame', 'savegame\\', 'SaveGame*'
+      const BOOL bSaves = (FileMatchesList(aWriteList, "SaveGame\\Player0\\testmatch.sav")
+                        || FileMatchesList(aReadList,  "SaveGame\\Player0\\testmatch.sav"));
+      // Should match such entries: 'Models', 'Models\\Player', 'modelsmp', 'modelsmp\\player'
+      const BOOL bModels = (FileMatchesList(aReadList, "Models\\Player\\testmatch.amc")
+                         || FileMatchesList(aReadList, "ModelsMP\\Player\\testmatch.amc"));
+
+      BOOL bSavesWithLevels = FALSE;
+
+      // [Cecil] If mod has exclusive levels or exclusive saves, make all level-related content exclusive
+      if (bLevels || bSaves) {
+        // Record and list mod demos
+        _afnmModWrite.Push() = "Demos";
+        _afnmModRead.Push() = "Demos";
+        // List mod levels and create .vis files for them
+        _afnmModWrite.Push() = "Levels";
+        _afnmModRead.Push() = "Levels";
+        // Write and read mod saves
+        _afnmModWrite.Push() = "UserData\\SaveGame";
+        _afnmModRead.Push() = "UserData\\SaveGame";
+        bSavesWithLevels = TRUE;
+      }
+
+      // [Cecil] If mod has exclusive saves but not levels, add them separately
+      if (!bSavesWithLevels && bSaves) {
+        // Write and read mod saves
+        _afnmModWrite.Push() = "UserData\\SaveGame";
+        _afnmModRead.Push() = "UserData\\SaveGame";
+      }
+
+      // [Cecil] If mod has exclusive models, add player models specifically
+      if (bModels) {
+        // Read AMC files
+        _afnmModRead.Push() = "Models\\Player";
+      }
     }
   }
 
@@ -947,13 +988,17 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   CTFileName fnFileNameAbsolute = fnFileName;
   fnFileNameAbsolute.NormalizePath();
 
-  // [Cecil] Create the directory for the new file if it doesn't exist yet
-  CreateAllDirectories(fnFileNameAbsolute);
-
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"), fnFileNameAbsolute.ConstData());
+  }
+
+  // [Cecil] Create necessary directories for the new file if they don't exist yet
+  if (_fnmMod != "" && FileMatchesList(_afnmModWrite, fnFileNameAbsolute)) {
+    CreateAllDirectories(_fnmMod + fnFileNameAbsolute); // Within the mod
+  } else {
+    CreateAllDirectories(fnFileNameAbsolute); // Within the game
   }
 
   CTFileName fnmFullFileName;
@@ -1548,7 +1593,7 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
   // if writing
   if (ulType&EFP_WRITE) {
     // if should write to mod dir
-    if (_fnmMod!="" && (!FileMatchesList(_afnmBaseWriteInc, fnmFileAbsolute) || FileMatchesList(_afnmBaseWriteExc, fnmFileAbsolute))) {
+    if (_fnmMod != "" && FileMatchesList(_afnmModWrite, fnmFileAbsolute)) {
       // do that
       fnmExpanded = _fnmApplicationPath+_fnmMod+fnmFileAbsolute;
       fnmExpanded.NormalizePath();

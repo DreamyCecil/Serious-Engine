@@ -19,8 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Unzip.h>
 #include <Engine/Templates/DynamicStackArray.cpp>
 
-extern CDynamicStackArray<CTFileName> _afnmBaseBrowseInc;
-extern CDynamicStackArray<CTFileName> _afnmBaseBrowseExc;
+extern CDynamicStackArray<CTFileName> _afnmModRead;
 
 int qsort_CompareCTFileName(const void *elem1, const void *elem2 )
 {
@@ -29,9 +28,8 @@ int qsort_CompareCTFileName(const void *elem1, const void *elem2 )
   return strcmp(fnm1.ConstData(), fnm2.ConstData());
 }
 
-void FillDirList_internal(CTFileName fnmBasePath,
-  CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnmDir, CTString strPattern, BOOL bRecursive,
-  CDynamicStackArray<CTFileName> *pafnmInclude, CDynamicStackArray<CTFileName> *pafnmExclude)
+static void FillDirList_internal(CTFileName fnmBasePath,
+  CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnmDir, CTString strPattern, BOOL bRecursive, BOOL bModRead)
 {
   // add the directory to list of directories to search
   CListHead lhDirs;
@@ -45,8 +43,7 @@ void FillDirList_internal(CTFileName fnmBasePath,
     delete pdr;
 
     // if the dir is not allowed
-    if (pafnmInclude!=NULL &&
-      (!FileMatchesList(*pafnmInclude, fnmDir) || FileMatchesList(*pafnmExclude, fnmDir)) ) {
+    if (bModRead && FileMatchesList(_afnmModRead, fnmDir)) {
       // skip it
       continue;
     }
@@ -155,7 +152,7 @@ static void ListFromGRO(CDynamicStackArray<CTFileName> &afnmTemp, const CTFileNa
         afnmTemp.Push() = fnm;
 
       // Matches mod's browse paths
-      } else if (FileMatchesList(_afnmBaseBrowseInc, fnm) && FileMatchesList(_afnmBaseBrowseExc, fnm)) {
+      } else if (FileMatchesList(_afnmModRead, fnm)) {
         afnmTemp.Push() = fnm;
       }
 
@@ -186,8 +183,6 @@ ENGINE_API void MakeDirList(
 
   // [Cecil] Determine whether browse lists from a mod should be used
   const BOOL bLists = bMod && !(ulFlags & DLI_IGNORELISTS);
-  CDynamicStackArray<CTString> *paBaseBrowseInc = (bLists ? &_afnmBaseBrowseInc : NULL);
-  CDynamicStackArray<CTString> *paBaseBrowseExc = (bLists ? &_afnmBaseBrowseExc : NULL);
 
   // [Cecil] List files exclusively from GRO packages (done afterwards)
   if (ulFlags & DLI_ONLYGRO) {
@@ -196,12 +191,12 @@ ENGINE_API void MakeDirList(
   // [Cecil] List files exclusively from the mod
   } else if (ulFlags & DLI_ONLYMOD) {
     if (bMod) {
-      FillDirList_internal(_fnmApplicationPath + _fnmMod, afnmTemp, fnmDir, strPattern, bRecursive, NULL, NULL);
+      FillDirList_internal(_fnmApplicationPath + _fnmMod, afnmTemp, fnmDir, strPattern, bRecursive, FALSE);
     }
 
   } else {
     // List files from the game directory
-    FillDirList_internal(_fnmApplicationPath, afnmTemp, fnmDir, strPattern, bRecursive, paBaseBrowseInc, paBaseBrowseExc);
+    FillDirList_internal(_fnmApplicationPath, afnmTemp, fnmDir, strPattern, bRecursive, bLists);
 
     // [Cecil] List files from other directories
     const INDEX ctDirs = _aContentDirs.Count();
@@ -216,13 +211,13 @@ ENGINE_API void MakeDirList(
       if (!(ulFlags & DLI_SEARCHEXTRA) && !dir.bGame) continue;
 
       if (dir.fnmPath != "") {
-        FillDirList_internal(dir.fnmPath, afnmTemp, fnmDir, strPattern, bRecursive, paBaseBrowseInc, paBaseBrowseExc);
+        FillDirList_internal(dir.fnmPath, afnmTemp, fnmDir, strPattern, bRecursive, bLists);
       }
     }
 
     // List extra files from the mod directory
     if (!(ulFlags & DLI_IGNOREMOD) && bMod) {
-      FillDirList_internal(_fnmApplicationPath + _fnmMod, afnmTemp, fnmDir, strPattern, bRecursive, NULL, NULL);
+      FillDirList_internal(_fnmApplicationPath + _fnmMod, afnmTemp, fnmDir, strPattern, bRecursive, FALSE);
     }
   }
 
