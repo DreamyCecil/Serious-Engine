@@ -70,7 +70,7 @@ extern void SE_SetReportLogFileName(const CTString &fnmReport) {
   // Create directories for the report file
   CreateAllDirectories(fnmReport);
 
-  g_MSJExceptionHandler.SetLogFileName(fnmReport.ConstData());
+  g_MSJExceptionHandler.SetLogFileName((_fnmApplicationPath + fnmReport).ConstData());
 };
 
 //============================== Global Variables =============================
