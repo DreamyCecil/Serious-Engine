@@ -4628,7 +4628,7 @@ void CWorldEditorDoc::OnExportPlacements()
     CTFileName fnExport=fnWorld.FileDir()+fnWorld.FileName()+".epn";
     // open text file
     CTFileStream strmFile;
-    strmFile.Create_t( fnExport, CTStream::CM_TEXT);
+    strmFile.Create_t(fnExport);
     // for each entity in world
     FOREACHINDYNAMICCONTAINER(m_woWorld.wo_cenEntities, CEntity, iten)
     {
@@ -4710,7 +4710,7 @@ void CWorldEditorDoc::OnExportPlacements()
     CTFileName fnSml=fnWorld.FileDir()+fnWorld.FileName()+".sml";
     // open text file
     CTFileStream strmSmlFile;
-    strmSmlFile.Create_t( fnSml, CTStream::CM_TEXT);
+    strmSmlFile.Create_t(fnSml);
     // save needed smc's
     for(INDEX iSmc=0; iSmc<astrNeddedSmc.Count(); iSmc++)
     {
@@ -5363,7 +5363,7 @@ void ExportEntityToAMF_t(CWorldEditorDoc *pDoc, CEntity &en, const CTFileName &f
   {
     // open .amf file
     CTFileStream strmAmf;
-    strmAmf.Create_t( fnAmf, CTStream::CM_TEXT);
+    strmAmf.Create_t(fnAmf);
     strmAmf.PutLine_t("SE_MESH 1.01");
     strmAmf.PutLine_t("");
     // export visibility for zoning brushes
@@ -5398,7 +5398,7 @@ void CWorldEditorDoc::OnExportEntities()
     CTFileName fnExport=fnWorld.FileDir()+fnWorld.FileName()+".awf";
     // open text file
     CTFileStream strmFile;
-    strmFile.Create_t( fnExport, CTStream::CM_TEXT);
+    strmFile.Create_t(fnExport);
 
     // prepare container of entities to export
     CDynamicContainer<CEntity> dcEntitiesToExport;
@@ -5631,7 +5631,7 @@ void CWorldEditorDoc::OnExportEntities()
     CTFileName fnSml=fnWorld.FileDir()+fnWorld.FileName()+".sml";
     // open text file
     CTFileStream strmSmlFile;
-    strmSmlFile.Create_t( fnSml, CTStream::CM_TEXT);
+    strmSmlFile.Create_t(fnSml);
     // save needed smc's
     for(INDEX iSmc=0; iSmc<astrNeddedSmc.Count(); iSmc++)
     {

@@ -428,7 +428,7 @@ void CEditModel::SaveIncludeFile_t( CTFileName fnFileName, CTString strDefinePre
   char line[ 1024];
   INDEX i;
 
-  strmHFile.Create_t( fnFileName, CTStream::CM_TEXT);
+  strmHFile.Create_t(fnFileName);
   strcpy(line, strDefinePrefix.ConstData());
   _strupr(line);
   strDefinePrefix = CTString( line);
@@ -894,7 +894,7 @@ void CEditModel::CreateScriptFile_t(CTFileName &fnO3D) // throw char *
   CTFileStream File;
   char line[ 256];
 
-  File.Create_t( fnScriptName, CTStream::CM_TEXT);
+  File.Create_t(fnScriptName);
   File.PutLine_t( ";******* Creation settings");
   File.PutLine_t( "TEXTURE_DIM 2.0 2.0");
   File.PutLine_t( "SIZE 1.0");
@@ -2424,7 +2424,7 @@ void CEditModel::SaveMapping_t( CTFileName fnFileName, INDEX iMip /*=-1*/)
   CTFileStream strmMappingFile;
 
   // create file
-  strmMappingFile.Create_t( fnFileName, CTStream::CM_BINARY);
+  strmMappingFile.Create_t(fnFileName);
   // write file ID
   strmMappingFile.WriteID_t( CChunkID( "MPNG"));
   // write version

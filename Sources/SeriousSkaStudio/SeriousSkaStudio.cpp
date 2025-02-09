@@ -597,7 +597,7 @@ void CSeriousSkaStudioApp::SaveSmcFile(CModelInstance &mi,BOOL bSaveChildren)
   CTFileStream ostrFile;
   // try to save model instance
   try {
-    ostrFile.Create_t(fnSmc,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnSmc);
     SaveModelInstance_t(pmiFirst,pmiParent,ostrFile,bSaveChildren);
     ostrFile.Close();
     NotificationMessage("Smc '%s' saved.",pmiFirst->mi_fnSourceFile); 
@@ -625,7 +625,7 @@ BOOL CSeriousSkaStudioApp::SaveMeshListFile(MeshInstance &mshi, BOOL bConvert)
   // save mesh instance in new mesh list file
   CTFileStream ostrFile;
   try {
-    ostrFile.Create_t(fnMeshList,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnMeshList);
     SaveMeshInstance_t(mshi,ostrFile);
     ostrFile.Close();
   } catch(char *strError) {
@@ -670,7 +670,7 @@ BOOL CSeriousSkaStudioApp::SaveSkeletonListFile(CSkeleton &skl, BOOL bConvert)
 
   CTFileStream ostrFile;
   try {
-    ostrFile.Create_t(fnSkeletonList,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnSkeletonList);
     SaveSkeletonList_t(skl,ostrFile);
     ostrFile.Close();
   } catch(char *strError) {
@@ -713,7 +713,7 @@ BOOL CSeriousSkaStudioApp::SaveAnimSetFile(CAnimSet &as, BOOL bConvert)
 
   CTFileStream ostrFile;
   try {
-    ostrFile.Create_t(fnAnimSet,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnAnimSet);
     SaveAnimSet_t(as,ostrFile);
     ostrFile.Close();
   } catch(char *strError) {
@@ -1031,7 +1031,7 @@ void CSeriousSkaStudioApp::SaveModelInstance_t(CModelInstance *pmi,CModelInstanc
 void CSeriousSkaStudioApp::SaveShaderParams_t(MeshLOD *pmlod,CTFileName fnShaderParams)
 {
   CTFileStream ostrFile;
-  ostrFile.Create_t(fnShaderParams,CTStream::CM_TEXT);
+  ostrFile.Create_t(fnShaderParams);
   INDEX ctsrf=pmlod->mlod_aSurfaces.Count();
   ostrFile.FPrintF_t("SHADER_PARAMS 1.0;\nSHADER_SURFACES %d\n{\n",ctsrf);
   for(INDEX isrf=0;isrf<ctsrf;isrf++)
@@ -1169,7 +1169,7 @@ void CSeriousSkaStudioApp::AddEmptyListsToModelInstance(CModelInstance &mi)
     CTFileStream ostrFile;
     try {
       // create new file
-      ostrFile.Create_t(fnMeshList,CTStream::CM_TEXT);
+      ostrFile.Create_t(fnMeshList);
       // write empty header in file
       ostrFile.FPrintF_t("MESHLODLIST\n{\n}\n");
       // close file
@@ -1190,7 +1190,7 @@ void CSeriousSkaStudioApp::AddEmptyListsToModelInstance(CModelInstance &mi)
     CTFileStream ostrFile;
     try {
       // create new file
-      ostrFile.Create_t(fnSkeletonList,CTStream::CM_TEXT);
+      ostrFile.Create_t(fnSkeletonList);
       // write empty header in file
       ostrFile.FPrintF_t("SKELETONLODLIST\n{\n}\n");
       // close file
@@ -1211,7 +1211,7 @@ void CSeriousSkaStudioApp::AddEmptyListsToModelInstance(CModelInstance &mi)
     CTFileStream ostrFile;
     try {
       // create new file
-      ostrFile.Create_t(fnAnimSet,CTStream::CM_TEXT);
+      ostrFile.Create_t(fnAnimSet);
       // write empty header in file
       ostrFile.FPrintF_t("ANIMSETLIST\n{\n}\n");
       // close file
@@ -1258,7 +1258,7 @@ CModelInstance *CSeriousSkaStudioApp::OnAddNewModelInstance()
   try
   {
     // create new file
-    ostrFile.Create_t(fnSim,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnSim);
     // write empty header in file
     ostrFile.FPrintF_t("NAME \"%s\";\n{\n}\n", fnSim.FileName().ConstData());
     // close file

@@ -107,17 +107,12 @@ public:
 public:
   // modes for opening streams
   enum OpenMode {
+    // [Cecil] Removed obsolete OM_READTEXT, OM_WRITETEXT, OM_READBINARY & OM_WRITEBINARY
+    // Their values were equal to the following OM_READ and OM_WRITE values anyway
     OM_READ  = 1,
     OM_WRITE = 2,
-    OM_READTEXT  = OM_READ ,
-    OM_WRITETEXT = OM_WRITE,
-    OM_READBINARY  = OM_READ ,
-    OM_WRITEBINARY = OM_WRITE,
   };
-  enum CreateMode { // OBSOLETE!
-    CM_TEXT  = 1,
-    CM_BINARY = 2,
-  };
+
   // direction for seeking
   enum SeekDir {
     SD_BEG = SEEK_SET,
@@ -269,9 +264,9 @@ public:
   virtual ~CTFileStream(void);
 
   /* Open an existing file. */
-  void Open_t(const CTFileName &fnFileName, enum CTStream::OpenMode om=CTStream::OM_READ); // throw char *
+  void Open_t(const CTFileName &fnFileName, CTStream::OpenMode om = CTStream::OM_READ); // throw char *
   /* Create a new file or overwrite existing. */
-  void Create_t(const CTFileName &fnFileName, enum CTStream::CreateMode cm=CTStream::CM_BINARY); // throw char *
+  void Create_t(const CTFileName &fnFileName); // throw char *
   /* Close an open file. */
   void Close(void);
   /* Get CRC32 of stream */

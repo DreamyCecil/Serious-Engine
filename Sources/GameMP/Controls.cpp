@@ -317,7 +317,7 @@ void CControls::Save_t( CTFileName fnFile)
   CTString strLine;
   // create file
   CTFileStream strmFile;
-  strmFile.Create_t( fnFile, CTStream::CM_TEXT);
+  strmFile.Create_t(fnFile);
 
   // write button actions
   FOREACHINLIST( CButtonAction, ba_lnNode, ctrl_lhButtonActions, itba)

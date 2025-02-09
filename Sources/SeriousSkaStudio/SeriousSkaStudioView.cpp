@@ -1009,7 +1009,7 @@ BOOL CSeriousSkaStudioView::OnAddMeshlist()
   try
   {
     // create new file
-    ostrFile.Create_t(fnSim,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnSim);
     // write empty header in file
     ostrFile.FPrintF_t("MESHLODLIST\n{\n}\n");
     // close file
@@ -1099,7 +1099,7 @@ void CSeriousSkaStudioView::OnAddSkeletonlist()
   try
   {
     // create new file
-    ostrFile.Create_t(fnSim,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnSim);
     // write empty header in file
     ostrFile.FPrintF_t("SKELETONLODLIST\n{\n}\n");
     // close file
@@ -1174,7 +1174,7 @@ void CSeriousSkaStudioView::OnAddAnimset()
   try
   {
     // create new file
-    ostrFile.Create_t(fnSim,CTStream::CM_TEXT);
+    ostrFile.Create_t(fnSim);
     // write empty header in file
     ostrFile.FPrintF_t("ANIMSETLIST\n{\n}\n");
     // close file

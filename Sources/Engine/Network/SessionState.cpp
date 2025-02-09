@@ -159,7 +159,7 @@ void CSessionState::Stop(void)
 #if DEBUG_LERPING
 
   CTFileStream f;
-  f.Create_t(CTFILENAME("Temp\\Lerp.stats"), CTStream::CM_TEXT);
+  f.Create_t(CTFILENAME("Temp\\Lerp.stats"));
   for (INDEX i=0; i<ctCounter; i++) {
     char strBuffer[256];
     sprintf(strBuffer, "%6.2f %6.2f %6.2f %6.2f",
@@ -2112,7 +2112,7 @@ void CSessionState::SessionStateLoop(void)
     {
       CTFileStream strmFile;
       CTString strFileName = CTString("temp\\syncdump.txt");
-      strmFile.Create_t(CTString("temp\\syncdump.txt"), CTStream::CM_TEXT);
+      strmFile.Create_t(strFileName);
       
 #if DEBUG_SYNCSTREAMDUMPING
       if( cli_bDumpSyncEachTick)

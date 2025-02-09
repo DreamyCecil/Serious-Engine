@@ -183,7 +183,7 @@ static void DumpDemoProfile(void)
   // create file
     CTFileStream strm;
     CTString strFileName = CTString( "temp\\DemoProfile.lst");
-    strm.Create_t( strFileName, CTStream::CM_TEXT);
+    strm.Create_t(strFileName);
     // dump results
     strm.FPrintF_t(strFragment.ConstData());
     strm.FPrintF_t(strAnalyzed.ConstData());

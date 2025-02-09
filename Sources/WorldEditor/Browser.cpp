@@ -508,7 +508,7 @@ void CBrowser::SaveVirtualTree(CTFileName fnSave, CVirtualTreeNode *pvtn)
   CTFileStream File;
   try
   {
-    File.Create_t( fnSave, CTStream::CM_BINARY);
+    File.Create_t(fnSave);
     File.WriteID_t( CChunkID("VRTT"));
     File.WriteID_t( CChunkID(VIRTUAL_TREE_VERSION));
     pvtn->Write_t( &File);         // This will recursivly save tree beneath given tree node
@@ -839,7 +839,7 @@ void CBrowser::OnDumpVt()
   CTFileStream FileDump;
   try
   {
-    FileDump.Create_t( fnName, CTStream::CM_TEXT);
+    FileDump.Create_t(fnName);
     m_VirtualTree.Dump(&FileDump);
     FileDump.Close();
   }

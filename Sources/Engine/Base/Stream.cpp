@@ -980,11 +980,8 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 /*
  * Create a new file or overwrite existing.
  */
-void CTFileStream::Create_t(const CTFileName &fnFileName,
-                            enum CTStream::CreateMode cm) // throws char *
+void CTFileStream::Create_t(const CTFileName &fnFileName) // throws char *
 {
-  (void)cm; // OBSOLETE!
-
   CTFileName fnFileNameAbsolute = fnFileName;
   fnFileNameAbsolute.NormalizePath();
 

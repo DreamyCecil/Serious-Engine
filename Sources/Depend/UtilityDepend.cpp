@@ -123,7 +123,7 @@ void SubMain(int argc, char **argv) {
       // extract dependencies
       dl.ExtractDependencies();
       // write dependency list
-      strmDep.Create_t(_afnmFiles[1], CTStream::CM_BINARY);
+      strmDep.Create_t(_afnmFiles[1]);
       dl.Write_t( &strmDep);
               } break;
     case 'e': {
@@ -150,7 +150,7 @@ void SubMain(int argc, char **argv) {
       // remove updated files from list
       dl.RemoveUpdatedFiles();
       // write dependency list
-      strmDepOut.Create_t(_afnmFiles[1], CTStream::CM_BINARY);
+      strmDepOut.Create_t(_afnmFiles[1]);
       dl.Write_t( &strmDepOut);
               } break;
     case 'd': {   // UNTESTED!!!!
@@ -167,7 +167,7 @@ void SubMain(int argc, char **argv) {
       // calculate difference dependency 1 and 2 (res = 1-2)
       dl1.Substract( dl2);
       // save the difference dependency list
-      strmDepDiff.Create_t(_afnmFiles[2], CTStream::CM_BINARY);
+      strmDepDiff.Create_t(_afnmFiles[2]);
       dl1.Write_t( &strmDepDiff);
               } break;
     case 't': {

@@ -1702,7 +1702,7 @@ void CWorldEditorApp::SaveRenderingPreferences(void)
   {
     // open binary file to save rendering preferences
   	CTFileName fnRenderingPrefs = CTString("UserData\\Editor\\WEDRenderingPrefs.bin");
-    strmFile.Create_t( fnRenderingPrefs, CTStream::CM_BINARY);
+    strmFile.Create_t(fnRenderingPrefs);
     // write file ID
     strmFile.WriteID_t( CChunkID( "RPRF"));  // child configurations
     // write version number
@@ -1807,7 +1807,7 @@ void CWorldEditorApp::SaveChildConfigurations(void)
   {
   	CTFileName fnChildConfigurations = CTString("UserData\\Editor\\WEDChildConfigurations.bin");
     // create binary file to receive child configurations
-    strmFile.Create_t( fnChildConfigurations, CTStream::CM_BINARY);
+    strmFile.Create_t(fnChildConfigurations);
     // write file ID
     strmFile.WriteID_t( CChunkID( "CCFG"));  // child configurations
     // write version number
