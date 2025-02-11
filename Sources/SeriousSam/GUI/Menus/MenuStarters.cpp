@@ -559,7 +559,7 @@ void StartModsLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_NAMEUP;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Mods\\");
+  gmCurrent.gm_fnmDirectory = SE1_MODS_SUBDIR;
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".des");
   gmCurrent.gm_pAfterFileChosen = &LSLoadMod;

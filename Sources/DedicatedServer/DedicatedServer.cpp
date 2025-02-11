@@ -190,7 +190,7 @@ static void HandleInitialArgs(const CommandLineArgs_t &aArgs) {
 
   // Mod directory name
   if (_ctParsedArgs > 1) {
-    _fnmMod = "Mods\\" + aArgs[1] + "\\";
+    _fnmMod = SE1_MODS_SUBDIR + aArgs[1] + "\\";
   }
 };
 

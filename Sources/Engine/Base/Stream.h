@@ -353,6 +353,9 @@ public:
   virtual BOOL IsSeekable(void);
 };
 
+// [Cecil] Directory for separate user-made modifications
+#define SE1_MODS_SUBDIR "Mods\\"
+
 // [Cecil] Exported from the engine; makes a string copy of the path to match
 ENGINE_API BOOL FileMatchesList(CDynamicStackArray<CTFileName> &afnm, CTString fnm);
 

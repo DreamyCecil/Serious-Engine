@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 static void OptionGame(const CommandLineArgs_t &aArgs) {
   // [Cecil] TEMP: Use base directory for the default mod
   if (aArgs[0] != "SeriousSam") {
-    _fnmMod = "Mods\\" + aArgs[0] + "\\";
+    _fnmMod = SE1_MODS_SUBDIR + aArgs[0] + "\\";
   }
 };
 

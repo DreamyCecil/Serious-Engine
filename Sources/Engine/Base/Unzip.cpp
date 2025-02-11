@@ -269,7 +269,7 @@ static void ReadZIPDirectory_t(const CTString *pfnmZip) {
   }
 
   // Check if the archive is from a mod
-  const BOOL bMod = pfnmZip->HasPrefix(_fnmApplicationPath + "Mods\\");
+  const BOOL bMod = pfnmZip->HasPrefix(_fnmApplicationPath + SE1_MODS_SUBDIR);
 
   // Go to the beginning of the central dir
   fseek(f, eod.eod_slDirOffsetInFile, SEEK_SET);
@@ -394,7 +394,7 @@ static INDEX ArchiveDirPriority(CTString fnm)
   // Current game (overrides other games)
   if (fnm.RemovePrefix(_fnmApplicationPath)) {
     // Check for mod (overrides everything)
-    return fnm.HasPrefix("Mods\\") ? PRI_MOD : PRI_ROOT;
+    return fnm.HasPrefix(SE1_MODS_SUBDIR) ? PRI_MOD : PRI_ROOT;
   }
 
   // Other game paths

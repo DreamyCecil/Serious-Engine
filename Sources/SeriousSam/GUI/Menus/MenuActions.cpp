@@ -185,7 +185,7 @@ extern void ModConnectConfirm(void)
     _fnmModSelected = CTString("SeriousSam");
   }
 
-  CTFileName fnmModPath = "Mods\\" + _fnmModSelected + "\\";
+  CTFileName fnmModPath = SE1_MODS_SUBDIR + _fnmModSelected + "\\";
   if (!FileExists(fnmModPath + "BaseWriteInclude.lst")
     && !FileExists(fnmModPath + "BaseWriteExclude.lst")
     && !FileExists(fnmModPath + "BaseBrowseInclude.lst")
