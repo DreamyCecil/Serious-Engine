@@ -52,9 +52,6 @@ static SE1_THREADLOCAL BOOL _bThreadCanHandleStreams = FALSE;
 // list of currently opened streams
 static SE1_THREADLOCAL CListHead *_plhOpenedStreams = NULL;
 
-ULONG _ulVirtuallyAllocatedSpace = 0;
-ULONG _ulVirtuallyAllocatedSpaceTotal = 0;
-
 // global string with current MOD path
 CTFileName _fnmMod;
 // global string with current name (the parameter that is passed on cmdline)
@@ -949,7 +946,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
       fstrm_pZipHandle = IZip::Open_t(fnmFullFileName);
       fstrm_slZipSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
       // load the file from the zip in the buffer
-      fstrm_pubZipBuffer = new UBYTE[fstrm_slZipSize];
+      fstrm_pubZipBuffer = (UBYTE *)AllocMemory(fstrm_slZipSize);
       IZip::ReadBlock_t(fstrm_pZipHandle, (UBYTE *)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
     // if it is a physical file
     } else if (iFile==EFP_FILE) {
@@ -1051,11 +1048,7 @@ void CTFileStream::Close(void)
     // close zip entry
     IZip::Close(fstrm_pZipHandle);
     fstrm_pZipHandle = NULL;
-
-    delete[] fstrm_pubZipBuffer;
-
-    _ulVirtuallyAllocatedSpace -= fstrm_slZipSize;
-    //CPrintF("Freed virtual memory with size ^c00ff00%d KB^C (now %d KB)\n", (fstrm_slZipSize / 1000), (_ulVirtuallyAllocatedSpace / 1000));
+    FreeMemory(fstrm_pubZipBuffer);
   }
 
   // clear dictionary vars
