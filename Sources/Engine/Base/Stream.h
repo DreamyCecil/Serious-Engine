@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/FileName.h>
 #include <Engine/Base/ErrorReporting.h>
+#include <Engine/Base/Unzip.h>
 #include <Engine/Templates/DynamicStackArray.h>
 #include <Engine/Templates/DynamicContainer.h>
 #include <Engine/Templates/NameTable.h>
@@ -251,7 +252,7 @@ class ENGINE_API CTFileStream : public CTStream {
 private:
   FILE *fstrm_pFile;    // ptr to opened file
 
-  INDEX fstrm_iZipHandle; // handle of zip-file entry
+  IZip::Handle_t fstrm_pZipHandle; // handle of zip-file entry
   INDEX fstrm_iZipLocation; // location in zip-file entry
   UBYTE* fstrm_pubZipBuffer; // buffer for zip-file entry
   SLONG fstrm_slZipSize; // size of the zip-file entry

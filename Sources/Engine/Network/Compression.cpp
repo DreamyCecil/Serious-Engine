@@ -22,7 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <zlib/zlib.h>
 #pragma comment(lib, "zlib.lib")
 
-extern CTCriticalSection zip_csLock; // critical section for access to zlib functions
+// Critical section for accessing zlib functions
+extern CTCriticalSection zip_csLock;
 
 /* Unpack from stream to stream. */
 void CCompressor::UnpackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // throw char *

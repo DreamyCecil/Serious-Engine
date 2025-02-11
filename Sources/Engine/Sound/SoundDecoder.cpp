@@ -302,35 +302,29 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
     sdc_pogg->ogg_vfVorbisFile = NULL;
     sdc_pogg->ogg_slOffset = 0;
     sdc_pogg->ogg_slSize = 0;
-    INDEX iZipHandle = 0;
+    IZip::Handle_t pZipHandle = NULL;
 
     try {
       // if in zip
       if (iFileType==EFP_BASEZIP || iFileType==EFP_MODZIP) {
         // open it
-        iZipHandle = UNZIPOpen_t(fnmExpanded);
-
-        CTFileName fnmZip;
-        SLONG slOffset;
-        SLONG slSizeCompressed;
-        SLONG slSizeUncompressed;
-        BOOL bCompressed;
-        UNZIPGetFileInfo(iZipHandle, fnmZip, slOffset, slSizeCompressed, slSizeUncompressed, bCompressed);
+        pZipHandle = IZip::Open_t(fnmExpanded);
+        const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
 
         // if compressed
-        if (bCompressed) {
+        if (!pEntry->IsStored()) {
           ThrowF_t(TRANS("encoded audio in archives must not be compressed!\n"));
         }
         // open ogg file
-        sdc_pogg->ogg_fFile = FileSystem::Open(fnmZip, "rb");
+        sdc_pogg->ogg_fFile = FileSystem::Open(pEntry->GetArchive().ConstData(), "rb");
         // if error
         if (sdc_pogg->ogg_fFile==0) {
-          ThrowF_t(TRANS("cannot open archive '%s'"), fnmZip.ConstData());
+          ThrowF_t(TRANS("cannot open archive '%s'"), pEntry->GetArchive().ConstData());
         }
         // remember offset and size
-        sdc_pogg->ogg_slOffset = slOffset;
-        sdc_pogg->ogg_slSize = slSizeUncompressed;
-        fseek(sdc_pogg->ogg_fFile, slOffset, SEEK_SET);
+        sdc_pogg->ogg_slOffset = pEntry->GetDataOffset();
+        sdc_pogg->ogg_slSize = pEntry->GetUncompressedSize();
+        fseek(sdc_pogg->ogg_fFile, pEntry->GetDataOffset(), SEEK_SET);
 
       // if not in zip
       } else if (iFileType==EFP_FILE) {
@@ -390,14 +384,14 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
         fclose(sdc_pogg->ogg_fFile);
         sdc_pogg->ogg_fFile = NULL;
       }
-      if (iZipHandle!=0) {
-        UNZIPClose(iZipHandle);
+      if (pZipHandle != NULL) {
+        IZip::Close(pZipHandle);
       }
       Clear();
       return;
     }
-    if (iZipHandle!=0) {
-      UNZIPClose(iZipHandle);
+    if (pZipHandle != NULL) {
+      IZip::Close(pZipHandle);
     }
 
   // if mp3
@@ -411,33 +405,27 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
     sdc_pmpeg->mpeg_hMainFile = 0;
     sdc_pmpeg->mpeg_hFile = 0;
     sdc_pmpeg->mpeg_hDecoder = 0;
-    INDEX iZipHandle = 0;
+    IZip::Handle_t pZipHandle = NULL;
 
     try {
       // if in zip
       if (iFileType==EFP_BASEZIP || iFileType==EFP_MODZIP) {
         // open it
-        iZipHandle = UNZIPOpen_t(fnmExpanded);
-
-        CTFileName fnmZip;
-        SLONG slOffset;
-        SLONG slSizeCompressed;
-        SLONG slSizeUncompressed;
-        BOOL bCompressed;
-        UNZIPGetFileInfo(iZipHandle, fnmZip, slOffset, slSizeCompressed, slSizeUncompressed, bCompressed);
+        pZipHandle = IZip::Open_t(fnmExpanded);
+        const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
 
         // if compressed
-        if (bCompressed) {
+        if (!pEntry->IsStored()) {
           ThrowF_t(TRANS("encoded audio in archives must not be compressed!\n"));
         }
         // open the zip file
-        sdc_pmpeg->mpeg_hMainFile = palOpenInputFile(fnmZip.ConstData());
+        sdc_pmpeg->mpeg_hMainFile = palOpenInputFile(pEntry->GetArchive().ConstData());
         // if error
         if (sdc_pmpeg->mpeg_hMainFile==0) {
-          ThrowF_t(TRANS("cannot open archive '%s'"), fnmZip.ConstData());
+          ThrowF_t(TRANS("cannot open archive '%s'"), pEntry->GetArchive().ConstData());
         }
         // open the subfile
-        sdc_pmpeg->mpeg_hFile = palOpenSubFile(sdc_pmpeg->mpeg_hMainFile, slOffset, slSizeUncompressed);
+        sdc_pmpeg->mpeg_hFile = palOpenSubFile(sdc_pmpeg->mpeg_hMainFile, pEntry->GetDataOffset(), pEntry->GetUncompressedSize());
         // if error
         if (sdc_pmpeg->mpeg_hFile==0) {
           ThrowF_t(TRANS("cannot open encoded audio file"));
@@ -488,15 +476,15 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       }
     } catch (char*strError) {
       CPrintF(TRANS("Cannot open mpx '%s' for streaming: %s\n"), fnm.ConstData(), strError);
-      if (iZipHandle!=0) {
-        UNZIPClose(iZipHandle);
+      if (pZipHandle != NULL) {
+        IZip::Close(pZipHandle);
       }
       Clear();
       return;
     }
 
-    if (iZipHandle!=0) {
-      UNZIPClose(iZipHandle);
+    if (pZipHandle != NULL) {
+      IZip::Close(pZipHandle);
     }
     sdc_pmpeg->mpeg_fSecondsLen = palDecGetLen(sdc_pmpeg->mpeg_hDecoder);
   }

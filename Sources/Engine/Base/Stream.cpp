@@ -130,7 +130,7 @@ static void LoadPackages(const CTString &strDirectory, const CTString &strMatchF
 
     // Add file to the active set if the name matches the mask
     if (FileSystem::PathMatches(strFile, strMatchFiles)) {
-      UNZIPAddArchive(strDirectory + strFile);
+      IZip::AddArchive(strDirectory + strFile);
     }
 
     bOK = search.FindNext();
@@ -254,7 +254,7 @@ void InitStreams(void)
   // try to
   try {
     // read the zip directories
-    UNZIPReadDirectoriesReverse_t();
+    IZip::ReadDirectoriesReverse_t();
   // if failed
   } catch( char *strError) {
     // report warning
@@ -899,7 +899,7 @@ CTFileStream::CTFileStream(void)
   fstrm_pFile = NULL;
   // mark that file is created for writing
   fstrm_bReadOnly = TRUE;
-  fstrm_iZipHandle = -1;
+  fstrm_pZipHandle = NULL;
   fstrm_iZipLocation = 0;
   fstrm_pubZipBuffer = NULL;
 }
@@ -910,7 +910,7 @@ CTFileStream::CTFileStream(void)
 CTFileStream::~CTFileStream(void)
 {
   // close stream
-  if (fstrm_pFile != NULL || fstrm_iZipHandle!=-1) {
+  if (fstrm_pFile != NULL || fstrm_pZipHandle != NULL) {
     Close();
   }
 }
@@ -930,7 +930,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   // check parameters
   ASSERT(fnFileName.Length() > 0);
   // check that the file is not open
-  ASSERT(fstrm_pFile==NULL && fstrm_iZipHandle==-1);
+  ASSERT(fstrm_pFile == NULL && fstrm_pZipHandle == NULL);
 
   // expand the filename to full path
   CTFileName fnmFullFileName;
@@ -943,11 +943,11 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
     // if zip file
     if( iFile==EFP_MODZIP || iFile==EFP_BASEZIP) {
       // open from zip
-      fstrm_iZipHandle = UNZIPOpen_t(fnmFullFileName);
-      fstrm_slZipSize = UNZIPGetSize(fstrm_iZipHandle);
+      fstrm_pZipHandle = IZip::Open_t(fnmFullFileName);
+      fstrm_slZipSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
       // load the file from the zip in the buffer
       fstrm_pubZipBuffer = new UBYTE[fstrm_slZipSize];
-      UNZIPReadBlock_t(fstrm_iZipHandle, (UBYTE*)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
+      IZip::ReadBlock_t(fstrm_pZipHandle, (UBYTE *)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
     // if it is a physical file
     } else if (iFile==EFP_FILE) {
       // open file in read only mode
@@ -966,7 +966,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   }
 
   // if openning operation was not successfull
-  if(fstrm_pFile == NULL && fstrm_iZipHandle==-1) {
+  if (fstrm_pFile == NULL && fstrm_pZipHandle == NULL) {
     // throw exception
     Throw_t(TRANS("Cannot open file `%s' (%s)"), fnmFullFileName.ConstData(), strerror(errno));
   }
@@ -1028,7 +1028,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName) // throws char *
 void CTFileStream::Close(void)
 {
   // if file is not open
-  if (fstrm_pFile==NULL && fstrm_iZipHandle==-1) {
+  if (fstrm_pFile == NULL && fstrm_pZipHandle == NULL) {
     //ASSERT(FALSE);
     return;
   }
@@ -1044,10 +1044,10 @@ void CTFileStream::Close(void)
     fclose( fstrm_pFile);
     fstrm_pFile = NULL;
   // if file in zip
-  } else if (fstrm_iZipHandle>=0) {
+  } else if (fstrm_pZipHandle != NULL) {
     // close zip entry
-    UNZIPClose(fstrm_iZipHandle);
-    fstrm_iZipHandle = -1;
+    IZip::Close(fstrm_pZipHandle);
+    fstrm_pZipHandle = NULL;
 
     delete[] fstrm_pubZipBuffer;
 
@@ -1071,8 +1071,8 @@ ULONG CTFileStream::GetStreamCRC32_t(void)
     // use base class implementation (really calculates the CRC)
     return CTStream::GetStreamCRC32_t();
   // if file in zip
-  } else if (fstrm_iZipHandle >=0) {
-    return UNZIPGetCRC(fstrm_iZipHandle);
+  } else if (fstrm_pZipHandle != NULL) {
+    return IZip::GetEntry(fstrm_pZipHandle)->GetCRC();
   } else {
     ASSERT(FALSE);
     return 0;
@@ -1082,7 +1082,7 @@ ULONG CTFileStream::GetStreamCRC32_t(void)
 /* Read a block of data from stream. */
 void CTFileStream::Read_t(void *pvBuffer, size_t slSize)
 {
-  if(fstrm_iZipHandle != -1) {
+  if (fstrm_pZipHandle != NULL) {
     memcpy(pvBuffer, fstrm_pubZipBuffer + fstrm_iZipLocation, slSize);
     fstrm_iZipLocation += (INDEX)slSize;
     return;
@@ -1094,7 +1094,7 @@ void CTFileStream::Read_t(void *pvBuffer, size_t slSize)
 /* Write a block of data to stream. */
 void CTFileStream::Write_t(const void *pvBuffer, size_t slSize)
 {
-  if(fstrm_bReadOnly || fstrm_iZipHandle != -1) {
+  if (fstrm_bReadOnly || fstrm_pZipHandle != NULL) {
     throw "Stream is read-only!";
   }
 
@@ -1104,7 +1104,7 @@ void CTFileStream::Write_t(const void *pvBuffer, size_t slSize)
 /* Seek in stream. */
 void CTFileStream::Seek_t(SLONG slOffset, enum SeekDir sd)
 {
-  if(fstrm_iZipHandle != -1) {
+  if (fstrm_pZipHandle != NULL) {
     switch(sd) {
     case SD_BEG: fstrm_iZipLocation = slOffset; break;
     case SD_CUR: fstrm_iZipLocation += slOffset; break;
@@ -1124,7 +1124,7 @@ void CTFileStream::SetPos_t(SLONG slPosition)
 /* Get absolute position in stream. */
 SLONG CTFileStream::GetPos_t(void)
 {
-  if(fstrm_iZipHandle != -1) {
+  if (fstrm_pZipHandle != NULL) {
     return fstrm_iZipLocation;
   } else {
     return ftell(fstrm_pFile);
@@ -1134,8 +1134,9 @@ SLONG CTFileStream::GetPos_t(void)
 /* Get size of stream */
 SLONG CTFileStream::GetStreamSize(void)
 {
-  if(fstrm_iZipHandle != -1) {
-    return UNZIPGetSize(fstrm_iZipHandle);
+  if (fstrm_pZipHandle != NULL) {
+    return fstrm_slZipSize;
+
   } else {
     long lCurrentPos = ftell(fstrm_pFile);
     fseek(fstrm_pFile, 0, SD_END);
@@ -1148,7 +1149,7 @@ SLONG CTFileStream::GetStreamSize(void)
 /* Check if file position points to the EOF */
 BOOL CTFileStream::AtEOF(void)
 {
-  if(fstrm_iZipHandle != -1) {
+  if (fstrm_pZipHandle != NULL) {
     return fstrm_iZipLocation >= fstrm_slZipSize;
   }
 
@@ -1518,8 +1519,8 @@ static inline BOOL CheckFileAt(CTString strBaseDir, CTFileName fnmFile, CTFileNa
 static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded)
 {
   // Search for the file in archives
-  const INDEX iFileInZip = UNZIPGetFileIndex(fnmFile);
-  const BOOL bFoundInZip = (iFileInZip >= 0);
+  const IZip::CEntry *pZipEntry = IZip::FindEntry(fnmFile);
+  const BOOL bFoundInZip = (pZipEntry != NULL);
 
   // [Cecil] Check file at a specific directory and return if it exists
   #define RETURN_FILE_AT(_Dir) \
@@ -1535,7 +1536,7 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
     // If allowing archives
     if (!(ulType & EFP_NOZIPS)) {
       // Use if it exists in the mod archive
-      if (bFoundInZip && UNZIPIsFileAtIndexMod(iFileInZip)) {
+      if (bFoundInZip && pZipEntry->IsMod()) {
         fnmExpanded = fnmFile;
         return EFP_MODZIP;
       }

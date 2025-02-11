@@ -65,8 +65,8 @@ CTString _strLogFile = "";
 OS::Window _hwndCurrent = NULL;
 BOOL _bFullScreen = FALSE;
 
-// critical section for access to zlib functions
-CTCriticalSection zip_csLock; 
+// Critical section for accessing zlib functions
+extern CTCriticalSection zip_csLock; 
 
 // to keep system gamma table
 static UWORD _auwSystemGamma[3][256];

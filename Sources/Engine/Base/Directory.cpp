@@ -91,12 +91,12 @@ static void ListFromGRO(CDynamicStackArray<CTFileName> &afnmTemp, const CTFileNa
   const BOOL bRecursive = (ulFlags & DLI_RECURSIVE);
   const BOOL bLists = bMod && !(ulFlags & DLI_IGNORELISTS);
 
-  const INDEX ctFilesInZips = UNZIPGetFileCount();
+  const INDEX ctFilesInZips = IZip::GetEntryCount();
 
   for (INDEX iFileInZip = 0; iFileInZip < ctFilesInZips; iFileInZip++) {
     // Get ZIP entry
-    const CZipEntry &ze = UNZIPGetEntry(iFileInZip);
-    const CTFileName &fnm = ze.ze_fnm;
+    const IZip::CEntry &ze = *IZip::GetEntry(iFileInZip);
+    const CTFileName &fnm = ze.GetFileName();
 
     // Skip if not under this directory
     if (bRecursive) {
@@ -120,7 +120,7 @@ static void ListFromGRO(CDynamicStackArray<CTFileName> &afnmTemp, const CTFileNa
       if (dir.fnmPath == "") continue;
 
       // If the package is from another directory
-      if (ze.ze_pfnmArchive->HasPrefix(dir.fnmPath)) {
+      if (ze.GetArchive().HasPrefix(dir.fnmPath)) {
         // Skip if not searching game directories
         if (!(ulFlags & DLI_SEARCHGAMES) && dir.bGame) {
           bSkipFromOtherDirs = TRUE;
@@ -137,16 +137,14 @@ static void ListFromGRO(CDynamicStackArray<CTFileName> &afnmTemp, const CTFileNa
 
     if (bSkipFromOtherDirs) continue;
 
-    const BOOL bFileFromMod = UNZIPIsFileAtIndexMod(iFileInZip);
-
     // List files exclusively from the mod
     if (ulFlags & DLI_ONLYMOD) {
-      if (bMod && bFileFromMod) {
+      if (bMod && ze.IsMod()) {
         afnmTemp.Push() = fnm;
       }
 
     // List files from the game
-    } else if (!bFileFromMod) {
+    } else if (!ze.IsMod()) {
       // Not a mod file or shouldn't match mod's browse paths
       if (!bLists) {
         afnmTemp.Push() = fnm;
