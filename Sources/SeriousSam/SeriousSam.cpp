@@ -404,6 +404,21 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
     FatalError("%s", strError);
   }
 
+  // [Cecil] Display a warning about mods with modified game logic based on the presence of any DLL files
+  {
+    CDynamicStackArray<CTString> afnmLibraries;
+    MakeDirList(afnmLibraries, "Bin\\", "*.dll", DLI_RECURSIVE | DLI_ONLYMOD | DLI_IGNOREGRO);
+
+    if (afnmLibraries.Count() != 0) {
+      WarningMessage("%s", TRANS(
+        "It looks like you're trying to start an old mod with modified game logic (custom DLL files).\n"
+        "This kind of mods is not supported due to the major differences between engine versions.\n\n"
+        "You may only play old mods that include new levels and/or replace existing assets, such as models and sounds.\n"
+        "This mod will be launched with standard game logic. It is not guaranteed that everything will work!"
+      ));
+    }
+  }
+
   // always disable all warnings when in serious sam
   _pShell->Execute( "con_bNoWarnings=1;");
 
