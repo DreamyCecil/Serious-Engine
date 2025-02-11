@@ -181,6 +181,9 @@ void InitStreams(void)
     CDynamicStackArray<CTString> aReadList;
     bOK |= LoadFileList(aWriteList, "BaseWriteExclude.lst");
     bOK |= LoadFileList(aReadList, "BaseBrowseExclude.lst");
+    // [Cecil] TEMP: Simply check for include lists, in case exclude lists aren't there
+    bOK |= FileExists("BaseWriteInclude.lst");
+    bOK |= FileExists("BaseBrowseInclude.lst");
 
     // if none found
     if (!bOK) {
