@@ -494,11 +494,28 @@ const CEntry *GetEntry(Handle_t pHandle) {
 // Try to find ZIP file entry by its file path
 const CEntry *FindEntry(const CTString &fnm) {
   const INDEX ctFiles = _azeFiles.Count();
+  const BOOL bAbsolute = fnm.IsAbsolute();
+  CTString fnmRelative;
 
   for (INDEX iFile = 0; iFile < ctFiles; iFile++) {
-    if (_azeFiles[iFile].GetFileName() == fnm) {
-      return &_azeFiles[iFile];
+    const CEntry &ze = _azeFiles[iFile];
+
+    // [Cecil] If the specified path is absolute
+    if (bAbsolute) {
+      // Try removing entry's archive path from the file path
+      fnmRelative = fnm;
+
+      if (fnmRelative.RemovePrefix(ze.GetArchive() + "\\")) {
+        // Then compare relative paths
+        if (ze.GetFileName() == fnmRelative) return &ze;
+      }
+
+      // Otherwise skip this entry, since it's from the wrong archive
+      continue;
     }
+
+    // Compare relative paths with an entry from any archive
+    if (ze.GetFileName() == fnm) return &ze;
   }
 
   return NULL;

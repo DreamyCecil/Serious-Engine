@@ -1525,6 +1525,17 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
   const IZip::CEntry *pZipEntry = IZip::FindEntry(fnmFile);
   const BOOL bFoundInZip = (pZipEntry != NULL);
 
+  // [Cecil] Already an absolute path
+  if (fnmFile.IsAbsolute()) {
+    fnmExpanded = fnmFile;
+
+    if (bFoundInZip) {
+      return (_fnmMod != "" && pZipEntry->IsMod()) ? EFP_MODZIP : EFP_BASEZIP;
+    }
+
+    return EFP_FILE;
+  }
+
   // [Cecil] Check file at a specific directory and return if it exists
   #define RETURN_FILE_AT(_Dir) \
     { if (CheckFileAt(_Dir, fnmFile, fnmExpanded)) return EFP_FILE; }
@@ -1536,13 +1547,12 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
       RETURN_FILE_AT(_fnmApplicationPath + _fnmMod);
     }
 
-    // If allowing archives
-    if (!(ulType & EFP_NOZIPS)) {
-      // Use if it exists in the mod archive
-      if (bFoundInZip && pZipEntry->IsMod()) {
-        fnmExpanded = fnmFile;
-        return EFP_MODZIP;
-      }
+    // If allowing archives, use the found file
+    if (!(ulType & EFP_NOZIPS) && bFoundInZip && pZipEntry->IsMod()) {
+      // [Cecil] Instead of returning relative path to the file inside any archive, return full path to the file
+      // inside its archive, for example: "C:\\SeriousSam\\Mods\\MyMod\\Content.gro\\MyModels\\Model01.mdl"
+      fnmExpanded = pZipEntry->GetArchive() + "\\" + fnmFile;
+      return EFP_MODZIP;
     }
 
     // Try mod directory after archives
@@ -1556,13 +1566,12 @@ static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFile
     RETURN_FILE_AT(_fnmApplicationPath);
   }
 
-  // If allowing archives
-  if (!(ulType & EFP_NOZIPS)) {
-    // Use it if exists in any archive
-    if (bFoundInZip) {
-      fnmExpanded = fnmFile;
-      return EFP_BASEZIP;
-    }
+  // If allowing archives, use the found file
+  if (!(ulType & EFP_NOZIPS) && bFoundInZip) {
+    // [Cecil] Instead of returning relative path to the file inside any archive, return full path to the file
+    // inside its archive, for example: "C:\\SeriousSam\\MyAssets.gro\\MyModels\\Model01.mdl"
+    fnmExpanded = pZipEntry->GetArchive() + "\\" + fnmFile;
+    return EFP_BASEZIP;
   }
 
   // Try game root directory after archives
@@ -1593,17 +1602,21 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
 
   // if writing
   if (ulType&EFP_WRITE) {
+    // [Cecil] Already an absolute path
+    if (fnmFileAbsolute.IsAbsolute()) {
+      fnmExpanded = fnmFileAbsolute;
+      return EFP_FILE;
+    }
+
     // if should write to mod dir
     if (_fnmMod != "" && FileMatchesList(_afnmModWrite, fnmFileAbsolute)) {
       // do that
-      fnmExpanded = _fnmApplicationPath+_fnmMod+fnmFileAbsolute;
-      fnmExpanded.NormalizePath();
+      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFileAbsolute;
       return EFP_FILE;
     // if should not write to mod dir
     } else {
       // write to base dir
-      fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
-      fnmExpanded.NormalizePath();
+      fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
       return EFP_FILE;
     }
 
@@ -1630,12 +1643,10 @@ INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExp
   // in other cases
   } else  {
     ASSERT(FALSE);
-    fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
-    fnmExpanded.NormalizePath();
+    fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
     return EFP_FILE;
   }
 
-  fnmExpanded = _fnmApplicationPath+fnmFileAbsolute;
-  fnmExpanded.NormalizePath();
+  fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
   return EFP_NONE;
 }
