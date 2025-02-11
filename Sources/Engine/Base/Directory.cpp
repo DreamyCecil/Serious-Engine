@@ -89,7 +89,6 @@ static void ListFromGRO(CDynamicStackArray<CTFileName> &afnmTemp, const CTFileNa
 
   const BOOL bMod = (_fnmMod != "");
   const BOOL bRecursive = (ulFlags & DLI_RECURSIVE);
-  const BOOL bLists = bMod && !(ulFlags & DLI_IGNORELISTS);
 
   const INDEX ctFilesInZips = IZip::GetEntryCount();
 
@@ -145,12 +144,12 @@ static void ListFromGRO(CDynamicStackArray<CTFileName> &afnmTemp, const CTFileNa
 
     // List files from the game
     } else if (!ze.IsMod()) {
-      // Not a mod file or shouldn't match mod's browse paths
-      if (!bLists) {
+      // Not looking for mod files or shouldn't match mod's browse paths
+      if (!bMod || ulFlags & DLI_IGNORELISTS) {
         afnmTemp.Push() = fnm;
 
       // Matches mod's browse paths
-      } else if (FileMatchesList(_afnmModRead, fnm)) {
+      } else if (!FileMatchesList(_afnmModRead, fnm)) {
         afnmTemp.Push() = fnm;
       }
 
