@@ -74,7 +74,7 @@ class ENGINE_API CAbstractSoundAPI {
     SLONG CalculateMixerSize(void);
 
     // Calculate decoder buffer size (only after mixer size)
-    SLONG CalculateDecoderSize(void);
+    SLONG CalculateDecoderSize(SLONG slMixerSize);
 
     // Allocate new buffer memory
     // Must always be called from interface's StartUp() method

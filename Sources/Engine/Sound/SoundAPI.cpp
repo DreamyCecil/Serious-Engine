@@ -48,10 +48,10 @@ SLONG CAbstractSoundAPI::CalculateMixerSize(void) {
 };
 
 // Calculate decoder buffer size (only after mixer size)
-SLONG CAbstractSoundAPI::CalculateDecoderSize(void) {
+SLONG CAbstractSoundAPI::CalculateDecoderSize(SLONG slMixerSize) {
   // Decoder buffer always works at 44khz
   const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
-  return m_slMixerBufferSize * ((44100 + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
+  return slMixerSize * ((44100 + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
 };
 
 // Allocate new buffer memory
@@ -61,12 +61,13 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
 
   // Determine initial buffer sizes
   m_slMixerBufferSize = CalculateMixerSize();
-  m_slDecodeBufferSize = CalculateDecoderSize();
 
   // Align mixer size to be the next multiple of the block size
   if (bAlignToBlockSize) {
     m_slMixerBufferSize += ctBufferBlockSize - (m_slMixerBufferSize % ctBufferBlockSize);
   }
+
+  m_slDecodeBufferSize = CalculateDecoderSize(m_slMixerBufferSize);
 
   // Twice as much because of 32-bit buffer
   m_pslMixerBuffer = (SLONG *)AllocMemory(m_slMixerBufferSize * 2);
