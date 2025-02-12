@@ -373,19 +373,6 @@ ENGINE_API BOOL IsFileReadOnly(const CTFileName &fnmFile);
 // Delete a file (called 'remove' to avid name clashes with win32)
 ENGINE_API BOOL RemoveFile(const CTFileName &fnmFile);
 
-// Expand a file's filename to full path
-
-// these are input flags for describing what you need the file for
-#define EFP_READ   (1UL<<0)  // will open for reading
-#define EFP_WRITE  (1UL<<1)  // will open for writing
-#define EFP_NOZIPS (1UL<<31) // add this flag to forbid searching in zips
-// these are return values 
-#define EFP_NONE       0  // doesn't exist
-#define EFP_FILE       1  // generic file on disk
-#define EFP_BASEZIP    2  // file in one of base zips
-#define EFP_MODZIP     3  // file in one of mod zips
-ENGINE_API INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded);
-
 // [Cecil] New flags for listing files in some directory using MakeDirList()
 enum EDirListFlags {
   DLI_RECURSIVE   = (1 << 0), // Look into subdirectories
@@ -406,6 +393,38 @@ ENGINE_API void MakeDirList(
   const CTString &strPattern,   // pattern for each file to match ("" matches all)
   ULONG ulFlags                 // additional flags
 );
+
+// [Cecil] Structure that expands a relative path to the absolute path for writing/reading files
+struct ENGINE_API ExpandPath {
+  CTString fnmExpanded; // Absolute path to the file
+
+  enum EType {
+    E_PATH_INVALID = 0,
+    E_PATH_ABSOLUTE, // Already an absolute path that can be inside any directory (including other types)
+    E_PATH_GAME,     // Path inside any game directory
+    E_PATH_MOD,      // Path inside the current mod directory
+  };
+
+  EType eType; // Inside which directory this path is
+  BOOL bArchive; // Marks a file from an archive
+
+  __forceinline ExpandPath() : eType(E_PATH_INVALID), bArchive(FALSE) {};
+
+  // Get a potential substitution for some file
+  static BOOL GetSub(CTString &fnm);
+
+  // Get full path for writing a file on disk
+  // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
+  BOOL ForWriting(const CTString &fnmFile, ULONG ulFlags);
+
+  // Get full path for reading a file from disk or from some archive
+  // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
+  BOOL ForReading(const CTString &fnmFile, ULONG ulFlags);
+
+  // Like ForReading() but also checks for substitutions if original files don't exist
+  // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
+  BOOL ForReadingWithSub(const CTString &fnmFile, ULONG ulFlags);
+};
 
 // [Cecil] Turned paths into constant references to internal variables
 // global string with application path
@@ -438,6 +457,49 @@ struct ExtraContentDir_t {
 
 // [Cecil] List of extra content directories
 ENGINE_API extern CDynamicStackArray<ExtraContentDir_t> _aContentDirs;
+
+enum {
+  EFP_READ    = (1 << 0),
+  EFP_WRITE   = (1 << 1),
+  EFP_NOZIPS  = (1 << 31),
+  EFP_NONE    = 0,
+  EFP_FILE    = 1,
+  EFP_BASEZIP = 2,
+  EFP_MODZIP  = 3,
+};
+
+// [Cecil] TEMP: Wrapper method for compatibility
+inline INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded) {
+  ExpandPath expath;
+
+  if ((ulType & EFP_WRITE) && expath.ForWriting(fnmFile, 0)) {
+    fnmExpanded = expath.fnmExpanded;
+    return EFP_FILE;
+
+  } else if (ulType & EFP_READ) {
+    const ULONG ulIgnoreArchives = (ulType & EFP_NOZIPS) ? DLI_IGNOREGRO : 0;
+
+    if (expath.ForReadingWithSub(fnmFile, ulIgnoreArchives | DLI_SEARCHGAMES)) {
+      fnmExpanded = expath.fnmExpanded;
+
+      if (expath.bArchive) {
+        return (expath.eType == ExpandPath::E_PATH_MOD) ? EFP_MODZIP : EFP_BASEZIP;
+      } else {
+        return EFP_FILE;
+      }
+
+    } else {
+      fnmExpanded = _fnmApplicationPath + fnmFile;
+      fnmExpanded.NormalizePath();
+      return EFP_NONE;
+    }
+  }
+
+  ASSERT(FALSE);
+  fnmExpanded = _fnmApplicationPath + fnmFile;
+  fnmExpanded.NormalizePath();
+  return EFP_FILE;
+};
 
 #endif  /* include-once check. */
 

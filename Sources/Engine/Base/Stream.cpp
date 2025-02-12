@@ -1472,30 +1472,73 @@ BOOL RemoveFile(const CTFileName &fnmFile)
   }
 }
 
-// check for some file extensions that can be substituted
-static BOOL SubstExt_internal(CTFileName &fnmFullFileName)
-{
-  if (fnmFullFileName.FileExt() == ".mp3") {
-    fnmFullFileName = fnmFullFileName.NoExt() + ".ogg";
+// [Cecil] Get a potential substitution for some file
+BOOL ExpandPath::GetSub(CTString &fnm) {
+  // Encoded audio is interchangeable
+  if (fnm.FileExt() == ".mp3") {
+    fnm = fnm.NoExt() + ".ogg";
     return TRUE;
 
-  } else if (fnmFullFileName.FileExt() == ".ogg") {
-    fnmFullFileName = fnmFullFileName.NoExt() + ".mp3";
+  } else if (fnm.FileExt() == ".ogg") {
+    fnm = fnm.NoExt() + ".mp3";
     return TRUE;
 
-  // [Cecil] ASCII and binary model configs are interchangeable
-  } else if (fnmFullFileName.FileExt() == ".smc") {
-    fnmFullFileName = fnmFullFileName.NoExt() + ".bmc";
+  // ASCII and binary model configs are interchangeable
+  } else if (fnm.FileExt() == ".smc") {
+    fnm = fnm.NoExt() + ".bmc";
     return TRUE;
 
-  } else if (fnmFullFileName.FileExt() == ".bmc") {
-    fnmFullFileName = fnmFullFileName.NoExt() + ".smc";
+  } else if (fnm.FileExt() == ".bmc") {
+    fnm = fnm.NoExt() + ".smc";
     return TRUE;
   }
 
-  // [Cecil] TRUE -> FALSE
   return FALSE;
-}
+};
+
+// [Cecil] Get full path for writing a file on disk
+// Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
+BOOL ExpandPath::ForWriting(const CTString &fnmFile, ULONG ulFlags) {
+  CTString fnmNormalized = fnmFile;
+  fnmNormalized.NormalizePath();
+
+  const BOOL bOnlyMod       = !!(ulFlags & DLI_ONLYMOD);
+  const BOOL bCanCheckMod   = !(ulFlags & DLI_IGNOREMOD);
+  const BOOL bCanCheckLists = !(ulFlags & DLI_IGNORELISTS);
+
+  // Can never write into archives
+  bArchive = FALSE;
+
+  // Already an absolute path
+  if (fnmNormalized.IsAbsolute()) {
+    ASSERT(!bOnlyMod); // Don't use the mod flag for absolute paths
+
+    fnmExpanded = fnmNormalized;
+    eType = E_PATH_ABSOLUTE;
+    return TRUE;
+  }
+
+  // If considering the active mod
+  if (bCanCheckMod && _fnmMod != "") {
+    // Check against the mod write list
+    if (bCanCheckLists && FileMatchesList(_afnmModWrite, fnmNormalized)) {
+      // Write into the mod directory
+      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmNormalized;
+      eType = E_PATH_MOD;
+      return TRUE;
+    }
+
+  // Not a mod but should've been
+  } else if (bOnlyMod) {
+    // Can't write
+    return FALSE;
+  }
+
+  // Write into the root game directory
+  fnmExpanded = _fnmApplicationPath + fnmNormalized;
+  eType = E_PATH_GAME;
+  return TRUE;
+};
 
 // [Cecil] Check if file exists at a specific path (relative or absolute)
 static inline BOOL CheckFileAt(CTString strBaseDir, CTFileName fnmFile, CTFileName &fnmExpanded) {
@@ -1512,134 +1555,134 @@ static inline BOOL CheckFileAt(CTString strBaseDir, CTFileName fnmFile, CTFileNa
   return FileSystem::Exists(fnmExpanded.ConstData());
 };
 
-static INDEX ExpandFilePath_read(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded)
-{
+// [Cecil] Get full path for reading a file from disk or from some archive
+// Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
+BOOL ExpandPath::ForReading(const CTString &fnmFile, ULONG ulFlags) {
+  const BOOL bOnlyMod     = !!(ulFlags & DLI_ONLYMOD);
+  const BOOL bCanCheckMod = !(ulFlags & DLI_IGNOREMOD);
+  const BOOL bOnlyGRO     = !!(ulFlags & DLI_ONLYGRO);
+  const BOOL bIgnoreGRO   = !!(ulFlags & DLI_IGNOREGRO);
+  const BOOL bSearchGames = !!(ulFlags & DLI_SEARCHGAMES);
+
   // Search for the file in archives
   const IZip::CEntry *pZipEntry = IZip::FindEntry(fnmFile);
   const BOOL bFoundInZip = (pZipEntry != NULL);
 
-  // [Cecil] Already an absolute path
+  // Already an absolute path
   if (fnmFile.IsAbsolute()) {
-    fnmExpanded = fnmFile;
+    ASSERT(!bOnlyMod); // Don't use the mod flag for absolute paths
 
-    if (bFoundInZip) {
-      return (_fnmMod != "" && pZipEntry->IsMod()) ? EFP_MODZIP : EFP_BASEZIP;
+    fnmExpanded = fnmFile;
+    bArchive = bFoundInZip;
+
+    // Path to some file inside an archive
+    if (bArchive) {
+      // Ignore archives
+      if (bIgnoreGRO) {
+        return FALSE;
+      }
+
+      if (_fnmMod != "" && pZipEntry->IsMod()) {
+        eType = E_PATH_MOD;
+      } else {
+        eType = E_PATH_GAME;
+      }
+
+      return TRUE;
+
+    // Not an archive but should've been
+    } else if (bOnlyGRO) {
+      // Can't read
+      return FALSE;
     }
 
-    return EFP_FILE;
+    // Any other absolute path
+    eType = E_PATH_ABSOLUTE;
+    return TRUE;
   }
 
   // [Cecil] Check file at a specific directory and return if it exists
-  #define RETURN_FILE_AT(_Dir) \
-    { if (CheckFileAt(_Dir, fnmFile, fnmExpanded)) return EFP_FILE; }
+  #define RETURN_FILE_AT(_Dir, _Type) { \
+    if (CheckFileAt(_Dir, fnmFile, fnmExpanded)) { \
+      eType = _Type; \
+      bArchive = FALSE; \
+      return TRUE; \
+    } \
+  }
 
-  // If a mod is active
-  if (_fnmMod != "") {
+  // If considering the active mod
+  if (bCanCheckMod && _fnmMod != "") {
     // Try mod directory before archives
-    if (!fil_bPreferZips) {
-      RETURN_FILE_AT(_fnmApplicationPath + _fnmMod);
-    }
+    if (!bOnlyGRO && !fil_bPreferZips) RETURN_FILE_AT(_fnmApplicationPath + _fnmMod, E_PATH_MOD);
 
     // If allowing archives, use the found file
-    if (!(ulType & EFP_NOZIPS) && bFoundInZip && pZipEntry->IsMod()) {
+    if (!bIgnoreGRO && bFoundInZip && pZipEntry->IsMod()) {
       // [Cecil] Instead of returning relative path to the file inside any archive, return full path to the file
       // inside its archive, for example: "C:\\SeriousSam\\Mods\\MyMod\\Content.gro\\MyModels\\Model01.mdl"
       fnmExpanded = pZipEntry->GetArchive() + "\\" + fnmFile;
-      return EFP_MODZIP;
+      eType = E_PATH_MOD;
+      bArchive = TRUE;
+      return TRUE;
     }
 
     // Try mod directory after archives
-    if (fil_bPreferZips) {
-      RETURN_FILE_AT(_fnmApplicationPath + _fnmMod);
-    }
+    if (!bOnlyGRO && fil_bPreferZips) RETURN_FILE_AT(_fnmApplicationPath + _fnmMod, E_PATH_MOD);
+
+  // Not a mod but should've been
+  } else if (bOnlyMod) {
+    // Can't read
+    return FALSE;
   }
 
   // Try game root directory before archives
-  if (!fil_bPreferZips) {
-    RETURN_FILE_AT(_fnmApplicationPath);
-  }
+  if (!bOnlyGRO && !fil_bPreferZips) RETURN_FILE_AT(_fnmApplicationPath, E_PATH_GAME);
 
   // If allowing archives, use the found file
-  if (!(ulType & EFP_NOZIPS) && bFoundInZip) {
+  if (!bIgnoreGRO && bFoundInZip) {
     // [Cecil] Instead of returning relative path to the file inside any archive, return full path to the file
     // inside its archive, for example: "C:\\SeriousSam\\MyAssets.gro\\MyModels\\Model01.mdl"
     fnmExpanded = pZipEntry->GetArchive() + "\\" + fnmFile;
-    return EFP_BASEZIP;
+    eType = E_PATH_GAME;
+    bArchive = TRUE;
+    return TRUE;
   }
 
   // Try game root directory after archives
-  if (fil_bPreferZips) {
-    RETURN_FILE_AT(_fnmApplicationPath);
+  if (!bOnlyGRO && fil_bPreferZips) RETURN_FILE_AT(_fnmApplicationPath, E_PATH_GAME);
+
+  if (!bOnlyGRO && bSearchGames) {
+    // Try searching other game directories after the main one
+    const INDEX ctDirs = _aContentDirs.Count();
+
+    for (INDEX iDir = ctDirs - 1; iDir >= 0; iDir--) {
+      const ExtraContentDir_t &dir = _aContentDirs[iDir];
+
+      // No game directory
+      if (!dir.bGame || dir.fnmPath == "") continue;
+
+      RETURN_FILE_AT(dir.fnmPath, E_PATH_GAME);
+    }
   }
 
-  // [Cecil] Try searching other game directories after the main one
-  const INDEX ctDirs = _aContentDirs.Count();
-
-  for (INDEX iDir = ctDirs - 1; iDir >= 0; iDir--) {
-    const ExtraContentDir_t &dir = _aContentDirs[iDir];
-
-    // No game directory
-    if (!dir.bGame || dir.fnmPath == "") continue;
-
-    RETURN_FILE_AT(dir.fnmPath);
-  }
-
-  return EFP_NONE;
+  // File not found
+  return FALSE;
 };
 
-// Expand a file's filename to full path
-INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded)
-{
-  CTFileName fnmFileAbsolute = fnmFile;
-  fnmFileAbsolute.NormalizePath();
+// [Cecil] Like ForReading() but also checks for substitutions if original files don't exist
+// Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
+BOOL ExpandPath::ForReadingWithSub(const CTString &fnmFile, ULONG ulFlags) {
+  CTString fnmNormalized = fnmFile;
+  fnmNormalized.NormalizePath();
 
-  // if writing
-  if (ulType&EFP_WRITE) {
-    // [Cecil] Already an absolute path
-    if (fnmFileAbsolute.IsAbsolute()) {
-      fnmExpanded = fnmFileAbsolute;
-      return EFP_FILE;
-    }
+  // Found the file for reading
+  if (ForReading(fnmNormalized, ulFlags)) return TRUE;
 
-    // if should write to mod dir
-    if (_fnmMod != "" && FileMatchesList(_afnmModWrite, fnmFileAbsolute)) {
-      // do that
-      fnmExpanded = _fnmApplicationPath + _fnmMod + fnmFileAbsolute;
-      return EFP_FILE;
-    // if should not write to mod dir
-    } else {
-      // write to base dir
-      fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
-      return EFP_FILE;
-    }
-
-  // if reading
-  } else if (ulType&EFP_READ) {
-
-    // check for expansions for reading
-    INDEX iRes = ExpandFilePath_read(ulType, fnmFileAbsolute, fnmExpanded);
-    // if not found
-    if (iRes==EFP_NONE) {
-      //check for some file extensions that can be substituted
-      CTFileName fnmSubst = fnmFileAbsolute;
-      if (SubstExt_internal(fnmSubst)) {
-        iRes = ExpandFilePath_read(ulType, fnmSubst, fnmExpanded);
-      }
-    }
-
-    fnmExpanded.NormalizePath();
-
-    if (iRes!=EFP_NONE) {
-      return iRes;
-    }
-
-  // in other cases
-  } else  {
-    ASSERT(FALSE);
-    fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
-    return EFP_FILE;
+  // Try searching for a substitution, if the original isn't found
+  if (GetSub(fnmNormalized)) {
+    // Found the substitution
+    if (ForReading(fnmNormalized, ulFlags)) return TRUE;
   }
 
-  fnmExpanded = _fnmApplicationPath + fnmFileAbsolute;
-  return EFP_NONE;
-}
+  // Cannot find a substitution
+  return FALSE;
+};
