@@ -34,12 +34,6 @@ void (*immChangeGain)(const float fGain) = NULL;
 FLOAT ifeel_fGain = 1.0f;
 INDEX ifeel_bEnabled = FALSE;
 
-#ifndef NDEBUG
-  #define IFEEL_DLL_NAME "Bin/Debug/ImmWrapper.dll"
-#else
-  #define IFEEL_DLL_NAME "Bin/ImmWrapper.dll"
-#endif
-
 void ifeel_GainChange(void *ptr)
 {
   IFeel_ChangeGain(ifeel_fGain);
@@ -79,8 +73,8 @@ CTString IFeel_GetProjectFileName()
   // read up to 1000 devices
   for(INDEX idev=0;idev<1000;idev++)
   {
-    char strDeviceName[256];
-    char strProjectFile[256];
+    char strDeviceName[257] = { 0 };
+    char strProjectFile[257] = { 0 };
     strLine = strIFeelTable;
     // read first line
     strLine.OnlyFirstLine();
@@ -98,6 +92,7 @@ CTString IFeel_GetProjectFileName()
     // check if this is current device 
     if(strProduct == strDeviceName) return strProjectFile;
   }
+
   // device was not found, return default project file
   CPrintF("No project file specified for device '%s'.\nUsing default project file\n", strProduct.ConstData());
   return strDefaultProjectFile;
@@ -108,6 +103,12 @@ void SE_IFeelInit(void) {
 #if SE1_WIN
   HWND hwnd = NULL; //GetDesktopWindow();
   HINSTANCE hInstance = GetModuleHandleA(NULL);
+
+#else
+  // [Cecil] FIXME: No idea what IFeel does with the handles in Imm_CreateDevice()
+  HWND hwnd = NULL;
+  HINSTANCE hInstance = NULL;
+#endif
 
   if (!IFeel_InitDevice(hInstance, hwnd)) return;
 
@@ -126,7 +127,6 @@ void SE_IFeelInit(void) {
   }
 
   CPrintF("\n");
-#endif // SE1_WIN
 };
 
 // inits imm ifeel device
@@ -136,20 +136,28 @@ BOOL IFeel_InitDevice(HINSTANCE &hInstance, HWND &hWnd)
   _pShell->DeclareSymbol("persistent user FLOAT inp_fIFeelGain post:inp_IFeelGainChange;", &ifeel_fGain);
   _pShell->DeclareSymbol("const user INDEX sys_bIFeelEnabled;", &ifeel_bEnabled);
 
-#if SE1_WIN
   IFeel_ChangeGain(ifeel_fGain);
 
-  // load iFeel lib 
-  ExpandPath expath;
-  expath.ForReading(IFEEL_DLL_NAME, DLI_IGNOREGRO);
+  // [Cecil] TODO: Implement cross-platform IFeel support (as gamepad vibrations perhaps?)
+#if !SE1_WIN
+  CPrintF("IFeel is unavailable on this platform.\n");
+  return FALSE;
+#endif
 
-  if(_hLib!=NULL) return FALSE;
+  // Already loaded
+  if (_hLib != NULL) return FALSE;
 
-  UINT iOldErrorMode = SetErrorMode( SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
-  _hLib = OS::LoadLib(expath.fnmExpanded.ConstData());
+#if SE1_WIN
+  const UINT iOldErrorMode = SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#endif
+
+  _hLib = OS::LoadLib("ImmWrapper.dll");
+
+#if SE1_WIN
   SetErrorMode(iOldErrorMode);
-  if(_hLib==NULL)
-  {
+#endif
+
+  if (_hLib == NULL) {
     CPrintF("Error loading ImmWraper.dll.\n\tIFeel disabled\n");
     return FALSE;
   }
@@ -179,11 +187,6 @@ BOOL IFeel_InitDevice(HINSTANCE &hInstance, HWND &hWnd)
   CPrintF("IFeel mouse '%s' initialized\n", IFeel_GetProductName().ConstData());
   ifeel_bEnabled = TRUE;
   return TRUE;
-
-#else
-  CPrintF("IFeel is unavailable on this platform.\n");
-  return FALSE;
-#endif // SE1_WIN
 }
 // delete imm ifeel device
 void IFeel_DeleteDevice()
