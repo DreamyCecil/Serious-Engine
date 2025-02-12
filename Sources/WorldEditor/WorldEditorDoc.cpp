@@ -4436,10 +4436,10 @@ void CWorldEditorDoc::ReloadWorld(void)
 
 void CWorldEditorDoc::OnCheckEdit(void)
 {
-  CTFileName fnmFileName;
-  ExpandFilePath(EFP_READ, m_woWorld.wo_fnmFileName, fnmFileName);
+  ExpandPath expath;
+  expath.ForReading(m_woWorld.wo_fnmFileName, DLI_IGNOREGRO);
 
-  CTString strCommand = "p4 edit " + fnmFileName;
+  CTString strCommand = "p4 edit " + expath.fnmExpanded;
 
   INDEX iResult = system(strCommand);
   if(iResult != 0) {
@@ -4455,10 +4455,10 @@ void CWorldEditorDoc::OnCheckEdit(void)
 
 void CWorldEditorDoc::OnCheckAdd() 
 {
-  CTFileName fnmFileName;
-  ExpandFilePath(EFP_READ, m_woWorld.wo_fnmFileName, fnmFileName);
+  ExpandPath expath;
+  expath.ForReading(m_woWorld.wo_fnmFileName, DLI_IGNOREGRO);
 
-  CTString strCommand = "p4 add " + fnmFileName;
+  CTString strCommand = "p4 add " + expath.fnmExpanded;
 
   INDEX iResult = system(strCommand);
   if(iResult != 0) {
@@ -4474,10 +4474,10 @@ void CWorldEditorDoc::OnCheckAdd()
 
 void CWorldEditorDoc::OnCheckDelete() 
 {
-  CTFileName fnmFileName;
-  ExpandFilePath(EFP_READ, m_woWorld.wo_fnmFileName, fnmFileName);
+  ExpandPath expath;
+  expath.ForReading(m_woWorld.wo_fnmFileName, DLI_IGNOREGRO);
 
-  CTString strCommand = "p4 delete " + fnmFileName;
+  CTString strCommand = "p4 delete " + expath.fnmExpanded;
 
   INDEX iResult = system(strCommand);
   if(iResult != 0) {

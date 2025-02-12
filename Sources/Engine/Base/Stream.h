@@ -421,9 +421,9 @@ struct ENGINE_API ExpandPath {
   // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
   BOOL ForReading(const CTString &fnmFile, ULONG ulFlags);
 
-  // Like ForReading() but also checks for substitutions if original files don't exist
+  // Like ForReading() but without any substitutions for non-existing files
   // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
-  BOOL ForReadingWithSub(const CTString &fnmFile, ULONG ulFlags);
+  BOOL ForReading_internal(const CTString &fnmFile, ULONG ulFlags);
 };
 
 // [Cecil] Turned paths into constant references to internal variables
@@ -458,48 +458,4 @@ struct ExtraContentDir_t {
 // [Cecil] List of extra content directories
 ENGINE_API extern CDynamicStackArray<ExtraContentDir_t> _aContentDirs;
 
-enum {
-  EFP_READ    = (1 << 0),
-  EFP_WRITE   = (1 << 1),
-  EFP_NOZIPS  = (1 << 31),
-  EFP_NONE    = 0,
-  EFP_FILE    = 1,
-  EFP_BASEZIP = 2,
-  EFP_MODZIP  = 3,
-};
-
-// [Cecil] TEMP: Wrapper method for compatibility
-inline INDEX ExpandFilePath(ULONG ulType, const CTFileName &fnmFile, CTFileName &fnmExpanded) {
-  ExpandPath expath;
-
-  if ((ulType & EFP_WRITE) && expath.ForWriting(fnmFile, 0)) {
-    fnmExpanded = expath.fnmExpanded;
-    return EFP_FILE;
-
-  } else if (ulType & EFP_READ) {
-    const ULONG ulIgnoreArchives = (ulType & EFP_NOZIPS) ? DLI_IGNOREGRO : 0;
-
-    if (expath.ForReadingWithSub(fnmFile, ulIgnoreArchives | DLI_SEARCHGAMES)) {
-      fnmExpanded = expath.fnmExpanded;
-
-      if (expath.bArchive) {
-        return (expath.eType == ExpandPath::E_PATH_MOD) ? EFP_MODZIP : EFP_BASEZIP;
-      } else {
-        return EFP_FILE;
-      }
-
-    } else {
-      fnmExpanded = _fnmApplicationPath + fnmFile;
-      fnmExpanded.NormalizePath();
-      return EFP_NONE;
-    }
-  }
-
-  ASSERT(FALSE);
-  fnmExpanded = _fnmApplicationPath + fnmFile;
-  fnmExpanded.NormalizePath();
-  return EFP_FILE;
-};
-
 #endif  /* include-once check. */
-

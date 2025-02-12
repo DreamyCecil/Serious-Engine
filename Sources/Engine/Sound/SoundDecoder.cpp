@@ -288,8 +288,15 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
   // [Cecil] Ignore sounds on a dedicated server
   if (_SE1Setup.IsAppServer()) return;
 
-  CTFileName fnmExpanded;
-  INDEX iFileType = ExpandFilePath(EFP_READ, fnm, fnmExpanded);
+  ExpandPath expath;
+
+  // [Cecil] No file to read
+  if (!expath.ForReading(fnm, 0)) {
+    CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnm.ConstData(), TRANS("file not found"));
+    return;
+  }
+
+  const CTString &fnmExpanded = expath.fnmExpanded;
 
   // if ogg
   if (fnmExpanded.FileExt()==".ogg") {
@@ -306,7 +313,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
 
     try {
       // if in zip
-      if (iFileType==EFP_BASEZIP || iFileType==EFP_MODZIP) {
+      if (expath.bArchive) {
         // open it
         pZipHandle = IZip::Open_t(fnmExpanded);
         const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
@@ -327,7 +334,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
         fseek(sdc_pogg->ogg_fFile, pEntry->GetDataOffset(), SEEK_SET);
 
       // if not in zip
-      } else if (iFileType==EFP_FILE) {
+      } else {
         // open ogg file
         sdc_pogg->ogg_fFile = FileSystem::Open(fnmExpanded, "rb");
         // if error
@@ -340,9 +347,6 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
         fseek(sdc_pogg->ogg_fFile, 0, SEEK_END);
         sdc_pogg->ogg_slSize = ftell(sdc_pogg->ogg_fFile);
         fseek(sdc_pogg->ogg_fFile, 0, SEEK_SET);
-      // if not found
-      } else {
-        ThrowF_t(TRANS("file not found"));
       }
 
       // initialize decoder
@@ -409,7 +413,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
 
     try {
       // if in zip
-      if (iFileType==EFP_BASEZIP || iFileType==EFP_MODZIP) {
+      if (expath.bArchive) {
         // open it
         pZipHandle = IZip::Open_t(fnmExpanded);
         const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
@@ -432,16 +436,13 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
         }
 
       // if not in zip
-      } else if (iFileType==EFP_FILE) {
+      } else {
         // open mpx file
         sdc_pmpeg->mpeg_hFile = palOpenInputFile(fnmExpanded.ConstData());
         // if error
         if (sdc_pmpeg->mpeg_hFile==0) {
           ThrowF_t(TRANS("cannot open mpx file"));
         }
-      // if not found
-      } else {
-        ThrowF_t(TRANS("file not found"));
       }
 
       // get info on the file

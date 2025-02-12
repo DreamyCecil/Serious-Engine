@@ -228,10 +228,10 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
   #endif
 
   // load the DLL
-  CTFileName fnmExpanded;
-  ExpandFilePath(EFP_READ, fnmDLL, fnmExpanded);
+  ExpandPath expath;
+  expath.ForReading(fnmDLL, 0);
 
-  ec_mdClassDLL.LoadOrThrow_t(fnmExpanded.ConstData());
+  ec_mdClassDLL.LoadOrThrow_t(expath.fnmExpanded.ConstData());
   ec_fnmClassDLL = fnmDLL;
 
   // [Cecil] Try to find the class in the global registry, assuming it's been added

@@ -822,8 +822,8 @@ void CShader::Read_t(CTStream *istrFile)
     fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + fnmDLL.FileExt();
   #endif
 
-  CTFileName fnmExpanded;
-  ExpandFilePath(EFP_READ | EFP_NOZIPS,fnmDLL,fnmExpanded);
+  ExpandPath expath;
+  expath.ForReading(fnmDLL, DLI_IGNOREGRO);
 
 #if SE1_WIN
   // set new error mode
@@ -831,7 +831,7 @@ void CShader::Read_t(CTStream *istrFile)
 #endif
 
   // load dll
-  mdLibrary.Load(fnmExpanded.ConstData());
+  mdLibrary.Load(expath.fnmExpanded.ConstData());
 
 #if SE1_WIN
   // return last error mode
@@ -842,7 +842,7 @@ void CShader::Read_t(CTStream *istrFile)
   if (!mdLibrary.IsLoaded())
   {
     // report error
-    istrFile->Throw_t("Error loading '%s' library", fnmExpanded.ConstData());
+    istrFile->Throw_t("Error loading '%s' library", expath.fnmExpanded.ConstData());
     return;
   }
 

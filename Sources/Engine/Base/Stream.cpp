@@ -933,33 +933,41 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   ASSERT(fstrm_pFile == NULL && fstrm_pZipHandle == NULL);
 
   // expand the filename to full path
-  CTFileName fnmFullFileName;
-  INDEX iFile = ExpandFilePath((om == OM_READ)?EFP_READ:EFP_WRITE, fnFileName, fnmFullFileName);
-  
+  ExpandPath expath;
+
+  // initially, no physical file
+  fstrm_pFile = NULL;
+
   // if read only mode requested
-  if( om == OM_READ) {
-    // initially, no physical file
-    fstrm_pFile = NULL;
-    // if zip file
-    if( iFile==EFP_MODZIP || iFile==EFP_BASEZIP) {
-      // open from zip
-      fstrm_pZipHandle = IZip::Open_t(fnmFullFileName);
-      fstrm_slZipSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
-      // load the file from the zip in the buffer
-      fstrm_pubZipBuffer = (UBYTE *)AllocMemory(fstrm_slZipSize);
-      IZip::ReadBlock_t(fstrm_pZipHandle, (UBYTE *)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
-    // if it is a physical file
-    } else if (iFile==EFP_FILE) {
-      // open file in read only mode
-      fstrm_pFile = FileSystem::Open(fnmFullFileName, "rb");
+  if (om == OM_READ) {
+    if (expath.ForReading(fnFileName, DLI_SEARCHGAMES)) {
+      // if zip file
+      if (expath.bArchive) {
+        // open from zip
+        fstrm_pZipHandle = IZip::Open_t(expath.fnmExpanded);
+        fstrm_slZipSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
+        // load the file from the zip in the buffer
+        fstrm_pubZipBuffer = (UBYTE *)AllocMemory(fstrm_slZipSize);
+        IZip::ReadBlock_t(fstrm_pZipHandle, (UBYTE *)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
+
+      // if it is a physical file
+      } else {
+        // open file in read only mode
+        fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "rb");
+      }
     }
+
     fstrm_bReadOnly = TRUE;
-  
+
   // if write mode requested
-  } else if( om == OM_WRITE) {
+  } else if (om == OM_WRITE) {
     // open file for reading and writing
-    fstrm_pFile = FileSystem::Open(fnmFullFileName, "rb+");
+    if (expath.ForWriting(fnFileName, 0)) {
+      fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "rb+");
+    }
+
     fstrm_bReadOnly = FALSE;
+
   // if unknown mode
   } else {
     FatalError(TRANS("File stream opening requested with unknown open mode: %d\n"), om);
@@ -968,11 +976,11 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   // if openning operation was not successfull
   if (fstrm_pFile == NULL && fstrm_pZipHandle == NULL) {
     // throw exception
-    Throw_t(TRANS("Cannot open file `%s' (%s)"), fnmFullFileName.ConstData(), strerror(errno));
+    Throw_t(TRANS("Cannot open file `%s' (%s)"), expath.fnmExpanded.ConstData(), strerror(errno));
   }
 
   // if file opening was successfull, set stream description to file name
-  strm_strStreamDescription = fnmFullFileName;
+  strm_strStreamDescription = expath.fnmExpanded;
   // add this newly opened file into opened stream list
   _plhOpenedStreams->AddTail( strm_lnListNode);
 }
@@ -991,29 +999,33 @@ void CTFileStream::Create_t(const CTFileName &fnFileName) // throws char *
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"), fnFileNameAbsolute.ConstData());
   }
 
+  ExpandPath expath;
+
+  // No path for writing a file
+  if (!expath.ForWriting(fnFileNameAbsolute, 0)) {
+    ASSERTALWAYS("No suitable path for creating a file");
+    Throw_t(TRANS("Cannot create file `%s' (%s)"), fnFileNameAbsolute.ConstData(), TRANS("No suitable path found"));
+  }
+
   // [Cecil] Create necessary directories for the new file if they don't exist yet
-  if (_fnmMod != "" && FileMatchesList(_afnmModWrite, fnFileNameAbsolute)) {
+  if (expath.eType == ExpandPath::E_PATH_MOD) {
     CreateAllDirectories(_fnmMod + fnFileNameAbsolute); // Within the mod
   } else {
     CreateAllDirectories(fnFileNameAbsolute); // Within the game
   }
 
-  CTFileName fnmFullFileName;
-  INDEX iFile = ExpandFilePath(EFP_WRITE, fnFileNameAbsolute, fnmFullFileName);
-
-  // check parameters
-  ASSERT(fnFileNameAbsolute.Length() > 0);
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL);
 
   // open file stream for writing (destroy file context if file existed before)
-  fstrm_pFile = FileSystem::Open(fnmFullFileName, "wb+");
+  fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "wb+");
+
   // if not successfull
-  if(fstrm_pFile == NULL)
-  {
+  if (fstrm_pFile == NULL) {
     // throw exception
-    Throw_t(TRANS("Cannot create file `%s' (%s)"), fnmFullFileName.ConstData(), strerror(errno));
+    Throw_t(TRANS("Cannot create file `%s' (%s)"), expath.fnmExpanded.ConstData(), strerror(errno));
   }
+
   // if file creation was successfull, set stream description to file name
   strm_strStreamDescription = fnFileNameAbsolute;
   // mark that file is created for writing
@@ -1391,26 +1403,32 @@ BOOL FileExistsForWriting(const CTFileName &fnmFile)
     return FALSE;
   }
   // expand the filename to full path for writing
-  CTFileName fnmFullFileName;
-  INDEX iFile = ExpandFilePath(EFP_WRITE, fnmFile, fnmFullFileName);
+  ExpandPath expath;
 
-  return FileSystem::Exists(fnmFullFileName.ConstData());
+  if (!expath.ForWriting(fnmFile, 0)) {
+    ASSERTALWAYS("No valid path for FileExistsForWriting()");
+    return FALSE;
+  }
+
+  return FileSystem::Exists(expath.fnmExpanded.ConstData());
 }
 
 // Get file timestamp
 SLONG GetFileTimeStamp_t(const CTFileName &fnm)
 {
   // expand the filename to full path
-  CTFileName fnmExpanded;
-  INDEX iFile = ExpandFilePath(EFP_READ, fnm, fnmExpanded);
-  if (iFile!=EFP_FILE) {
+  ExpandPath expath;
+  const BOOL bExists = expath.ForReading(fnm, 0);
+
+  // Only existing physical files
+  if (!bExists || expath.bArchive) {
     return FALSE;
   }
 
   int file_handle;
   // try to open file for reading
-  fnmExpanded.ReplaceChar('\\', '/'); // [Cecil] NOTE: For _open()
-  file_handle = _open(fnmExpanded.ConstData(), _O_RDONLY | _O_BINARY);
+  expath.fnmExpanded.ReplaceChar('\\', '/'); // [Cecil] NOTE: For _open()
+  file_handle = _open(expath.fnmExpanded.ConstData(), _O_RDONLY | _O_BINARY);
   if(file_handle==-1) {
     ThrowF_t(TRANS("Cannot open file '%s' for reading"), fnm.ConstData());
     return -1;
@@ -1437,16 +1455,18 @@ ULONG GetFileCRC32_t(const CTFileName &fnmFile) // throw char *
 BOOL IsFileReadOnly(const CTFileName &fnm)
 {
   // expand the filename to full path
-  CTFileName fnmExpanded;
-  INDEX iFile = ExpandFilePath(EFP_READ, fnm, fnmExpanded);
-  if (iFile!=EFP_FILE) {
+  ExpandPath expath;
+  const BOOL bExists = expath.ForReading(fnm, 0);
+
+  // Only existing physical files
+  if (!bExists || expath.bArchive) {
     return FALSE;
   }
 
   int file_handle;
   // try to open file for reading
-  fnmExpanded.ReplaceChar('\\', '/'); // [Cecil] NOTE: For _open()
-  file_handle = _open(fnmExpanded.ConstData(), _O_RDONLY | _O_BINARY);
+  expath.fnmExpanded.ReplaceChar('\\', '/'); // [Cecil] NOTE: For _open()
+  file_handle = _open(expath.fnmExpanded.ConstData(), _O_RDONLY | _O_BINARY);
   if(file_handle==-1) {
     return FALSE;
   }
@@ -1462,14 +1482,14 @@ BOOL IsFileReadOnly(const CTFileName &fnm)
 BOOL RemoveFile(const CTFileName &fnmFile)
 {
   // expand the filename to full path
-  CTFileName fnmExpanded;
-  INDEX iFile = ExpandFilePath(EFP_WRITE, fnmFile, fnmExpanded);
-  if (iFile==EFP_FILE) {
-    int ires = remove(fnmExpanded.ConstData());
+  ExpandPath expath;
+
+  if (expath.ForWriting(fnmFile, 0)) {
+    int ires = remove(expath.fnmExpanded.ConstData());
     return ires==0;
-  } else {
-    return FALSE;
   }
+
+  return FALSE;
 }
 
 // [Cecil] Get a potential substitution for some file
@@ -1555,9 +1575,7 @@ static inline BOOL CheckFileAt(CTString strBaseDir, CTFileName fnmFile, CTFileNa
   return FileSystem::Exists(fnmExpanded.ConstData());
 };
 
-// [Cecil] Get full path for reading a file from disk or from some archive
-// Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
-BOOL ExpandPath::ForReading(const CTString &fnmFile, ULONG ulFlags) {
+BOOL ExpandPath::ForReading_internal(const CTString &fnmFile, ULONG ulFlags) {
   const BOOL bOnlyMod     = !!(ulFlags & DLI_ONLYMOD);
   const BOOL bCanCheckMod = !(ulFlags & DLI_IGNOREMOD);
   const BOOL bOnlyGRO     = !!(ulFlags & DLI_ONLYGRO);
@@ -1668,19 +1686,19 @@ BOOL ExpandPath::ForReading(const CTString &fnmFile, ULONG ulFlags) {
   return FALSE;
 };
 
-// [Cecil] Like ForReading() but also checks for substitutions if original files don't exist
+// [Cecil] Get full path for reading a file from disk or from some archive
 // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
-BOOL ExpandPath::ForReadingWithSub(const CTString &fnmFile, ULONG ulFlags) {
+BOOL ExpandPath::ForReading(const CTString &fnmFile, ULONG ulFlags) {
   CTString fnmNormalized = fnmFile;
   fnmNormalized.NormalizePath();
 
   // Found the file for reading
-  if (ForReading(fnmNormalized, ulFlags)) return TRUE;
+  if (ForReading_internal(fnmNormalized, ulFlags)) return TRUE;
 
   // Try searching for a substitution, if the original isn't found
   if (GetSub(fnmNormalized)) {
     // Found the substitution
-    if (ForReading(fnmNormalized, ulFlags)) return TRUE;
+    if (ForReading_internal(fnmNormalized, ulFlags)) return TRUE;
   }
 
   // Cannot find a substitution

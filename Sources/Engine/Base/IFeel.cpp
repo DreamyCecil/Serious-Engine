@@ -140,12 +140,13 @@ BOOL IFeel_InitDevice(HINSTANCE &hInstance, HWND &hWnd)
   IFeel_ChangeGain(ifeel_fGain);
 
   // load iFeel lib 
-  CTFileName fnmExpanded;
-  ExpandFilePath(EFP_READ | EFP_NOZIPS, CTString(IFEEL_DLL_NAME), fnmExpanded);
+  ExpandPath expath;
+  expath.ForReading(IFEEL_DLL_NAME, DLI_IGNOREGRO);
+
   if(_hLib!=NULL) return FALSE;
 
   UINT iOldErrorMode = SetErrorMode( SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
-  _hLib = OS::LoadLib(fnmExpanded.ConstData());
+  _hLib = OS::LoadLib(expath.fnmExpanded.ConstData());
   SetErrorMode(iOldErrorMode);
   if(_hLib==NULL)
   {
@@ -203,12 +204,12 @@ void IFeel_DeleteDevice()
 // loads project file
 BOOL IFeel_LoadFile(CTFileName fnFile)
 {
-  CTFileName fnmExpanded;
-  ExpandFilePath(EFP_READ | EFP_NOZIPS,fnFile,fnmExpanded);
+  ExpandPath expath;
+  expath.ForReading(fnFile, DLI_IGNOREGRO);
 
   if(immLoadFile!=NULL)
   {
-    BOOL hr = immLoadFile(fnmExpanded.ConstData());
+    BOOL hr = immLoadFile(expath.fnmExpanded.ConstData());
     if(hr)
     {
       CPrintF("IFeel project file '%s' loaded\n", fnFile.ConstData());
