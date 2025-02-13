@@ -55,6 +55,9 @@ CTString _strEngineBuild  = "";
 ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
 ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
 
+// [Cecil] Flag indicating whether the engine has been initialized
+BOOL _bSeriousEngineInitialized = FALSE;
+
 // [Cecil] Engine properties after full initialization
 static SeriousEngineSetup _SE1SetupInternal;
 const SeriousEngineSetup &_SE1Setup = _SE1SetupInternal;
@@ -251,6 +254,11 @@ static void SE_InitSDL(ULONG ulFlags) {
 
 // startup engine 
 void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
+  ASSERT(!_bSeriousEngineInitialized);
+
+  // [Cecil] Initialized
+  _bSeriousEngineInitialized = TRUE;
+
   // [Cecil] TODO: Implement cross-platform crash handler
 #if SE1_WIN
   // [Cecil] Manually setup an exception handler
@@ -582,8 +590,9 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
 
 
 // shutdown entire engine
-void SE_EndEngine(void)
-{
+void SE_EndEngine(void) {
+  ASSERT(_bSeriousEngineInitialized);
+
   // [Cecil] Remove default fonts *before* deleting the stocks, not after
   if (_pfdDisplayFont != NULL) { delete _pfdDisplayFont; _pfdDisplayFont = NULL; }
   if (_pfdConsoleFont != NULL) { delete _pfdConsoleFont; _pfdConsoleFont = NULL; }
@@ -636,6 +645,9 @@ void SE_EndEngine(void)
 
   // [Cecil] SDL: Shutdown
   SE_EndSDL();
+
+  // [Cecil] Uninitialized
+  _bSeriousEngineInitialized = FALSE;
 }
 
 // [Cecil] Separate methods for determining and restoring gamma adjustment

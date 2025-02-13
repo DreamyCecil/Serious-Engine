@@ -65,6 +65,9 @@ ENGINE_API void SE_PretouchIfNeeded(void);
 ENGINE_API void SE_DetermineGamma(void);
 ENGINE_API void SE_RestoreGamma(void);
 
+// [Cecil] Flag indicating whether the engine has been initialized
+ENGINE_API extern BOOL _bSeriousEngineInitialized;
+
 // [Cecil] Engine properties after full initialization
 ENGINE_API extern const SeriousEngineSetup &_SE1Setup;
 
