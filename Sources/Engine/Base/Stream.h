@@ -435,6 +435,9 @@ ENGINE_API extern const CTFileName &_fnmApplicationPath;
 // global string with filename of the started application
 ENGINE_API extern const CTFileName &_fnmApplicationExe;
 
+// [Cecil] Full path to the launched executable (essentially '_fnmApplicationPath + _fnmApplicationExe')
+ENGINE_API extern const CTFileName &_fnmFullExecutablePath;
+
 // global string with current MOD path
 ENGINE_API extern CTFileName _fnmMod;
 // global string with current name (the parameter that is passed on cmdline)

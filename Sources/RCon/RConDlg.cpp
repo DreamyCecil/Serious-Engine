@@ -151,7 +151,7 @@ static BOOL ParseSpecialCommands(CTString &strCommand, CString &strLog) {
     PROCESS_INFORMATION pi;
     ZeroMemory(&pi, sizeof(pi));
 
-    CTString strCmd = _fnmApplicationPath + _fnmApplicationExe.FileDir();
+    CTString strCmd = _fnmFullExecutablePath.FileDir();
     strCommand = " " + strCommand;
 
   #if defined(SE1_STATIC_BUILD)

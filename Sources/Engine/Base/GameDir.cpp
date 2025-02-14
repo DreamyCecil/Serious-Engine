@@ -72,31 +72,33 @@ static CTFileName _fnmInternalAppPath;
 // Global string with a relative path to the filename of the started application
 static CTFileName _fnmInternalAppExe;
 
+// Full path to the launched executable
+static CTFileName _fnmInternalFullExePath;
+
 // References to internal variables
 const CTFileName &_fnmApplicationPath = _fnmInternalAppPath;
 const CTFileName &_fnmApplicationExe = _fnmInternalAppExe;
+const CTFileName &_fnmFullExecutablePath = _fnmInternalFullExePath;
 
 // Determine application paths for the first time
 void DetermineAppPaths(CTString strSpecifiedRootDir) {
   // Get full path to the executable module
   // E.g. "C:\\SeriousSam\\Bin\\x64\\SeriousSam.exe"
-  char strPathBuffer[1024];
-
 #if SE1_WIN
+  char strPathBuffer[1024];
   GetModuleFileNameA(NULL, strPathBuffer, sizeof(strPathBuffer));
+  _fnmInternalFullExePath = strPathBuffer;
 #else
-  char *strTempExePath = readSymLink("/proc/self/exe");
-  strcpy(strPathBuffer, strTempExePath);
-  SDL_free(strTempExePath);
+  char *strPathBuffer = readSymLink("/proc/self/exe");
+  _fnmInternalFullExePath = strPathBuffer;
+  SDL_free(strPathBuffer);
 #endif
 
   // Normalize path to the executable
-  CTString strExePath(strPathBuffer);
-  strExePath.NormalizePath();
+  _fnmInternalFullExePath.NormalizePath();
 
   // Begin determining the root directory
-  CTString strRootPath = strExePath;
-  strRootPath.ReplaceChar('/', '\\');
+  CTString strRootPath = _fnmInternalFullExePath;
 
   // Cut off module filename to end up with the directory
   // E.g. "C:\\SeriousSam\\Bin\\x64\\"
@@ -136,7 +138,7 @@ void DetermineAppPaths(CTString strSpecifiedRootDir) {
   const size_t iBinDir = strRootPath.Length();
 
   // Copy absolute path to the game directory and relative path to the executable
-  strExePath.Split((INDEX)iBinDir, _fnmInternalAppPath, _fnmInternalAppExe);
+  _fnmInternalFullExePath.Split((INDEX)iBinDir, _fnmInternalAppPath, _fnmInternalAppExe);
 };
 
 // Create a series of directories within the game folder

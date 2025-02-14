@@ -97,7 +97,7 @@ size_t CTString::GoUpUntilDir(CTString strDirName) const {
 };
 
 // [Cecil] Normalize the path taking "backward" and "current" directories into consideration
-// E.g. "abc/sub1/../sub2/./qwe" -> "abc/sub2/qwe"
+// E.g. "abc\\sub1\\../sub2/./qwe" -> "abc\\sub2\\qwe"
 void CTString::NormalizePath(void) {
   CTString strPath(*this);
   strPath.ReplaceChar('/', '\\');

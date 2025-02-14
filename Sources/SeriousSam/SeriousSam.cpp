@@ -1249,7 +1249,7 @@ void SetupRestartArgs(void) {
 
   // Executable filename as the first argument
   CTString &strApp = _aRestartArgs.Push();
-  strApp = _fnmApplicationPath + _fnmApplicationExe;
+  strApp = _fnmFullExecutablePath;
   strApp.ReplaceChar('\\', '/'); // [Cecil] NOTE: For execv()
 
   // Add mod to start

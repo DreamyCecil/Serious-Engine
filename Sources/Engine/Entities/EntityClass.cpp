@@ -227,10 +227,12 @@ void CEntityClass::Read_t( CTStream *istr) // throw char *
     fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + "MP" + fnmDLL.FileExt();
   #endif
 
-  // load the DLL
+  // [Cecil] FIXME: This may load libraries from the mod directory or wherever else
+  // Consider using _fnmFullExecutablePath.FileDir() above instead of expanding it like this
   ExpandPath expath;
   expath.ForReading(fnmDLL, 0);
 
+  // load the DLL
   ec_mdClassDLL.LoadOrThrow_t(expath.fnmExpanded.ConstData());
   ec_fnmClassDLL = fnmDLL;
 

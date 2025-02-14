@@ -822,6 +822,8 @@ void CShader::Read_t(CTStream *istrFile)
     fnmDLL = _fnmApplicationExe.FileDir() + fnmDLL.FileName() + fnmDLL.FileExt();
   #endif
 
+  // [Cecil] FIXME: This may load libraries from the mod directory or wherever else
+  // Consider using _fnmFullExecutablePath.FileDir() above instead of expanding it like this
   ExpandPath expath;
   expath.ForReading(fnmDLL, DLI_IGNOREGRO);
 

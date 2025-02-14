@@ -375,7 +375,7 @@ public:
   size_t GoUpUntilDir(CTString strDirName) const;
 
   // Normalize the path taking "backward" and "current" directories into consideration
-  // E.g. "abc/sub1/../sub2/./qwe" -> "abc/sub2/qwe"
+  // E.g. "abc\\sub1\\../sub2/./qwe" -> "abc\\sub2\\qwe"
   void NormalizePath(void);
 
   // Get length of the root name, if there's any

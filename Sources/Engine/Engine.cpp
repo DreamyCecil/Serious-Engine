@@ -344,7 +344,7 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   CPrintF("  %s\n\n", _strEngineBuild.ConstData());
 
   // print info on the started application
-  CPrintF(TRANS("Executable: %s\n"), (_fnmApplicationPath + _fnmApplicationExe).ConstData());
+  CPrintF(TRANS("Executable: %s\n"), _fnmFullExecutablePath.ConstData());
   CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath.ConstData());
 
   // [Cecil] Command line parser output
