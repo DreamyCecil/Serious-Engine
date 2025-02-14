@@ -20,6 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 ENGINE_API void DetermineAppPaths(CTString strSpecifiedRootDir);
 
 // Create a series of directories within the game folder
-ENGINE_API void CreateAllDirectories(const CTString &strPath);
+ENGINE_API void CreateAllDirectories(CTString strPath);
 
 #endif // include-once check

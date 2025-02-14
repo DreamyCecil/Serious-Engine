@@ -1516,6 +1516,19 @@ BOOL ExpandPath::GetSub(CTString &fnm) {
   return FALSE;
 };
 
+// [Cecil] Get full path on disk from any relative/absolute path
+CTString ExpandPath::OnDisk(CTString fnmFile) {
+  ASSERTMSG(_bSeriousEngineInitialized, "Using ExpandPath::OnDisk() before engine initialization!");
+
+  fnmFile.NormalizePath();
+
+  // Already an absolute path
+  if (fnmFile.IsAbsolute()) return fnmFile;
+
+  // Relative to the root game directory
+  return _fnmApplicationPath + fnmFile;
+};
+
 // [Cecil] Get full path for writing a file on disk
 // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
 BOOL ExpandPath::ForWriting(const CTString &fnmFile, ULONG ulFlags) {

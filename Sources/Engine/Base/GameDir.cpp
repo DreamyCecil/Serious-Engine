@@ -140,19 +140,20 @@ void DetermineAppPaths(CTString strSpecifiedRootDir) {
 };
 
 // Create a series of directories within the game folder
-void CreateAllDirectories(const CTString &strPath) {
+void CreateAllDirectories(CTString strPath) {
+  // Make sure it's an absolute path
+  strPath = ExpandPath::OnDisk(strPath);
+  strPath.ReplaceChar('\\', '/'); // [Cecil] NOTE: For _mkdir()
+
   size_t iDir = 0;
 
   // Get next directory from the last position
-  while ((iDir = strPath.Find('\\', iDir)) != CTString::npos) {
+  while ((iDir = strPath.Find('/', iDir)) != CTString::npos) {
     // Include the slash
     iDir++;
 
     // Create current subdirectory
-    CTString strDir = _fnmApplicationPath + strPath.Substr(0, iDir);
-    strDir.ReplaceChar('\\', '/'); // [Cecil] NOTE: For _mkdir()
-
-    int iDummy = _mkdir(strDir.ConstData());
+    int iDummy = _mkdir(strPath.Substr(0, iDir).ConstData());
     (void)iDummy;
   }
 };

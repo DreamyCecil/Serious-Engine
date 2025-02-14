@@ -413,6 +413,9 @@ struct ENGINE_API ExpandPath {
   // Get a potential substitution for some file
   static BOOL GetSub(CTString &fnm);
 
+  // Get full path on disk from any relative/absolute path
+  static CTString OnDisk(CTString fnmFile);
+
   // Get full path for writing a file on disk
   // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
   BOOL ForWriting(const CTString &fnmFile, ULONG ulFlags);
