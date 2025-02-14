@@ -100,10 +100,7 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
     ThrowF_t("Includes nested too deeply '%c' in line %d)", yytext[0], _yy_iLine );
   }
 
-  char strFileName[256];
-  strcpy(strFileName, _fnmApplicationPath.ConstData());
-  strcat(strFileName, yytext);
-  strFileName[strlen(strFileName)-1] = 0;
+  const CTString strFileName = ExpandPath::OnDisk(yytext);
 
   try
   {
@@ -114,11 +111,11 @@ EXP_FLT (({DIGIT}+("."({DIGIT}*)?)?)("E"|"e")("+"|"-")?{DIGIT}+)
     yyin = FileSystem::Open(strFileName, "r");
     
     if(yyin == NULL) 
-      ThrowF_t("File '%s'\n Could not open '%s' (line %d)", strCurentFileName.ConstData(), strFileName, _yy_iLine);
+      ThrowF_t("File '%s'\n Could not open '%s' (line %d)", strCurentFileName.ConstData(), strFileName.ConstData(), _yy_iLine);
 
     include_stack_ptr++;
     yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ));
-    strCurentFileName = CTString(strFileName);
+    strCurentFileName = strFileName;
     // try to remove app path from source file name
     try { strCurentFileName.RemoveApplicationPath_t(); }
     catch(char *){}

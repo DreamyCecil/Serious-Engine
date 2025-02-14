@@ -342,9 +342,8 @@ BOOL CDlgPgInfoAttachingPlacement::BrowseAttachement( CAttachedModel *pam)
 
   CTFileName fnOldModel = pam->am_moAttachedModel.GetName();
   CTFileName fnModel = _EngineGUI.FileRequester( "Select model to attach",
-				  FILTER_MDL FILTER_END, "Attaching models directory",
-				  _fnmApplicationPath + fnOldModel.FileDir(),
-				  fnOldModel.FileName()+fnOldModel.FileExt());
+    FILTER_MDL FILTER_END, "Attaching models directory",
+    ExpandPath::OnDisk(fnOldModel.FileDir()), fnOldModel.NoDir());
   if( fnModel == "") return FALSE;
 
   try

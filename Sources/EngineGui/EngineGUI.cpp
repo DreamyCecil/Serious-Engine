@@ -95,8 +95,8 @@ CTFileName CEngineGUI::CreateTexture(CTFileName fnTexFileToRecreate/*=CTString("
       else
       {
         // search for script with same name
-        CTString strFullNameNoExt = _fnmApplicationPath +
-          fnTexFileToRecreate.FileDir() + fnTexFileToRecreate.FileName();
+        CTString strFullNameNoExt = ExpandPath::OnDisk(fnTexFileToRecreate.NoExt());
+
         // if there is tga picture with same name
         if (GetFileAttributesA((strFullNameNoExt + ".tga").ConstData()) != -1)
         {

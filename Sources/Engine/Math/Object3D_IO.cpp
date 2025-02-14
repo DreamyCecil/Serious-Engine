@@ -219,7 +219,7 @@ void CObject3D::LoadAny3DFormat_t(
       BatchLoading_t(TRUE);
     }
     // call file load with file's full path name
-    CTString strFile = _fnmApplicationPath+fnmFileName;
+    CTString strFile = ExpandPath::OnDisk(fnmFileName);
     char acFile[MAX_PATH];
     wsprintf(acFile,"%s",strFile);
     e3_LoadFile(_hwnd, acFile);

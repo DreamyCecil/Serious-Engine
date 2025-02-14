@@ -221,7 +221,7 @@ BOOL CSeriousSkaStudioApp::SubInitInstance()
   // try to load lamp model 
   try
   {
-    pmiLight = LoadModelInstance_t(_fnmApplicationPath + LAMP_MODEL_FILENAME);
+    pmiLight = LoadModelInstance_t(ExpandPath::OnDisk(LAMP_MODEL_FILENAME));
     pmiLight->StretchModel(FLOAT3D(.5f,.5f,.5f))  ;
   }
   catch(char *strError) 
@@ -310,9 +310,6 @@ void CSeriousSkaStudioApp::OnFileOpen()
     "Open directory", "Models\\", "");
   if (fnSim=="") return;
 
-  CTFileName fnFull;
-  fnFull = _fnmApplicationPath + fnSim;
-
   CModelInstance *pmi = OnOpenExistingInstance(fnSim);
   if(pmi == NULL)
   {
@@ -384,7 +381,7 @@ CSeriousSkaStudioDoc *CSeriousSkaStudioApp::GetDocument()
 // start pasring fnParseFile file (may include mesh,skeleton,animset,...)
 BOOL StartParser(CTString fnParseFile)
 {
-  CTString fnFull = _fnmApplicationPath + fnParseFile;
+  CTString fnFull = ExpandPath::OnDisk(fnParseFile);
 
   yyin = NULL;
   astrText.PopAll();
@@ -1240,8 +1237,7 @@ CModelInstance *CSeriousSkaStudioApp::OnAddNewModelInstance()
     FILTER_SMC FILTER_ALL FILTER_END // [Cecil] Using filters
     "Open directory", "Models\\", "");
   if (fnSim=="") return NULL;
-  CTFileName fnFull;
-  fnFull = _fnmApplicationPath + fnSim;
+
   CModelInstance::EnableSrcRememberFN(TRUE);
 
   // check if file allready exist
@@ -1264,7 +1260,7 @@ CModelInstance *CSeriousSkaStudioApp::OnAddNewModelInstance()
     // close file
     ostrFile.Close();
     // load new smc file
-    pmi = LoadModelInstance_t(fnFull);
+    pmi = LoadModelInstance_t(ExpandPath::OnDisk(fnSim));
   }
   catch(char *strError)
   {
@@ -1290,7 +1286,7 @@ CModelInstance *CSeriousSkaStudioApp::OnOpenExistingInstance(CTString strModelIn
     // start parsing smc file
     try
     {
-      pmi = LoadModelInstance_t(_fnmApplicationPath + strModelInstance);
+      pmi = LoadModelInstance_t(ExpandPath::OnDisk(strModelInstance));
     }
     catch(char *strError)
     {
@@ -1427,8 +1423,6 @@ BOOL CSeriousSkaStudioApp::SaveModelAs(CModelInstance *pmi)
     "Open directory", "Models\\", "",NULL,FALSE);
   if (fnSim=="") return FALSE;
 
-  CTFileName fnFull;
-  fnFull = _fnmApplicationPath + fnSim;
   pmi->mi_fnSourceFile = fnSim;
   // save model instance
   SaveModel(*pmi);

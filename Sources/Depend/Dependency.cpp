@@ -39,7 +39,7 @@ BOOL CDependInfo::IsFileOnDiskUpdated(void)
 {
   int file_handle;
   // try to open file for reading
-  file_handle = _open((_fnmApplicationPath + di_fnFileName).ConstData(), _O_RDONLY | _O_BINARY);
+  file_handle = _open(ExpandPath::OnDisk(di_fnFileName).ConstData(), _O_RDONLY | _O_BINARY);
   // mark as it is not updated
   BOOL bUpdated = FALSE;
   // if opened succesefully
@@ -107,12 +107,12 @@ void CDependencyList::ExtractDependencies()
 
     CTFileName fnFileName = pdi->di_fnFileName;
     // try to open file for reading
-    file_handle = _open((_fnmApplicationPath + fnFileName).ConstData(), _O_RDONLY | _O_BINARY);
+    file_handle = _open(ExpandPath::OnDisk(fnFileName).ConstData(), _O_RDONLY | _O_BINARY);
     // if an error occured
     if( file_handle == -1)
     {
       // if file is not available remove it from list
-      //FatalError("File %s can't be opened!", (_fnmApplicationPath + fnFileName).ConstData());
+      //FatalError("File %s can't be opened!", ExpandPath::OnDisk(fnFileName).ConstData());
       printf("warning, cannot open: %s (referenced from %s)\n", fnFileName.ConstData(), pdi->di_fnParent.ConstData());
       delete pdi;
     }
@@ -133,7 +133,7 @@ void CDependencyList::ExtractDependencies()
       // read file
       if( _read( file_handle, pFileInMemory, ulSize) != ulSize)
       {
-        FatalError("Fatal error ocured while reading file: %s.", pdi->di_fnFileName.ConstData());
+        FatalError("Fatal error ocured while reading file: %s.", fnFileName.ConstData());
       }
       if(file_handle!=-1) {
         _close(file_handle);
@@ -283,8 +283,8 @@ void CDependencyList::ImportASCII( CTFileName fnAsciiFile)
       // create file name from loaded line
       CTFileName fnFileName =  CTString(chrOneLine);
       AdjustFilePath_t(fnFileName);
-	    // try to open file for reading
-      file_handle = _open((_fnmApplicationPath + fnFileName).ConstData(), _O_RDONLY | _O_BINARY);
+      // try to open file for reading
+      file_handle = _open(ExpandPath::OnDisk(fnFileName).ConstData(), _O_RDONLY | _O_BINARY);
 
       // if opened succesefully
       if( file_handle != -1) {
@@ -565,24 +565,3 @@ void CDependencyList::Write_t( CTStream *ostrFile)
     itDependInfo->Write_t( ostrFile);
   }
 }
-
-// make a new directory recursively
-static void MakeDirectory_t(const CTFileName &fnm)
-{
-  if (fnm=="") {
-    return;
-  }
-  // remove trailing backslash
-  CTFileName fnmDir = fnm;
-  fnmDir.Data()[fnmDir.Length() - 1] = '\0';
-  // get the path part
-  CTFileName fnmDirPath = fnmDir.FileDir();
-  // if there is a path part
-  if (fnmDirPath!="") {
-    // create that first
-    MakeDirectory_t(fnmDirPath);
-  }
-  // try to create the directory
-  int iRes = _mkdir((_fnmApplicationPath + fnmDir).ConstData());
-}
-

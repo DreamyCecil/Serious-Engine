@@ -502,14 +502,14 @@ void CModelerApp::CreateNewDocument( CTFileName fnRequestedFile)
   
   if( fnRequestedFile.FileExt() != ".scr")
   {
-    if( GetFileAttributesA( _fnmApplicationPath + fnScriptFile) != -1)
+    if (GetFileAttributesA(ExpandPath::OnDisk(fnScriptFile)) != -1)
     {
       if( MessageBoxA( m_pMainWnd->m_hWnd, "Script file allready exists, "
                                           "do you want to overwrite it?",
                  "Warning !", MB_YESNO | MB_ICONWARNING |
                  MB_DEFBUTTON1| MB_SYSTEMMODAL | MB_TOPMOST) == IDYES)
       {
-        DeleteFileA( _fnmApplicationPath + fnScriptFile);
+        DeleteFileA(ExpandPath::OnDisk(fnScriptFile));
       }
       else
       {
@@ -528,7 +528,7 @@ void CModelerApp::CreateNewDocument( CTFileName fnRequestedFile)
       return;
     }
   }
-  else if( GetFileAttributesA( _fnmApplicationPath + fnMdlFile) != -1)
+  else if (GetFileAttributesA(ExpandPath::OnDisk(fnMdlFile)) != -1)
   {
     if( MessageBoxA( m_pMainWnd->m_hWnd, "Model file allready exists, do you want to "
                     "overwrite it and loose all possible data describing mapping, "
@@ -561,8 +561,8 @@ void CModelerApp::CreateNewDocument( CTFileName fnRequestedFile)
 	ASSERT_VALID(pFrame);
 
   pDocument->SetModifiedFlag();
-  pDocument->SetPathName( CString(_fnmApplicationPath + fnMdlFile), FALSE);
-  pDocument->SetTitle( CString(fnMdlFile.FileName() + ".mdl"));       
+  pDocument->SetPathName(CString(ExpandPath::OnDisk(fnMdlFile)), FALSE);
+  pDocument->SetTitle(CString(fnMdlFile.FileName() + ".mdl"));
 
   char strError[ 256];
   if( !((CModelerDoc *)pDocument)->CreateModelFromScriptFile( fnScriptFile, strError))
@@ -605,7 +605,7 @@ void CModelerApp::OnFileOpen()
   FOREACHINDYNAMICARRAY( afnOpenModel, CTFileName, itModel)
   {
     // we will use full file name to call OnOpenDocument()
-    CTFileName fnFullRequestedFile = _fnmApplicationPath + itModel.Current();
+    CTFileName fnFullRequestedFile = ExpandPath::OnDisk(itModel.Current());
     // choose right document template using file's extension
     CDocTemplate *pDocTemplate = m_pdtModelDocTemplate;
     BOOL bScriptDocument = FALSE;

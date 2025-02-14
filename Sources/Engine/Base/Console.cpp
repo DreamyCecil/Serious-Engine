@@ -89,7 +89,7 @@ void CConsole::Initialize(const CTFileName &fnmLog, INDEX ctCharsPerLine, INDEX 
   CreateAllDirectories(fnmLog);
 
   // [Cecil] Open log file using absolute path
-  con_fLog = FileSystem::Open(_fnmApplicationPath + fnmLog, "wt");
+  con_fLog = FileSystem::Open(ExpandPath::OnDisk(fnmLog), "wt");
 
   if (con_fLog==NULL) {
     FatalError("Cannot open log file '%s' for writing:\n%s", fnmLog.ConstData(), strerror(errno));

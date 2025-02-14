@@ -491,14 +491,12 @@ BOOL CDlgCreateSpecularTexture::PreTranslateMessage(MSG* pMsg)
 
 void CDlgCreateSpecularTexture::OnOK() 
 {
-  CTFileName fnTemp = _fnmApplicationPath+CTString("temp\\SpecularTemp.tex");
-  CTFileName fnFinal = _EngineGUI.FileRequester( "Save texture as ...",
-                                                FILTER_TEX FILTER_ALL FILTER_END,
-                                                "Specular map textures directory",
-                                                "Textures\\");
-  if( fnFinal != "")
-  {
-    CopyFileA(fnTemp.ConstData(), (_fnmApplicationPath + fnFinal).ConstData(), FALSE);
+  CTFileName fnFinal = _EngineGUI.FileRequester("Save texture as ...",
+    FILTER_TEX FILTER_ALL FILTER_END, "Specular map textures directory", "Textures\\");
+
+  if (fnFinal != "") {
+    // [Cecil] Expand paths properly
+    CopyFileA(ExpandPath::OnDisk("Temp\\SpecularTemp.tex").ConstData(), ExpandPath::OnDisk(fnFinal).ConstData(), FALSE);
   }
 
 	CDialog::OnOK();

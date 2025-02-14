@@ -203,22 +203,20 @@ CTFileName CEngineGUI::FileRequester(
   sprintf(chrFiles, "%s", strFileSelectedByDefault.ConstData());
   ofnRequestFiles.nMaxFile = 2048;
 
-  CString strRequestInDirectory = (_fnmApplicationPath + strDefaultDir).ConstData();
-  if( pchrRegistry != NULL)
-  {
-    strRequestInDirectory = AfxGetApp()->GetProfileString(L"Scape", CString(pchrRegistry), 
-      CString((_fnmApplicationPath + strDefaultDir).ConstData()));
+  CTString strRequestInDirectory = ExpandPath::OnDisk(strDefaultDir);
+
+  if (pchrRegistry != NULL) {
+    CStringA strASCII = AfxGetApp()->GetProfileString(L"Scape", CString(pchrRegistry), CString(strRequestInDirectory.ConstData()));
+    strRequestInDirectory = strASCII.GetString();
   }
 
   // if directory is not inside engine dir
-  CTString strTest = CStringA(strRequestInDirectory).GetString();
-  if (!strTest.RemovePrefix(_fnmApplicationPath)) {
+  if (!strRequestInDirectory.HasPrefix(_fnmApplicationPath)) {
     // force it there
-    strRequestInDirectory = _fnmApplicationPath.ConstData();
+    strRequestInDirectory = _fnmApplicationPath;
   }
-  
 
-  ofnRequestFiles.lpstrInitialDir = CStringA(strRequestInDirectory);
+  ofnRequestFiles.lpstrInitialDir = strRequestInDirectory.ConstData();
   ofnRequestFiles.lpstrTitle = pchrTitle;
   ofnRequestFiles.Flags = OFN_EXPLORER | OFN_ENABLEHOOK | OFN_ENABLETEMPLATE | OFN_HIDEREADONLY;
   // setup preview dialog

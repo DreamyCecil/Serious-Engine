@@ -62,8 +62,12 @@ CDlgCreateNormalTexture::CDlgCreateNormalTexture( CTFileName fnInputFile, CWnd* 
     CImageInfo iiImageInfo;
     if (iiImageInfo.GetGfxFileInfo_t( m_fnSourceFileName)==UNSUPPORTED_FILE)
     {
+      // [Cecil] Expand path properly
+      ExpandPath expath;
+      expath.ForReading(m_fnSourceFileName, DLI_SEARCHGAMES);
+
       // throw error
-      ThrowF_t("File '%s' has unsupported file format", (_fnmApplicationPath + m_fnSourceFileName).ConstData());
+      ThrowF_t("File '%s' has unsupported file format", expath.fnmExpanded.ConstData());
     }
     // get dimensions
     m_pixSourceWidth  = iiImageInfo.ii_Width;

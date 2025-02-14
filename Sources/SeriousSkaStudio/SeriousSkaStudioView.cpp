@@ -1240,8 +1240,7 @@ void CSeriousSkaStudioView::OnAddChildModelInstance()
     "Open directory", "Models\\", "");
   if (fnSim=="") return;
 
-  CTFileName fnFull;
-  fnFull = _fnmApplicationPath + fnSim;
+  CTFileName fnFull = ExpandPath::OnDisk(fnSim);
   CModelInstance *pcmi=NULL;
   try
   {

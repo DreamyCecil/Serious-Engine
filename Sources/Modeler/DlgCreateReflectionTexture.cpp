@@ -695,14 +695,12 @@ BOOL CDlgCreateReflectionTexture::PreTranslateMessage(MSG* pMsg)
 
 void CDlgCreateReflectionTexture::OnOK() 
 {
-  CTFileName fnTemp = _fnmApplicationPath+CTString("temp\\ReflectionTemp.tex");
-  CTFileName fnFinal = _EngineGUI.FileRequester( "Save texture as ...",
-                                                FILTER_TEX FILTER_ALL FILTER_END,
-                                                "Reflection map textures directory",
-                                                "Textures\\");
-  if( fnFinal != "")
-  {
-    CopyFileA(fnTemp.ConstData(), (_fnmApplicationPath + fnFinal).ConstData(), FALSE);
+  CTFileName fnFinal = _EngineGUI.FileRequester("Save texture as ...",
+    FILTER_TEX FILTER_ALL FILTER_END, "Reflection map textures directory", "Textures\\");
+
+  if (fnFinal != "") {
+    // [Cecil] Expand paths properly
+    CopyFileA(ExpandPath::OnDisk("Temp\\ReflectionTemp.tex").ConstData(), ExpandPath::OnDisk(fnFinal).ConstData(), FALSE);
   }
 
 	CDialog::OnOK();

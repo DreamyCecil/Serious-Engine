@@ -3820,8 +3820,8 @@ void CModelerView::OnExportForSkining()
     NULL, fnDirectory, fnDefaultSelected, NULL, FALSE);
   if( fnExportName == "") return;
 
-  CTFileName fnFullPath = _fnmApplicationPath+fnExportName;
-  if( GetFileAttributesA( fnFullPath) != -1)
+  CTFileName fnFullPath = ExpandPath::OnDisk(fnExportName);
+  if (GetFileAttributesA(fnFullPath) != -1)
   {
     CTString strMsg;
     strMsg.PrintF("File \"%s\" already exist. Do you want to replace it?", fnFullPath.ConstData());

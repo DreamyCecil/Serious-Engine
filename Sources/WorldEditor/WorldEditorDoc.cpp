@@ -579,7 +579,7 @@ BOOL CWorldEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
   }
   // write file's directory into application's .ini file
   theApp.WriteProfileString(L"World editor", L"Open directory",
-                            CString(_fnmApplicationPath+fnSaveFileName.FileDir()));
+                            CString(ExpandPath::OnDisk(fnSaveFileName.FileDir())));
   // save thumbnail
   SaveThumbnail();
   m_bWasEverSaved = TRUE;

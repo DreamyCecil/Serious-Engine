@@ -615,7 +615,7 @@ void CMainFrame::OnFileCreateTexture()
     pDoc = pView->GetDocument();
     // setup create texture directory
     theApp.WriteProfileString(L"Scape", CString(KEY_NAME_CREATE_TEXTURE_DIR), 
-      CString(_fnmApplicationPath+pDoc->GetModelDirectory()));
+      CString(ExpandPath::OnDisk(pDoc->GetModelDirectory())));
   }
   // call create texture dialog
   CTFileName fnCreated = _EngineGUI.CreateTexture();

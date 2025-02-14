@@ -240,12 +240,8 @@ void CDlgCreateAnimatedTexture::OnCreateTexture()
 {
   // refresh (recreate) texture in temporary directory
   RefreshTexture();
-  // prepare names for temporary script and texture
-  CTFileName fnFullTempTexture = _fnmApplicationPath+CTString(TEMPORARY_TEXTURE_NAME);
-  CTFileName fnFullTempScript = _fnmApplicationPath+CTString(TEMPORARY_SCRIPT_NAME);
+
   // and for supposed final texture name
-  CTFileName fnFullFinalTexture = _fnmApplicationPath+m_fnCreatedFileName;
-  
   CTFileName fnSaveName;
   if( m_strCreatedTextureName == "Unnamed")
   {
@@ -274,12 +270,12 @@ void CDlgCreateAnimatedTexture::OnCreateTexture()
   }
 
   // set newly picked names for final script and texture
-  fnFullFinalTexture = _fnmApplicationPath+fnSaveName;
-  CTFileName fnFullFinalScript = 
-    fnFullFinalTexture.FileDir()+fnFullFinalTexture.FileName()+".scr";
+  CTString fnFullFinalTexture = ExpandPath::OnDisk(fnSaveName);
+  CTString fnFullFinalScript = fnFullFinalTexture.NoExt() + ".scr";
+
   // copy temporary script and texture files into real their place
-  CopyFileA(fnFullTempScript.ConstData(), fnFullFinalScript.ConstData(), FALSE);
-  CopyFileA(fnFullTempTexture.ConstData(), fnFullFinalTexture.ConstData(), FALSE);
+  CopyFileA(ExpandPath::OnDisk(TEMPORARY_SCRIPT_NAME).ConstData(), fnFullFinalScript.ConstData(), FALSE);
+  CopyFileA(ExpandPath::OnDisk(TEMPORARY_TEXTURE_NAME).ConstData(), fnFullFinalTexture.ConstData(), FALSE);
   m_fnCreatedFileName =fnSaveName;
   // end dialog
   EndDialog( IDOK);
@@ -323,8 +319,12 @@ BOOL CDlgCreateAnimatedTexture::OnInitDialog()
       CImageInfo iiImageInfo;
       if (iiImageInfo.GetGfxFileInfo_t(m_fnSourceFileName)==UNSUPPORTED_FILE)
       {
+        // [Cecil] Expand path properly
+        ExpandPath expath;
+        expath.ForReading(m_fnSourceFileName, DLI_SEARCHGAMES);
+
         // throw error
-        ThrowF_t("File '%s' has unsupported file format", (_fnmApplicationPath + m_fnSourceFileName).ConstData());
+        ThrowF_t("File '%s' has unsupported file format", expath.fnmExpanded.ConstData());
       }
       // get dimensions
       m_pixSourceWidth = iiImageInfo.ii_Width;

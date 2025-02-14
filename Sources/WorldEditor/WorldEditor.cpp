@@ -469,8 +469,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   if (strDefaultTexture == L"") {
     // load registry from the ini file
     CTString strCommand;
-    strCommand.PrintF("regedit.exe -s \"%s%s\"",
-      _fnmApplicationPath.ConstData(), "Data\\Defaults\\WorldEditor.reg");
+    strCommand.PrintF("regedit.exe -s \"%s\"", (_fnmApplicationPath + "Data\\Defaults\\WorldEditor.reg").ConstData());
     system(strCommand);
 /*    _spawnlp(_P_WAIT, "regedit.exe", 
       "-s", (_fnmApplicationPath + "Data\\Defaults\\WorldEditor.reg").ConstData(), NULL);
@@ -858,7 +857,7 @@ void CWorldEditorApp::ReadFromIniFileOnInit(void)
   // if exists in ini file
   if( strTexture != L"")
   {
-    theApp.SetNewActiveTexture( _fnmApplicationPath + CTString(CStringA(strTexture)));
+    theApp.SetNewActiveTexture(ExpandPath::OnDisk(CStringA(strTexture).GetString()));
   }
 
   INI_READ( "Paint power", "1.0");
@@ -2148,7 +2147,7 @@ void CWorldEditorApp::OnFileOpen()
   FOREACHINDYNAMICARRAY( afnOpenedWorlds, CTFileName, itWorld)
   {
     // try to load document
-    m_pDocTemplate->OpenDocumentFile( CString(_fnmApplicationPath+itWorld.Current()));
+    m_pDocTemplate->OpenDocumentFile(CString(ExpandPath::OnDisk(itWorld.Current())));
   }
 }
 
@@ -2219,7 +2218,7 @@ void CWorldEditorApp::OnConvertWorlds()
 
       // convert needed type of object
       fnmFile = CTString( achrLine);
-      fnmFileFull = _fnmApplicationPath+fnmFile;
+      fnmFileFull = ExpandPath::OnDisk(fnmFile);
       fnmExt  = fnmFile.FileExt();
       struct _stat    FileStat;
       struct _utimbuf FileTime;
@@ -2822,7 +2821,7 @@ void CWorldEditorApp::DisplayHelp(const CTFileName &fnHlk, UINT uCommand, DWORD 
       sscanf( strString, "\"%1024[^\"]\"", aExePath);
 
       CTString strCommand = "\""+CTString(aExePath)+"\"";
-      CTString strInputParam = "\""+_fnmApplicationPath+strHelpPath+"\"";
+      CTString strInputParam = "\"" + ExpandPath::OnDisk(strHelpPath) + "\"";
       const char *argv[4];
       argv[0] = strCommand;
       argv[1] = strInputParam;
