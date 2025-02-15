@@ -30,9 +30,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/DynamicContainer.h>
 #include <Engine/Templates/NameTable.h>
 
-// maximum length of file that can be saved (default: 8Mb)
-ENGINE_API extern ULONG _ulMaxLengthOfSavingFile;
-
 // [Cecil] Exception handling for streams only on Windows OS
 #if SE1_WIN
 
@@ -249,6 +246,13 @@ public:
  * CroTeam file stream class
  */
 class ENGINE_API CTFileStream : public CTStream {
+public:
+  // [Cecil] Global overrideable flags for the CTFileStream::Open_t() wrapper method
+  static ULONG ulFileStreamOpenFlags;
+
+  // [Cecil] Global overrideable flags for the CTFileStream::Create_t() wrapper method
+  static ULONG ulFileStreamCreateFlags;
+
 private:
   FILE *fstrm_pFile;    // ptr to opened file
 
@@ -258,16 +262,40 @@ private:
   SLONG fstrm_slZipSize; // size of the zip-file entry
 
   BOOL fstrm_bReadOnly;  // set if file is opened in read-only mode
+
 public:
   /* Default constructor. */
   CTFileStream(void);
   /* Destructor. */
   virtual ~CTFileStream(void);
 
-  /* Open an existing file. */
-  void Open_t(const CTFileName &fnFileName, CTStream::OpenMode om = CTStream::OM_READ); // throw char *
-  /* Create a new file or overwrite existing. */
-  void Create_t(const CTFileName &fnFileName); // throw char *
+  // [Cecil] Open an existing file with some flags
+  void OpenEx_t(const CTString &fnm, ULONG ulFlags, CTStream::OpenMode om = CTStream::OM_READ);
+
+  // [Cecil] Create a new file with some flags
+  void CreateEx_t(const CTString &fnm, ULONG ulFlags);
+
+  // [Cecil] Wrappers for compatibility
+  __forceinline void Open_t(const CTString &fnm, CTStream::OpenMode om = CTStream::OM_READ) {
+    OpenEx_t(fnm, ulFileStreamOpenFlags, om);
+  };
+
+  __forceinline void Create_t(const CTString &fnm) {
+    CreateEx_t(fnm, ulFileStreamCreateFlags);
+  };
+
+  // [Cecil] Set EDirListFlags flags for CTFileStream::Open_t()
+  static inline void SetOpenFlags(ULONG ulFlags);
+
+  // [Cecil] Set flags for CTFileStream::Open_t() to the default value
+  static inline void ResetOpenFlags(void);
+
+  // [Cecil] Set EDirListFlags flags for CTFileStream::Create_t()
+  static inline void SetCreateFlags(ULONG ulFlags);
+
+  // [Cecil] Set flags for CTFileStream::Create_t() to the default value
+  static inline void ResetCreateFlags(void);
+
   /* Close an open file. */
   void Close(void);
   /* Get CRC32 of stream */
@@ -373,7 +401,7 @@ ENGINE_API BOOL IsFileReadOnly(const CTFileName &fnmFile);
 // Delete a file (called 'remove' to avid name clashes with win32)
 ENGINE_API BOOL RemoveFile(const CTFileName &fnmFile);
 
-// [Cecil] New flags for listing files in some directory using MakeDirList()
+// [Cecil] New flags for using specific paths in specified directories using various methods that accept flags
 enum EDirListFlags {
   DLI_RECURSIVE   = (1 << 0), // Look into subdirectories
   DLI_SEARCHGAMES = (1 << 1), // Search directories of other games
@@ -384,6 +412,26 @@ enum EDirListFlags {
   DLI_IGNOREMOD   = (1 << 6), // Ignore extra files from the mod
   DLI_IGNORELISTS = (1 << 7), // Ignore include/exclude lists, if playing a mod
   DLI_IGNOREGRO   = (1 << 8), // Ignore files from GRO packages
+};
+
+// [Cecil] Set EDirListFlags flags for CTFileStream::Open_t()
+void CTFileStream::SetOpenFlags(ULONG ulFlags) {
+  ulFileStreamOpenFlags = ulFlags;
+};
+
+// [Cecil] Set flags for CTFileStream::Open_t() to the default value
+void CTFileStream::ResetOpenFlags(void) {
+  ulFileStreamOpenFlags = DLI_SEARCHGAMES;
+};
+
+// [Cecil] Set EDirListFlags flags for CTFileStream::Create_t()
+void CTFileStream::SetCreateFlags(ULONG ulFlags) {
+  ulFileStreamCreateFlags = ulFlags;
+};
+
+// [Cecil] Set flags for CTFileStream::Create_t() to the default value
+void CTFileStream::ResetCreateFlags(void) {
+  ulFileStreamCreateFlags = 0;
 };
 
 // make a list of all files in a directory

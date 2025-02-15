@@ -52,6 +52,12 @@ static SE1_THREADLOCAL BOOL _bThreadCanHandleStreams = FALSE;
 // list of currently opened streams
 static SE1_THREADLOCAL CListHead *_plhOpenedStreams = NULL;
 
+// [Cecil] Global overrideable flags for the CTFileStream::Open_t() wrapper method
+ULONG CTFileStream::ulFileStreamOpenFlags = DLI_SEARCHGAMES; // Search extra game directories by default
+
+// [Cecil] Global overrideable flags for the CTFileStream::Create_t() wrapper method
+ULONG CTFileStream::ulFileStreamCreateFlags = 0;
+
 // global string with current MOD path
 CTFileName _fnmMod;
 // global string with current name (the parameter that is passed on cmdline)
@@ -917,20 +923,17 @@ CTFileStream::~CTFileStream(void)
   }
 }
 
-/*
- * Open an existing file.
- */
-// throws char *
-void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=OM_READ*/)
+// [Cecil] Open an existing file with some flags
+void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::OpenMode om)
 {
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
-    ::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"), fnFileName.ConstData());
+    ::ThrowF_t(TRANS("Cannot open file `%s', stream handling is not enabled for this thread"), fnm.ConstData());
   }
 
   // check parameters
-  ASSERT(fnFileName.Length() > 0);
+  ASSERT(fnm.Length() > 0);
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL && fstrm_pZipHandle == NULL);
 
@@ -942,7 +945,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 
   // if read only mode requested
   if (om == OM_READ) {
-    if (expath.ForReading(fnFileName, DLI_SEARCHGAMES)) {
+    if (expath.ForReading(fnm, ulFlags)) {
       // if zip file
       if (expath.bArchive) {
         // open from zip
@@ -964,7 +967,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   // if write mode requested
   } else if (om == OM_WRITE) {
     // open file for reading and writing
-    if (expath.ForWriting(fnFileName, 0)) {
+    if (expath.ForWriting(fnm, ulFlags)) {
       fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "rb+");
     }
 
@@ -987,34 +990,25 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   _plhOpenedStreams->AddTail( strm_lnListNode);
 }
 
-/*
- * Create a new file or overwrite existing.
- */
-void CTFileStream::Create_t(const CTFileName &fnFileName) // throws char *
+// [Cecil] Create a new file with some flags
+void CTFileStream::CreateEx_t(const CTFileName &fnm, ULONG ulFlags)
 {
-  CTFileName fnFileNameAbsolute = fnFileName;
-  fnFileNameAbsolute.NormalizePath();
-
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
-    ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"), fnFileNameAbsolute.ConstData());
+    ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"), fnm.ConstData());
   }
 
   ExpandPath expath;
 
   // No path for writing a file
-  if (!expath.ForWriting(fnFileNameAbsolute, 0)) {
+  if (!expath.ForWriting(fnm, ulFlags)) {
     ASSERTALWAYS("No suitable path for creating a file");
-    Throw_t(TRANS("Cannot create file `%s' (%s)"), fnFileNameAbsolute.ConstData(), TRANS("No suitable path found"));
+    Throw_t(TRANS("Cannot create file `%s' (%s)"), fnm.ConstData(), TRANS("No suitable path found"));
   }
 
   // [Cecil] Create necessary directories for the new file if they don't exist yet
-  if (expath.eType == ExpandPath::E_PATH_MOD) {
-    CreateAllDirectories(_fnmMod + fnFileNameAbsolute); // Within the mod
-  } else {
-    CreateAllDirectories(fnFileNameAbsolute); // Within the game
-  }
+  CreateAllDirectories(expath.fnmExpanded);
 
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL);
@@ -1029,7 +1023,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName) // throws char *
   }
 
   // if file creation was successfull, set stream description to file name
-  strm_strStreamDescription = fnFileNameAbsolute;
+  strm_strStreamDescription = fnm; // [Cecil] NOTE: Not 'expath.fnmExpanded' in order to remember the exact used path
   // mark that file is created for writing
   fstrm_bReadOnly = FALSE;
   // add this newly created file into opened stream list
