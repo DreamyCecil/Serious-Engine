@@ -216,10 +216,13 @@ void CMipModel::FromObject3D_t( CObject3D &objRestFrame, CObject3D &objMipSource
     sprintf( achrErrorVertice,
       "%d invalid vertices found\n-------------------------\n\n", ctInvalidVertices);
     strInvalidVertices = CTString( achrErrorVertice) + strInvalidVertices;
-    strInvalidVertices.Save_t( CTFileName(CTString("Temp\\ErrorVertices.txt")));
+
+    CTString fnmVertices = ExpandPath::ToTemp("ErrorVertices.txt");
+
+    strInvalidVertices.Save_t(fnmVertices);
     ThrowF_t( "%d invalid vertices found.\nUnable to create mip models.\nList of vertices "
-      "that must be fixed can be found in file: \"Temp\\ErrorVertices.txt\".",
-      ctInvalidVertices);
+      "that must be fixed can be found in file: \"%s\".",
+      ctInvalidVertices, fnmVertices.ConstData());
   }
 }
 

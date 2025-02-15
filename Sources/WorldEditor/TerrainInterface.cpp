@@ -1816,7 +1816,7 @@ void DisplayHeightMapWindow(CPoint pt)
   try
   {
     tdHeightMap.Create_t( &ii, pixW-1, 16, TRUE);
-    CTString strHeightMap="Temp\\ViewHeightMap.tex";
+    CTString strHeightMap = ExpandPath::ToTemp("ViewHeightMap.tex");
     tdHeightMap.Save_t( strHeightMap);
 
     CTextureData *ptd;

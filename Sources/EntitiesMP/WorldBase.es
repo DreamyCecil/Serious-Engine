@@ -90,7 +90,7 @@ static void MakeWorldStatistics(void)
   // dump all stats
   try {
     CTFileStream strm;
-    CTFileName fnm = CTString("Temp\\Statistics.txt");
+    CTFileName fnm = ExpandPath::ToTemp("Statistics.txt");
     strm.Create_t(fnm);
     CTString strLine;
     strLine.PrintF("%-40s: %8s %8s %10s %10s", 

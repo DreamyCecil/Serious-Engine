@@ -301,10 +301,7 @@ BOOL CModelerApp::SubInitInstance()
 
   // don't start new document automatically
   cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
-  
-  // create temporary directory to contain copy/paste mapping all
-  CreateDirectoryA( _fnmApplicationPath + "Temp\\", NULL);
-  
+
   // try to
   try
   { // load lamp model

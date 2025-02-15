@@ -145,10 +145,9 @@ void CDlgPlayerSettings::OnEditControls()
     // get selected controls
     INDEX iSelectedControls = m_listAvailableControls.GetCurSel();
     ASSERT( iSelectedControls != LB_ERR);
-    CTFileName fnControlsName;
-    fnControlsName.PrintF("UserData\\Controls\\Controls%d.ctl", iSelectedControls); // [Cecil] From user data
+    CTFileName fnControlsName(0, "Controls\\Controls%d.ctl", iSelectedControls);
     // load it from the file
-    ctrlControls.Load_t( fnControlsName);
+    ctrlControls.Load_t(ExpandPath::ToUser(fnControlsName)); // [Cecil] From user data
     
     // call controls dialog
     CDlgPlayerControls dlgControls( ctrlControls);

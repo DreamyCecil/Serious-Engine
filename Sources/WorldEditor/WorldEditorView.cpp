@@ -3750,7 +3750,7 @@ void CWorldEditorView::CallPopupMenu(CPoint point)
           pPopup->EnableMenuItem(ID_SELECT_DESCENDANTS, MF_DISABLED|MF_GRAYED);
         }
         // if clipboard world does not exist
-        if (GetFileAttributesA(ExpandPath::OnDisk("Temp\\ClipboardWorld.wld")) == -1)
+        if (GetFileAttributesA(ExpandPath::OnDisk(ExpandPath::ToTemp("ClipboardWorld.wld"))) == -1)
         {
           // disable pasting
           pPopup->EnableMenuItem(ID_EDIT_PASTE, MF_DISABLED|MF_GRAYED);
@@ -5727,7 +5727,7 @@ void CWorldEditorView::OnTakeSs()
   CTFileName fnDocName = CTString( CStringA(GetDocument()->GetPathName()));
   CTFileName fnScreenShoot =  _EngineGUI.FileRequester(
     "Choose file name for screen shoot", FILTER_TGA FILTER_ALL FILTER_END, KEY_NAME_SCREEN_SHOT_DIR,
-    "UserData\\ScreenShots\\", fnDocName.FileName()+"xx"+".tga", NULL, FALSE); // [Cecil] From user data
+    ExpandPath::ToUser("ScreenShots\\"), fnDocName.FileName()+"xx"+".tga", NULL, FALSE); // [Cecil] From user data
   if( fnScreenShoot == "") return;
 
   // try to
@@ -5890,7 +5890,7 @@ void CWorldEditorView::EditCopy( BOOL bAlternative)
         try
         {
           // save entity clipboard world
-          woEntityClipboard.Save_t(CTString("Temp\\ClipboardEntityWorld.wld"));
+          woEntityClipboard.Save_t(ExpandPath::ToTemp("ClipboardEntityWorld.wld"));
         }
         catch( char *strError)
         {
@@ -5978,7 +5978,7 @@ void CWorldEditorView::EditCopy( BOOL bAlternative)
       try
       {
         // save world to clipboard
-        woClipboard.Save_t(CTString("Temp\\ClipboardSectorWorld.wld"));
+        woClipboard.Save_t(ExpandPath::ToTemp("ClipboardSectorWorld.wld"));
       }
       catch( char *strError)
       {
@@ -5995,7 +5995,7 @@ void CWorldEditorView::EditCopy( BOOL bAlternative)
     try
     {
       // save world into clipboard file
-      pDoc->m_woWorld.Save_t(CTString("Temp\\ClipboardWorld.wld"));
+      pDoc->m_woWorld.Save_t(ExpandPath::ToTemp("ClipboardWorld.wld"));
     }
     catch( char *strError)
     {
@@ -6059,7 +6059,7 @@ void CWorldEditorView::OnEditPaste()
     try
     {
       // load clipboard entity World
-      woEntityClipboard.Load_t(CTString("Temp\\ClipboardEntityWorld.wld"));
+      woEntityClipboard.Load_t(ExpandPath::ToTemp("ClipboardEntityWorld.wld"));
     }
     catch( char *err_str)
     {
@@ -6117,13 +6117,13 @@ void CWorldEditorView::OnEditPaste()
   else if( theApp.m_ctLastCopyType == CT_WORLD)
   {
     // load world from clipboard file and start template CSG
-    pDoc->StartTemplateCSG(plPaste, CTString("Temp\\ClipboardWorld.wld"));
+    pDoc->StartTemplateCSG(plPaste, ExpandPath::ToTemp("ClipboardWorld.wld"));
   }
   // if last copy operation was with selected sectors
   else if( theApp.m_ctLastCopyType == CT_SECTOR)
   {
     // load world from sectors clipboard file and start template CSG
-    pDoc->StartTemplateCSG(plPaste, CTString("Temp\\ClipboardSectorWorld.wld"));
+    pDoc->StartTemplateCSG(plPaste, ExpandPath::ToTemp("ClipboardSectorWorld.wld"));
   }
 }
 
@@ -6836,7 +6836,7 @@ void CWorldEditorView::OnCloneCSG()
   theApp.m_bCSGReportEnabled = TRUE;
   // and report calculated CSG report values
   _pfWorldEditingProfile.Report( theApp.m_strCSGAndShadowStatistics);
-  theApp.m_strCSGAndShadowStatistics.SaveVar(CTString("Temp\\Profile_CSGWizard.txt"));
+  theApp.m_strCSGAndShadowStatistics.SaveVar(ExpandPath::ToTemp("Profile_CSGWizard.txt"));
 }
 
 void CWorldEditorView::OnUpdateCloneCsg(CCmdUI* pCmdUI)
@@ -9198,7 +9198,7 @@ void CWorldEditorView::OnEditPasteAlternative()
     CWorldEditorDoc* pDoc = GetDocument();
     CPlacement3D plPaste = GetMouseInWorldPlacement();
     // load world from clipboard file and start template CSG
-    pDoc->StartTemplateCSG(plPaste, CTString("Temp\\ClipboardEntityWorld.wld"));
+    pDoc->StartTemplateCSG(plPaste, ExpandPath::ToTemp("ClipboardEntityWorld.wld"));
     // update all views
     pDoc->UpdateAllViews( NULL);
   }

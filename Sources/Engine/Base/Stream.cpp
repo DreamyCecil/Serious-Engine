@@ -215,17 +215,19 @@ void InitStreams(void)
         // List mod levels and create .vis files for them
         _afnmModWrite.Push() = "Levels";
         _afnmModRead.Push() = "Levels";
+        // [Cecil] FIXME: If ExpandPath::ToUser() returns an absolute path, it may not work with these mod lists
         // Write and read mod saves
-        _afnmModWrite.Push() = "UserData\\SaveGame";
-        _afnmModRead.Push() = "UserData\\SaveGame";
+        _afnmModWrite.Push() = ExpandPath::ToUser("SaveGame");
+        _afnmModRead.Push() = ExpandPath::ToUser("SaveGame");
         bSavesWithLevels = TRUE;
       }
 
       // [Cecil] If mod has exclusive saves but not levels, add them separately
       if (!bSavesWithLevels && bSaves) {
+        // [Cecil] FIXME: If ExpandPath::ToUser() returns an absolute path, it may not work with these mod lists
         // Write and read mod saves
-        _afnmModWrite.Push() = "UserData\\SaveGame";
-        _afnmModRead.Push() = "UserData\\SaveGame";
+        _afnmModWrite.Push() = ExpandPath::ToUser("SaveGame");
+        _afnmModRead.Push() = ExpandPath::ToUser("SaveGame");
       }
 
       // [Cecil] If mod has exclusive models, add player models specifically
@@ -248,8 +250,8 @@ void InitStreams(void)
   }
 
   // [Cecil] Load packages from extra content directories
-  LoadExtraPackages(CTFILENAME("UserData\\ContentDirs.lst"), FALSE); // Simple GRO packages
-  LoadExtraPackages(CTFILENAME("UserData\\GameDirs.lst"), TRUE); // Entire games
+  LoadExtraPackages(ExpandPath::ToUser("ContentDirs.lst"), FALSE); // Simple GRO packages
+  LoadExtraPackages(ExpandPath::ToUser("GameDirs.lst"), TRUE); // Entire games
 
   // try to
   try {
@@ -1527,6 +1529,22 @@ CTString ExpandPath::OnDisk(CTString fnmFile) {
 
   // Relative to the root game directory
   return _fnmApplicationPath + fnmFile;
+};
+
+// [Cecil] Expand some path to the directory for temporary files
+CTString ExpandPath::ToTemp(const CTString &fnmRelative) {
+  ASSERTMSG(_bSeriousEngineInitialized, "Using ExpandPath::ToTemp() before engine initialization!");
+
+  // Store temporary files in a subdirectory relative to the game
+  return "Temp\\" + fnmRelative;
+};
+
+// [Cecil] Expand some path to the directory for personal user data
+CTString ExpandPath::ToUser(const CTString &fnmRelative) {
+  ASSERTMSG(_bSeriousEngineInitialized, "Using ExpandPath::ToUser() before engine initialization!");
+
+  // Store user files in a subdirectory relative to the game
+  return "UserData\\" + fnmRelative;
 };
 
 // [Cecil] Get full path for writing a file on disk

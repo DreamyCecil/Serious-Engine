@@ -31,7 +31,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CDlgLightAnimationEditor dialog
 
-#define DEFAULT_ANIMATION_FILE "Temp\\DefaultAnimation.ani"
+#define DEFAULT_ANIMATION_FILE ExpandPath::ToTemp("DefaultAnimation.ani")
 
 INDEX CDlgLightAnimationEditor::GetSelectedLightAnimation(void)
 {
@@ -500,8 +500,7 @@ void CDlgLightAnimationEditor::OnLoadAnimation()
     WarningMessage( strError);
     try
     {
-      CTFileName fnDefaultAnimation = CTString( DEFAULT_ANIMATION_FILE);
-      m_padAnimData = _pAnimStock->Obtain_t( fnDefaultAnimation);
+      m_padAnimData = _pAnimStock->Obtain_t(DEFAULT_ANIMATION_FILE);
     }
     catch( char *strError2)
     {

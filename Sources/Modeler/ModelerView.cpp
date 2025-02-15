@@ -2620,7 +2620,7 @@ void CModelerView::OnTakeScreenShoot()
 
   CTFileName fnSSFileName = _EngineGUI.FileRequester( "Select name for screen shot",
                             FILTER_TGA FILTER_END, "Take screen shoots directory",
-                            "UserData\\ScreenShots\\", "", NULL, FALSE); // [Cecil] From user data
+                            ExpandPath::ToUser("ScreenShots\\"), "", NULL, FALSE); // [Cecil] From user data
   if( fnSSFileName == "") return;
 
   CWaitCursor StartWaitCursor;
@@ -3478,12 +3478,12 @@ void CModelerView::OnCreateMipModels()
       pDoc->m_emEditModel.CreateMipModels_t( objRestFrame, objMipSourceFrame,
         dlgAutoMipModeling.m_iVerticesToRemove, dlgAutoMipModeling.m_iSurfacePreservingFactor);
       // copy mapping from main mip model
-      pDoc->m_emEditModel.SaveMapping_t( CTString("Temp\\ForAutoMipMapping.map"), 0);
+      pDoc->m_emEditModel.SaveMapping_t(ExpandPath::ToTemp("ForAutoMipMapping.map"), 0);
       // paste mapping over all smaller mip models
       INDEX iMipModel=1;
       for( ; iMipModel<pDoc->m_emEditModel.edm_md.md_MipCt; iMipModel++)
       {
-        pDoc->m_emEditModel.LoadMapping_t( CTString("Temp\\ForAutoMipMapping.map"), iMipModel);
+        pDoc->m_emEditModel.LoadMapping_t(ExpandPath::ToTemp("ForAutoMipMapping.map"), iMipModel);
       }
 
       for( INDEX iSurface=1; 
@@ -4018,7 +4018,7 @@ void CModelerView::OnToggleMeasureVtx()
     CTString strCoords;
     strCoords.PrintF( "(%gf, %gf, %gf)",vDelta(1), vDelta(2), vDelta(3));
     try {
-      strCoords.Save_t(CTString("temp\\VertexCoords.txt"));
+      strCoords.Save_t(ExpandPath::ToTemp("VertexCoords.txt"));
     } catch( char *strError) {
       WarningMessage( strError);
     }

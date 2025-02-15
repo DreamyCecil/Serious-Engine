@@ -307,11 +307,11 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
 #if SE1_WIN
   // [Cecil] Set new report filename
   extern void SE_SetReportLogFileName(const CTString &fnmReport);
-  SE_SetReportLogFileName("Temp\\CrashReports\\" + strLogFileName + ".rpt");
+  SE_SetReportLogFileName(ExpandPath::ToTemp("CrashReports\\" + strLogFileName + ".rpt"));
 #endif
 
   // [Cecil] Save under the "Temp/Logs/" directory
-  _strLogFile = "Temp\\Logs\\" + strLogFileName + ".log";
+  _strLogFile = ExpandPath::ToTemp("Logs\\" + strLogFileName + ".log");
   _pConsole->Initialize(_strLogFile, 90, 512);
 
   _pAnimStock        = new CStock_CAnimData;

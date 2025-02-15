@@ -587,7 +587,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   _pGfx->ResetDisplayMode((enum GfxAPIType) m_iApi);
 
   // initialize game itself (GameShell interface) and load settings
-  _pGame->Initialize("UserData\\Game\\WorldEditor.gms"); // [Cecil]
+  _pGame->Initialize(ExpandPath::ToUser("Game\\WorldEditor.gms")); // [Cecil]
   // load startup script
   _pShell->Execute( "include \"Scripts\\WorldEditor_startup.ini\"");
 
@@ -596,7 +596,8 @@ BOOL CWorldEditorApp::SubInitInstance()
   ReadDefaultPolygonValues();
 
   // load primitives history buffer
-  CTString strPrimitives("UserData\\Editor\\PrimitivesHistory.pri");
+  CTString strPrimitives = ExpandPath::ToUser("Editor\\PrimitivesHistory.pri");
+
   if (FileExists(strPrimitives)) {
     CTFileStream strmFile;
     try
@@ -621,9 +622,6 @@ BOOL CWorldEditorApp::SubInitInstance()
 
   // don't start new document automatically
   cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
-
-  // create temporary directory to contain undo files
-  CreateDirectoryA( _fnmApplicationPath + "Temp\\", NULL);
 
   // try to
   try
@@ -1647,7 +1645,7 @@ void CAppPrefs::WriteToIniFile()
 
 BOOL CWorldEditorApp::LoadRenderingPreferences()
 {
-  CTFileName fnRenderingPrefs = CTString("UserData\\Editor\\WEDRenderingPrefs.bin");
+  CTFileName fnRenderingPrefs = ExpandPath::ToUser("Editor\\WEDRenderingPrefs.bin");
 
   // if rendering preferences file does not exist
   if (!FileExists(fnRenderingPrefs)) {
@@ -1700,7 +1698,7 @@ void CWorldEditorApp::SaveRenderingPreferences(void)
   try
   {
     // open binary file to save rendering preferences
-  	CTFileName fnRenderingPrefs = CTString("UserData\\Editor\\WEDRenderingPrefs.bin");
+  	CTFileName fnRenderingPrefs = ExpandPath::ToUser("Editor\\WEDRenderingPrefs.bin");
     strmFile.Create_t(fnRenderingPrefs);
     // write file ID
     strmFile.WriteID_t( CChunkID( "RPRF"));  // child configurations
@@ -1751,7 +1749,7 @@ void CChildConfiguration::ClearInvalidConfigPointers(void)
 
 BOOL CWorldEditorApp::LoadChildConfigurations(void)
 {
-  CTFileName fnChildConfigurations = CTString("UserData\\Editor\\WEDChildConfigurations.bin");
+  CTFileName fnChildConfigurations = ExpandPath::ToUser("Editor\\WEDChildConfigurations.bin");
 
   // if child configuration file does not exist
   if (!FileExists(fnChildConfigurations)) {
@@ -1804,7 +1802,7 @@ void CWorldEditorApp::SaveChildConfigurations(void)
   CTFileStream strmFile;
   try
   {
-  	CTFileName fnChildConfigurations = CTString("UserData\\Editor\\WEDChildConfigurations.bin");
+  	CTFileName fnChildConfigurations = ExpandPath::ToUser("Editor\\WEDChildConfigurations.bin");
     // create binary file to receive child configurations
     strmFile.Create_t(fnChildConfigurations);
     // write file ID
@@ -1841,7 +1839,7 @@ int CWorldEditorApp::ExitInstance()
   _pGame->End();
 
   // delete clipboard file
-  RemoveFile( CTString("Temp\\ClipboardWorld.wld"));
+  RemoveFile(ExpandPath::ToTemp("ClipboardWorld.wld"));
 
   WriteToIniFileOnEnd();
   WriteDefaultPolygonValues();

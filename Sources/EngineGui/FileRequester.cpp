@@ -104,7 +104,7 @@ UINT_PTR APIENTRY FileOpenRequesterHook( HWND hdlg, UINT uiMsg, WPARAM wParam,	L
         if( (iiImageInfo.ii_Width  == 1<<((int)Log2( iiImageInfo.ii_Width))) &&
             (iiImageInfo.ii_Height == 1<<((int)Log2( iiImageInfo.ii_Height))) )
         {
-          fnThumbnail = CTString( "Temp\\Temp.tex");
+          fnThumbnail = ExpandPath::ToTemp("Temp.tex");
           // creates new texture with one frame
           CTextureData tdForPictureConverting;
           tdForPictureConverting.Create_t( &iiImageInfo, iiImageInfo.ii_Width, 1, FALSE);

@@ -1349,8 +1349,8 @@ void CSeriousSkaStudioView::OnAddMeshlod()
   }
   strMeshList += "}\n";
 
-  CTFileName fnMeshList = CTString("Temp/mesh.aml");
-  CTFileName fnMeshBin = CTString("Temp/mesh.bm");
+  CTFileName fnMeshList = ExpandPath::ToTemp("mesh.aml");
+  CTFileName fnMeshBin = ExpandPath::ToTemp("mesh.bm");
 
   CMesh mshTemp;
   try
@@ -1439,8 +1439,8 @@ void CSeriousSkaStudioView::OnAddSkeletonlod()
   }
   strSkeletonList += "}\n";
 
-  CTFileName fnSklList = CTString("Temp/skeleton.asl");
-  CTFileName fnSklBin = CTString("Temp/skeleton.bs");
+  CTFileName fnSklList = ExpandPath::ToTemp("skeleton.asl");
+  CTFileName fnSklBin = ExpandPath::ToTemp("skeleton.bs");
   CSkeleton slTemp;
 
   try
@@ -1538,8 +1538,8 @@ void CSeriousSkaStudioView::OnAddAnimation()
   }
   strAnimSet += "}\n";
 
-  CTFileName fnAnimSetList = CTString("Temp/animset.aal");
-  CTFileName fnAnimSetBin = CTString("Temp/animset.ba");
+  CTFileName fnAnimSetList = ExpandPath::ToTemp("animset.aal");
+  CTFileName fnAnimSetBin = ExpandPath::ToTemp("animset.ba");
   CAnimSet asTemp;
 
   try

@@ -56,8 +56,8 @@ void CDlgPgRenderingStatistics::DoDataExchange(CDataExchange* pDX)
     // try to load rendering profile file ("WorldEditor.profile")
     try
     {
-      theApp.m_strCSGAndShadowStatistics.Save_t(CTString("Temp\\CSGProfile.txt"));
-      strCSGProfile.LoadKeepCRLF_t(CTString("Temp\\CSGProfile.txt"));
+      theApp.m_strCSGAndShadowStatistics.Save_t(ExpandPath::ToTemp("CSGProfile.txt"));
+      strCSGProfile.LoadKeepCRLF_t(ExpandPath::ToTemp("CSGProfile.txt"));
 
       CTFileStream fileProfile;
       fileProfile.Open_t(CTString("WorldEditor.profile"));

@@ -32,8 +32,8 @@ static char THIS_FILE[] = __FILE__;
 // CDlgCreateAnimatedTexture dialog
 
 
-#define TEMPORARY_SCRIPT_NAME "Temp\\Temp.scr"
-#define TEMPORARY_TEXTURE_NAME "Temp\\Temp.tex"
+#define TEMPORARY_SCRIPT_NAME  ExpandPath::ToTemp("Temp.scr")
+#define TEMPORARY_TEXTURE_NAME ExpandPath::ToTemp("Temp.tex")
 
 
 void CDlgCreateAnimatedTexture::ReleaseCreatedTexture(void)

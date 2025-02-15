@@ -29,8 +29,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 //#define OPERATEIN2D 1
 
-// this must not be caught by the dependency catcher!
-static CTFileName _fnmDebugOutput(CTString("Temp\\Triangularization.out"));
 // set if debug output file is open
 static BOOL _bDebugOutputOpen = FALSE;
 // file where debugging output is written to
@@ -596,7 +594,7 @@ void CTriangularizer::DPrintF(const char *strFormat, ...)
   if (!_bDebugOutputOpen) {
     // open it
     try  {
-      _strmDebugOutput.Create_t(_fnmDebugOutput);
+      _strmDebugOutput.Create_t(ExpandPath::ToTemp("Triangularization.out"));
       _bDebugOutputOpen = TRUE;
     // if not successful
     } catch (char *strError) {
@@ -754,7 +752,7 @@ void CTriangularizer::FindBestTriangle(void)
     // error!
     ASSERTALWAYS("No acceptable triangles found for triangularization!");
     FatalError("No acceptable triangles found for triangularization!\n"
-      "Debugging information written to file '%s'.", _fnmDebugOutput);
+      "Debugging information written to file '%s'.", ExpandPath::ToTemp("Triangularization.out").ConstData());
   }
 #endif
 }

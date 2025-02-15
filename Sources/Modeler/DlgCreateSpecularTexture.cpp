@@ -108,7 +108,7 @@ void CDlgCreateSpecularTexture::DoDataExchange(CDataExchange* pDX)
   if( (pDX->m_bSaveAndValidate) && IsWindow( m_sliderSpecularExponent.m_hWnd) )
   {                    
     INDEX iSlider = m_sliderSpecularExponent.GetPos();
-    CreateTexture( CTString("temp\\SpecularTemp.tex"), GetFactorForPercentage( iSlider));
+    CreateTexture(ExpandPath::ToTemp("SpecularTemp.tex"), GetFactorForPercentage(iSlider));
     CTextureData *pTD = (CTextureData *) m_moModel.mo_toSpecular.GetData();
     if( pTD != NULL) pTD->Reload();
     Invalidate( FALSE);
@@ -207,7 +207,7 @@ void CDlgCreateSpecularTexture::DrawPreview( CDrawPort *pdp, FLOAT fExp)
     DECLARE_CTFILENAME( fnTeapotTexture, "Models\\Editor\\Teapot.tex");
     m_moModel.SetData_t( fnTeapotModel);
     m_moModel.mo_toTexture.SetData_t( fnTeapotTexture);
-    m_moModel.mo_toSpecular.SetData_t( CTString("temp\\SpecularTemp.tex"));
+    m_moModel.mo_toSpecular.SetData_t(ExpandPath::ToTemp("SpecularTemp.tex"));
   }
   catch( char *strError)
   {
@@ -496,7 +496,7 @@ void CDlgCreateSpecularTexture::OnOK()
 
   if (fnFinal != "") {
     // [Cecil] Expand paths properly
-    CopyFileA(ExpandPath::OnDisk("Temp\\SpecularTemp.tex").ConstData(), ExpandPath::OnDisk(fnFinal).ConstData(), FALSE);
+    CopyFileA(ExpandPath::OnDisk(ExpandPath::ToTemp("SpecularTemp.tex")).ConstData(), ExpandPath::OnDisk(fnFinal).ConstData(), FALSE);
   }
 
 	CDialog::OnOK();

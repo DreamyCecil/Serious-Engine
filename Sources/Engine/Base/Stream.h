@@ -416,6 +416,12 @@ struct ENGINE_API ExpandPath {
   // Get full path on disk from any relative/absolute path
   static CTString OnDisk(CTString fnmFile);
 
+  // Expand some path to the directory for temporary files
+  static CTString ToTemp(const CTString &fnmRelative);
+
+  // Expand some path to the directory for personal user data
+  static CTString ToUser(const CTString &fnmRelative);
+
   // Get full path for writing a file on disk
   // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
   BOOL ForWriting(const CTString &fnmFile, ULONG ulFlags);

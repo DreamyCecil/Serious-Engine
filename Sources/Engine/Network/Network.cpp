@@ -612,7 +612,7 @@ static void StockDump(void)
 {
   try {
     CTFileStream strm;
-    CTFileName fnm = CTString("Temp\\StockDump.txt");
+    CTFileName fnm = ExpandPath::ToTemp("StockDump.txt");
     strm.Create_t(fnm);
     strm.PutLine_t("Animations:");
     _pAnimStock->DumpMemoryUsage_t(strm);
@@ -1865,9 +1865,8 @@ void CNetworkLibrary::MainLoop(void)
     _bStartDemoRecordingNextTime = 0.0f;
     if (!ga_bDemoRec) {
       try {
-        CTString strName;
-        strName.PrintF("Temp\\Recorded%02d.dem", (INDEX)dem_iRecordedNumber);
-        StartDemoRec_t(strName);
+        CTString strName(0, "Recorded%02d.dem", (INDEX)dem_iRecordedNumber);
+        StartDemoRec_t(ExpandPath::ToTemp(strName));
         dem_iRecordedNumber+=1;
       } catch(char *strError) {
         CPrintF(TRANS("Demo recording error: %s\n"), strError);
@@ -2540,7 +2539,7 @@ void CNetworkLibrary::MakeDefaultState(const CTFileName &fnmWorld,
   CTStream *pstrmState;
   extern INDEX net_bDumpConnectionInfo;
   if (net_bDumpConnectionInfo) {
-    strmStateFile.Create_t(CTString("Temp\\DefaultState.bin"));
+    strmStateFile.Create_t(ExpandPath::ToTemp("DefaultState.bin"));
     pstrmState = &strmStateFile;
   } else {
     pstrmState = &strmStateMem;

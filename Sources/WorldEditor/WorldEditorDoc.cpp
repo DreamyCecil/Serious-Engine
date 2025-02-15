@@ -458,7 +458,7 @@ BOOL CWorldEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
     m_woWorld.Load_t( fnOpenFileName);
     m_woWorld.ReinitializeEntities();
     _pfWorldEditingProfile.Report( theApp.m_strCSGAndShadowStatistics);
-    theApp.m_strCSGAndShadowStatistics.SaveVar(CTString("Temp\\Profile_Open.txt"));
+    theApp.m_strCSGAndShadowStatistics.SaveVar(ExpandPath::ToTemp("Profile_Open.txt"));
 
     // try to load textures for backdrops
     if( m_woWorld.wo_strBackdropUp != "")
@@ -837,7 +837,7 @@ void CWorldEditorDoc::ApplyCSG(enum CSGType CSGType)
     CTFileStream strmFile;
     try
     {
-      strmFile.Create_t( CTString("UserData\\Editor\\PrimitivesHistory.pri"));
+      strmFile.Create_t(ExpandPath::ToUser("Editor\\PrimitivesHistory.pri"));
       INDEX ctHistory = theApp.m_lhPrimitiveHistory.Count();
       strmFile << ctHistory;
       // write history primitives list
@@ -1031,7 +1031,7 @@ void CWorldEditorDoc::ApplyCSG(enum CSGType CSGType)
   {
     // create CSG report
     _pfWorldEditingProfile.Report( theApp.m_strCSGAndShadowStatistics);
-    theApp.m_strCSGAndShadowStatistics.SaveVar(CTString("Temp\\Profile_CSG.txt"));
+    theApp.m_strCSGAndShadowStatistics.SaveVar(ExpandPath::ToTemp("Profile_CSG.txt"));
   }
   m_iMirror = 0;
 }
@@ -2597,11 +2597,10 @@ void CWorldEditorDoc::SnapPrimitiveValuesToGrid(void)
 CUndo::CUndo(void)    // throw char * 
 {
   static INDEX iUndoFile = 0;   // counter for undo files
-  static char achUndoFileName[256];
 
   // create a temporary file name
-  sprintf(achUndoFileName, "Temp\\WED_Undo%d.tmp", iUndoFile);
-  m_fnmUndoFile = CTString(achUndoFileName);
+  m_fnmUndoFile.PrintF("WED_Undo%d.tmp", iUndoFile);
+  m_fnmUndoFile = ExpandPath::ToTemp(m_fnmUndoFile);
 
   // increment the counter of undo files
   iUndoFile++;
@@ -3217,7 +3216,7 @@ void CWorldEditorDoc::OnCalculateShadows()
 
   // create shadows report
   _pfWorldEditingProfile.Report( theApp.m_strCSGAndShadowStatistics);
-  theApp.m_strCSGAndShadowStatistics.SaveVar(CTString("Temp\\Profile_Shadows.txt"));
+  theApp.m_strCSGAndShadowStatistics.SaveVar(ExpandPath::ToTemp("Profile_Shadows.txt"));
 
   // mark that document has changed
   SetModifiedFlag(TRUE);
@@ -3975,9 +3974,9 @@ void CWorldEditorDoc::ApplyMirrorAndStretch(INDEX iMirror, FLOAT fStretch)
     {
       woDummy.MirrorAndStretch( *m_pwoSecondLayer, fStretch, 
         (enum WorldMirrorType)iMirror);
-      woDummy.Save_t(CTString("Temp\\MirrorAndStretch.wld"));
+      woDummy.Save_t(ExpandPath::ToTemp("MirrorAndStretch.wld"));
       m_pwoSecondLayer->Clear();
-      m_pwoSecondLayer->Load_t(CTString("Temp\\MirrorAndStretch.wld"));
+      m_pwoSecondLayer->Load_t(ExpandPath::ToTemp("MirrorAndStretch.wld"));
     }
     else
     {
@@ -3992,9 +3991,9 @@ void CWorldEditorDoc::ApplyMirrorAndStretch(INDEX iMirror, FLOAT fStretch)
 
       woDummy.MirrorAndStretch( m_woWorld, fStretch, 
         (enum WorldMirrorType)iMirror);
-      woDummy.Save_t(CTString("Temp\\MirrorAndStretch.wld"));
+      woDummy.Save_t(ExpandPath::ToTemp("MirrorAndStretch.wld"));
       m_woWorld.Clear();
-      m_woWorld.Load_t(CTString("Temp\\MirrorAndStretch.wld"));
+      m_woWorld.Load_t(ExpandPath::ToTemp("MirrorAndStretch.wld"));
       m_woWorld.CalculateNonDirectionalShadows();
 
       m_chDocument.MarkChanged();

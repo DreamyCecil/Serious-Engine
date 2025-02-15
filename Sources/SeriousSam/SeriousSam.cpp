@@ -465,7 +465,7 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   _pShell->DeclareSymbol("user INDEX sam_bToggleConsole;",&sam_bToggleConsole);
   _pShell->DeclareSymbol("INDEX sam_iStartCredits;", &sam_iStartCredits);
 
-  _pGame->Initialize("UserData\\Game\\SeriousSam.gms"); // [Cecil]
+  _pGame->Initialize(ExpandPath::ToUser("Game\\SeriousSam.gms")); // [Cecil]
   _pGame->LCDInit();
 
   if( sam_bFirstStarted) {

@@ -159,7 +159,7 @@ void CDlgCreateReflectionTexture::DoDataExchange(CDataExchange* pDX)
 
     _bTimerEnabled = FALSE;
     try {
-      CreateReflectionTexture_t( CTString("temp\\ReflectionTemp.tex"));
+      CreateReflectionTexture_t(ExpandPath::ToTemp("ReflectionTemp.tex"));
       CTextureData *pTD = (CTextureData *) m_moModel.mo_toReflection.GetData();
       if( pTD != NULL) pTD->Reload();
     } catch( char *strError) { 
@@ -379,8 +379,8 @@ void CDlgCreateReflectionTexture::DrawPreview( CDrawPort *pdp)
     DECLARE_CTFILENAME( fnTeapotTexture, "Models\\Editor\\Teapot.tex");
     m_moModel.SetData_t( fnTeapotModel);
     m_moModel.mo_toTexture.SetData_t( fnTeapotTexture);
-    m_moModel.mo_toReflection.SetData_t( CTString("temp\\ReflectionTemp.tex"));
-    m_moModel.mo_toSpecular.SetData_t( CTString("temp\\SpecularTemp.tex"));
+    m_moModel.mo_toReflection.SetData_t(ExpandPath::ToTemp("ReflectionTemp.tex"));
+    m_moModel.mo_toSpecular.SetData_t(ExpandPath::ToTemp("SpecularTemp.tex"));
   }
   catch( char *strError)
   {
@@ -580,19 +580,26 @@ void CDlgCreateReflectionTexture::AutoSetTextures( CTFileName fnFile)
 
   try
   {
-    CreateTexture_t( m_strBase+"N"+m_strExt, CTString("Temp\\TempN.tex"), 256, 15, FALSE);
-    CreateTexture_t( m_strBase+"E"+m_strExt, CTString("Temp\\TempE.tex"), 256, 15, FALSE);
-    CreateTexture_t( m_strBase+"S"+m_strExt, CTString("Temp\\TempS.tex"), 256, 15, FALSE);
-    CreateTexture_t( m_strBase+"W"+m_strExt, CTString("Temp\\TempW.tex"), 256, 15, FALSE);
-    CreateTexture_t( m_strBase+"C"+m_strExt, CTString("Temp\\TempC.tex"), 256, 15, FALSE);
-    CreateTexture_t( m_strBase+"F"+m_strExt, CTString("Temp\\TempF.tex"), 256, 15, FALSE);
+    CTString fnmN = ExpandPath::ToTemp("TempN.tex");
+    CTString fnmE = ExpandPath::ToTemp("TempE.tex");
+    CTString fnmS = ExpandPath::ToTemp("TempS.tex");
+    CTString fnmW = ExpandPath::ToTemp("TempW.tex");
+    CTString fnmC = ExpandPath::ToTemp("TempC.tex");
+    CTString fnmF = ExpandPath::ToTemp("TempF.tex");
 
-    m_toN.SetData_t( CTString("Temp\\TempN.tex"));
-    m_toE.SetData_t( CTString("Temp\\TempE.tex"));
-    m_toS.SetData_t( CTString("Temp\\TempS.tex"));
-    m_toW.SetData_t( CTString("Temp\\TempW.tex"));
-    m_toC.SetData_t( CTString("Temp\\TempC.tex"));
-    m_toF.SetData_t( CTString("Temp\\TempF.tex"));
+    CreateTexture_t(m_strBase + "N" + m_strExt, fnmN, 256, 15, FALSE);
+    CreateTexture_t(m_strBase + "E" + m_strExt, fnmE, 256, 15, FALSE);
+    CreateTexture_t(m_strBase + "S" + m_strExt, fnmS, 256, 15, FALSE);
+    CreateTexture_t(m_strBase + "W" + m_strExt, fnmW, 256, 15, FALSE);
+    CreateTexture_t(m_strBase + "C" + m_strExt, fnmC, 256, 15, FALSE);
+    CreateTexture_t(m_strBase + "F" + m_strExt, fnmF, 256, 15, FALSE);
+
+    m_toN.SetData_t(fnmN);
+    m_toE.SetData_t(fnmE);
+    m_toS.SetData_t(fnmS);
+    m_toW.SetData_t(fnmW);
+    m_toC.SetData_t(fnmC);
+    m_toF.SetData_t(fnmF);
   }
   catch( char *strError)
   {
@@ -700,7 +707,7 @@ void CDlgCreateReflectionTexture::OnOK()
 
   if (fnFinal != "") {
     // [Cecil] Expand paths properly
-    CopyFileA(ExpandPath::OnDisk("Temp\\ReflectionTemp.tex").ConstData(), ExpandPath::OnDisk(fnFinal).ConstData(), FALSE);
+    CopyFileA(ExpandPath::OnDisk(ExpandPath::ToTemp("ReflectionTemp.tex")).ConstData(), ExpandPath::OnDisk(fnFinal).ConstData(), FALSE);
   }
 
 	CDialog::OnOK();

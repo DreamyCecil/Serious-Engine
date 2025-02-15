@@ -1036,8 +1036,8 @@ void CServer::SendSessionStateData(INDEX iClient)
 
     UBYTE* pubSrc = NULL;
     /*if (net_bDumpConnectionInfo) {
-      strmStateFile.Create_t(CTString("Temp\\State.bin"));
-      strmDeltaFile.Create_t(CTString("Temp\\Delta.bin"));
+      strmStateFile.Create_t(ExpandPath::ToTemp("State.bin"));
+      strmDeltaFile.Create_t(ExpandPath::ToTemp("Delta.bin"));
       pstrmState = &strmStateFile;
       pstrmDelta = &strmDeltaFile;
     } else {*/

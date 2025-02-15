@@ -114,7 +114,8 @@ BOOL LSLoadControls(const CTFileName &fnm)
     CTString fnmControls = fnm;
 
     if (fnm.HasPrefix("Controls\\Controls")) {
-      fnmControls.PrintF("UserData\\Controls\\%s.ctl", fnm.FileName().ConstData());
+      fnmControls.PrintF("Controls\\%s.ctl", fnm.FileName().ConstData());
+      fnmControls = ExpandPath::ToUser(fnmControls);
     }
 
     ControlsMenuOn();

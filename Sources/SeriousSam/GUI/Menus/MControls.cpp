@@ -94,7 +94,8 @@ void CControlsMenu::StartMenu(void)
   if (_iLocalPlayer >= 0 && _iLocalPlayer<4) {
     iPlayer = _pGame->gm_aiMenuLocalPlayers[_iLocalPlayer];
   }
-  _fnmControlsToCustomize.PrintF("UserData\\Controls\\Controls%d.ctl", iPlayer); // [Cecil] From user data
+  _fnmControlsToCustomize.PrintF("Controls\\Controls%d.ctl", iPlayer);
+  _fnmControlsToCustomize = ExpandPath::ToUser(_fnmControlsToCustomize); // [Cecil] From user data
 
   ControlsMenuOn();
 

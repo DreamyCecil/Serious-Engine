@@ -135,9 +135,10 @@ void CDlgCreateNormalTexture::RefreshCreatedTexture(void)
   try
   {
     // create temporary texture
-    CreateTexture_t( m_fnSourceFileName, CTString( "Temp\\Temp.tex"),
-                     m_pixSourceWidth, MAX_MEX_LOG2+1, FALSE);
-    m_ptdCreated = _pTextureStock->Obtain_t( CTString( "Temp\\Temp.tex"));
+    CTString fnmTempTex = ExpandPath::ToTemp("Temp.tex");
+
+    CreateTexture_t(m_fnSourceFileName, fnmTempTex, m_pixSourceWidth, MAX_MEX_LOG2 + 1, FALSE);
+    m_ptdCreated = _pTextureStock->Obtain_t(fnmTempTex);
     m_ptdCreated->Reload();
   }
   catch(char *err_str)

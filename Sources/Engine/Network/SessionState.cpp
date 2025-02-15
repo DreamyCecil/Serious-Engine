@@ -159,7 +159,7 @@ void CSessionState::Stop(void)
 #if DEBUG_LERPING
 
   CTFileStream f;
-  f.Create_t(CTFILENAME("Temp\\Lerp.stats"));
+  f.Create_t(ExpandPath::ToTemp("Lerp.stats"));
   for (INDEX i=0; i<ctCounter; i++) {
     char strBuffer[256];
     sprintf(strBuffer, "%6.2f %6.2f %6.2f %6.2f",
@@ -333,7 +333,7 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
   CTStream *pstrmState;
   extern INDEX net_bDumpConnectionInfo;
   if (net_bDumpConnectionInfo) {
-    strmStateFile.Create_t(CTString("Temp\\DefaultState.bin"));
+    strmStateFile.Create_t(ExpandPath::ToTemp("DefaultState.bin"));
     pstrmState = &strmStateFile;
   } else {
     pstrmState = &strmStateMem;
@@ -2071,10 +2071,10 @@ void CSessionState::SessionStateLoop(void)
         CTString strClient(0, "_%s%d", (_pNetwork->IsServer() ? "ser" : "cli"), iClient);
         if (strPlayers != "") strPlayers = "_pl" + strPlayers;
 
-        CTString strFile(0, "Temp\\SyncDump%s%s.txt", strClient.ConstData(), strPlayers.ConstData());
+        CTString strFile(0, "SyncDump%s%s.txt", strClient.ConstData(), strPlayers.ConstData());
 
         CTFileStream strmFile;
-        strmFile.Create_t(strFile);
+        strmFile.Create_t(ExpandPath::ToTemp(strFile));
         DumpSyncToFile_t(strmFile, ses_iExtensiveSyncCheck);
 
       // otherwise
@@ -2111,7 +2111,7 @@ void CSessionState::SessionStateLoop(void)
     try
     {
       CTFileStream strmFile;
-      CTString strFileName = CTString("temp\\syncdump.txt");
+      CTString strFileName = ExpandPath::ToTemp("syncdump.txt");
       strmFile.Create_t(strFileName);
       
 #if DEBUG_SYNCSTREAMDUMPING

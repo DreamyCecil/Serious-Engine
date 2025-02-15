@@ -34,10 +34,8 @@ INDEX con_bTalk = 0;
 CTimerValue _tvMenuQuickSave = SQUAD(0);
 
 // used filenames
-static CTFileName fnmPersistentSymbols = CTString("UserData\\PersistentSymbols.ini"); // [Cecil] From user data
-static CTFileName fnmStartupScript     = CTString("Scripts\\Game_startup.ini");
-static CTFileName fnmConsoleHistory    = CTString("Temp\\ConsoleHistory.txt");
-static CTFileName fnmCommonControls    = CTString("Controls\\System\\Common.ctl");
+#define PERSISTENT_SYMBOLS_FILE ExpandPath::ToUser("PersistentSymbols.ini") // [Cecil] From user data
+#define CONSOLE_HISTORY_FILE    ExpandPath::ToTemp("ConsoleHistory.txt")
 
 // force dependency for player class
 DECLARE_CTFILENAME( fnmPlayerClass, "Classes\\Player.ecl");
@@ -142,7 +140,7 @@ void LoadPersistentSymbols(void) {
   // No need for dedicated servers
   if (_SE1Setup.IsAppServer()) return;
 
-  _pShell->Execute(CTString(0, "include \"%s\";", fnmPersistentSymbols.ConstData()));
+  _pShell->Execute(CTString(0, "include \"%s\";", PERSISTENT_SYMBOLS_FILE.ConstData()));
 };
 
 // make sure that console doesn't show last lines if not playing in network
@@ -182,7 +180,7 @@ static void DumpDemoProfile(void)
   try {
   // create file
     CTFileStream strm;
-    CTString strFileName = CTString( "temp\\DemoProfile.lst");
+    CTString strFileName = ExpandPath::ToTemp("DemoProfile.lst");
     strm.Create_t(strFileName);
     // dump results
     strm.FPrintF_t(strFragment.ConstData());
@@ -296,7 +294,7 @@ static void SayFromTo(void* pArgs)
 static CTFileName MakeScreenShotName(void)
 {
   // create base name from the world name
-  CTFileName fnmBase = CTString("UserData\\ScreenShots\\")+_pNetwork->GetCurrentWorld().FileName(); // [Cecil] From user data
+  CTFileName fnmBase = ExpandPath::ToUser("ScreenShots\\") + _pNetwork->GetCurrentWorld().FileName(); // [Cecil] From user data
 
   // start at counter of zero
   INDEX iShot = 0;
@@ -1013,7 +1011,7 @@ void CGame::InitInternal( void)
   LoadPersistentSymbols(); // [Cecil]
 
   // execute the startup script
-  _pShell->Execute(CTString("include \"")+fnmStartupScript+"\";");
+  _pShell->Execute("include \"Scripts\\Game_startup.ini\";");
 
   // check the size and pointer of player control variables that are local to each player
   if (ctl_slPlayerControlsSize<=0
@@ -1024,7 +1022,7 @@ void CGame::InitInternal( void)
 
   // load common controls
   try {
-    _ctrlCommonControls.Load_t(fnmCommonControls);
+    _ctrlCommonControls.Load_t("Controls\\System\\Common.ctl");
   } catch (char * /*strError*/) {
     //FatalError(TRANS("Cannot load common controls: %s\n"), strError);
   }
@@ -1035,7 +1033,7 @@ void CGame::InitInternal( void)
   // load console history
   CTString strConsole;
   try {
-    strConsole.LoadKeepCRLF_t(fnmConsoleHistory);
+    strConsole.LoadKeepCRLF_t(CONSOLE_HISTORY_FILE);
     gam_strConsoleInputBuffer = strConsole;
   } catch (char *strError) {
     (void)strError; // must ignore if there is no history file
@@ -1063,7 +1061,7 @@ void CGame::EndInternal(void)
   _pTimer->RemHandler( &m_gthGameTimerHandler);
   // save persistent symbols
   if (!_bDedicatedServer) {
-    _pShell->StorePersistentSymbols(fnmPersistentSymbols);
+    _pShell->StorePersistentSymbols(PERSISTENT_SYMBOLS_FILE);
   }
 
   LCDEnd();
@@ -1080,7 +1078,7 @@ void CGame::EndInternal(void)
   CTString strConsole = gam_strConsoleInputBuffer;
   strConsole.TrimLeft(8192);
   try {
-    strConsole.SaveKeepCRLF_t(fnmConsoleHistory);
+    strConsole.SaveKeepCRLF_t(CONSOLE_HISTORY_FILE);
   } catch (char *strError) {
     WarningMessage(TRANS("Cannot save console history:\n%s"), strError);
   }
@@ -1123,7 +1121,7 @@ BOOL CGame::NewGame(const CTString &strSessionName, const CTFileName &fnWorld,
     if( dem_bPlay) {
       gm_aiStartLocalPlayers[0] = -2;
 
-      CTFileName fnmDemo = CTString("Temp\\Play.dem");
+      CTFileName fnmDemo = ExpandPath::ToTemp("Play.dem");
       if( dem_bPlayByName) {
         fnmDemo = fnWorld;
       }
@@ -1586,9 +1584,8 @@ void CGame::Save_t( void)
 void LoadControls(CControls &ctrl, INDEX i)
 {
   try {
-    CTFileName fnm;
-    fnm.PrintF("UserData\\Controls\\Controls%d.ctl", i); // [Cecil] From user data
-    ctrl.Load_t(fnm);
+    CTFileName fnm(0, "Controls\\Controls%d.ctl", i);
+    ctrl.Load_t(ExpandPath::ToUser(fnm)); // [Cecil] From user data
   } catch (char *strError) {
     (void) strError; 
     try {
@@ -1603,9 +1600,8 @@ void LoadControls(CControls &ctrl, INDEX i)
 void LoadPlayer(CPlayerCharacter &pc, INDEX i)
 {
   try {
-    CTFileName fnm;
-    fnm.PrintF("UserData\\Players\\Player%d.plr", i); // [Cecil] From user data
-    pc.Load_t(fnm);
+    CTFileName fnm(0, "Players\\Player%d.plr", i);
+    pc.Load_t(ExpandPath::ToUser(fnm)); // [Cecil] From user data
   } catch (char *strError) {
     (void) strError;
     CTString strName;
@@ -1645,24 +1641,24 @@ void CGame::SavePlayersAndControls( void)
   try
   {
     // [Cecil] Save player to user data
-    gm_apcPlayers[0].Save_t(CTString("UserData\\Players\\Player0.plr"));
-    gm_apcPlayers[1].Save_t(CTString("UserData\\Players\\Player1.plr"));
-    gm_apcPlayers[2].Save_t(CTString("UserData\\Players\\Player2.plr"));
-    gm_apcPlayers[3].Save_t(CTString("UserData\\Players\\Player3.plr"));
-    gm_apcPlayers[4].Save_t(CTString("UserData\\Players\\Player4.plr"));
-    gm_apcPlayers[5].Save_t(CTString("UserData\\Players\\Player5.plr"));
-    gm_apcPlayers[6].Save_t(CTString("UserData\\Players\\Player6.plr"));
-    gm_apcPlayers[7].Save_t(CTString("UserData\\Players\\Player7.plr"));
+    gm_apcPlayers[0].Save_t(ExpandPath::ToUser("Players\\Player0.plr"));
+    gm_apcPlayers[1].Save_t(ExpandPath::ToUser("Players\\Player1.plr"));
+    gm_apcPlayers[2].Save_t(ExpandPath::ToUser("Players\\Player2.plr"));
+    gm_apcPlayers[3].Save_t(ExpandPath::ToUser("Players\\Player3.plr"));
+    gm_apcPlayers[4].Save_t(ExpandPath::ToUser("Players\\Player4.plr"));
+    gm_apcPlayers[5].Save_t(ExpandPath::ToUser("Players\\Player5.plr"));
+    gm_apcPlayers[6].Save_t(ExpandPath::ToUser("Players\\Player6.plr"));
+    gm_apcPlayers[7].Save_t(ExpandPath::ToUser("Players\\Player7.plr"));
 
     // [Cecil] Save controls to user data
-    gm_actrlControls[0].Save_t(CTString("UserData\\Controls\\Controls0.ctl"));
-    gm_actrlControls[1].Save_t(CTString("UserData\\Controls\\Controls1.ctl"));
-    gm_actrlControls[2].Save_t(CTString("UserData\\Controls\\Controls2.ctl"));
-    gm_actrlControls[3].Save_t(CTString("UserData\\Controls\\Controls3.ctl"));
-    gm_actrlControls[4].Save_t(CTString("UserData\\Controls\\Controls4.ctl"));
-    gm_actrlControls[5].Save_t(CTString("UserData\\Controls\\Controls5.ctl"));
-    gm_actrlControls[6].Save_t(CTString("UserData\\Controls\\Controls6.ctl"));
-    gm_actrlControls[7].Save_t(CTString("UserData\\Controls\\Controls7.ctl"));
+    gm_actrlControls[0].Save_t(ExpandPath::ToUser("Controls\\Controls0.ctl"));
+    gm_actrlControls[1].Save_t(ExpandPath::ToUser("Controls\\Controls1.ctl"));
+    gm_actrlControls[2].Save_t(ExpandPath::ToUser("Controls\\Controls2.ctl"));
+    gm_actrlControls[3].Save_t(ExpandPath::ToUser("Controls\\Controls3.ctl"));
+    gm_actrlControls[4].Save_t(ExpandPath::ToUser("Controls\\Controls4.ctl"));
+    gm_actrlControls[5].Save_t(ExpandPath::ToUser("Controls\\Controls5.ctl"));
+    gm_actrlControls[6].Save_t(ExpandPath::ToUser("Controls\\Controls6.ctl"));
+    gm_actrlControls[7].Save_t(ExpandPath::ToUser("Controls\\Controls7.ctl"));
   }
   // catch throwed error
   catch (char *strError)
@@ -2384,9 +2380,8 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
       fnmScreenShot = MakeScreenShotName();
     } else {
       // create number for the file
-      CTString strNumber;
-      strNumber.PrintF("%05d", (INDEX)dem_iAnimFrame);
-      fnmScreenShot = CTString("UserData\\ScreenShots\\Anim_")+strNumber+".tga"; // [Cecil] From user data
+      fnmScreenShot.PrintF("ScreenShots\\Anim_%05d.tga", (INDEX)dem_iAnimFrame);
+      fnmScreenShot = ExpandPath::ToUser(fnmScreenShot); // [Cecil] From user data
       dem_iAnimFrame+=1;
     }
     // grab screen creating image info
@@ -2593,12 +2588,12 @@ CTFileName CGame::GetQuickSaveName(BOOL bSave)
     if (GetSP()->sp_bQuickTest) {
       iPlayer = gm_iWEDSinglePlayer;
     }
-    fnmDir.PrintF("UserData\\SaveGame\\Player%d\\Quick\\", iPlayer); // [Cecil] From user data
+    fnmDir = ExpandPath::ToUser(CTString(0, "SaveGame\\Player%d\\Quick\\", iPlayer)); // [Cecil] From user data
   } else {
     if (_pNetwork->IsNetworkEnabled()) {
-      fnmDir = CTString("UserData\\SaveGame\\Network\\Quick\\"); // [Cecil] From user data
+      fnmDir = ExpandPath::ToUser("SaveGame\\Network\\Quick\\"); // [Cecil] From user data
     } else {
-      fnmDir = CTString("UserData\\SaveGame\\SplitScreen\\Quick\\"); // [Cecil] From user data
+      fnmDir = ExpandPath::ToUser("SaveGame\\SplitScreen\\Quick\\"); // [Cecil] From user data
     }
   }
   // load last saved number 

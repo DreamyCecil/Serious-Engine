@@ -822,8 +822,8 @@ static void SaveAsTga(CTextureData *ptdTex)
   memcpy(&iiHeightMap.ii_Picture[0],&ptdTex->td_pulFrames[0],iSize);
 
   
-  CTString strTopMap = CTString(0,"Temp\\Topmap%d.tga",++_ctSavedTopMaps);
-  iiHeightMap.SaveTGA_t(strTopMap);
+  CTString strTopMap = CTString(0, "Topmap%d.tga", ++_ctSavedTopMaps);
+  iiHeightMap.SaveTGA_t(ExpandPath::ToTemp(strTopMap));
   iiHeightMap.Clear();
 
 

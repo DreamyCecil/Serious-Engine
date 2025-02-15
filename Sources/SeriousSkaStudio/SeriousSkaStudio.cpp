@@ -730,8 +730,8 @@ BOOL CSeriousSkaStudioApp::SaveAnimSetFile(CAnimSet &as, BOOL bConvert)
 BOOL CSeriousSkaStudioApp::ConvertAnimationInAnimSet(CAnimSet *pas,Animation *pan)
 {
   DisableRendering();
-  CTFileName fnTemp = (CTString)"Temp/animset";
-  
+  CTFileName fnTemp = ExpandPath::ToTemp("animset");
+
   // try to save model instance
   CTString strAnimSet;
   CTString strCustomSpeed;

@@ -414,7 +414,7 @@ void CChildFrame::TestGame( BOOL bFullScreen)
 	CWorldEditorDoc* pDoc = pPerspectiveView->GetDocument();
 
   CTFileName fnmWorldToPlay;
-  CTFileName fnmTempWorld = CTString("Temp\\TestGame.wld");
+  CTFileName fnmTempWorld = ExpandPath::ToTemp("TestGame.wld");
 
   // if the world was never saved or if it is modified
   if( (!pDoc->m_bWasEverSaved && wed_bSaveTestGameFirstTime) || pDoc->IsModified())
