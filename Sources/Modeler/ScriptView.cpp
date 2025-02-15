@@ -80,7 +80,7 @@ void CScriptView::OnScriptMakeModel()
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
   CTFileName fnScriptName = CTString(CStringA(pDoc->GetPathName()));
 
-  CTFileName fnModelName = fnScriptName.FileDir() + fnScriptName.FileName() + ".mdl";
+  CTFileName fnModelName = fnScriptName.NoExt() + ".mdl";
   try
   {
     fnScriptName.RemoveApplicationPath_t();
@@ -126,8 +126,8 @@ void CScriptView::OnScriptMakeModel()
 	}
 	ASSERT_VALID(pFrame);
 
-  pDocument->SetPathName( CString(fnModelName), FALSE);
-  pDocument->SetTitle( CString(fnModelName.FileName() + fnModelName.FileExt()));
+  pDocument->SetPathName(CString(fnModelName), FALSE);
+  pDocument->SetTitle(CString(fnModelName.NoDir()));
   
   char strError[ 256];
   if( !((CModelerDoc *)pDocument)->CreateModelFromScriptFile( fnScriptName, strError))
@@ -159,7 +159,7 @@ void CScriptView::OnScriptUpdateAnimations()
 	// find document with same name
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
   CTFileName fnScriptName = CTString(CStringA(pDoc->GetPathName()));
-  CTFileName fnModelName = fnScriptName.FileDir() + fnScriptName.FileName() + ".mdl";
+  CTFileName fnModelName = fnScriptName.NoExt() + ".mdl";
 
 	POSITION pos = theApp.m_pdtModelDocTemplate->GetFirstDocPosition();
   while (pos!=NULL)
@@ -194,7 +194,7 @@ void CScriptView::OnScriptUpdateMipmodels()
 	// find document with same name
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
   CTFileName fnScriptName = CTString(CStringA(pDoc->GetPathName()));
-  CTFileName fnModelName = fnScriptName.FileDir() + fnScriptName.FileName() + ".mdl";
+  CTFileName fnModelName = fnScriptName.NoExt() + ".mdl";
 
 	POSITION pos = theApp.m_pdtModelDocTemplate->GetFirstDocPosition();
   while (pos!=NULL)

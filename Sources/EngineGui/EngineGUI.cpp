@@ -76,8 +76,7 @@ CTFileName CEngineGUI::CreateTexture(CTFileName fnTexFileToRecreate/*=CTString("
   {
     fnResult = fnTexFileToRecreate;
     CTextureData *ptdTextureToRecreate;
-    CTFileName fnToRecreateNoExt =
-      fnTexFileToRecreate.FileDir()+fnTexFileToRecreate.FileName();
+    CTFileName fnToRecreateNoExt = fnTexFileToRecreate.NoExt();
     // try to
     try
     {

@@ -47,7 +47,7 @@ CDlgCreateNormalTexture::CDlgCreateNormalTexture( CTFileName fnInputFile, CWnd* 
   m_bPreviewWindowsCreated = FALSE;
   m_ptdCreated = NULL;
   
-  CTFileName fnTexFileName = fnInputFile.FileDir() + fnInputFile.FileName() + ".tex";
+  CTFileName fnTexFileName = fnInputFile.NoExt() + ".tex";
   // remember source and created texture name
   m_fnSourceFileName  = fnInputFile;
   m_fnCreatedFileName = fnTexFileName;

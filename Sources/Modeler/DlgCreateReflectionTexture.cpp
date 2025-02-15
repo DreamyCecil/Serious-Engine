@@ -573,7 +573,7 @@ void CDlgCreateReflectionTexture::OnSelchangeSizeInPixels()
 void CDlgCreateReflectionTexture::AutoSetTextures( CTFileName fnFile)
 {
   char achrBase[ PATH_MAX];
-  strcpy(achrBase, (fnFile.FileDir() + fnFile.FileName()).ConstData());
+  strcpy(achrBase, fnFile.NoExt().ConstData());
   achrBase[ strlen(achrBase)-1] = 0;
   m_strBase = achrBase;
   m_strExt = fnFile.FileExt();

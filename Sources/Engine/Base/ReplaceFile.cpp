@@ -97,7 +97,7 @@ BOOL GetReplacingFile(CTFileName fnSourceFile, CTFileName &fnReplacingFile, cons
   strTitle.PrintF(TRANS("For:\"%s\""), fnSourceFile.ConstData());
   // call file requester for substituting file
   CTString strDefaultFile;
-  strDefaultFile = fnSourceFile.FileName() + fnSourceFile.FileExt();
+  strDefaultFile = fnSourceFile.NoDir();
   fnReplacingFile = CallFileRequester(strTitle.Data(), strDefaultFile.Data(), pFilter);
   if( fnReplacingFile == "") return FALSE;
 

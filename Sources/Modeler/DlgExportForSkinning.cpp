@@ -44,7 +44,7 @@ CDlgExportForSkinning::CDlgExportForSkinning(CTFileName fnExportFile, CWnd* pPar
   m_bColoredSurfaces =              GetFlagFromProfile(   "Export mapping colored surfaces", TRUE);
   m_bSurfaceNumbers =               GetFlagFromProfile(   "Export surface numbers", TRUE);
 	m_strExportedFileName = fnExportFile.ConstData();
-	m_strSurfaceListFile = (fnExportFile.FileDir() + fnExportFile.FileName() + ".txt").ConstData();
+	m_strSurfaceListFile = (fnExportFile.NoExt() + ".txt").ConstData();
 	
   COLOR colPaper = GetColorFromProfile( "Paper color", C_WHITE);
   m_ctrlPaperColor.SetColor( colPaper);

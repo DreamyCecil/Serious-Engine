@@ -88,7 +88,7 @@ UINT_PTR APIENTRY FileOpenRequesterHook( HWND hdlg, UINT uiMsg, WPARAM wParam,	L
       if( (fnSelectedFileFullPath.FileExt() == ".wld") ||
           (fnSelectedFileFullPath.FileExt() == ".mdl") )
       {
-        fnThumbnail = fnSelectedFileFullPath.FileDir()+fnSelectedFileFullPath.FileName()+".tbn";
+        fnThumbnail = fnSelectedFileFullPath.NoExt() + ".tbn";
       }
       else if( (fnSelectedFileFullPath.FileExt() == ".tex") ||
                (fnSelectedFileFullPath.FileExt() == ".tbn") )

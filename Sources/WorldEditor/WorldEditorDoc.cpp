@@ -420,7 +420,7 @@ void CWorldEditorDoc::SetupBackdropTextureObject( CTFileName fnPicture, CTexture
     if( (iiImageInfo.ii_Width  == 1<<((int)Log2( (FLOAT)iiImageInfo.ii_Width))) &&
         (iiImageInfo.ii_Height == 1<<((int)Log2( (FLOAT)iiImageInfo.ii_Height))) )
     {
-      CTFileName fnTexture = fnPicture.FileDir()+fnPicture.FileName()+".tex";
+      CTFileName fnTexture = fnPicture.NoExt() + ".tex";
       // creates new texture with one frame
       CTextureData tdPicture;
       tdPicture.Create_t( &iiImageInfo, iiImageInfo.ii_Width, 1, FALSE);
@@ -3802,7 +3802,7 @@ void CWorldEditorDoc::SaveThumbnail()
     }
     
     CTFileName fnDocument = CTString( CStringA(GetPathName()));
-    CTFileName fnThumbnail = fnDocument.FileDir() + fnDocument.FileName() + CTString(".tbn");
+    CTFileName fnThumbnail = fnDocument.NoExt() + ".tbn";
 
     pDrawPort->GrabScreen(II);
     // try to
@@ -4625,7 +4625,7 @@ void CWorldEditorDoc::OnExportPlacements()
   {
     CTFileName fnWorld=m_woWorld.wo_fnmFileName;
     // "entity placement and names"
-    CTFileName fnExport=fnWorld.FileDir()+fnWorld.FileName()+".epn";
+    CTFileName fnExport = fnWorld.NoExt() + ".epn";
     // open text file
     CTFileStream strmFile;
     strmFile.Create_t(fnExport);
@@ -4707,7 +4707,7 @@ void CWorldEditorDoc::OnExportPlacements()
     }
     
     // "entity placement and names"
-    CTFileName fnSml=fnWorld.FileDir()+fnWorld.FileName()+".sml";
+    CTFileName fnSml = fnWorld.NoExt() + ".sml";
     // open text file
     CTFileStream strmSmlFile;
     strmSmlFile.Create_t(fnSml);
@@ -4729,7 +4729,7 @@ void CWorldEditorDoc::OnExportPlacements()
 CTFileName RemapDetailTexturePath(CTFileName &fnmFile)
 {
   if (fnmFile.GetSubstr("/Detail/") != NULL) {
-    return fnmFile.FileDir() + fnmFile.FileName() + "_NM.tex";
+    return fnmFile.NoExt() + "_NM.tex";
   }
   return fnmFile;
 }
@@ -5395,7 +5395,7 @@ void CWorldEditorDoc::OnExportEntities()
   {
     CTFileName fnWorld=m_woWorld.wo_fnmFileName;
     // "entity placement and names"
-    CTFileName fnExport=fnWorld.FileDir()+fnWorld.FileName()+".awf";
+    CTFileName fnExport = fnWorld.NoExt() + ".awf";
     // open text file
     CTFileStream strmFile;
     strmFile.Create_t(fnExport);
@@ -5613,7 +5613,7 @@ void CWorldEditorDoc::OnExportEntities()
         CTString strEntityID;
         strEntityID.PrintF("%d", en.en_ulID);
         CTFileName fnAmf;
-        fnAmf.PrintF("%s_%s.amf", (fnWorld.FileDir() + fnWorld.FileName()).ConstData(), strEntityID.ConstData());
+        fnAmf.PrintF("%s_%s.amf", fnWorld.NoExt().ConstData(), strEntityID.ConstData());
         BOOL bFieldBrush = en.en_RenderType==CEntity::RT_FIELDBRUSH;
         ExportEntityToAMF_t(this, en, fnAmf, bFieldBrush, bInvisibleBrush, bEmptyBrush);
       }
@@ -5628,7 +5628,7 @@ void CWorldEditorDoc::OnExportEntities()
     strmFile.PutLine_t(strLine);
     
     // "entity placement and names"
-    CTFileName fnSml=fnWorld.FileDir()+fnWorld.FileName()+".sml";
+    CTFileName fnSml = fnWorld.NoExt() + ".sml";
     // open text file
     CTFileStream strmSmlFile;
     strmSmlFile.Create_t(fnSml);

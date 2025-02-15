@@ -1612,7 +1612,7 @@ void ProcessScript_t( const CTFileName &inFileName) // throw char *
     i++;
   }
   // save texture
-  outFileName = inFileName.FileDir() + inFileName.FileName() + ".TEX";
+  outFileName = inFileName.NoExt() + ".TEX";
   tex.Save_t( outFileName);
 
   // clear list
@@ -1656,7 +1656,7 @@ void CreateTexture_t( const CTFileName &inFileName, const CTFileName &outFileNam
 void CreateTexture_t( const CTFileName &inFileName,
                       MEX inMex, INDEX inMipmaps, BOOL bForce32bit)
 {
-  CTFileName outFileName = inFileName.FileDir() + inFileName.FileName() + ".TEX";
+  CTFileName outFileName = inFileName.NoExt() + ".TEX";
   CreateTexture_t( inFileName, outFileName, inMex, inMipmaps, bForce32bit);
 }
 

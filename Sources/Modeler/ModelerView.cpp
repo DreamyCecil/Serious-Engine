@@ -2169,9 +2169,9 @@ void CModelerView::OnFileRemoveTexture()
 
 void CModelerView::OnScriptOpen() 
 {
-	CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
+  CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
   CTFileName fnDocName = CTString(CStringA(pDoc->GetPathName()));
-  AfxGetApp()->OpenDocumentFile( CString(fnDocName.FileDir() + fnDocName.FileName() + ".scr"));
+  AfxGetApp()->OpenDocumentFile(CString(fnDocName.NoExt() + ".scr"));
 }
 
 void CModelerView::OnScriptUpdateAnimations() 
@@ -2184,8 +2184,8 @@ BOOL CModelerView::UpdateAnimations(void)
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
   CTFileName fnModelName = CTString(CStringA(pDoc->GetPathName()));
-  CTFileName fnScriptName = fnModelName.FileDir() + fnModelName.FileName() + ".scr";
-	
+  CTFileName fnScriptName = fnModelName.NoExt() + ".scr";
+
   pDoc->OnSaveDocument( pDoc->GetPathName());
 
   try
@@ -2216,8 +2216,8 @@ void CModelerView::OnScriptUpdateMipmodels()
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
   CTFileName fnModelName = CTString(CStringA(pDoc->GetPathName()));
-  CTFileName fnScriptName = fnModelName.FileDir() + fnModelName.FileName() + ".scr";
-	
+  CTFileName fnScriptName = fnModelName.NoExt() + ".scr";
+
   if( ::MessageBoxA( this->m_hWnd, "Updating mip-models will discard current mip-model mapping "
                                   "and colorizing data. Are you sure that you want that?",
              "Warning !", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1|
@@ -2983,7 +2983,7 @@ void CModelerView::SaveThumbnail()
     }
     
     CTFileName fnDocName = CTString(CStringA(GetDocument()->GetPathName()));
-    CTFileName fnThumbnail = fnDocName.FileDir() + fnDocName.FileName() + ".tbn";
+    CTFileName fnThumbnail = fnDocName.NoExt() + ".tbn";
 
     pDrawPort->GrabScreen( iiImageInfo);
     // try to
@@ -3368,7 +3368,7 @@ void CModelerView::OnCreateMipModels()
 
   CModelerDoc* pDoc = GetDocument();
   CTFileName fnModelName = CTString(CStringA(pDoc->GetPathName()));
-  CTFileName fnScriptName = fnModelName.FileDir() + fnModelName.FileName() + ".scr";
+  CTFileName fnScriptName = fnModelName.NoExt() + ".scr";
   try
   {
     fnScriptName.RemoveApplicationPath_t();
@@ -3872,7 +3872,7 @@ void CModelerView::OnExportForSkining()
   // if we should print surface numbers
   if( dlg.m_bSurfaceNumbers) {
     pDoc->m_emEditModel.PrintSurfaceNumbers( pdp, theApp.m_pfntFont, 0, fMagnifyFit, 0, 0, colWire);
-    pDoc->m_emEditModel.ExportSurfaceNumbersAndNames( fnExportName.FileDir()+fnExportName.FileName()+".txt");
+    pDoc->m_emEditModel.ExportSurfaceNumbersAndNames(fnExportName.NoExt() + ".txt");
   }
   pdp->Unlock();
 

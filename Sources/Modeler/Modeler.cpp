@@ -497,8 +497,8 @@ BOOL CModelerApp::OnIdle(LONG lCount)
 /////////////////////////////////////////////////////////////////////////////
 void CModelerApp::CreateNewDocument( CTFileName fnRequestedFile)
 {
-  CTFileName fnMdlFile    = fnRequestedFile.FileDir() + fnRequestedFile.FileName() + ".mdl";
-  CTFileName fnScriptFile = fnRequestedFile.FileDir() + fnRequestedFile.FileName() + ".scr";
+  CTFileName fnMdlFile    = fnRequestedFile.NoExt() + ".mdl";
+  CTFileName fnScriptFile = fnRequestedFile.NoExt() + ".scr";
   
   if( fnRequestedFile.FileExt() != ".scr")
   {
@@ -661,8 +661,8 @@ void CModelerApp::OnFileOpen()
     }
 
     pDocument->SetModifiedFlag( FALSE);
-    pDocument->SetPathName( CString(fnFullRequestedFile), TRUE);
-    pDocument->SetTitle( CString(fnFullRequestedFile.FileName() + fnFullRequestedFile.FileExt()));
+    pDocument->SetPathName(CString(fnFullRequestedFile), TRUE);
+    pDocument->SetTitle(CString(fnFullRequestedFile.NoDir()));
 	  pDocTemplate->InitialUpdateFrame(pFrame, pDocument, TRUE);
   }
 }

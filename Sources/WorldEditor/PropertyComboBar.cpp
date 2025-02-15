@@ -847,7 +847,7 @@ void CPropertyComboBar::SetIntersectingFileName()
     CTFileName fnIntersectingFile = m_BrowseFileCtrl.GetIntersectingFile();
     if( fnIntersectingFile != "")
     {
-      m_strFileName = "...\\" + fnIntersectingFile.FileName() + fnIntersectingFile.FileExt();
+      m_strFileName = "...\\" + fnIntersectingFile.NoDir();
     }
     else
     {

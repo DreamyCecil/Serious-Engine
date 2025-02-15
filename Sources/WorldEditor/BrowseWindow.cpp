@@ -946,7 +946,7 @@ void CBrowseWindow::OpenDirectory( CVirtualTreeNode *pVTNDir)
         else if ( it->vtn_fnItem.FileExt() == ".wld")
         {
           // use file name with extension .tbn for thumbnail
-          fnThumbnail = it->vtn_fnItem.FileDir() + it->vtn_fnItem.FileName() + ".tbn";
+          fnThumbnail = it->vtn_fnItem.NoExt() + ".tbn";
           // use base name for description
           it->vtn_strName = it->vtn_fnItem.FileName();
         }
@@ -1482,7 +1482,7 @@ void ExportTexture( CTFileName fnTexture)
       if( FileExists( fnFrame) && iFrame==0 )
       {
         CTString strDefaultDir = fnFrame.FileDir();
-        CTString strDefaultFile = fnFrame.FileName()+fnFrame.FileExt();
+        CTString strDefaultFile = fnFrame.NoDir();
         // invoke "Save as" dialog
         fnFrame = _EngineGUI.FileRequester( "Save As", FILTER_TGA FILTER_END,
                   "Export texture directory", strDefaultDir, strDefaultFile, NULL, FALSE);

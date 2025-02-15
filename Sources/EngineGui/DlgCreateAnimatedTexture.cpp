@@ -143,7 +143,7 @@ CDlgCreateAnimatedTexture::CDlgCreateAnimatedTexture(
   if( (fnInputFile != "") && 
       ((fnInputFile.FileExt() == ".tex") || (fnInputFile.FileExt() == ".scr")) )
   {
-    m_strCreatedTextureName = (fnInputFile.FileDir() + fnInputFile.FileName() + ".tex").ConstData();
+    m_strCreatedTextureName = (fnInputFile.NoExt() + ".tex").ConstData();
   }
   else
   {
@@ -157,7 +157,7 @@ CDlgCreateAnimatedTexture::CDlgCreateAnimatedTexture(
 
 	// remember source and destination file names
   m_fnSourceFileName = fnInputFile;
-  m_fnCreatedFileName = fnInputFile.FileDir()+fnInputFile.FileName()+".tex";
+  m_fnCreatedFileName = fnInputFile.NoExt() + ".tex";
 }
 
 CDlgCreateAnimatedTexture::~CDlgCreateAnimatedTexture()
@@ -366,7 +366,7 @@ BOOL CDlgCreateAnimatedTexture::OnInitDialog()
     m_strEditScript = achrDefaultScript;
   }
 
-  CTFileName fnTexFileName = m_fnSourceFileName.FileDir() + m_fnSourceFileName.FileName() + ".tex";
+  CTFileName fnTexFileName = m_fnSourceFileName.NoExt() + ".tex";
   // try to
   try
   {

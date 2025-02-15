@@ -533,27 +533,27 @@ void CEditModel::SaveIncludeFile_t( CTFileName fnFileName, CTString strDefinePre
 // overloaded save function
 void CEditModel::Save_t( CTFileName fnFileName) // throw char *
 {
-  CTFileName fnMdlFileName = fnFileName.FileDir() + fnFileName.FileName() + ".mdl";
+  CTFileName fnMdlFileName = fnFileName.NoExt() + ".mdl";
   edm_md.Save_t( fnMdlFileName);
 
-  CTFileName fnHFileName = fnFileName.FileDir() + fnFileName.FileName() + ".h";
+  CTFileName fnHFileName = fnFileName.NoExt() + ".h";
   CTString strPrefix = fnFileName.FileName();
   if (strPrefix.Length()>0 && !isalpha(strPrefix[0]) && strPrefix[0]!='_') {
     strPrefix="_"+strPrefix;
   }
   SaveIncludeFile_t( fnHFileName, strPrefix);
 
-  CTFileName fnIniFileName = fnFileName.FileDir() + fnFileName.FileName() + ".ini";
+  CTFileName fnIniFileName = fnFileName.NoExt() + ".ini";
   CSerial::Save_t( fnIniFileName);
 }
 
 // overloaded load function
 void CEditModel::Load_t( CTFileName fnFileName)
 {
-  CTFileName fnMdlFileName = fnFileName.FileDir() + fnFileName.FileName() + ".mdl";
+  CTFileName fnMdlFileName = fnFileName.NoExt() + ".mdl";
   edm_md.Load_t( fnMdlFileName);
 
-  CTFileName fnIniFileName = fnFileName.FileDir() + fnFileName.FileName() + ".ini";
+  CTFileName fnIniFileName = fnFileName.NoExt() + ".ini";
   // try to load ini file
   try
   {
@@ -890,7 +890,7 @@ void CEditModel::Write_t( CTStream *pFile) // throw char *
  */
 void CEditModel::CreateScriptFile_t(CTFileName &fnO3D) // throw char *
 {
-  CTFileName fnScriptName = fnO3D.FileDir() + fnO3D.FileName() + ".scr";
+  CTFileName fnScriptName = fnO3D.NoExt() + ".scr";
   CTFileStream File;
   char line[ 256];
 
@@ -908,7 +908,7 @@ void CEditModel::CreateScriptFile_t(CTFileName &fnO3D) // throw char *
   sprintf(line, "DIRECTORY %s", fnO3D.FileDir().ConstData());
   File.PutLine_t( line);
   File.PutLine_t( "MIP_MODELS 1");
-  sprintf(line, "    %s", (fnO3D.FileName() + fnO3D.FileExt()).ConstData());
+  sprintf(line, "    %s", (fnO3D.NoDir()).ConstData());
   File.PutLine_t( line);
   File.PutLine_t( "");
   File.PutLine_t( "ANIM_START");
@@ -918,7 +918,7 @@ void CEditModel::CreateScriptFile_t(CTFileName &fnO3D) // throw char *
   File.PutLine_t( line);
   File.PutLine_t( "ANIMATION Default");
   File.PutLine_t( "SPEED 0.1");
-  sprintf(line, "    %s", (fnO3D.FileName() + fnO3D.FileExt()).ConstData());
+  sprintf(line, "    %s", (fnO3D.NoDir()).ConstData());
   File.PutLine_t( line);
   File.PutLine_t( "");
   File.PutLine_t( ";******* End of animation block");

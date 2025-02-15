@@ -126,7 +126,7 @@ void CDlgPgInfoAttachingSound::OnBrowseSound()
     "Select sound to attach to animation", 
     FILTER_WAV FILTER_END,
     "Sounds directory", "Sounds",
-    asSound.as_fnAttachedSound.FileName()+asSound.as_fnAttachedSound.FileExt());
+    asSound.as_fnAttachedSound.NoDir());
   if( fnNewSound == "") return;
 
   asSound.as_fnAttachedSound = fnNewSound;

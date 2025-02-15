@@ -255,7 +255,7 @@ void CDlgWorldSettings::OnBrowseBackgroundPicture()
 
   // substract last two letters of background's file name
   char achrShortenedBcgName[ PATH_MAX];
-  strcpy( achrShortenedBcgName, fnChoosedFile.FileDir()+fnChoosedFile.FileName());
+  strcpy(achrShortenedBcgName, fnChoosedFile.NoExt());
   // there must be at least two letters in selected texture name
   if( strlen( achrShortenedBcgName) > 2)
   {

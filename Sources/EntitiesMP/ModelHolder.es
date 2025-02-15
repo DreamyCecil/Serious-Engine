@@ -127,7 +127,7 @@ functions:
       // if the model filename has changed
       if (m_fnOldModel != m_fnModel) {
         // set texture filename to same as the model filename with texture extension
-        m_fnTexture = m_fnModel.FileDir()+m_fnModel.FileName()+CTString(".tex");
+        m_fnTexture = m_fnModel.NoExt() + ".tex";
         // remember the model filename
         m_fnOldModel = m_fnModel;
       }

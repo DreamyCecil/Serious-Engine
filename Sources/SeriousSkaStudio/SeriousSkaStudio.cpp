@@ -283,7 +283,7 @@ void CSeriousSkaStudioApp::OnFileNew()
 	ASSERT_VALID(pFrame);
 
   // add file to mru
-  CTString strFileName = pmi->mi_fnSourceFile.FileName() + pmi->mi_fnSourceFile.FileExt();
+  CTString strFileName = pmi->mi_fnSourceFile.NoDir();
   CString strOpenPath;
   strOpenPath = theApp.GetProfileString(L"SeriousSkaStudio", L"Open directory", L"");
   strOpenPath += pmi->mi_fnSourceFile;
@@ -339,7 +339,7 @@ void CSeriousSkaStudioApp::OnFileOpen()
   pDocument->SetModifiedFlag( FALSE);
 
   // add file to mru
-  CTString strFileName = pmi->mi_fnSourceFile.FileName() + pmi->mi_fnSourceFile.FileExt();
+  CTString strFileName = pmi->mi_fnSourceFile.NoDir();
   CString strOpenPath;
   strOpenPath = theApp.GetProfileString(L"SeriousSkaStudio", L"Open directory", L"");
   strOpenPath += pmi->mi_fnSourceFile;
@@ -1098,7 +1098,7 @@ void CSeriousSkaStudioApp::SaveMeshInstance_t(MeshInstance &mshi,CTFileStream &o
     ostrFile.FPrintF_t("  MAX_DISTANCE %g;\n",mlod.mlod_fMaxDistance);
     // try to remove app path from source
     CTFileName fnSource = mlod.mlod_fnSourceFile;
-    CTFileName fnShaderParams = fnSource.FileDir()+fnSource.FileName()+".shp";
+    CTFileName fnShaderParams = fnSource.NoExt() + ".shp";
     try { fnSource.RemoveApplicationPath_t(); }
     catch(char *){}
     ostrFile.FPrintF_t("  #INCLUDE \"%s\"\n", fnShaderParams.ConstData());
@@ -1405,7 +1405,7 @@ void CSeriousSkaStudioApp::SaveRootModelAs()
   if(pmi != NULL) {
     SaveModelAs(pmi);
     // update tile name
-    pDoc->SetTitle(CString(pmi->mi_fnSourceFile.FileName() + pmi->mi_fnSourceFile.FileExt()));
+    pDoc->SetTitle(CString(pmi->mi_fnSourceFile.NoDir()));
   }
 }
 

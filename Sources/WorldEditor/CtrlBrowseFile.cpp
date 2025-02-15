@@ -153,7 +153,7 @@ void CCtrlBrowseFile::OnClicked()
 
   // Call file requester
   const CTString fnChosenFile = _EngineGUI.FileRequester("Choose file", pchFilters, KEY_NAME_REQUEST_FILE_DIR,
-    fnIntersectingFile.FileDir(), fnIntersectingFile.FileName() + strFileExt);
+    fnIntersectingFile.FileDir(), fnIntersectingFile.NoDir());
 
   if (fnChosenFile == "") return;
 

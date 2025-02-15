@@ -455,9 +455,8 @@ CTFileName CBrowser::GetIOFileName(CTString strTitle, BOOL bSave)
 
   OPENFILENAMEA ofnSaveVirtualTree;
   const char *pFilters = "Virtual tree files (*.vrt)\0*.vrt\0\0";
-  
-  strcpy( chrChoosedFileName, pMainFrame->m_fnLastVirtualTree.FileName());
-  strcat( chrChoosedFileName, pMainFrame->m_fnLastVirtualTree.FileExt());
+
+  strcpy(chrChoosedFileName, pMainFrame->m_fnLastVirtualTree.NoDir());
 
   memset( &ofnSaveVirtualTree, 0, sizeof( OPENFILENAME));
   ofnSaveVirtualTree.lStructSize = sizeof(OPENFILENAME);

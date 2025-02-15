@@ -565,8 +565,7 @@ BOOL CDlgPgPrimitive::OnInitDialog()
          if( itPrim->pihb_vfpPrimitive.vfp_fnDisplacement != "")
          {
            strDescription.PrintF("%s, Displ.: \"%s\", Amp. %g", strDescription.ConstData(),
-             (itPrim->pihb_vfpPrimitive.vfp_fnDisplacement.FileName() +
-             itPrim->pihb_vfpPrimitive.vfp_fnDisplacement.FileExt()).ConstData(),
+             itPrim->pihb_vfpPrimitive.vfp_fnDisplacement.NoDir().ConstData(),
              itPrim->pihb_vfpPrimitive.vfp_fAmplitude);
          }
          else
