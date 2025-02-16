@@ -185,6 +185,10 @@ ENGINE_API void MakeDirList(
   if (ulFlags & DLI_ONLYGRO) {
     NOTHING;
 
+  // [Cecil] List files from the absolute directory (no mods or extra content directories)
+  } else if (fnmDir.IsAbsolute()) {
+    FillDirList_internal("", afnmTemp, fnmDir, strPattern, bRecursive, FALSE);
+
   // [Cecil] List files exclusively from the mod
   } else if (ulFlags & DLI_ONLYMOD) {
     if (bMod) {
