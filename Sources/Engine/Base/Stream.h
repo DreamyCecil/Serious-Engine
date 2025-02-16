@@ -468,7 +468,7 @@ struct ENGINE_API ExpandPath {
   static CTString ToTemp(const CTString &fnmRelative);
 
   // Expand some path to the directory for personal user data
-  static CTString ToUser(const CTString &fnmRelative);
+  static CTString ToUser(const CTString &fnmRelative, BOOL bMod = FALSE);
 
   // Get full path for writing a file on disk
   // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS

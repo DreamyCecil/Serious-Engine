@@ -610,7 +610,8 @@ void StartSinglePlayerQuickLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(CTString(0, "SaveGame\\Player%d\\Quick\\", _pGame->gm_iSinglePlayer)); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\Quick\\", _pGame->gm_iSinglePlayer);
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".sav");
   gmCurrent.gm_pAfterFileChosen = &LSLoadSinglePlayer;
@@ -631,7 +632,8 @@ void StartSinglePlayerLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(CTString(0, "SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer)); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".sav");
   gmCurrent.gm_pAfterFileChosen = &LSLoadSinglePlayer;
@@ -660,7 +662,8 @@ void StartSinglePlayerSaveMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = TRUE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(CTString(0, "SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer)); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmBaseName = CTString("SaveGame");
   gmCurrent.gm_fnmExt = CTString(".sav");
@@ -728,7 +731,7 @@ void StartNetworkQuickLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\Quick\\"); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\Quick\\", TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".sav");
   gmCurrent.gm_pAfterFileChosen = &LSLoadNetwork;
@@ -749,7 +752,7 @@ void StartNetworkLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\"); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\", TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".sav");
   gmCurrent.gm_pAfterFileChosen = &LSLoadNetwork;
@@ -771,7 +774,7 @@ void StartNetworkSaveMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = TRUE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\"); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\", TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmBaseName = CTString("SaveGame");
   gmCurrent.gm_fnmExt = CTString(".sav");
@@ -794,7 +797,7 @@ void StartSplitScreenQuickLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\Quick\\"); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\Quick\\", TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".sav");
   gmCurrent.gm_pAfterFileChosen = &LSLoadSplitScreen;
@@ -815,7 +818,7 @@ void StartSplitScreenLoadMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\"); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\", TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmExt = CTString(".sav");
   gmCurrent.gm_pAfterFileChosen = &LSLoadSplitScreen;
@@ -837,7 +840,7 @@ void StartSplitScreenSaveMenu(void)
   gmCurrent.gm_iSortType = LSSORT_FILEDN;
   gmCurrent.gm_bSave = TRUE;
   gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\"); // [Cecil] From user data
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\", TRUE); // [Cecil] From user data in a mod
   gmCurrent.gm_fnmSelected = CTString("");
   gmCurrent.gm_fnmBaseName = CTString("SaveGame");
   gmCurrent.gm_fnmExt = CTString(".sav");

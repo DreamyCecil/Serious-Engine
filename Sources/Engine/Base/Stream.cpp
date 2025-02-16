@@ -204,36 +204,18 @@ void InitStreams(void)
       // Should match such entries: 'Levels', 'Levels\\', 'Levels\\LevelsMP', 'Levels\\LevelsMP\\'
       const BOOL bLevels = (FileMatchesList(aReadList, "Levels\\testmatch.wld")
                          || FileMatchesList(aReadList, "Levels\\LevelsMP\\testmatch.wld"));
-      // Should match such entries: 'Savegame', 'savegame\\', 'SaveGame*'
-      const BOOL bSaves = (FileMatchesList(aWriteList, "SaveGame\\Player0\\testmatch.sav")
-                        || FileMatchesList(aReadList,  "SaveGame\\Player0\\testmatch.sav"));
       // Should match such entries: 'Models', 'Models\\Player', 'modelsmp', 'modelsmp\\player'
       const BOOL bModels = (FileMatchesList(aReadList, "Models\\Player\\testmatch.amc")
                          || FileMatchesList(aReadList, "ModelsMP\\Player\\testmatch.amc"));
 
-      BOOL bSavesWithLevels = FALSE;
-
-      // [Cecil] If mod has exclusive levels or exclusive saves, make all level-related content exclusive
-      if (bLevels || bSaves) {
+      // [Cecil] If mod has exclusive levels, make all level-related content exclusive
+      if (bLevels) {
         // Record and list mod demos
         _afnmModWrite.Push() = "Demos";
         _afnmModRead.Push() = "Demos";
         // List mod levels and create .vis files for them
         _afnmModWrite.Push() = "Levels";
         _afnmModRead.Push() = "Levels";
-        // [Cecil] FIXME: If ExpandPath::ToUser() returns an absolute path, it may not work with these mod lists
-        // Write and read mod saves
-        _afnmModWrite.Push() = ExpandPath::ToUser("SaveGame");
-        _afnmModRead.Push() = ExpandPath::ToUser("SaveGame");
-        bSavesWithLevels = TRUE;
-      }
-
-      // [Cecil] If mod has exclusive saves but not levels, add them separately
-      if (!bSavesWithLevels && bSaves) {
-        // [Cecil] FIXME: If ExpandPath::ToUser() returns an absolute path, it may not work with these mod lists
-        // Write and read mod saves
-        _afnmModWrite.Push() = ExpandPath::ToUser("SaveGame");
-        _afnmModRead.Push() = ExpandPath::ToUser("SaveGame");
       }
 
       // [Cecil] If mod has exclusive models, add player models specifically
@@ -1530,15 +1512,23 @@ CTString ExpandPath::ToTemp(const CTString &fnmRelative) {
   ASSERTMSG(_bSeriousEngineInitialized, "Using ExpandPath::ToTemp() before engine initialization!");
 
   // Store temporary files in a subdirectory relative to the game
-  return "Temp\\" + fnmRelative;
+  return OnDisk("Temp\\" + fnmRelative);
 };
 
 // [Cecil] Expand some path to the directory for personal user data
-CTString ExpandPath::ToUser(const CTString &fnmRelative) {
+CTString ExpandPath::ToUser(const CTString &fnmRelative, BOOL bMod) {
   ASSERTMSG(_bSeriousEngineInitialized, "Using ExpandPath::ToUser() before engine initialization!");
 
   // Store user files in a subdirectory relative to the game
-  return "UserData\\" + fnmRelative;
+
+  // Optionally under an additional mod subdirectory
+  if (bMod && _fnmMod != "") {
+    // E.g. "UserData/Mods/MyMod/SaveGame..."
+    return OnDisk("UserData\\" + _fnmMod + fnmRelative);
+  }
+
+  // E.g. "UserData/SaveGame..."
+  return OnDisk("UserData\\" + fnmRelative);
 };
 
 // [Cecil] Get full path for writing a file on disk

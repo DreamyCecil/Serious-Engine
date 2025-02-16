@@ -2588,14 +2588,18 @@ CTFileName CGame::GetQuickSaveName(BOOL bSave)
     if (GetSP()->sp_bQuickTest) {
       iPlayer = gm_iWEDSinglePlayer;
     }
-    fnmDir = ExpandPath::ToUser(CTString(0, "SaveGame\\Player%d\\Quick\\", iPlayer)); // [Cecil] From user data
+    fnmDir.PrintF("SaveGame\\Player%d\\Quick\\", iPlayer);
   } else {
     if (_pNetwork->IsNetworkEnabled()) {
-      fnmDir = ExpandPath::ToUser("SaveGame\\Network\\Quick\\"); // [Cecil] From user data
+      fnmDir = "SaveGame\\Network\\Quick\\";
     } else {
-      fnmDir = ExpandPath::ToUser("SaveGame\\SplitScreen\\Quick\\"); // [Cecil] From user data
+      fnmDir = "SaveGame\\SplitScreen\\Quick\\";
     }
   }
+
+  // [Cecil] From user data in a mod
+  fnmDir = ExpandPath::ToUser(fnmDir, TRUE);
+
   // load last saved number 
   INDEX iLast = FixQuicksaveDir(fnmDir, bSave ? gam_iQuickSaveSlots-1 : gam_iQuickSaveSlots );
   if (bSave) {
