@@ -179,7 +179,7 @@ void CDlgPreferences::DoDataExchange(CDataExchange* pDX)
     theApp.m_Preferences.ap_iUndoLevels = m_UndoLevels.GetPos();
     _pShell->SetFLOAT("mth_fCSGEpsilon", pow(2.0f, (m_ctrlCSGPrecission.GetPos()-5)*2)); 
     theApp.m_Preferences.ap_iStartupWindowSetup = m_iWndStartupCfg;
-    theApp.m_Preferences.ap_strSourceSafeProject = CStringA(m_strSSProject);
+    theApp.m_Preferences.ap_strSourceSafeProject = MfcStringToCT(m_strSSProject);
     theApp.m_Preferences.ap_fDefaultFlyModeSpeed=m_fFlyModeSpeed;
     // and write all data that can be written to INI file multiple times
     theApp.WriteToIniFile();
@@ -221,28 +221,28 @@ BOOL CDlgPreferences::OnInitDialog()
   
   if( _pGfx->HasAPI( GAT_OGL))
   {
-    INDEX iAddedAs=m_ctrGfxApi.AddString(L"OpenGL");
+    INDEX iAddedAs=m_ctrGfxApi.AddString(_T("OpenGL"));
     m_ctrGfxApi.SetItemData(iAddedAs, GAT_OGL);
   }
 #ifdef SE1_D3D
   if( _pGfx->HasAPI( GAT_D3D))
   {
-    INDEX iAddedAs=m_ctrGfxApi.AddString(L"Direct3D");
+    INDEX iAddedAs=m_ctrGfxApi.AddString(_T("Direct3D"));
     m_ctrGfxApi.SetItemData(iAddedAs, GAT_D3D);
   }
 #endif // SE1_D3D
 
   m_ctrlTerrainSelectionVisible.ResetContent();
-  m_ctrlTerrainSelectionVisible.AddString(L"Texture");
-  m_ctrlTerrainSelectionVisible.AddString(L"Wireframe");
-  m_ctrlTerrainSelectionVisible.AddString(L"Vertices");
-  m_ctrlTerrainSelectionVisible.AddString(L"None");
+  m_ctrlTerrainSelectionVisible.AddString(_T("Texture"));
+  m_ctrlTerrainSelectionVisible.AddString(_T("Wireframe"));
+  m_ctrlTerrainSelectionVisible.AddString(_T("Vertices"));
+  m_ctrlTerrainSelectionVisible.AddString(_T("None"));
 
   m_ctrlTerrainSelectionHidden.ResetContent();
-  m_ctrlTerrainSelectionHidden.AddString(L"Texture");
-  m_ctrlTerrainSelectionHidden.AddString(L"Wireframe");
-  m_ctrlTerrainSelectionHidden.AddString(L"Vertices");
-  m_ctrlTerrainSelectionHidden.AddString(L"None");
+  m_ctrlTerrainSelectionHidden.AddString(_T("Texture"));
+  m_ctrlTerrainSelectionHidden.AddString(_T("Wireframe"));
+  m_ctrlTerrainSelectionHidden.AddString(_T("Vertices"));
+  m_ctrlTerrainSelectionHidden.AddString(_T("None"));
 
 	UpdateData( FALSE);
   return TRUE;

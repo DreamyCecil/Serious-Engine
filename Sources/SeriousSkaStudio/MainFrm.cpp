@@ -82,7 +82,7 @@ CMainFrame::~CMainFrame()
 }
 
 BOOL _bApplicationActive = TRUE;
-void CMainFrame::OnActivateApp(BOOL bActive, DWORD hTask) 
+void CMainFrame::OnActivateApp(BOOL bActive, HTASK hTask) 
 {
   _bApplicationActive = bActive;
 	CMDIFrameWnd::OnActivateApp(bActive, hTask);
@@ -100,7 +100,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
   // subclass mdiclient
   if (!m_wndMDIClient.SubclassWindow(m_hWndMDIClient)) {
-      TRACE ("Failed to subclass MDI client window\n");
+      TRACE0("Failed to subclass MDI client window\n");
       return (-1);
   }                                                       
   // create toolbar IDR_MAINFRAME
@@ -158,7 +158,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return FALSE;
 	}
 
-  m_ctrlMIStretch.SetWindowText(L"1");
+  m_ctrlMIStretch.SetWindowText(_T("1"));
 
   // Initialize dialog bar m_dlgBarTreeView
 	if (!theApp.m_dlgBarTreeView.Create(this, IDD_TREEBAR,
@@ -175,14 +175,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create dialog bar m_dlgErrorList\n");
 		return -1;		// fail to create
 	}
-  theApp.GetErrorList()->InsertColumn(0,L"Error");
+  theApp.GetErrorList()->InsertColumn(0,_T("Error"));
   theApp.GetErrorList()->SetImageList( &theApp.m_dlgBarTreeView.m_IconsImageList, LVSIL_SMALL);
   // theApp.m_dlgErrorList.m_Size = theApp.m_dlgErrorList.m_sizeDefault;  
   // theApp.m_dlgErrorList.SetSplitterControlID(IDC_SPLITER_LOG_FRAME);
 
 
-  theApp.m_dlgBarTreeView.SetWindowText(L"Tree view");
-  theApp.m_dlgErrorList.SetWindowText(L"Log");
+  theApp.m_dlgBarTreeView.SetWindowText(_T("Tree view"));
+  theApp.m_dlgErrorList.SetWindowText(_T("Log"));
 
   theApp.m_dlgBarTreeView.EnableDockingSides(CBRS_ALIGN_LEFT | CBRS_ALIGN_RIGHT);
   // theApp.m_dlgErrorList.EnableDockingSides(CBRS_ALIGN_BOTTOM);

@@ -286,7 +286,7 @@ void CDlgPgPolygon::InitComboBoxes(void)
   }
 
   // none must exist
-  m_ComboMirror.AddString( L"None");
+  m_ComboMirror.AddString(_T("None"));
 
   // if there is polygon selection
   if( pDoc->m_selPolygonSelection.Count() != 0)

@@ -63,7 +63,7 @@ BEGIN_MESSAGE_MAP(CSeriousSkaStudioView, CView)
 	ON_COMMAND(ID_ADD_SKELETONLOD, OnAddSkeletonlod)
 	ON_COMMAND(ID_DELETESELECTED, OnDeleteselected)
 	ON_COMMAND(ID_ADD_ANIMSET, OnAddAnimset)
-	ON_COMMAND(ID_ADD_MESHLIST, (AFX_PMSG)OnAddMeshlist)
+	ON_COMMAND(ID_ADD_MESHLIST, OnAddMeshlist)
 	ON_COMMAND(ID_ADD_SKELETONLIST, OnAddSkeletonlist)
 	ON_COMMAND(ID_ADD_TEXTURE, OnAddTexture)
 	ON_COMMAND(ID_ADD_CHILD_MODEL_INSTANCE, OnAddChildModelInstance)
@@ -396,7 +396,7 @@ void CSeriousSkaStudioView::RenderView(CDrawPort *pdp)
     CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     CString strStretch;
     pMainFrame->m_ctrlMIStretch.GetWindowText(strStretch);
-    FLOAT fStretch = atof(CStringA(strStretch));
+    FLOAT fStretch = atof(MfcStringToCT(strStretch));
     pmiSelected->mi_vStretch = FLOAT3D(fStretch,fStretch,fStretch);
   }
 
@@ -2413,7 +2413,7 @@ void CSeriousSkaStudioView::OnModelinstanceSavewithoffset()
       // return model instance to his parent
       pmiParent->AddChild(pmi);
       // restore old filename
-      pmi->mi_fnSourceFile = CTString(CStringA(fnOldSmcFile));
+      pmi->mi_fnSourceFile = MfcStringToCT(fnOldSmcFile);
     }
   } else {
     ASSERT(FALSE); // This must be model instance

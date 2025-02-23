@@ -58,7 +58,7 @@ BOOL CTextureComboBox::OnIdle(LONG lCount)
     if( m_ptdSelectedTexture != NULL)
     {
       ResetContent();
-      AddString( L"None available");
+      AddString(_T("None available"));
       SetCurSel( 0);
       m_ptdSelectedTexture = NULL;
     }
@@ -73,7 +73,7 @@ BOOL CTextureComboBox::OnIdle(LONG lCount)
     if( ctTextures == 0)
     {
       ResetContent();
-      AddString( L"None available");
+      AddString(_T("None available"));
       SetCurSel( 0);
       m_ptdSelectedTexture = NULL;
       return TRUE;

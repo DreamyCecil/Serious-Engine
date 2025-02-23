@@ -78,7 +78,7 @@ void CDlgPgInfoAttachingSound::DoDataExchange(CDataExchange* pDX)
   {
     if( m_strAttachedSound != "<No sound>")
     {
-      asSound.as_fnAttachedSound = CTString( CStringA(m_strAttachedSound));
+      asSound.as_fnAttachedSound = MfcStringToCT(m_strAttachedSound);
       asSound.as_bLooping = m_bLooping;
       asSound.as_bPlaying = m_bPlaying;
       asSound.as_fDelay = m_fDelay;

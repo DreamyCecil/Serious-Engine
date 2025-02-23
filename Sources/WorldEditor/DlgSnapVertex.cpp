@@ -76,9 +76,9 @@ void CDlgSnapVertex::DoDataExchange(CDataExchange* pDX)
       if( itvtx->bvx_vAbsolute(2)!=vFirst(2)) bValidY=FALSE;
       if( itvtx->bvx_vAbsolute(3)!=vFirst(3)) bValidZ=FALSE;
     }}
-    if( !bValidX) GetDlgItem(IDC_VTX_SNAP_X)->SetWindowText(L"");
-    if( !bValidY) GetDlgItem(IDC_VTX_SNAP_Y)->SetWindowText(L"");
-    if( !bValidZ) GetDlgItem(IDC_VTX_SNAP_Z)->SetWindowText(L"");
+    if( !bValidX) GetDlgItem(IDC_VTX_SNAP_X)->SetWindowText(_T(""));
+    if( !bValidY) GetDlgItem(IDC_VTX_SNAP_Y)->SetWindowText(_T(""));
+    if( !bValidZ) GetDlgItem(IDC_VTX_SNAP_Z)->SetWindowText(_T(""));
   }
 
   // if dialog is giving data

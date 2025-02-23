@@ -60,7 +60,7 @@ BOOL CRConApp::SubInitInstance()
   // initialize engine
   SE_InitEngine( "Serious Sam");
 
-  CTString strCmdLine = CStringA(m_lpCmdLine);
+  CTString strCmdLine = MfcStringToCT(m_lpCmdLine);
   char strHost[80], strPass[80];
 
   strHost[0] = 0;

@@ -142,7 +142,7 @@ public:
 	afx_msg void OnUpdateViewProjectionsBar(CCmdUI* pCmdUI);
 	afx_msg void OnViewWorkBar();
 	afx_msg void OnUpdateViewWorkBar(CCmdUI* pCmdUI);
-	afx_msg void OnActivateApp(BOOL bActive, DWORD hTask);
+	afx_msg void OnActivateApp(BOOL bActive, HTASK hTask);
 	afx_msg void OnCreateTexture();
 	afx_msg void OnCallModeler();
 	afx_msg void OnCallTexmaker();

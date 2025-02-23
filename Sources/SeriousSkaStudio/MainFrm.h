@@ -69,7 +69,7 @@ public:
 private:
 	//{{AFX_MSG(CMainFrame)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnActivateApp(BOOL bActive, DWORD hTask);
+	afx_msg void OnActivateApp(BOOL bActive, HTASK hTask);
 	afx_msg void OnViewTreeview();
 	afx_msg void OnUpdateViewTreeview(CCmdUI* pCmdUI);
 	afx_msg void OnClose();

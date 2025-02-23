@@ -39,14 +39,14 @@ FLOAT _fLastTimePressureApplied=-1;
   {char chrColor[ 16];\
   COLOR colResult;\
   sprintf( chrColor, "0x%08x", acol_ColorizePallete[iColor]);\
-  strcpy( chrColor, CStringA(theApp.GetProfileString( L"Custom picker colors", L"Color" strColorIndex, CString(chrColor))));\
+  strcpy( chrColor, MfcStringToCT(theApp.GetProfileString(_T("Custom picker colors"), _T("Color") strColorIndex, CString(chrColor))));\
   sscanf( chrColor, "0x%08x", &colResult);\
   acol_ColorizePallete[iColor] = colResult;}
 
 #define SET_COLOR_TO_INI(iColor, strColorIndex) \
   {char chrColor[ 16];\
   sprintf( chrColor, "0x%08x", acol_ColorizePallete[iColor]);\
-  theApp.WriteProfileString( L"Custom picker colors", L"Color" strColorIndex, CString(chrColor));}
+  theApp.WriteProfileString(_T("Custom picker colors"), _T("Color") strColorIndex, CString(chrColor));}
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -184,7 +184,7 @@ CMainFrame::~CMainFrame()
   // info frame window will be destroyed trough auto destroy object mechanism
 
   CWorldEditorApp *pApp = (CWorldEditorApp *)AfxGetApp();
-  pApp->WriteProfileString(L"World editor", L"Last virtual tree", CString(m_fnLastVirtualTree));
+  pApp->WriteProfileString(_T("World editor"), _T("Last virtual tree"), CString(m_fnLastVirtualTree));
 
   // destroy color palette
   if( m_pColorPalette != NULL)
@@ -375,8 +375,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// Try to load virtual tree to browser
-  m_fnLastVirtualTree = CTString( CStringA(pApp->GetProfileString(L"World editor",
-    L"Last virtual tree", L"VirtualTrees\\BasicVirtualTree.vrt")));
+  m_fnLastVirtualTree = MfcStringToCT(pApp->GetProfileString(_T("World editor"),
+    _T("Last virtual tree"), _T("VirtualTrees\\BasicVirtualTree.vrt")));
   if( m_fnLastVirtualTree != "")
   {
     try
@@ -405,60 +405,60 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// Initialize windows classic tool bar
-  m_wndToolBar.SetWindowText(L"File tools");
+  m_wndToolBar.SetWindowText(_T("File tools"));
   m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize work tool bar
-  m_wndWorkTools.SetWindowText(L"Work tools");
+  m_wndWorkTools.SetWindowText(_T("Work tools"));
   m_wndWorkTools.SetBarStyle(m_wndWorkTools.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndWorkTools.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize CSG tools tool bar
-  m_wndCSGTools.SetWindowText(L"CSG tools");
+  m_wndCSGTools.SetWindowText(_T("CSG tools"));
   m_wndCSGTools.SetBarStyle(m_wndCSGTools.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndCSGTools.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize mip tools tool bar
-  m_wndMipTools.SetWindowText(L"Mip tools");
+  m_wndMipTools.SetWindowText(_T("Mip tools"));
   m_wndMipTools.SetBarStyle(m_wndMipTools.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndMipTools.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize projections tools tool bar
-  m_wndProjections.SetWindowText(L"Projections");
+  m_wndProjections.SetWindowText(_T("Projections"));
   m_wndProjections.SetBarStyle(m_wndProjections.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndProjections.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize setting and utility tools tool bar
-  m_wndSettingsAndUtility.SetWindowText(L"Settings and utility");
+  m_wndSettingsAndUtility.SetWindowText(_T("Settings and utility"));
   m_wndSettingsAndUtility.SetBarStyle(m_wndSettingsAndUtility.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndSettingsAndUtility.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize shadows and texture tool bar
-  m_wndShadowsAndTexture.SetWindowText(L"Shadows and texture");
+  m_wndShadowsAndTexture.SetWindowText(_T("Shadows and texture"));
   m_wndShadowsAndTexture.SetBarStyle(m_wndShadowsAndTexture.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndShadowsAndTexture.EnableDocking(CBRS_ALIGN_ANY);
 	// Initialize select entity tool bar
-  m_wndSelectEntity.SetWindowText(L"Select entity");
+  m_wndSelectEntity.SetWindowText(_T("Select entity"));
   m_wndSelectEntity.SetBarStyle(m_wndSelectEntity.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndSelectEntity.EnableDocking(CBRS_ALIGN_ANY);
   // Initialize view tools tool bar
-  m_wndViewTools.SetWindowText(L"View tools");
+  m_wndViewTools.SetWindowText(_T("View tools"));
   m_wndViewTools.SetBarStyle(m_wndViewTools.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndViewTools.EnableDocking(CBRS_ALIGN_ANY);
   // Initialize view tools tool bar
-  m_wndViewTools2.SetWindowText(L"View tools 2");
+  m_wndViewTools2.SetWindowText(_T("View tools 2"));
   m_wndViewTools2.SetBarStyle(m_wndViewTools2.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 	m_wndViewTools2.EnableDocking(CBRS_ALIGN_ANY);
   // Initialize browser dialog bar
-  m_Browser.SetWindowText(L"Browser");
+  m_Browser.SetWindowText(_T("Browser"));
 	m_Browser.EnableDocking(CBRS_ALIGN_LEFT | CBRS_ALIGN_RIGHT);
   // Initialize property dialog bar
-  m_PropertyComboBar.SetWindowText(L"Entity properties");
+  m_PropertyComboBar.SetWindowText(_T("Entity properties"));
   m_PropertyComboBar.EnableDocking(CBRS_ALIGN_ANY);
 
 	EnableDocking(CBRS_ALIGN_ANY);
@@ -496,38 +496,38 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   LoadBarState(_T("General"));
 
   // load custom picker colors from registry
-  GET_COLOR_FROM_INI( 0, L"00");
-  GET_COLOR_FROM_INI( 1, L"01");
-  GET_COLOR_FROM_INI( 2, L"02");
-  GET_COLOR_FROM_INI( 3, L"03");
-  GET_COLOR_FROM_INI( 4, L"04");
-  GET_COLOR_FROM_INI( 5, L"05");
-  GET_COLOR_FROM_INI( 6, L"06");
-  GET_COLOR_FROM_INI( 7, L"07");
-  GET_COLOR_FROM_INI( 8, L"08");
-  GET_COLOR_FROM_INI( 9, L"09");
-  GET_COLOR_FROM_INI(10, L"10");
-  GET_COLOR_FROM_INI(11, L"11");
-  GET_COLOR_FROM_INI(12, L"12");
-  GET_COLOR_FROM_INI(13, L"13");
-  GET_COLOR_FROM_INI(14, L"14");
-  GET_COLOR_FROM_INI(15, L"15");
-  GET_COLOR_FROM_INI(16, L"16");
-  GET_COLOR_FROM_INI(17, L"17");
-  GET_COLOR_FROM_INI(18, L"18");
-  GET_COLOR_FROM_INI(19, L"19");
-  GET_COLOR_FROM_INI(20, L"20");
-  GET_COLOR_FROM_INI(21, L"21");
-  GET_COLOR_FROM_INI(22, L"22");
-  GET_COLOR_FROM_INI(23, L"23");
-  GET_COLOR_FROM_INI(24, L"24");
-  GET_COLOR_FROM_INI(25, L"25");
-  GET_COLOR_FROM_INI(26, L"26");
-  GET_COLOR_FROM_INI(27, L"27");
-  GET_COLOR_FROM_INI(28, L"28");
-  GET_COLOR_FROM_INI(29, L"29");
-  GET_COLOR_FROM_INI(30, L"30");
-  GET_COLOR_FROM_INI(31, L"31");
+  GET_COLOR_FROM_INI( 0, _T("00"));
+  GET_COLOR_FROM_INI( 1, _T("01"));
+  GET_COLOR_FROM_INI( 2, _T("02"));
+  GET_COLOR_FROM_INI( 3, _T("03"));
+  GET_COLOR_FROM_INI( 4, _T("04"));
+  GET_COLOR_FROM_INI( 5, _T("05"));
+  GET_COLOR_FROM_INI( 6, _T("06"));
+  GET_COLOR_FROM_INI( 7, _T("07"));
+  GET_COLOR_FROM_INI( 8, _T("08"));
+  GET_COLOR_FROM_INI( 9, _T("09"));
+  GET_COLOR_FROM_INI(10, _T("10"));
+  GET_COLOR_FROM_INI(11, _T("11"));
+  GET_COLOR_FROM_INI(12, _T("12"));
+  GET_COLOR_FROM_INI(13, _T("13"));
+  GET_COLOR_FROM_INI(14, _T("14"));
+  GET_COLOR_FROM_INI(15, _T("15"));
+  GET_COLOR_FROM_INI(16, _T("16"));
+  GET_COLOR_FROM_INI(17, _T("17"));
+  GET_COLOR_FROM_INI(18, _T("18"));
+  GET_COLOR_FROM_INI(19, _T("19"));
+  GET_COLOR_FROM_INI(20, _T("20"));
+  GET_COLOR_FROM_INI(21, _T("21"));
+  GET_COLOR_FROM_INI(22, _T("22"));
+  GET_COLOR_FROM_INI(23, _T("23"));
+  GET_COLOR_FROM_INI(24, _T("24"));
+  GET_COLOR_FROM_INI(25, _T("25"));
+  GET_COLOR_FROM_INI(26, _T("26"));
+  GET_COLOR_FROM_INI(27, _T("27"));
+  GET_COLOR_FROM_INI(28, _T("28"));
+  GET_COLOR_FROM_INI(29, _T("29"));
+  GET_COLOR_FROM_INI(30, _T("30"));
+  GET_COLOR_FROM_INI(31, _T("31"));
 
   // set distance for brush vertex selecting
   PIX pixResolutionWidth = GetSystemMetrics(SM_CXSCREEN);
@@ -654,38 +654,38 @@ void CMainFrame::OnClose()
 	SAVE_BAR_STATE("Property width", "Property height", m_PropertyComboBar);
 
   // save custom picker colors to registry
-  SET_COLOR_TO_INI( 0, L"00");
-  SET_COLOR_TO_INI( 1, L"01");
-  SET_COLOR_TO_INI( 2, L"02");
-  SET_COLOR_TO_INI( 3, L"03");
-  SET_COLOR_TO_INI( 4, L"04");
-  SET_COLOR_TO_INI( 5, L"05");
-  SET_COLOR_TO_INI( 6, L"06");
-  SET_COLOR_TO_INI( 7, L"07");
-  SET_COLOR_TO_INI( 8, L"08");
-  SET_COLOR_TO_INI( 9, L"09");
-  SET_COLOR_TO_INI(10, L"10");
-  SET_COLOR_TO_INI(11, L"11");
-  SET_COLOR_TO_INI(12, L"12");
-  SET_COLOR_TO_INI(13, L"13");
-  SET_COLOR_TO_INI(14, L"14");
-  SET_COLOR_TO_INI(15, L"15");
-  SET_COLOR_TO_INI(16, L"16");
-  SET_COLOR_TO_INI(17, L"17");
-  SET_COLOR_TO_INI(18, L"18");
-  SET_COLOR_TO_INI(19, L"19");
-  SET_COLOR_TO_INI(20, L"20");
-  SET_COLOR_TO_INI(21, L"21");
-  SET_COLOR_TO_INI(22, L"22");
-  SET_COLOR_TO_INI(23, L"23");
-  SET_COLOR_TO_INI(24, L"24");
-  SET_COLOR_TO_INI(25, L"25");
-  SET_COLOR_TO_INI(26, L"26");
-  SET_COLOR_TO_INI(27, L"27");
-  SET_COLOR_TO_INI(28, L"28");
-  SET_COLOR_TO_INI(29, L"29");
-  SET_COLOR_TO_INI(30, L"30");
-  SET_COLOR_TO_INI(31, L"31");
+  SET_COLOR_TO_INI( 0, _T("00"));
+  SET_COLOR_TO_INI( 1, _T("01"));
+  SET_COLOR_TO_INI( 2, _T("02"));
+  SET_COLOR_TO_INI( 3, _T("03"));
+  SET_COLOR_TO_INI( 4, _T("04"));
+  SET_COLOR_TO_INI( 5, _T("05"));
+  SET_COLOR_TO_INI( 6, _T("06"));
+  SET_COLOR_TO_INI( 7, _T("07"));
+  SET_COLOR_TO_INI( 8, _T("08"));
+  SET_COLOR_TO_INI( 9, _T("09"));
+  SET_COLOR_TO_INI(10, _T("10"));
+  SET_COLOR_TO_INI(11, _T("11"));
+  SET_COLOR_TO_INI(12, _T("12"));
+  SET_COLOR_TO_INI(13, _T("13"));
+  SET_COLOR_TO_INI(14, _T("14"));
+  SET_COLOR_TO_INI(15, _T("15"));
+  SET_COLOR_TO_INI(16, _T("16"));
+  SET_COLOR_TO_INI(17, _T("17"));
+  SET_COLOR_TO_INI(18, _T("18"));
+  SET_COLOR_TO_INI(19, _T("19"));
+  SET_COLOR_TO_INI(20, _T("20"));
+  SET_COLOR_TO_INI(21, _T("21"));
+  SET_COLOR_TO_INI(22, _T("22"));
+  SET_COLOR_TO_INI(23, _T("23"));
+  SET_COLOR_TO_INI(24, _T("24"));
+  SET_COLOR_TO_INI(25, _T("25"));
+  SET_COLOR_TO_INI(26, _T("26"));
+  SET_COLOR_TO_INI(27, _T("27"));
+  SET_COLOR_TO_INI(28, _T("28"));
+  SET_COLOR_TO_INI(29, _T("29"));
+  SET_COLOR_TO_INI(30, _T("30"));
+  SET_COLOR_TO_INI(31, _T("31"));
 
   CMDIFrameWnd::OnClose();
 }
@@ -806,12 +806,12 @@ void CMainFrame::CustomColorPicker( PIX pixX, PIX pixY)
     m_pColorPalette = new CColorPaletteWnd;
     // create window
     BOOL bResult = m_pColorPalette->CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Palette", WS_CHILD|WS_POPUP|WS_VISIBLE,
+      NULL, _T("Palette"), WS_CHILD|WS_POPUP|WS_VISIBLE,
       rectWindow.left, rectWindow.top, rectWindow.Width(), rectWindow.Height(),
       m_hWnd, NULL, NULL);
     if( !bResult)
     {
-      AfxMessageBox( L"Error: Failed to create color palette");
+      AfxMessageBox(_T("Error: Failed to create color palette"));
       return;
     }
     // initialize canvas for active texture button
@@ -924,10 +924,10 @@ void CMainFrame::OnViewInfowindow()
     m_pInfoFrame = new CInfoFrame;
     // set initial size of rect window
     CRect rectInfoWindow(0, 0, 0, 0);
-    if( !m_pInfoFrame->Create( NULL, L"Tools info",
+    if( !m_pInfoFrame->Create( NULL, _T("Tools info"),
         MFS_SYNCACTIVE|WS_POPUP|WS_CAPTION|WS_SYSMENU, rectInfoWindow, this))
 	  {
-		  AfxMessageBox(L"Failed to create info frame window m_pInfoFrame");
+		  AfxMessageBox(_T("Failed to create info frame window m_pInfoFrame"));
       return;
 	  }
     //m_pInfoFrame->DragAcceptFiles();
@@ -991,7 +991,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
   if(pMsg->message==_uiMessengerMsg)
   {
     // if one application allready started
-    HWND hwndMessenger = ::FindWindow(NULL, L"Croteam Messenger");
+    HWND hwndMessenger = ::FindWindow(NULL, _T("Croteam Messenger"));
     if(hwndMessenger != NULL)
     {
       // force messenger to popup
@@ -1246,7 +1246,7 @@ void CMainFrame::OnUpdateViewMipToolsBar(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(bVisible);
 }
 
-void CMainFrame::OnActivateApp(BOOL bActive, DWORD hTask)
+void CMainFrame::OnActivateApp(BOOL bActive, HTASK hTask)
 {
 	CMDIFrameWnd::OnActivateApp(bActive, hTask);
 
@@ -1525,8 +1525,8 @@ void CMainFrame::ManualToolTipOn( PIX pixManualX, PIX pixManualY)
   m_pwndToolTip->m_pixManualX = pixManualX;
   m_pwndToolTip->m_pixManualY = pixManualY;
 
-  const wchar_t *strWindowClass = AfxRegisterWndClass( CS_OWNDC|CS_NOCLOSE);
-  if( !m_pwndToolTip->CreateEx( WS_EX_TOPMOST, strWindowClass, L"Tool tip",
+  const TCHAR *strWindowClass = AfxRegisterWndClass( CS_OWNDC|CS_NOCLOSE);
+  if( !m_pwndToolTip->CreateEx( WS_EX_TOPMOST, strWindowClass, _T("Tool tip"),
       WS_BORDER|WS_POPUP|WS_VISIBLE, 0, 0, 10, 10, m_hWnd, 0))
   {
     // program must never reach this point
@@ -1575,8 +1575,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
       m_pwndToolTip->m_strText = achrToolTip;
       m_pwndToolTip->m_bManualControl = FALSE;
 
-      const wchar_t *strWindowClass = AfxRegisterWndClass( CS_OWNDC|CS_NOCLOSE);
-      if( !m_pwndToolTip->CreateEx( WS_EX_TOPMOST, strWindowClass, L"Tool tip",
+      const TCHAR *strWindowClass = AfxRegisterWndClass( CS_OWNDC|CS_NOCLOSE);
+      if( !m_pwndToolTip->CreateEx( WS_EX_TOPMOST, strWindowClass, _T("Tool tip"),
           WS_BORDER|WS_POPUP|WS_VISIBLE, 0, 0, 10, 10, m_hWnd, 0))
       {
         // program must never reach this point

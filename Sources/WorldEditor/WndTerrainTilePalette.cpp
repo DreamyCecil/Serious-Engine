@@ -276,12 +276,12 @@ BOOL CWndTerrainTilePalette::Initialize(PIX pixX, PIX pixY, CTextureData *ptd, B
     // create window
     CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     BOOL bResult = CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Terrain tile palette", WS_CHILD|WS_POPUP|WS_VISIBLE,
+      NULL, _T("Terrain tile palette"), WS_CHILD|WS_POPUP|WS_VISIBLE,
       rectWindow.left, rectWindow.top, rectWindow.Width(), rectWindow.Height(),
       pMainFrame->m_hWnd, NULL, NULL);
     if( !bResult)
     {
-      AfxMessageBox( L"Error: Failed to create terrain tile palette window!");
+      AfxMessageBox(_T("Error: Failed to create terrain tile palette window!"));
       return FALSE;
     }
     _pGfx->CreateWindowCanvas( m_hWnd, &m_pViewPort, &m_pDrawPort);

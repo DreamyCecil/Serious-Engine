@@ -182,9 +182,9 @@ BOOL CDlgPreferences::OnInitDialog()
   CDialog::OnInitDialog();
 
   m_ctrlGfxApi.ResetContent();
-  m_ctrlGfxApi.AddString(L"OpenGL");
+  m_ctrlGfxApi.AddString(_T("OpenGL"));
 #ifdef SE1_D3D
-  m_ctrlGfxApi.AddString(L"DirectX");
+  m_ctrlGfxApi.AddString(_T("DirectX"));
 #endif // SE1_D3D
 
   if( IsWindow(m_ctrlGfxApi.m_hWnd))
@@ -214,7 +214,7 @@ void CDlgPreferences::InitTextureCombos()
   INDEX iChoosedWinBcg = 0;
   if( theApp.m_WorkingTextures.IsEmpty())
   {
-    m_ComboWinBcgTexture.AddString( L"None available");
+    m_ComboWinBcgTexture.AddString(_T("None available"));
     m_ComboWinBcgTexture.EnableWindow( FALSE);
   }
   else

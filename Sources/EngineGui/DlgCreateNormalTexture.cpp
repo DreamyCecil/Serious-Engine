@@ -52,8 +52,8 @@ CDlgCreateNormalTexture::CDlgCreateNormalTexture( CTFileName fnInputFile, CWnd* 
   m_fnSourceFileName  = fnInputFile;
   m_fnCreatedFileName = fnTexFileName;
   // set initial values for create mip maps flag and size for create texture dialog
-  m_bCreateMipmaps  = AfxGetApp()->GetProfileInt(L"Creating textures", L"Create mipmaps", 1);
-  m_mexCreatedWidth = AfxGetApp()->GetProfileInt(L"Creating textures", L"Mex width",  -1);
+  m_bCreateMipmaps  = AfxGetApp()->GetProfileInt(_T("Creating textures"), _T("Create mipmaps"), 1);
+  m_mexCreatedWidth = AfxGetApp()->GetProfileInt(_T("Creating textures"), _T("Mex width"),  -1);
   _bWasForced32     = FALSE;
 
   try
@@ -290,8 +290,8 @@ void CDlgCreateNormalTexture::OnCreateTexture()
     AfxMessageBox( CString(err_str));
     return;                     
   }
-  AfxGetApp()->WriteProfileInt(L"Creating textures", L"Create mipmaps", m_bCreateMipmaps);
-  AfxGetApp()->WriteProfileInt(L"Creating textures", L"Mex width", mexWidth);
+  AfxGetApp()->WriteProfileInt(_T("Creating textures"), _T("Create mipmaps"), m_bCreateMipmaps);
+  AfxGetApp()->WriteProfileInt(_T("Creating textures"), _T("Mex width"), mexWidth);
   // end dialog
   EndDialog( IDOK);
 }

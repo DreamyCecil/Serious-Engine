@@ -48,12 +48,12 @@ CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
 
 // Macros used for ini i/o operations
 #define INI_PRIMITIVE_READ( strname, default_val)                               \
-  strcpy( strIni, CStringA(theApp.GetProfileString( L"World editor prefs", CString(strPrimitiveType+" "+ strname ), CString( default_val ))))
+  strcpy( strIni, MfcStringToCT(theApp.GetProfileString(_T("World editor prefs"), CString(strPrimitiveType+" "+ strname ), CString( default_val ))))
 #define INI_PRIMITIVE_WRITE( strname)                                   \
-  theApp.WriteProfileString( L"World editor prefs", CString(strPrimitiveType+" "+strname), CString(strIni))
+  theApp.WriteProfileString(_T("World editor prefs"), CString(strPrimitiveType+" "+strname), CString(strIni))
 
 #define INI_READ( strname, default_val)                               \
-  strcpy( strIni, CStringA(theApp.GetProfileString( L"World editor prefs", CString( strname ), CString(default_val))))
+  strcpy( strIni, MfcStringToCT(theApp.GetProfileString(_T("World editor prefs"), CString( strname ), CString(default_val))))
 #define GET_FLAG( var)                                        \
   if( strcmp( strIni, "YES") == 0)   var = TRUE;              \
   else                          var = FALSE;
@@ -82,7 +82,7 @@ CTFileName fnmPersistentSymbols = CTString("Scripts\\PersistentSymbols.ini");
   sprintf( strIni, "%s", var);
 
 #define INI_WRITE( strname)                                   \
-  theApp.WriteProfileString( L"World editor prefs", CString( strname ), CString(strIni))
+  theApp.WriteProfileString(_T("World editor prefs"), CString( strname ), CString(strIni))
 
 void InitializeGame(void)
 {
@@ -496,7 +496,7 @@ static CTString GetNextParam(void)
 // check for custom parameters
 void CWorldEditorApp::MyParseCommandLine(void)
 {
-  _strCmd = CStringA(m_lpCmdLine);
+  _strCmd = MfcStringToCT(m_lpCmdLine);
   cmd_strOutput = "";
   cmd_strOutput+=CTString(0, TRANS("Command line: '%s'\n"), _strCmd);
   // if no command line
@@ -510,7 +510,7 @@ void CWorldEditorApp::MyParseCommandLine(void)
     if (strWord=="") {
       cmd_strOutput+="\n";
       _strCmdW = CString(_strCmd);
-      m_lpCmdLine = (LPWSTR)(LPCWSTR)_strCmdW;
+      m_lpCmdLine = (LPTSTR)(LPCTSTR)_strCmdW;
       return;
     } else if (strWord=="+game") {
       CTString strMod = GetNextParam();
@@ -520,7 +520,7 @@ void CWorldEditorApp::MyParseCommandLine(void)
       }
     } else {
       _strCmdW = CString(_strCmd);
-      m_lpCmdLine = (LPWSTR)(LPCWSTR)_strCmdW;
+      m_lpCmdLine = (LPTSTR)(LPCTSTR)_strCmdW;
       return;
     }
   }
@@ -540,7 +540,7 @@ BOOL CWorldEditorApp::SubInitInstance()
 	// Initialize OLE 2.0 libraries
 	if (!AfxOleInit())
 	{
-    AfxMessageBox(L"ERROR: Failed to initialize OLE 2.0 libraries");
+    AfxMessageBox(_T("ERROR: Failed to initialize OLE 2.0 libraries"));
 		return FALSE;
 	}
 	AfxEnableControlContainer();
@@ -568,7 +568,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   CPrintF("%s", cmd_strOutput);
 
   // if the registry is not set yet
-  CString strDefaultTexture = GetProfileString( L"World editor prefs", L"Default primitive texture", L"");
+  CString strDefaultTexture = GetProfileString(_T("World editor prefs"), _T("Default primitive texture"), _T(""));
   if (strDefaultTexture == L"") {
     // load registry from the ini file
     CTString strCommand;
@@ -605,7 +605,7 @@ BOOL CWorldEditorApp::SubInitInstance()
     logFont.lfOrientation = 10;
     logFont.lfQuality = PROOF_QUALITY;
     logFont.lfItalic = TRUE;
-		lstrcpy(logFont.lfFaceName, L"Arial");
+		lstrcpy(logFont.lfFaceName, _T("Arial"));
     if( !m_Font.CreateFontIndirect(&logFont))
 			TRACE0("Could Not create font for combo\n");
 	}	else {
@@ -620,7 +620,7 @@ BOOL CWorldEditorApp::SubInitInstance()
     logFont.lfOrientation = 10;
     logFont.lfQuality = PROOF_QUALITY;
     logFont.lfItalic = FALSE;
-		lstrcpy(logFont.lfFaceName, L"Courier New");
+		lstrcpy(logFont.lfFaceName, _T("Courier New"));
     if( !m_FixedFont.CreateFontIndirect(&logFont))
 			TRACE0("Could Not create fixed font\n");
 	}	else {
@@ -686,7 +686,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   _EngineGUI.SetFullScreenModeToRegistry(   "Display modes", m_dmFullScreen, m_gatFullScreen);
 
   m_iApi=GAT_OGL;
-  m_iApi=AfxGetApp()->GetProfileInt(L"Display modes", L"SED Gfx API", GAT_OGL);
+  m_iApi=AfxGetApp()->GetProfileInt(_T("Display modes"), _T("SED Gfx API"), GAT_OGL);
 
   // (re)set default display mode
   _pGfx->ResetDisplayMode((enum GfxAPIType) m_iApi);
@@ -853,7 +853,7 @@ BOOL CWorldEditorApp::SubInitInstance()
   // if we should automatically call preferences dialog (because WED is first time started)
   if( m_bFirstTimeStarted) OnFilePreferences();
 
-  CTString strCmdLine=CTString(CStringA(m_lpCmdLine));
+  CTString strCmdLine = MfcStringToCT(m_lpCmdLine);
   if(strCmdLine[0]=='\"' && strCmdLine[strCmdLine.Length()-1]=='\"')
   {
     strCmdLine.DeleteChar(0);
@@ -958,11 +958,11 @@ void CWorldEditorApp::ReadFromIniFileOnInit(void)
   ReadFromIniFile();
 
   // obtain texture for primitive
-  CString strTexture = GetProfileString( L"World editor prefs", L"Default primitive texture", L"Textures\\Editor\\Default.tex");
+  CString strTexture = GetProfileString(_T("World editor prefs"), _T("Default primitive texture"), _T("Textures\\Editor\\Default.tex"));
   // if exists in ini file
-  if( strTexture != L"")
+  if( strTexture != _T(""))
   {
-    theApp.SetNewActiveTexture( _fnmApplicationPath + CTString(CStringA(strTexture)));
+    theApp.SetNewActiveTexture( _fnmApplicationPath + MfcStringToCT(strTexture));
   }
 
   INI_READ( "Paint power", "1.0");
@@ -1013,8 +1013,8 @@ void CWorldEditorApp::ReadFromIniFileOnInit(void)
   INI_READ( "FBM Random offset", "NO");
   GET_FLAG( m_bFBMRandomOffset);  
 
-  m_bShowTipOfTheDay = GetProfileInt(L"World editor", L"Show Tip of the Day", TRUE);
-  m_iCurrentTipOfTheDay = GetProfileInt(L"World editor", L"Current Tip of the Day", 0);
+  m_bShowTipOfTheDay = GetProfileInt(_T("World editor"), _T("Show Tip of the Day"), TRUE);
+  m_iCurrentTipOfTheDay = GetProfileInt(_T("World editor"), _T("Current Tip of the Day"), 0);
   _fFlyModeSpeedMultiplier=m_Preferences.ap_fDefaultFlyModeSpeed;
 }
 
@@ -1610,7 +1610,7 @@ void CWorldEditorApp::WriteToIniFileOnEnd(void)
     CTFileName fnTextureForPrimitive( theApp.m_ptdActiveTexture->GetName());
     fnTextureForPrimitive.SetAbsolutePath();
     strcpy( strIni, fnTextureForPrimitive);
-    WriteProfileString( L"World editor prefs", L"Default primitive texture", CString(strIni));
+    WriteProfileString(_T("World editor prefs"), _T("Default primitive texture"), CString(strIni));
   }
 
   SET_FLOAT( m_fPaintPower);
@@ -1661,9 +1661,9 @@ void CWorldEditorApp::WriteToIniFileOnEnd(void)
   SET_FLAG( m_bFBMRandomOffset);  
   INI_WRITE( "FBM Random offset");
 
-  WriteProfileInt(L"World editor", L"Show Tip of the Day", m_bShowTipOfTheDay);
-  WriteProfileInt(L"World editor", L"Current Tip of the Day", m_iCurrentTipOfTheDay);
-  WriteProfileInt(L"Display modes", L"SED Gfx API", m_iApi);
+  WriteProfileInt(_T("World editor"), _T("Show Tip of the Day"), m_bShowTipOfTheDay);
+  WriteProfileInt(_T("World editor"), _T("Current Tip of the Day"), m_iCurrentTipOfTheDay);
+  WriteProfileInt(_T("Display modes"), _T("SED Gfx API"), m_iApi);
 }
 
 void CWorldEditorApp::WriteToIniFile()
@@ -2266,7 +2266,7 @@ void CWorldEditorApp::OnConvertWorlds()
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
   CDlgProgress dlgProgressDialog( pMainFrame, TRUE);
   dlgProgressDialog.Create( IDD_PROGRESS_DIALOG); // create progress dialog
-  dlgProgressDialog.SetWindowText( L"Convert files");
+  dlgProgressDialog.SetWindowText(_T("Convert files"));
   dlgProgressDialog.ShowWindow( SW_SHOW); // show progress window
   dlgProgressDialog.CenterWindow(); // center window
   dlgProgressDialog.m_ctrlProgres.SetRange( 0, (short)ctLines); // set progress range
@@ -2641,9 +2641,9 @@ void CWorldEditorApp::OnFileNew()
   // obtain new document ptr
   CWorldEditorDoc *pDoc = GetDocument();
 
-  CTFileName fnDefaultBcg = CTString(CStringA(theApp.GetProfileString(
-    L"World editor prefs", L"Default background picture",
-    CString("Textures\\Editor\\Default.tex"))));
+  CTFileName fnDefaultBcg = MfcStringToCT(theApp.GetProfileString(
+    _T("World editor prefs"), _T("Default background picture"),
+    CString("Textures\\Editor\\Default.tex")));
 
   try
   {
@@ -2663,22 +2663,22 @@ void CWorldEditorApp::OnFileNew()
     AfxMessageBox( CString(strError));
   }
 
-  char chrColor[ 16];
+  TCHAR chrColor[ 16];
   COLOR colBackground;
   // obtain background color form INI file
-  strcpy( chrColor, CStringA(theApp.GetProfileString( L"World editor prefs",
-                                             L"Default background color", L"0XFF000000")));
-  sscanf( chrColor, "0X%08x", &colBackground);
+  _tcscpy(chrColor, theApp.GetProfileString(_T("World editor prefs"),
+                                            _T("Default background color"), _T("0XFF000000")));
+  _tscanf(chrColor, _T("0X%08x"), &colBackground);
   // set background color to color button
   pDoc->m_woWorld.SetBackgroundColor( colBackground);
   pDoc->m_woWorld.SetDescription( "No mission description");
   pDoc->SetModifiedFlag( TRUE);
 
   CString strOpenPath;
-  strOpenPath = CStringA(theApp.GetProfileString(L"World editor", L"Open directory", L""));
+  strOpenPath = theApp.GetProfileString(_T("World editor"), _T("Open directory"), _T(""));
   // set default document's name and don't set it into MRU
   pDoc->SetPathName( strOpenPath + "Untitled.wld", FALSE);
-  pDoc->SetTitle( L"Untitled.wld");
+  pDoc->SetTitle(_T("Untitled.wld"));
 }
 
 int CWorldEditorApp::Run()

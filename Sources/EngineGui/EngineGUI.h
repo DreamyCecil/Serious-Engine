@@ -93,3 +93,27 @@ public:
 
 // global engine gui handling object
 ENGINEGUI_API extern CEngineGUI _EngineGUI;
+
+// [Cecil] Convert MFC's CString to CTString
+inline CTString MfcStringToCT(const CString &str) {
+#ifndef UNICODE
+  // Return as is
+  return (LPCSTR)str;
+
+#else
+  const wchar_t *pstrWide = str;
+  INDEX ct = str.GetLength();
+
+  // Create null-terminated ANSI string
+  char *pstrANSI = new char[ct + 1];
+  pstrANSI[ct] = 0;
+
+  // Convert Unicode string to system locale (ANSI code page)
+  WideCharToMultiByte(CP_ACP, 0, pstrWide, -1, pstrANSI, ct, NULL, NULL);
+
+  CTString strOut(pstrANSI);
+  delete[] pstrANSI;
+
+  return strOut;
+#endif
+};

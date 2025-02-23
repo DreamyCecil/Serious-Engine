@@ -182,9 +182,9 @@ void CVirtualTreeCtrl::OnDropFiles(HDROP hDropInfo)
   {
     for( INDEX i=0; i<ctFiles; i++)
     {
-	    wchar_t chrFile[ 256];
+	    TCHAR chrFile[ 256];
       DragQueryFile( hDropInfo, i, chrFile, 256);
-      CTString strAddr = CTString(CStringA(chrFile));
+      CTString strAddr = MfcStringToCT(chrFile);
       if( strAddr != "")
       {
         CVirtualTreeNode *pVTNSrc;

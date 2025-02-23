@@ -151,7 +151,7 @@ CWorldEditorDoc::CWorldEditorDoc()
   m_bPrimitiveMode = FALSE;
   m_pwoSecondLayer = NULL;
   m_penPrimitive = NULL;
-  m_bOrientationIcons=AfxGetApp()->GetProfileInt( L"World editor", L"Orientation icons", FALSE);
+  m_bOrientationIcons=AfxGetApp()->GetProfileInt(_T("World editor"), _T("Orientation icons"), FALSE);
   m_bBrowseEntitiesMode = FALSE;
   m_bReadOnly = FALSE;
 
@@ -172,16 +172,16 @@ CWorldEditorDoc::CWorldEditorDoc()
   m_plLastPlacement.pl_OrientationAngle = ANGLE3D(0,0,0);
 
   // initialize create box vertices
-  char strIni[ 128];
-  strcpy( strIni, CStringA(theApp.GetProfileString( L"World editor", L"Volume box min", L"0.0 0.0 0.0")));
-  sscanf( strIni, "%f %f %f",
+  TCHAR strIni[ 128];
+  _tcscpy(strIni, theApp.GetProfileString(_T("World editor"), _T("Volume box min"), _T("0.0 0.0 0.0")));
+  _tscanf(strIni, _T("%f %f %f"),
     &m_vCreateBoxVertice0(1), &m_vCreateBoxVertice0(2), &m_vCreateBoxVertice0(3));
-  strcpy( strIni, CStringA(theApp.GetProfileString( L"World editor", L"Volume box max", L"1.0 1.0 1.0")));
-  sscanf( strIni, "%f %f %f",
+  _tcscpy(strIni, theApp.GetProfileString(_T("World editor"), _T("Volume box max"), _T("1.0 1.0 1.0")));
+  _tscanf(strIni, _T("%f %f %f"),
     &m_vCreateBoxVertice1(1), &m_vCreateBoxVertice1(2), &m_vCreateBoxVertice1(3));
 
   // set default editing mode - polygon mode
-  INDEX iMode=AfxGetApp()->GetProfileInt( L"World editor", L"Last editing mode", POLYGON_MODE);
+  INDEX iMode=AfxGetApp()->GetProfileInt(_T("World editor"), _T("Last editing mode"), POLYGON_MODE);
   if(iMode==POLYGON_MODE || iMode==VERTEX_MODE  || iMode==SECTOR_MODE || iMode==ENTITY_MODE || iMode==TERRAIN_MODE)
   {
     SetEditingMode( iMode);
@@ -198,11 +198,11 @@ CWorldEditorDoc::~CWorldEditorDoc()
 
   if(m_iMode==POLYGON_MODE || m_iMode==VERTEX_MODE  || m_iMode==SECTOR_MODE || m_iMode==ENTITY_MODE || m_iMode==TERRAIN_MODE)
   {
-    theApp.WriteProfileInt(L"World editor", L"Last editing mode", m_iMode);
+    theApp.WriteProfileInt(_T("World editor"), _T("Last editing mode"), m_iMode);
   }
   else
   {
-    theApp.WriteProfileInt(L"World editor", L"Last editing mode", POLYGON_MODE);
+    theApp.WriteProfileInt(_T("World editor"), _T("Last editing mode"), POLYGON_MODE);
   }
 
   if( m_pwoSecondLayer != NULL)
@@ -440,7 +440,7 @@ BOOL CWorldEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
   CTFileName fnOpenFileName;
   // open the world
-  fnOpenFileName = CTString(CStringA(lpszPathName));
+  fnOpenFileName = MfcStringToCT(lpszPathName);
   if( fnOpenFileName.FileExt()!=".wld") return FALSE;
   try
   {
@@ -553,7 +553,7 @@ BOOL CWorldEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
   CTFileName fnSaveFileName;
   // save the world
-  fnSaveFileName = CTString(CStringA(lpszPathName));
+  fnSaveFileName = MfcStringToCT(lpszPathName);
   try
   {
     fnSaveFileName.RemoveApplicationPath_t();
@@ -580,7 +580,7 @@ BOOL CWorldEditorDoc::OnSaveDocument(LPCTSTR lpszPathName)
     return FALSE;
   }
   // write file's directory into application's .ini file
-  theApp.WriteProfileString(L"World editor", L"Open directory",
+  theApp.WriteProfileString(_T("World editor"), _T("Open directory"),
                             CString(_fnmApplicationPath+fnSaveFileName.FileDir()));
   // save thumbnail
   SaveThumbnail();
@@ -612,7 +612,7 @@ void CWorldEditorDoc::StartPrimitiveCSG( CPlacement3D plPrimitive, BOOL bResetAn
   ApplyAutoColorize();
   if( theApp.m_ptdActiveTexture == NULL)
   {
-    AfxMessageBox( L"You have to select active texture first (double click on texture in browser).");
+    AfxMessageBox(_T("You have to select active texture first (double click on texture in browser)."));
     return;
   }
   if( !((theApp.m_vfpCurrent.vfp_ptPrimitiveType == PT_CONUS) ||
@@ -2919,7 +2919,7 @@ void CWorldEditorDoc::OnWorldSettings()
     AfxMessageBox( CString(strError));
   }
   m_woWorld.SetBackgroundColor( dlgWorldSettings.m_BackgroundColor.GetColor());
-  m_woWorld.SetDescription( CTString(CStringA(dlgWorldSettings.m_strMissionDescription)));
+  m_woWorld.SetDescription( MfcStringToCT(dlgWorldSettings.m_strMissionDescription));
   SetModifiedFlag( TRUE);
   UpdateAllViews( NULL);
 }
@@ -2943,7 +2943,7 @@ void CWorldEditorDoc::PreApplyCSG(enum CSGType CSGType)
     CEntity *penTarget = pMainFrame->m_CSGDesitnationCombo.GetSelectedBrushEntity();
     if( (penTarget == NULL) || (penTarget->IsSelected( ENF_SELECTED)) )
     {
-      AfxMessageBox( L"Illegal CSG operands (target must not be selected) !");
+      AfxMessageBox(_T("Illegal CSG operands (target must not be selected) !"));
       return;
     }
     // create temporary world
@@ -3181,7 +3181,7 @@ void CWorldEditorDoc::OnCsgCancel()
 void CWorldEditorDoc::OnShowOrientation() 
 {
   m_bOrientationIcons = !m_bOrientationIcons;
-  theApp.WriteProfileInt(L"World editor", L"Orientation icons", m_bOrientationIcons);
+  theApp.WriteProfileInt(_T("World editor"), _T("Orientation icons"), m_bOrientationIcons);
   UpdateAllViews( NULL);
 }
 
@@ -3470,10 +3470,10 @@ void CWorldEditorDoc::OnBrowseEntitiesMode()
     char strIni[ 128];
     sprintf( strIni, "%f %f %f",
       m_vCreateBoxVertice0(1), m_vCreateBoxVertice0(2), m_vCreateBoxVertice0(3));
-    theApp.WriteProfileString( L"World editor", L"Volume box min", CString(strIni));
+    theApp.WriteProfileString(_T("World editor"), _T("Volume box min"), CString(strIni));
     sprintf( strIni, "%f %f %f",
       m_vCreateBoxVertice1(1), m_vCreateBoxVertice1(2), m_vCreateBoxVertice1(3));
-    theApp.WriteProfileString( L"World editor", L"Volume box max", CString(strIni));
+    theApp.WriteProfileString(_T("World editor"), _T("Volume box max"), CString(strIni));
     m_chSelections.MarkChanged();
   }
   // update all views
@@ -3802,7 +3802,7 @@ void CWorldEditorDoc::SaveThumbnail()
       pDrawPort->Unlock();
     }
     
-    CTFileName fnDocument = CTString( CStringA(GetPathName()));
+    CTFileName fnDocument = MfcStringToCT( GetPathName());
     CTFileName fnThumbnail = fnDocument.FileDir() + fnDocument.FileName() + CTString(".tbn");
 
     pDrawPort->GrabScreen(II);
@@ -3982,7 +3982,7 @@ void CWorldEditorDoc::ApplyMirrorAndStretch(INDEX iMirror, FLOAT fStretch)
     }
     else
     {
-      int iRes = AfxMessageBox(L"Are you sure you want to mirror/stretch entire world?", MB_ICONEXCLAMATION|MB_YESNO|MB_DEFBUTTON2);
+      int iRes = AfxMessageBox(_T("Are you sure you want to mirror/stretch entire world?"), MB_ICONEXCLAMATION|MB_YESNO|MB_DEFBUTTON2);
       if (iRes!=IDYES) {
         return;
       }
@@ -4724,7 +4724,7 @@ void CWorldEditorDoc::OnExportPlacements()
       strmSmlFile.PutLine_t(astrNeddedSmc[iSmc]);
     }
 
-    AfxMessageBox(L"Placements exported!", MB_OK|MB_ICONINFORMATION);
+    AfxMessageBox(_T("Placements exported!"), MB_OK|MB_ICONINFORMATION);
   }
   catch( char *err_str)
   {
@@ -5658,7 +5658,7 @@ void CWorldEditorDoc::OnExportEntities()
       strmSmlFile.PutLine_t(astrNeddedSmc[iSmc]);
     }
 
-    AfxMessageBox(L"Entities exported!", MB_OK|MB_ICONINFORMATION);
+    AfxMessageBox(_T("Entities exported!"), MB_OK|MB_ICONINFORMATION);
   }
   catch( char *err_str)
   {

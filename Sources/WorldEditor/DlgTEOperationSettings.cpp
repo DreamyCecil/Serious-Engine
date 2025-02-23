@@ -155,8 +155,8 @@ BOOL CDlgTEOperationSettings::OnInitDialog()
     m_ctrlFilter.SetItemData(iItem,FLT_EDGEDETECT);
     if(theApp.m_iFilter==FLT_EDGEDETECT) m_ctrlFilter.SetCurSel(iItem);
 
-    m_ctrlGenerationMethod.AddString(L"Subdivide and displace");
-    m_ctrlGenerationMethod.AddString(L"Fractal Brownian motion (FBM)");
+    m_ctrlGenerationMethod.AddString(_T("Subdivide and displace"));
+    m_ctrlGenerationMethod.AddString(_T("Fractal Brownian motion (FBM)"));
     m_ctrlGenerationMethod.SetCurSel(theApp.m_iTerrainGenerationMethod);
   }
 

@@ -374,26 +374,26 @@ BOOL CDlgCreateEffectTexture::OnInitDialog()
 
   // fill width combo
   m_ctrlPixWidthCombo.ResetContent();
-  m_ctrlPixWidthCombo.AddString(L"1");
-  m_ctrlPixWidthCombo.AddString(L"2");
-  m_ctrlPixWidthCombo.AddString(L"4");
-  m_ctrlPixWidthCombo.AddString(L"8");
-  m_ctrlPixWidthCombo.AddString(L"16");
-  m_ctrlPixWidthCombo.AddString(L"32");
-  m_ctrlPixWidthCombo.AddString(L"64");
-  m_ctrlPixWidthCombo.AddString(L"128");
-  m_ctrlPixWidthCombo.AddString(L"256");
+  m_ctrlPixWidthCombo.AddString(_T("1"));
+  m_ctrlPixWidthCombo.AddString(_T("2"));
+  m_ctrlPixWidthCombo.AddString(_T("4"));
+  m_ctrlPixWidthCombo.AddString(_T("8"));
+  m_ctrlPixWidthCombo.AddString(_T("16"));
+  m_ctrlPixWidthCombo.AddString(_T("32"));
+  m_ctrlPixWidthCombo.AddString(_T("64"));
+  m_ctrlPixWidthCombo.AddString(_T("128"));
+  m_ctrlPixWidthCombo.AddString(_T("256"));
   // fill height combo
   m_ctrlPixHeightCombo.ResetContent();
-  m_ctrlPixHeightCombo.AddString(L"1");
-  m_ctrlPixHeightCombo.AddString(L"2");
-  m_ctrlPixHeightCombo.AddString(L"4");
-  m_ctrlPixHeightCombo.AddString(L"8");
-  m_ctrlPixHeightCombo.AddString(L"16");
-  m_ctrlPixHeightCombo.AddString(L"32");
-  m_ctrlPixHeightCombo.AddString(L"64");
-  m_ctrlPixHeightCombo.AddString(L"128");
-  m_ctrlPixHeightCombo.AddString(L"256");
+  m_ctrlPixHeightCombo.AddString(_T("1"));
+  m_ctrlPixHeightCombo.AddString(_T("2"));
+  m_ctrlPixHeightCombo.AddString(_T("4"));
+  m_ctrlPixHeightCombo.AddString(_T("8"));
+  m_ctrlPixHeightCombo.AddString(_T("16"));
+  m_ctrlPixHeightCombo.AddString(_T("32"));
+  m_ctrlPixHeightCombo.AddString(_T("64"));
+  m_ctrlPixHeightCombo.AddString(_T("128"));
+  m_ctrlPixHeightCombo.AddString(_T("256"));
   
   // initialize effect groups combo
   m_ctrlEffectClassCombo.ResetContent();
@@ -474,7 +474,7 @@ void CDlgCreateEffectTexture::CreateTexture( void)
 void CDlgCreateEffectTexture::OnCreateAs() 
 {
   // call save texture file requester
-  CTFileName fnNewTexName = _EngineGUI.BrowseTexture( CTString(CStringA(m_strCreatedTextureName)),
+  CTFileName fnNewTexName = _EngineGUI.BrowseTexture(MfcStringToCT(m_strCreatedTextureName),
     KEY_NAME_CREATE_TEXTURE_DIR, "Create texture as", FALSE);
   // if picked valid name
   if( fnNewTexName != "")
@@ -508,7 +508,7 @@ void CDlgCreateEffectTexture::OnCreate()
     // save as final texture
     try
     {
-      m_fnCreatedTextureName = CTString( CStringA(m_strCreatedTextureName));
+      m_fnCreatedTextureName = MfcStringToCT(m_strCreatedTextureName);
       m_tdCreated.Save_t( m_fnCreatedTextureName);
     }
     catch(char *err_str)

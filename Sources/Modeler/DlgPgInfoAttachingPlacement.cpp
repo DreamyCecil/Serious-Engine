@@ -248,7 +248,7 @@ void CDlgPgInfoAttachingPlacement::DoDataExchange(CDataExchange* pDX)
 	  plCurrent.pl_PositionVector(2) = m_fYOffset;
 	  plCurrent.pl_PositionVector(3) = m_fZOffset;
     pMD->md_aampAttachedPosition[ m_iActivePlacement].amp_plRelativePlacement = plCurrent;
-    pDoc->m_emEditModel.edm_aamAttachedModels[ m_iActivePlacement].am_strName = CStringA(m_strName);
+    pDoc->m_emEditModel.edm_aamAttachedModels[ m_iActivePlacement].am_strName = MfcStringToCT(m_strName);
     pDoc->m_emEditModel.edm_aamAttachedModels[ m_iActivePlacement].am_bVisible = m_bIsVisible;
     pDoc->m_emEditModel.edm_aamAttachedModels.Unlock();
     pMD->md_aampAttachedPosition.Unlock();

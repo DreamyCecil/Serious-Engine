@@ -138,7 +138,7 @@ protected:
 	afx_msg void OnToggleAllBars();
 	afx_msg void OnViewMapping();
 	afx_msg void OnUpdateViewMapping(CCmdUI* pCmdUI);
-	afx_msg void OnActivateApp(BOOL bActive, DWORD hTask);
+	afx_msg void OnActivateApp(BOOL bActive, HTASK hTask);
 	afx_msg void OnEditSpecular();
 	afx_msg void OnCreateReflectionTexture();
 	afx_msg void OnHelpFinder();

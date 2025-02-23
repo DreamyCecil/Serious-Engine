@@ -342,7 +342,7 @@ void CPropertyComboBox::DisableCombo()
   // remove all combo entries
   ResetContent();
   // set default message
-  INDEX iAddedAs = AddString( L"None Available");
+  INDEX iAddedAs = AddString(_T("None Available"));
   // set invalid ptr
   SetItemData( iAddedAs, NULL);
   // disable combo

@@ -64,9 +64,9 @@ void CDlgEditButtonAction::DoDataExchange(CDataExchange* pDX)
   // if dialog is giving data
   if( pDX->m_bSaveAndValidate != FALSE)
   {
-    m_pbaButtonAction->ba_strName = m_strButtonActionName;
-    m_pbaButtonAction->ba_strCommandLineWhenPressed = m_strButtonDownCommand;
-    m_pbaButtonAction->ba_strCommandLineWhenReleased = m_strButtonUpCommand;
+    m_pbaButtonAction->ba_strName = MfcStringToCT(m_strButtonActionName);
+    m_pbaButtonAction->ba_strCommandLineWhenPressed = MfcStringToCT(m_strButtonDownCommand);
+    m_pbaButtonAction->ba_strCommandLineWhenReleased = MfcStringToCT(m_strButtonUpCommand);
   }
 }
 

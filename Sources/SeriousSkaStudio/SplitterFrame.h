@@ -48,7 +48,7 @@ public:
 
 // Attributes
 protected:
-  wchar_t *pchCursor;
+  TCHAR *pchCursor;
   CWnd *pDockedParent;
   CWnd *pFloatingParent;
   CPoint sp_ptStartPoint;

@@ -325,7 +325,7 @@ void CDlgPgShadow::InitComboBoxes(void)
   }    
 
   // none must exist
-  m_ctrlComboGradient.AddString( L"None");
+  m_ctrlComboGradient.AddString(_T("None"));
 
   // add gradients
   if( pDoc->m_selPolygonSelection.Count() != 0)
@@ -365,22 +365,22 @@ void CDlgPgShadow::InitComboBoxes(void)
   }
 
   // add all available shadow cluster sizes
-  m_ctrlComboClusterSize.AddString( L"3.125 cm");
-  m_ctrlComboClusterSize.AddString( L"6.25 cm");
-  m_ctrlComboClusterSize.AddString( L"12.5 cm");
-  m_ctrlComboClusterSize.AddString( L"25 cm");
-  m_ctrlComboClusterSize.AddString( L"0.5 m");
-  m_ctrlComboClusterSize.AddString( L"1 m");
-  m_ctrlComboClusterSize.AddString( L"2 m");
-  m_ctrlComboClusterSize.AddString( L"4 m");
-  m_ctrlComboClusterSize.AddString( L"8 m");
-  m_ctrlComboClusterSize.AddString( L"16 m");
-  m_ctrlComboClusterSize.AddString( L"32 m");
-  m_ctrlComboClusterSize.AddString( L"64 m");
-  m_ctrlComboClusterSize.AddString( L"128 m");
-  m_ctrlComboClusterSize.AddString( L"256 m");
-  m_ctrlComboClusterSize.AddString( L"512 m");
-  m_ctrlComboClusterSize.AddString( L"1024 m");
+  m_ctrlComboClusterSize.AddString(_T("3.125 cm"));
+  m_ctrlComboClusterSize.AddString(_T("6.25 cm"));
+  m_ctrlComboClusterSize.AddString(_T("12.5 cm"));
+  m_ctrlComboClusterSize.AddString(_T("25 cm"));
+  m_ctrlComboClusterSize.AddString(_T("0.5 m"));
+  m_ctrlComboClusterSize.AddString(_T("1 m"));
+  m_ctrlComboClusterSize.AddString(_T("2 m"));
+  m_ctrlComboClusterSize.AddString(_T("4 m"));
+  m_ctrlComboClusterSize.AddString(_T("8 m"));
+  m_ctrlComboClusterSize.AddString(_T("16 m"));
+  m_ctrlComboClusterSize.AddString(_T("32 m"));
+  m_ctrlComboClusterSize.AddString(_T("64 m"));
+  m_ctrlComboClusterSize.AddString(_T("128 m"));
+  m_ctrlComboClusterSize.AddString(_T("256 m"));
+  m_ctrlComboClusterSize.AddString(_T("512 m"));
+  m_ctrlComboClusterSize.AddString(_T("1024 m"));
 }
 
 BOOL CDlgPgShadow::OnIdle(LONG lCount)

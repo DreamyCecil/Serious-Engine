@@ -111,7 +111,7 @@ void CPatchPalette::DoDataExchange(CDataExchange* pDX)
     {
       CModelPatch &mp = pDoc->m_emEditModel.edm_md.md_mpPatches[ pModelerView->m_iActivePatchBitIndex];
       pDoc->m_emEditModel.SetPatchStretch(pModelerView->m_iActivePatchBitIndex, m_fStretch);
-      mp.mp_strName = CStringA(m_PatchName);
+      mp.mp_strName = MfcStringToCT(m_PatchName);
       pDoc->m_emEditModel.edm_md.md_bPreparedForRendering = FALSE;
       pDoc->SetModifiedFlag();
     }

@@ -70,6 +70,30 @@ void RestoreApp(void);
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
+// [Cecil] Convert MFC's CString to CTString
+inline CTString MfcStringToCT(const CString &str) {
+#ifndef UNICODE
+  // Return as is
+  return (LPCSTR)str;
+
+#else
+  const wchar_t *pstrWide = str;
+  INDEX ct = str.GetLength();
+
+  // Create null-terminated ANSI string
+  char *pstrANSI = new char[ct + 1];
+  pstrANSI[ct] = 0;
+
+  // Convert Unicode string to system locale (ANSI code page)
+  WideCharToMultiByte(CP_ACP, 0, pstrWide, -1, pstrANSI, ct, NULL, NULL);
+
+  CTString strOut(pstrANSI);
+  delete[] pstrANSI;
+
+  return strOut;
+#endif
+};
+
 #endif // !defined(AFX_RCON_H__2FCD4617_96D7_11D5_9918_000021211E76__INCLUDED_)
 
 

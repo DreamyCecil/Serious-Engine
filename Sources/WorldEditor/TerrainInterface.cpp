@@ -1285,7 +1285,7 @@ void OnDropIntoLayerTexture(CTIButton *ptib, CPoint pt, CDrawPort *pdp, CTFileNa
   // if it is not texture, report error
   if( fnDropped.FileExt() != ".tex" )
   {
-    AfxMessageBox( L"You can only drop textures here.");
+    AfxMessageBox(_T("You can only drop textures here."));
     return;
   }
   
@@ -1972,13 +1972,13 @@ void InvokeTerrainBrushPalette( PIX pixX, PIX pixY)
     // create window
     CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     BOOL bResult = _pBrushPalette->CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Brush palette", WS_CHILD|WS_POPUP|WS_VISIBLE,
+      NULL, _T("Brush palette"), WS_CHILD|WS_POPUP|WS_VISIBLE,
       rectWindow.left, rectWindow.top, rectWindow.Width(), rectWindow.Height(),
       pMainFrame->m_hWnd, NULL, NULL);
     _pBrushPalette->SetFocus();
     if( !bResult)
     {
-      AfxMessageBox( L"Error: Failed to create brush palette");
+      AfxMessageBox(_T("Error: Failed to create brush palette"));
       return;
     }
     // initialize canvas for active texture button
@@ -2308,16 +2308,16 @@ void CTerrainInterface::OnDropFiles(HDROP hDropInfo)
   
   if( iNoOfFiles != 1)
   {
-    AfxMessageBox( L"You can drop only one file at a time.");
+    AfxMessageBox(_T("You can drop only one file at a time."));
     return;
   }
 
 	// buffer for dropped file name
-  wchar_t chrFile[ 256];
+  TCHAR chrFile[ 256];
   // place dropped file name into buffer
   DragQueryFile( hDropInfo, 0, chrFile, 256);
   // create file name from buffer
-  CTFileName fnDropped = CTString(CStringA(chrFile));
+  CTFileName fnDropped = MfcStringToCT(chrFile);
 
   CPoint ptMouse;
   GetCursorPos( &ptMouse); 

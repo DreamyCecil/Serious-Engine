@@ -508,7 +508,7 @@ void CDlgBrowseByClass::AddEntity( CEntity *pen)
   itItem.mask = LVIF_TEXT;
 
   // add entity
-  wchar_t achrTemp[256];
+  TCHAR achrTemp[256];
   INDEX iEntity = m_listEntities.GetItemCount();
   itItem.iSubItem = COLUMN_CLASS;
   itItem.pszText = achrTemp;
@@ -520,7 +520,7 @@ void CDlgBrowseByClass::AddEntity( CEntity *pen)
     itItem.iSubItem = iColumn;
     INDEX iFormat;
     CTString strValue=::GetItemValue(pen, iColumn, iFormat);
-    swprintf( achrTemp, L"%s", CString(strValue));
+    _stprintf( achrTemp, _T("%s"), CString(strValue));
     itItem.pszText = achrTemp;
     m_listEntities.SetItem( &itItem);
   }
@@ -630,22 +630,22 @@ void CDlgBrowseByClass::InitializeListColumns(void)
   PIX pixEntityIndex      = rectListControl.Width()*INDEX_PERCENTAGE/100;
   PIX pixSpawnFlags       = rectListControl.Width()*FLAGS_PERCENTAGE/100;
   PIX pixDistance         = rectListControl.Width()*DISTANCE_PERCENTAGE/100;
-  m_listEntities.InsertColumn( COLUMN_CLASS, L"Class", LVCFMT_LEFT, pixEntityClassName);
-  m_listEntities.InsertColumn( COLUMN_NAME, L"Name", LVCFMT_LEFT, pixInstanceName);
-  m_listEntities.InsertColumn( COLUMN_DESCRIPTION, L"Description", LVCFMT_LEFT, pixDescription);
-  m_listEntities.InsertColumn( COLUMN_SECTOR_NAME, L"Sector name", LVCFMT_LEFT, pixSectorName);
-  m_listEntities.InsertColumn( COLUMN_INDEX, L"No", LVCFMT_LEFT, pixEntityIndex);
-  m_listEntities.InsertColumn( COLUMN_SPAWN_FLAGS, L"Spawn Flags", LVCFMT_LEFT, pixSpawnFlags);
-  m_listEntities.InsertColumn( COLUMN_DISTANCE, L"Distance", LVCFMT_LEFT, pixDistance);
+  m_listEntities.InsertColumn( COLUMN_CLASS, _T("Class"), LVCFMT_LEFT, pixEntityClassName);
+  m_listEntities.InsertColumn( COLUMN_NAME, _T("Name"), LVCFMT_LEFT, pixInstanceName);
+  m_listEntities.InsertColumn( COLUMN_DESCRIPTION, _T("Description"), LVCFMT_LEFT, pixDescription);
+  m_listEntities.InsertColumn( COLUMN_SECTOR_NAME, _T("Sector name"), LVCFMT_LEFT, pixSectorName);
+  m_listEntities.InsertColumn( COLUMN_INDEX, _T("No"), LVCFMT_LEFT, pixEntityIndex);
+  m_listEntities.InsertColumn( COLUMN_SPAWN_FLAGS, _T("Spawn Flags"), LVCFMT_LEFT, pixSpawnFlags);
+  m_listEntities.InsertColumn( COLUMN_DISTANCE, _T("Distance"), LVCFMT_LEFT, pixDistance);
   PIX pixPlacement = (rectListControl.Width()-
     (pixEntityIndex+pixEntityClassName+pixInstanceName+
     pixDescription+pixSectorName+pixSpawnFlags+pixDistance))/6;
-  m_listEntities.InsertColumn( COLUMN_X, L"X", LVCFMT_LEFT, pixPlacement);
-  m_listEntities.InsertColumn( COLUMN_Y, L"Y", LVCFMT_LEFT, pixPlacement);
-  m_listEntities.InsertColumn( COLUMN_Z, L"Z", LVCFMT_LEFT, pixPlacement);
-  m_listEntities.InsertColumn( COLUMN_H, L"H", LVCFMT_LEFT, pixPlacement);
-  m_listEntities.InsertColumn( COLUMN_P, L"P", LVCFMT_LEFT, pixPlacement);
-  m_listEntities.InsertColumn( COLUMN_B, L"B", LVCFMT_LEFT, pixPlacement);
+  m_listEntities.InsertColumn( COLUMN_X, _T("X"), LVCFMT_LEFT, pixPlacement);
+  m_listEntities.InsertColumn( COLUMN_Y, _T("Y"), LVCFMT_LEFT, pixPlacement);
+  m_listEntities.InsertColumn( COLUMN_Z, _T("Z"), LVCFMT_LEFT, pixPlacement);
+  m_listEntities.InsertColumn( COLUMN_H, _T("H"), LVCFMT_LEFT, pixPlacement);
+  m_listEntities.InsertColumn( COLUMN_P, _T("P"), LVCFMT_LEFT, pixPlacement);
+  m_listEntities.InsertColumn( COLUMN_B, _T("B"), LVCFMT_LEFT, pixPlacement);
   
   // add properties if of the same class and not empty selection
   CDynamicContainer<class CEntity> *penContainer=GetCurrentContainer();
@@ -1046,12 +1046,12 @@ void CDlgBrowseByClass::OnDisplayVolume()
 
 void CDlgBrowseByClass::InitializePluggins(void)
 {
-  m_ctrlPluggins.AddString(L"None");
-  m_ctrlPluggins.AddString(L"Random select");
-  m_ctrlPluggins.AddString(L"Random deselect");
-  m_ctrlPluggins.AddString(L"Random heading");
-  m_ctrlPluggins.AddString(L"Random pitch");
-  m_ctrlPluggins.AddString(L"Random banking");
+  m_ctrlPluggins.AddString(_T("None"));
+  m_ctrlPluggins.AddString(_T("Random select"));
+  m_ctrlPluggins.AddString(_T("Random deselect"));
+  m_ctrlPluggins.AddString(_T("Random heading"));
+  m_ctrlPluggins.AddString(_T("Random pitch"));
+  m_ctrlPluggins.AddString(_T("Random banking"));
   m_ctrlPluggins.SetCurSel(0);
 }
 

@@ -48,7 +48,7 @@ void CDlgAutoDeltaCSG::DoDataExchange(CDataExchange* pDX)
   if( pDX->m_bSaveAndValidate == FALSE)
   {
     // get last used number of CSG clones
-    m_ctNumberOfClones = theApp.GetProfileInt(L"World editor", L"Number of CSG clones", 2);
+    m_ctNumberOfClones = theApp.GetProfileInt(_T("World editor"), _T("Number of CSG clones"), 2);
   }
 
 	//{{AFX_DATA_MAP(CDlgAutoDeltaCSG)

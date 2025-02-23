@@ -97,7 +97,7 @@ public:
   
   void ResetControls();
 
-  void SetCustomTabText(wchar_t *strText);
+  void SetCustomTabText(TCHAR *strText);
   // select dialog to show
   void ShowControlGroup(INDEX iGroup);
 

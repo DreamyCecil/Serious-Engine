@@ -124,7 +124,7 @@ void CSeriousSkaStudioDoc::SetTimerForDocument()
 
 BOOL CSeriousSkaStudioDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
-  CTFileName fnModelFile = CTString(CStringA(lpszPathName));
+  CTFileName fnModelFile = MfcStringToCT(lpszPathName);
   try {
     fnModelFile.RemoveApplicationPath_t();
   } catch( char *err_str) {

@@ -56,7 +56,7 @@ BOOL CConsoleSymbolsCombo::PreTranslateMessage(MSG* pMsg)
     {
       CString strSelectedSymbolW;
       GetLBText( iSelectedSymbol, strSelectedSymbolW);
-      CTString strSelectedSymbol = CStringA(strSelectedSymbolW);
+      CTString strSelectedSymbol = MfcStringToCT(strSelectedSymbolW);
 
       INDEX ctLetters = strlen(strSelectedSymbol);
       char achrSelectedSymbol[ 256];

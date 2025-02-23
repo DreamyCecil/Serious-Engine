@@ -62,7 +62,7 @@ void CDlgCreateAnimatedTexture::InitAnimationsCombo(void)
   }
   else
   {
-    m_ctrlAnimationsCombo.AddString( L"None");
+    m_ctrlAnimationsCombo.AddString(_T("None"));
   }
   m_ctrlAnimationsCombo.SetCurSel( 0);
 }
@@ -89,7 +89,7 @@ void CDlgCreateAnimatedTexture::RefreshTexture(void)
     // write context of edit ctrl to temporary script file
     CTFileStream fileScript;
     fileScript.Create_t( fnTempScript);
-    CTString strEditScript = CStringA(m_strEditScript);
+    CTString strEditScript = MfcStringToCT(m_strEditScript);
     char *pScript = (char *) AllocMemory( strlen(strEditScript)+1);
     strcpy( pScript, strEditScript);
     fileScript.WriteRawChunk_t( pScript, strlen(strEditScript)+1);
@@ -264,7 +264,7 @@ void CDlgCreateAnimatedTexture::OnCreateTexture()
   }
   else
   {
-    fnSaveName = CTString( CStringA(m_strCreatedTextureName));
+    fnSaveName = MfcStringToCT(m_strCreatedTextureName);
   }
 
   // set newly picked names for final script and texture

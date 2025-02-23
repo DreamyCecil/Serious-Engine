@@ -61,7 +61,7 @@ void CDlgPlayerControls::DoDataExchange(CDataExchange* pDX)
         // enable combo control
         m_comboControlerAxis.EnableWindow();
         // get curently mounted controler description
-        CTString strControlerName = m_listAxisActions.GetItemText( iSelectedAxis, 1);
+        CString strControlerName = m_listAxisActions.GetItemText( iSelectedAxis, 1);
         // find in combo currently selected mounted axis
         int iComboEntry = m_comboControlerAxis.FindStringExact( -1, strControlerName);
         // and select it 
@@ -177,6 +177,7 @@ void CDlgPlayerControls::FillActionsList(void)
 
   // one item to serve for all actions and mounted buttons
   LV_ITEM itItem;
+  CString strText;
   // all items will be of text type
   itItem.mask = LVIF_TEXT;
   // index for automatic counting of added items
@@ -187,13 +188,16 @@ void CDlgPlayerControls::FillActionsList(void)
     // macro for adding single button action into list control
     itItem.iItem = ctItemsAdded;
     itItem.iSubItem = 0;
-    itItem.pszText = (char *)(const char *) itButtonAction->ba_strName;
+    strText = itButtonAction->ba_strName;
+    itItem.pszText = (LPTSTR)(LPCTSTR)strText;
     m_listButtonActions.InsertItem( &itItem);
     itItem.iSubItem = 1;
-    itItem.pszText = (char *)(const char *)_pInput->GetButtonName( itButtonAction->ba_iFirstKey);
+    strText = _pInput->GetButtonName( itButtonAction->ba_iFirstKey);
+    itItem.pszText = (LPTSTR)(LPCTSTR)strText;
     m_listButtonActions.SetItem( &itItem);
     itItem.iSubItem = 2;
-    itItem.pszText = (char *)(const char *)_pInput->GetButtonName( itButtonAction->ba_iSecondKey);
+    strText = _pInput->GetButtonName( itButtonAction->ba_iSecondKey);
+    itItem.pszText = (LPTSTR)(LPCTSTR)strText;
     m_listButtonActions.SetItem( &itItem);
     ctItemsAdded++;
   }
@@ -219,17 +223,20 @@ void CDlgPlayerControls::FillAxisList(void)
 
   // one item to serve for all actions and mounted buttons
   LV_ITEM itItem;
+  CString strText;
   // all items will be of text type
   itItem.mask = LVIF_TEXT;
   // now add all axis actions
   for(INDEX iAxis = 0; iAxis<AXIS_ACTIONS_CT; iAxis++) {
     itItem.iItem = iAxis;
     itItem.iSubItem = 0;
-    itItem.pszText = (char*)(const char*)_pGame->gm_astrAxisNames[iAxis];
+    strText = _pGame->gm_astrAxisNames[iAxis];
+    itItem.pszText = (LPTSTR)(LPCTSTR)strText;
     m_listAxisActions.InsertItem( &itItem);
     itItem.iSubItem = 1;
-    itItem.pszText = (char *)(const char *)_pInput->GetAxisName(
+    strText = _pInput->GetAxisName(
       m_ctrlControls.ctrl_aaAxisActions[iAxis].aa_iAxisAction);
+    itItem.pszText = (LPTSTR)(LPCTSTR)strText;
     m_listAxisActions.SetItem( &itItem);
   }
 
@@ -259,14 +266,14 @@ BOOL CDlgPlayerControls::OnInitDialog()
   m_listButtonActions.GetClientRect( rectListControl);
   // insert column for action names
   INDEX iMainColumnWidth = rectListControl.Width()*BUTTON_ACTION_NAME_PERCENTAGE/100;
-  m_listButtonActions.InsertColumn( 0, "Button action", LVCFMT_LEFT, iMainColumnWidth);
+  m_listButtonActions.InsertColumn( 0, _T("Button action"), LVCFMT_LEFT, iMainColumnWidth);
   // insert first control column
   INDEX iFirstSubColumnWidth = (rectListControl.Width()*(100-BUTTON_ACTION_NAME_PERCENTAGE)/2)/100;
-  m_listButtonActions.InsertColumn( 1, "First", LVCFMT_LEFT, iFirstSubColumnWidth);
+  m_listButtonActions.InsertColumn( 1, _T("First"), LVCFMT_LEFT, iFirstSubColumnWidth);
   // insert second control column
   INDEX iSecondSubColumnWidth = 
     rectListControl.Width()-iMainColumnWidth-iFirstSubColumnWidth - 16;
-  m_listButtonActions.InsertColumn( 2, "Second", LVCFMT_LEFT, iSecondSubColumnWidth);
+  m_listButtonActions.InsertColumn( 2, _T("Second"), LVCFMT_LEFT, iSecondSubColumnWidth);
 
   // add all actions into actions list
   FillActionsList();
@@ -275,10 +282,10 @@ BOOL CDlgPlayerControls::OnInitDialog()
   m_listAxisActions.GetClientRect( rectListControl);
   // insert column for axis action names
   iMainColumnWidth = rectListControl.Width()*AXIS_ACTION_NAME_PERCENTAGE/100;
-  m_listAxisActions.InsertColumn( 0, "Axis action", LVCFMT_LEFT, iMainColumnWidth);
+  m_listAxisActions.InsertColumn( 0, _T("Axis action"), LVCFMT_LEFT, iMainColumnWidth);
   // insert mounting controls column
   INDEX iAxisMouterNameWidth = rectListControl.Width()*(100-AXIS_ACTION_NAME_PERCENTAGE)/100-1;
-  m_listAxisActions.InsertColumn( 1, "Current controler", LVCFMT_LEFT, iAxisMouterNameWidth);
+  m_listAxisActions.InsertColumn( 1, _T("Current controler"), LVCFMT_LEFT, iAxisMouterNameWidth);
 
   // add all available axis into axis list
   FillAxisList();
@@ -286,7 +293,7 @@ BOOL CDlgPlayerControls::OnInitDialog()
   // for all possible axis mounting controlers
   for( INDEX iAxis=0; iAxis<_pInput->GetAvailableAxisCount(); iAxis++)
   {
-    m_comboControlerAxis.AddString( _pInput->GetAxisName( iAxis));
+    m_comboControlerAxis.AddString(CString(_pInput->GetAxisName(iAxis)));
   }
 
   return TRUE;
@@ -299,11 +306,9 @@ void CDlgPlayerControls::SetFirstAndSecondButtonNames(void)
   if( pbaCurrent != NULL)
   {
     // type first currently mounted button's name
-    m_editFirstControl.SetWindowText( (char *)(const char *)
-      _pInput->GetButtonName( pbaCurrent->ba_iFirstKey) );
+    m_editFirstControl.SetWindowText(CString(_pInput->GetButtonName(pbaCurrent->ba_iFirstKey)));
     // type second currently mounted button's name
-    m_editSecondControl.SetWindowText( (char *)(const char *)
-      _pInput->GetButtonName( pbaCurrent->ba_iSecondKey) );
+    m_editSecondControl.SetWindowText(CString(_pInput->GetButtonName(pbaCurrent->ba_iSecondKey)));
     // enable edit key and "none" controls
     bEnablePressKeyControls = TRUE;
   }

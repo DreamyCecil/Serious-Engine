@@ -76,7 +76,7 @@ BOOL CCSGDesitnationCombo::OnIdle(LONG lCount)
     // if document doesn't exist
     if( pDoc == NULL)
     {
-      AddString( L"None Available");
+      AddString(_T("None Available"));
     }
     // if document exists
     else

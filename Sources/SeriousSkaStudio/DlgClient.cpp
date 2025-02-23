@@ -51,7 +51,7 @@ void CTextureControl::AddControl(CTString strLabelText, INDEX *piItemID)
   INDEX iDialogWidth = rcParent.right - rcParent.left - 14;
   INDEX iCtrlID = iCustomControlID++;
 
-  if(txc_Label.Create(L"texture",LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
+  if(txc_Label.Create(_T("texture"),LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
   {
     txc_Label.SetFont(DLGSHADER.GetFont(),FALSE);
     txc_Label.SetWindowText(CString(strLabelText+": "));
@@ -74,7 +74,7 @@ void CTexCoordControl::AddControl(CTString strLabelText, INDEX *piItemID)
   INDEX iDialogWidth = rcParent.right - rcParent.left - 14;
   INDEX iCtrlID = iCustomControlID++;
 
-  if(txcc_Label.Create(L"uvmap",LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
+  if(txcc_Label.Create(_T("uvmap"),LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
   {
     txcc_Label.SetFont(DLGSHADER.GetFont(),FALSE);
     txcc_Label.SetWindowText(CString(strLabelText+": "));
@@ -97,13 +97,13 @@ void CColorControl::AddControl(CTString strLabelText, COLOR *pcolColor)
   INDEX iDialogWidth = rcParent.right - rcParent.left - 14;
   INDEX iCtrlID = iCustomControlID++;
 
-  if(cc_Label.Create(L"color",LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
+  if(cc_Label.Create(_T("color"),LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
   {
     cc_Label.SetFont(DLGSHADER.GetFont(),FALSE);
     cc_Label.SetWindowText(CString(strLabelText+": "));
   }
   
-  if(cc_Button.Create(L"",WS_CHILD|WS_VISIBLE|BS_OWNERDRAW,RECT_RIGHT_SIDE,&DLGSHADER,iCtrlID+1))
+  if(cc_Button.Create(_T(""),WS_CHILD|WS_VISIBLE|BS_OWNERDRAW,RECT_RIGHT_SIDE,&DLGSHADER,iCtrlID+1))
   {
     cc_Button.SetColor(*pcolColor);
     cc_Button.m_strID = strLabelText;
@@ -118,7 +118,7 @@ void CFloatControl::AddControl(CTString strLabelText, FLOAT *pFloat)
   INDEX iDialogWidth = rcParent.right - rcParent.left - 14;
   INDEX iCtrlID = iCustomControlID++;
 
-  if(fc_Label.Create(L"float",LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
+  if(fc_Label.Create(_T("float"),LABEL_STYLES,RECT_LEFT_SIDE,&DLGSHADER,iCtrlID))
   {
     fc_Label.SetFont(DLGSHADER.GetFont(),FALSE);
     fc_Label.SetWindowText(CString(strLabelText+": "));
@@ -262,9 +262,9 @@ void CDlgClient::OnSelendokCbParentbone()
   CComboBox *cbParentBone = ((CComboBox*)GetDlgItem(IDC_CB_PARENTBONE));
   if(pmiSelected==NULL) return;
 
-  wchar_t strParentName[256];
+  TCHAR strParentName[256];
   cbParentBone->GetLBText(cbParentBone->GetCurSel(),&strParentName[0]);
-  INDEX iNewBoneParent = ska_GetIDFromStringTable(CTString(CStringA(strParentName)));
+  INDEX iNewBoneParent = ska_GetIDFromStringTable(MfcStringToCT(strParentName));
   if(iNewBoneParent != pmiSelected->mi_iParentBoneID)
   {
     pmiSelected->SetParentBone(iNewBoneParent);
@@ -282,7 +282,7 @@ void CDlgClient::OnSelendokCbParentmodel()
 {
   CComboBox *cbParentModel = ((CComboBox*)GetDlgItem(IDC_CB_PARENTMODEL));
 
-  wchar_t strParentName[256];
+  TCHAR strParentName[256];
   INDEX iCurSelected = cbParentModel->GetCurSel();
   // no selection
   if(iCurSelected < 0)
@@ -364,9 +364,9 @@ void CDlgClient::OnSelendokCbShader()
   MeshSurface *pmsrf = (MeshSurface*)niSelected.ni_pPtr;
 
   // get text of current seleceted item in combo
-  wchar_t strName[MAX_PATH];
+  TCHAR strName[MAX_PATH];
   cbShader->GetLBText(cbShader->GetCurSel(),strName);
-  CTString strNewShaderName = CTString("Shaders\\") + CTString(CStringA(strName)) + ".sha";
+  CTString strNewShaderName = CTString("Shaders\\") + MfcStringToCT(strName) + ".sha";
   // change shader for all selected mesh surfaces
   theApp.m_dlgBarTreeView.ChangeShaderOnSelectedSurfaces(strNewShaderName);
   // show new controls for new shader

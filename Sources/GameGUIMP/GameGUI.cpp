@@ -168,7 +168,7 @@ void CGameGUI::OnInvokeConsole(void)
 
 void CGameGUI::OnPlayerSettings(void)
 {
-  //CALL_DIALOG( CDlgPlayerSettings, dlgPlayerSettings);
+  CALL_DIALOG( CDlgPlayerSettings, dlgPlayerSettings);
 }
 
 void CGameGUI::OnAudioQuality(void)
@@ -183,5 +183,5 @@ void CGameGUI::OnVideoQuality(void)
 
 void CGameGUI::OnSelectPlayerAndControls(void)
 {
-  //CALL_DIALOG( CDlgSelectPlayer, dlgSelectPlayerAndControls);
+  CALL_DIALOG( CDlgSelectPlayer, dlgSelectPlayerAndControls);
 }

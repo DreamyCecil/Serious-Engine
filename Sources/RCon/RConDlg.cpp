@@ -136,11 +136,11 @@ BOOL CRConDlg::PreTranslateMessage(MSG* pMsg)
 
         // send chat string to user(s)
         m_strLog += ">"+strCommand+"\r\n";
-        pwndCommand->SetWindowText(L"");
+        pwndCommand->SetWindowText(_T(""));
         UpdateData(FALSE);
 
         CNetworkMessage nm(MSG_EXTRA);
-        nm<<CTString(0, "rcmd %u \"%s\" %s\n", theApp.m_ulCode, (const char*)theApp.m_strPass, (const char*)CStringA(strCommand));
+        nm<<CTString(0, "rcmd %u \"%s\" %s\n", theApp.m_ulCode, (const char*)theApp.m_strPass, (const char*)MfcStringToCT(strCommand));
         _pNetwork->SendBroadcast(nm, theApp.m_ulHost, theApp.m_uwPort);
         _cmiComm.Client_Update();
       }
