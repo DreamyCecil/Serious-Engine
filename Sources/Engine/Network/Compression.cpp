@@ -23,14 +23,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern CTCriticalSection zip_csLock; // critical section for access to zlib functions
 
 /* Unpack from stream to stream. */
-void CCompressor::UnpackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // throw char *
+void CCompressor::UnpackStream_t(CTStream &strmSrc, CTStream &strmDst) // throw char *
 {
   // read the header
   SLONG slSizeDst, slSizeSrc;
   strmSrc>>slSizeDst;
   strmSrc>>slSizeSrc;
   // get the buffer of source stream
-  UBYTE *pubSrc = strmSrc.mstrm_pubBuffer + strmSrc.mstrm_slLocation;
+  UBYTE *pubSrc = strmSrc.strm_pubCurrentPos;
   // allocate buffer for decompression
   UBYTE *pubDst = (UBYTE*)AllocMemory(slSizeDst);
   // compress there
@@ -48,10 +48,10 @@ void CCompressor::UnpackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // 
   FreeMemory(pubDst);
 }
 
-void CCompressor::PackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // throw char *
+void CCompressor::PackStream_t(CTStream &strmSrc, CTStream &strmDst) // throw char *
 {
   // get the buffer of source stream
-  UBYTE *pubSrc = strmSrc.mstrm_pubBuffer + strmSrc.mstrm_slLocation;
+  UBYTE *pubSrc = strmSrc.strm_pubBufferBegin;
   SLONG slSizeSrc = strmSrc.GetStreamSize();
   // allocate buffer for compression
   SLONG slSizeDst = NeededDestinationSize(slSizeSrc);

@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <sys\stat.h>
 #include <fcntl.h>
 #include <io.h>
-#include <DbgHelp.h>
 #include <Engine/Base/Protection.h>
 
 #include <Engine/Base/Stream.h>
@@ -49,9 +48,6 @@ extern INDEX fil_bPreferZips = FALSE;
 static _declspec(thread) BOOL _bThreadCanHandleStreams = FALSE;
 // list of currently opened streams
 static _declspec(thread) CListHead *_plhOpenedStreams = NULL;
-
-ULONG _ulVirtuallyAllocatedSpace = 0;
-ULONG _ulVirtuallyAllocatedSpaceTotal = 0;
 
 // global string with application path
 CTFileName _fnmApplicationPath;
@@ -298,7 +294,7 @@ int CTStream::ExceptionFilter(DWORD dwCode, _EXCEPTION_POINTERS *pExceptionInfoP
   FOREACHINLIST( CTStream, strm_lnListNode, (*_plhOpenedStreams), itStream)
   {
     // if access violation happened inside curently testing stream
-    if(itStream.Current().PointerInStream(pIllegalAdress))
+    if (pIllegalAdress >= itStream->strm_pubBufferBegin && pIllegalAdress < itStream->strm_pubBufferEnd)
     {
       // remember accesed stream ptr
       pstrmAccessed = &itStream.Current();
@@ -346,6 +342,58 @@ void CTStream::Throw_t(char *strFormat, ...)  // throws char *
 /////////////////////////////////////////////////////////////////////////////
 // Binary access methods
 
+// [Cecil] 1.07 compatibility
+void CTStream::Seek_t(SLONG slOffset, SeekDir sd) {
+  UpdateMaxPos();
+  ASSERT(IsSeekable());
+
+  if (sd == SD_BEG) {
+    strm_pubCurrentPos = strm_pubBufferBegin + slOffset;
+
+  } else if (sd == SD_END) {
+    strm_pubCurrentPos = strm_pubEOF + slOffset;
+
+  } else if (sd == SD_CUR) {
+    strm_pubCurrentPos += slOffset;
+
+  } else {
+    FatalError(TRANS("Stream seeking requested with unknown seek direction: %d\n"), sd);
+  }
+
+  if (strm_pubCurrentPos < strm_pubBufferBegin || strm_pubCurrentPos > strm_pubBufferEnd) {
+    Throw_t(TRANS("Error while seeking"));
+  }
+};
+
+
+// [Cecil] 1.07 compatibility
+void CTStream::SetPos_t(SLONG slPosition) {
+  Seek_t(slPosition, CTStream::SD_BEG);
+};
+
+// [Cecil] 1.07 compatibility
+SLONG CTStream::GetPos_t(void) {
+  ASSERT(IsSeekable());
+  return strm_pubCurrentPos - strm_pubBufferBegin;
+};
+
+// [Cecil] 1.07 compatibility
+BOOL CTStream::AtEOF(void) {
+  ASSERT(IsSeekable());
+  ASSERT(!IsWriteable());
+  return (strm_pubCurrentPos >= strm_pubEOF);
+};
+
+// [Cecil] 1.07 compatibility
+SLONG CTStream::GetStreamSize(void) {
+  if (!IsWriteable()) {
+    return strm_pubEOF - strm_pubBufferBegin;
+  } else {
+    UpdateMaxPos();
+    return strm_pubMaxPos - strm_pubBufferBegin;
+  }
+};
+
 /* Get CRC32 of stream */
 ULONG CTStream::GetStreamCRC32_t(void)
 {
@@ -384,10 +432,9 @@ ULONG CTStream::GetStreamCRC32_t(void)
 // throws char *
 void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*='\n'*/ )
 {
-  // check parameters
-  ASSERT(strBuffer!=NULL && slBufferSize>0);
-  // check that the stream can be read
-  ASSERT(IsReadable());
+  // Check parameters and that the stream can be read
+  ASSERT(strBuffer != NULL && slBufferSize > 0 && IsReadable());
+
   // letters slider
   INDEX iLetters = 0;
   // test if EOF reached
@@ -400,26 +447,26 @@ void CTStream::GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter /*
     char c;
     Read_t(&c, 1);
 
-    if(AtEOF()) {
-      // cut off
-      strBuffer[ iLetters] = 0;
-      break;
+    // [Cecil] Just skip instead of entering the block when it's not that
+    if (c == '\r') continue;
+
+    strBuffer[iLetters] = c;
+
+    // Stop reading after the delimiter
+    if (strBuffer[iLetters] == cDelimiter) {
+      strBuffer[iLetters] = '\0';
+      return;
     }
 
-    // don't read "\r" characters but rather act like they don't exist
-    if( c != '\r') {
-      strBuffer[ iLetters] = c;
-      // stop reading when delimiter loaded
-      if( strBuffer[ iLetters] == cDelimiter) {
-        // convert delimiter to zero
-        strBuffer[ iLetters] = 0;
-        // jump over delimiter
-        //Seek_t(1, SD_CUR);
-        break;
-      }
-      // jump to next destination letter
-      iLetters++;
+    // Go to the next destination letter
+    iLetters++;
+
+    // [Cecil] Cut off after actually setting the character
+    if (AtEOF()) {
+      strBuffer[iLetters] = '\0';
+      return;
     }
+
     // test if maximum buffer lenght reached
     if( iLetters==slBufferSize) {
       return;
@@ -445,9 +492,12 @@ void CTStream::PutLine_t(const char *strBuffer) // throws char *
   // get string length
   INDEX iStringLength = strlen(strBuffer);
   // put line into stream
-  Write_t(strBuffer, iStringLength);
+  for (INDEX iLetter = 0; iLetter < iStringLength; iLetter++) {
+    *strm_pubCurrentPos++ = *strBuffer++;
+  }
   // write "\r\n" into stream
-  Write_t("\r\n", 2);
+  *strm_pubCurrentPos++ = '\r';
+  *strm_pubCurrentPos++ = '\n';
 }
 
 void CTStream::PutString_t(const char *strString) // throw char *
@@ -463,10 +513,11 @@ void CTStream::PutString_t(const char *strString) // throw char *
   {
     if (*strString=='\n') {
       // write "\r\n" into stream
-      Write_t("\r\n", 2);
+      *strm_pubCurrentPos++ = '\r';
+      *strm_pubCurrentPos++ = '\n';
       strString++;
     } else {
-      Write_t(strString++, 1);
+      *strm_pubCurrentPos++ = *strString++;
     }
   }
 }
@@ -604,13 +655,6 @@ void CTStream::WriteFullChunk_t(const CChunkID &cidSave, void *pvBuffer,
 void CTStream::WriteStream_t(CTStream &strmOther) // throw char *
 {
   // implement this !!!! @@@@
-}
-
-// whether or not the given pointer is coming from this stream (mainly used for exception handling)
-BOOL CTStream::PointerInStream(void* pPointer)
-{
-  // safe to return FALSE, we're using virtual functions anyway
-  return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -845,19 +889,57 @@ void CTStream::DictionaryPreload_t(void)
 /* Default constructor. */
 CTStream::CTStream(void) : strm_ntDictionary(*new CNameTable_CTFileName)
 {
+  // [Cecil] 1.07 compatibility
+  strm_pubBufferBegin = NULL;
+  strm_pubBufferEnd = NULL;
+  strm_pubCurrentPos = NULL;
+  strm_pubMaxPos = NULL;
+  strm_pubEOF = NULL;
+
   strm_strStreamDescription = "";
   strm_slDictionaryPos = 0;
   strm_dmDictionaryMode = DM_NONE;
 }
 
+// [Cecil] 1.07 compatibility: Free allocated memory
+void CTStream::FreeBuffer(void) {
+  if (strm_pubBufferBegin != NULL) {
+    free(strm_pubBufferBegin);
+    strm_pubBufferBegin = NULL;
+  }
+};
+
 /* Destructor. */
 CTStream::~CTStream(void)
 {
+  // [Cecil] 1.07 compatibility: Free allocated memory
+  FreeBuffer(); 
+
   strm_ntDictionary.Clear();
   strm_afnmDictionary.Clear();
 
   delete &strm_ntDictionary;
 }
+
+// [Cecil] 1.07 compatibility: Allocate memory for the stream
+void CTStream::AllocateVirtualMemory(ULONG ulBytesToAllocate)
+{
+  strm_pubBufferBegin = (UBYTE *)calloc(ulBytesToAllocate, 1);
+  strm_pubBufferEnd = strm_pubBufferBegin + ulBytesToAllocate;
+  // Reset location pointers
+  strm_pubCurrentPos = strm_pubBufferBegin;
+  strm_pubMaxPos = strm_pubBufferBegin;
+};
+
+// [Cecil] 1.07 compatibility: None of these functions are needed
+void CTStream::CommitPage(INDEX iPage) {};
+void CTStream::DecommitPage(INDEX iPage) {};
+void CTStream::ProtectPageFromWritting(INDEX iPage) {};
+void CTFileStream::WritePageToFile(INDEX iPageToWrite) {};
+void CTFileStream::FileCommitPage( INDEX iPageToCommit) {};
+void CTFileStream::FileDecommitPage( INDEX iPageToDecommit) {};
+void CTFileStream::HandleAccess(INDEX iAccessedPage, BOOL bReadAttempted) {};
+void CTMemoryStream::HandleAccess(INDEX iAccessedPage, BOOL bReadAttempted) {};
 
 /////////////////////////////////////////////////////////////////////////////
 // File stream opening/closing methods
@@ -868,11 +950,10 @@ CTStream::~CTStream(void)
 CTFileStream::CTFileStream(void)
 {
   fstrm_pFile = NULL;
+  fstrm_iLastAccessedPage = -1; // [Cecil] 1.07 compatibility
   // mark that file is created for writing
   fstrm_bReadOnly = TRUE;
   fstrm_iZipHandle = -1;
-  fstrm_iZipLocation = 0;
-  fstrm_pubZipBuffer = NULL;
 }
 
 /*
@@ -916,14 +997,28 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
     if( iFile==EFP_MODZIP || iFile==EFP_BASEZIP) {
       // open from zip
       fstrm_iZipHandle = UNZIPOpen_t(fnmFullFileName);
-      fstrm_slZipSize = UNZIPGetSize(fstrm_iZipHandle);
-      // load the file from the zip in the buffer
-      fstrm_pubZipBuffer = (UBYTE*)VirtualAlloc(NULL, fstrm_slZipSize, MEM_COMMIT, PAGE_READWRITE);
-      UNZIPReadBlock_t(fstrm_iZipHandle, (UBYTE*)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
+
+      // [Cecil] 1.07 compatibility: Allocate buffer for the file and read all of its bytes into it
+      SLONG slFileSize = UNZIPGetSize(fstrm_iZipHandle);
+      AllocateVirtualMemory((slFileSize / _ulPageSize + 2) * _ulPageSize);
+      strm_pubEOF = strm_pubBufferBegin + slFileSize;
+
+      UNZIPReadBlock_t(fstrm_iZipHandle, strm_pubBufferBegin, 0, slFileSize);
+
     // if it is a physical file
     } else if (iFile==EFP_FILE) {
       // open file in read only mode
       fstrm_pFile = fopen(fnmFullFileName, "rb");
+
+      // [Cecil] 1.07 compatibility: Allocate buffer for the file and read all of its bytes into it
+      fseek(fstrm_pFile, 0, SEEK_END);
+      SLONG slFileSize = ftell( fstrm_pFile);
+      fseek(fstrm_pFile, 0, SEEK_SET);
+
+      AllocateVirtualMemory((slFileSize / _ulPageSize + 2) * _ulPageSize);
+      strm_pubEOF = strm_pubBufferBegin + slFileSize;
+
+      fread(strm_pubBufferBegin, slFileSize, 1, fstrm_pFile);
     }
     fstrm_bReadOnly = TRUE;
   
@@ -932,6 +1027,10 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
     // open file for reading and writing
     fstrm_pFile = fopen(fnmFullFileName, "rb+");
     fstrm_bReadOnly = FALSE;
+
+    // [Cecil] 1.07 compatibility: Allocate enough memory for the contents of the file
+    AllocateVirtualMemory(_ulMaxLenghtOfSavingFile + _ulPageSize);
+
   // if unknown mode
   } else {
     FatalError(TRANS("File stream opening requested with unknown open mode: %d\n"), om);
@@ -945,7 +1044,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
   }
 
   // if file opening was successfull, set stream description to file name
-  strm_strStreamDescription = fnmFullFileName;
+  strm_strStreamDescription = fnFileName; // [Cecil] 1.07 compatibility: Relative filename
   // add this newly opened file into opened stream list
   _plhOpenedStreams->AddTail( strm_lnListNode);
 }
@@ -957,28 +1056,21 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
                             enum CTStream::CreateMode cm) // throws char *
 {
   (void)cm; // OBSOLETE!
-  
-  CTFileName fnFileNameAbsolute = fnFileName;
-  fnFileNameAbsolute.SetAbsolutePath();
 
   // if current thread has not enabled stream handling
   if (!_bThreadCanHandleStreams) {
     // error
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"),
-      (CTString&)fnFileNameAbsolute);
+      (CTString&)fnFileName);
   }
 
   CTFileName fnmFullFileName;
-  INDEX iFile = ExpandFilePath(EFP_WRITE, fnFileNameAbsolute, fnmFullFileName);
+  INDEX iFile = ExpandFilePath(EFP_WRITE, fnFileName, fnmFullFileName);
 
   // check parameters
-  ASSERT(strlen(fnFileNameAbsolute)>0);
+  ASSERT(strlen(fnFileName)>0);
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL);
-
-  // create the directory for the new file if it doesn't exist yet
-  MakeSureDirectoryPathExists(fnmFullFileName);
-
   // open file stream for writing (destroy file context if file existed before)
   fstrm_pFile = fopen(fnmFullFileName, "wb+");
   // if not successfull
@@ -988,8 +1080,12 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
     Throw_t(TRANS("Cannot create file `%s' (%s)"), (CTString&)fnmFullFileName,
       strerror(errno));
   }
+
+  // [Cecil] 1.07 compatibility: Allocate enough memory for the contents of the file
+  AllocateVirtualMemory(_ulMaxLenghtOfSavingFile + _ulPageSize);
+
   // if file creation was successfull, set stream description to file name
-  strm_strStreamDescription = fnFileNameAbsolute;
+  strm_strStreamDescription = fnFileName; // [Cecil] 1.07 compatibility: Relative filename
   // mark that file is created for writing
   fstrm_bReadOnly = FALSE;
   // add this newly created file into opened stream list
@@ -1014,6 +1110,13 @@ void CTFileStream::Close(void)
 
   // if file on disk
   if (fstrm_pFile != NULL) {
+    // [Cecil] 1.07 compatibility: Flush written data back into the file
+    if (!fstrm_bReadOnly) {
+      fseek(fstrm_pFile, 0, SEEK_SET);
+      fwrite(strm_pubBufferBegin, GetStreamSize(), 1, fstrm_pFile);
+      fflush(fstrm_pFile);
+    }
+
     // close file
     fclose( fstrm_pFile);
     fstrm_pFile = NULL;
@@ -1022,12 +1125,10 @@ void CTFileStream::Close(void)
     // close zip entry
     UNZIPClose(fstrm_iZipHandle);
     fstrm_iZipHandle = -1;
-
-    VirtualFree(fstrm_pubZipBuffer, 0, MEM_RELEASE);
-
-    _ulVirtuallyAllocatedSpace -= fstrm_slZipSize;
-    //CPrintF("Freed virtual memory with size ^c00ff00%d KB^C (now %d KB)\n", (fstrm_slZipSize / 1000), (_ulVirtuallyAllocatedSpace / 1000));
   }
+
+  // [Cecil] 1.07 compatibility: Free allocated memory
+  FreeBuffer();
 
   // clear dictionary vars
   strm_dmDictionaryMode = DM_NONE;
@@ -1052,90 +1153,6 @@ ULONG CTFileStream::GetStreamCRC32_t(void)
   }
 }
 
-/* Read a block of data from stream. */
-void CTFileStream::Read_t(void *pvBuffer, SLONG slSize)
-{
-  if(fstrm_iZipHandle != -1) {
-    memcpy(pvBuffer, fstrm_pubZipBuffer + fstrm_iZipLocation, slSize);
-    fstrm_iZipLocation += slSize;
-    return;
-  }
-
-  fread(pvBuffer, slSize, 1, fstrm_pFile);
-}
-
-/* Write a block of data to stream. */
-void CTFileStream::Write_t(const void *pvBuffer, SLONG slSize)
-{
-  if(fstrm_bReadOnly || fstrm_iZipHandle != -1) {
-    throw "Stream is read-only!";
-  }
-
-  fwrite(pvBuffer, slSize, 1, fstrm_pFile);
-}
-
-/* Seek in stream. */
-void CTFileStream::Seek_t(SLONG slOffset, enum SeekDir sd)
-{
-  if(fstrm_iZipHandle != -1) {
-    switch(sd) {
-    case SD_BEG: fstrm_iZipLocation = slOffset; break;
-    case SD_CUR: fstrm_iZipLocation += slOffset; break;
-    case SD_END: fstrm_iZipLocation = GetSize_t() + slOffset; break;
-    }
-  } else {
-    fseek(fstrm_pFile, slOffset, sd);
-  }
-}
-
-/* Set absolute position in stream. */
-void CTFileStream::SetPos_t(SLONG slPosition)
-{
-  Seek_t(slPosition, SD_BEG);
-}
-
-/* Get absolute position in stream. */
-SLONG CTFileStream::GetPos_t(void)
-{
-  if(fstrm_iZipHandle != -1) {
-    return fstrm_iZipLocation;
-  } else {
-    return ftell(fstrm_pFile);
-  }
-}
-
-/* Get size of stream */
-SLONG CTFileStream::GetStreamSize(void)
-{
-  if(fstrm_iZipHandle != -1) {
-    return UNZIPGetSize(fstrm_iZipHandle);
-  } else {
-    long lCurrentPos = ftell(fstrm_pFile);
-    fseek(fstrm_pFile, 0, SD_END);
-    long lRet = ftell(fstrm_pFile);
-    fseek(fstrm_pFile, lCurrentPos, SD_BEG);
-    return lRet;
-  }
-}
-
-/* Check if file position points to the EOF */
-BOOL CTFileStream::AtEOF(void)
-{
-  if(fstrm_iZipHandle != -1) {
-    return fstrm_iZipLocation >= fstrm_slZipSize;
-  } else {
-    int eof = feof(fstrm_pFile);
-    return eof != 0;
-  }
-}
-
-// whether or not the given pointer is coming from this stream (mainly used for exception handling)
-BOOL CTFileStream::PointerInStream(void* pPointer)
-{
-  // we're not using virtual allocation buffers so it's fine to return FALSE here.
-  return FALSE;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // Memory stream construction/destruction
 
@@ -1150,18 +1167,15 @@ CTMemoryStream::CTMemoryStream(void)
     ::FatalError(TRANS("Can create memory stream, stream handling is not enabled for this thread"));
   }
 
+  // allocate amount of memory needed to hold maximum allowed file length (when saving)
+  AllocateVirtualMemory(_ulMaxLenghtOfSavingFile);
   mstrm_ctLocked = 0;
   mstrm_bReadable = TRUE;
   mstrm_bWriteable = TRUE;
-  mstrm_slLocation = 0;
   // set stream description
   strm_strStreamDescription = "dynamic memory stream";
   // add this newly created memory stream into opened stream list
   _plhOpenedStreams->AddTail( strm_lnListNode);
-  // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE*)VirtualAlloc(NULL, _ulMaxLenghtOfSavingFile, MEM_COMMIT, PAGE_READWRITE);
-  mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
-  mstrm_pubBufferMax = mstrm_pubBuffer;
 }
 
 /*
@@ -1177,15 +1191,12 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
   }
 
   // allocate amount of memory needed to hold maximum allowed file length (when saving)
-  mstrm_pubBuffer = (UBYTE*)VirtualAlloc(NULL, _ulMaxLenghtOfSavingFile, MEM_COMMIT, PAGE_READWRITE);
-  mstrm_pubBufferEnd = mstrm_pubBuffer + _ulMaxLenghtOfSavingFile;
-  mstrm_pubBufferMax = mstrm_pubBuffer + slSize;
+  AllocateVirtualMemory(_ulMaxLenghtOfSavingFile);
   // copy given block of memory into memory file
-  memcpy( mstrm_pubBuffer, pvBuffer, slSize);
+  memcpy(strm_pubCurrentPos, pvBuffer, slSize);
 
   mstrm_ctLocked = 0;
   mstrm_bReadable = TRUE;
-  mstrm_slLocation = 0;
   // if stram is opened in read only mode
   if( om == OM_READ)
   {
@@ -1206,7 +1217,6 @@ CTMemoryStream::CTMemoryStream(void *pvBuffer, SLONG slSize,
 CTMemoryStream::~CTMemoryStream(void)
 {
   ASSERT(mstrm_ctLocked==0);
-  VirtualFree(mstrm_pubBuffer, 0, MEM_RELEASE);
   // remove memory stream from list of curently opened streams
   strm_lnListNode.Remove();
 }
@@ -1221,9 +1231,10 @@ void CTMemoryStream::LockBuffer(void **ppvBuffer, SLONG *pslSize)
 {
   mstrm_ctLocked++;
   ASSERT(mstrm_ctLocked>0);
+  UpdateMaxPos();
 
-  *ppvBuffer = mstrm_pubBuffer;
-  *pslSize = GetSize_t();
+  *ppvBuffer = strm_pubBufferBegin;
+  *pslSize = strm_pubMaxPos - strm_pubBufferBegin;
 }
 
 /*
@@ -1249,76 +1260,6 @@ BOOL CTMemoryStream::IsWriteable(void)
 BOOL CTMemoryStream::IsSeekable(void)
 {
   return TRUE;
-}
-
-/* Read a block of data from stream. */
-void CTMemoryStream::Read_t(void *pvBuffer, SLONG slSize)
-{
-  memcpy(pvBuffer, mstrm_pubBuffer + mstrm_slLocation, slSize);
-  mstrm_slLocation += slSize;
-}
-
-/* Write a block of data to stream. */
-void CTMemoryStream::Write_t(const void *pvBuffer, SLONG slSize)
-{
-  memcpy(mstrm_pubBuffer + mstrm_slLocation, pvBuffer, slSize);
-  mstrm_slLocation += slSize;
-
-  if(mstrm_pubBuffer + mstrm_slLocation > mstrm_pubBufferMax) {
-    mstrm_pubBufferMax = mstrm_pubBuffer + mstrm_slLocation;
-  }
-}
-
-/* Seek in stream. */
-void CTMemoryStream::Seek_t(SLONG slOffset, enum SeekDir sd)
-{
-  switch(sd) {
-  case SD_BEG: mstrm_slLocation = slOffset; break;
-  case SD_CUR: mstrm_slLocation += slOffset; break;
-  case SD_END: mstrm_slLocation = GetStreamSize() + slOffset; break;
-  }
-}
-
-/* Set absolute position in stream. */
-void CTMemoryStream::SetPos_t(SLONG slPosition)
-{
-  mstrm_slLocation = slPosition;
-}
-
-/* Get absolute position in stream. */
-SLONG CTMemoryStream::GetPos_t(void)
-{
-  return mstrm_slLocation;
-}
-
-/* Get size of stream. */
-SLONG CTMemoryStream::GetSize_t(void)
-{
-  return GetStreamSize();
-}
-
-/* Get size of stream */
-SLONG CTMemoryStream::GetStreamSize(void)
-{
-  return mstrm_pubBufferMax - mstrm_pubBuffer;
-}
-
-/* Get CRC32 of stream */
-ULONG CTMemoryStream::GetStreamCRC32_t(void)
-{
-  return CTStream::GetStreamCRC32_t();
-}
-
-/* Check if file position points to the EOF */
-BOOL CTMemoryStream::AtEOF(void)
-{
-  return mstrm_slLocation >= GetStreamSize();
-}
-
-// whether or not the given pointer is coming from this stream (mainly used for exception handling)
-BOOL CTMemoryStream::PointerInStream(void* pPointer)
-{
-  return pPointer >= mstrm_pubBuffer && pPointer < mstrm_pubBufferEnd;
 }
 
 // Test if a file exists.

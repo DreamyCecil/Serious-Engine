@@ -35,8 +35,8 @@ public:
   virtual BOOL Unpack(const void *pvSrc, SLONG slSrcSize, void *pvDst, SLONG &slDstSize) = 0;
 
   /* Pack/unpack from stream to stream. */
-  void UnpackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst); // throw char *
-  void PackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst); // throw char *
+  void UnpackStream_t(CTStream &strmSrc, CTStream &strmDst); // throw char *
+  void PackStream_t(CTStream &strmSrc, CTStream &strmDst); // throw char *
 };
 
 /*

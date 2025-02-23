@@ -75,6 +75,11 @@ class ENGINE_API CTStream {
 public:
   CListNode strm_lnListNode;  // for linking into main library's list of opened streams
 public:
+  UBYTE *strm_pubBufferBegin; // starting address of stram buffer in virtual adress space
+  UBYTE *strm_pubBufferEnd;   // ending address of stram buffer in virtual adress space
+  UBYTE *strm_pubCurrentPos;  // current position of stream ptr in virtual adress space
+  UBYTE *strm_pubEOF;         // end of file ptr (if file stream is opened for reading)
+  UBYTE *strm_pubMaxPos;      // maximum position in stream reached by current ptr
   CTString strm_strStreamDescription; // descriptive string
 
   enum DictionaryMode {
@@ -126,11 +131,31 @@ public:
 
   /* Static function to report fatal exception error. */
   static void ExceptionFatalError(void);
+  /* Pure virtual function that handles access violation exception */
+  virtual void HandleAccess(INDEX iAccessedPage, BOOL bReadAttempted) = 0;
 
   /* Default constructor. */
   CTStream(void);
   /* Destruction. */
+  void FreeBuffer(void);
   virtual ~CTStream(void);
+
+  /* Function that updates maximum position reached with given adress */
+  inline void UpdateMaxPos(UBYTE *pAdress) {
+    if(pAdress>strm_pubMaxPos) strm_pubMaxPos=pAdress;
+  };
+  /* Function that updates maximum position reached */
+  inline void UpdateMaxPos(void) {
+    if(strm_pubCurrentPos>strm_pubMaxPos) strm_pubMaxPos=strm_pubCurrentPos;
+  };
+  /* Function that allocates given ammount of virtual address space */
+  void AllocateVirtualMemory(ULONG ulBytesToAllocate);
+  /* Function that commits given page */
+  void CommitPage(INDEX iPage);
+  /* Function that decommits given page */
+  void DecommitPage(INDEX iPage);
+  /* Function that pritects given page from writting (for read-only streams) */
+  void ProtectPageFromWritting(INDEX iPage);
 
   /* Check if the stream can be read. -- used mainly for assertions */
   virtual BOOL IsReadable(void) = 0;
@@ -140,22 +165,22 @@ public:
   virtual BOOL IsSeekable(void) = 0;
 
   /* Read a block of data from stream. */
-  virtual void Read_t(void *pvBuffer, SLONG slSize) = 0; // throw char *
+  inline void Read_t(void *pvBuffer, SLONG slSize); // throw char *
   /* Write a block of data to stream. */
-  virtual void Write_t(const void *pvBuffer, SLONG slSize) = 0; // throw char *
+  inline void Write_t(const void *pvBuffer, SLONG slSize); // throw char *
 
   /* Seek in stream. */
-  virtual void Seek_t(SLONG slOffset, enum SeekDir sd) = 0; // throw char *
+  void Seek_t(SLONG slOffset, enum SeekDir sd); // throw char *
   /* Set absolute position in stream. */
-  virtual void SetPos_t(SLONG slPosition) = 0; // throw char *
+  void SetPos_t(SLONG slPosition); // throw char *
   /* Get absolute position in stream. */
-  virtual SLONG GetPos_t(void) = 0; // throw char *
+  SLONG GetPos_t(void); // throw char *
   /* Get size of stream */
-  virtual SLONG GetStreamSize(void) = 0;
+  SLONG GetStreamSize(void);
   /* Get CRC32 of stream */
-  virtual ULONG GetStreamCRC32_t(void) = 0;
+  virtual ULONG GetStreamCRC32_t(void);
   /* Check if file position points to the EOF */
-  virtual BOOL AtEOF(void) = 0;
+  BOOL AtEOF(void);
 
   /* Get description of this stream (e.g. filename for a CFileStream). */
   inline CTString &GetDescription(void) { return strm_strStreamDescription; };
@@ -186,33 +211,30 @@ public:
   ENGINE_API friend CTStream &operator<<(CTStream &strmStream, const CTFileName &fnmFileName);
 
   /* Put a line of text into stream. */
-  virtual void PutLine_t(const char *strBuffer); // throw char *
-  virtual void PutString_t(const char *strString); // throw char *
-  virtual void FPrintF_t(const char *strFormat, ...); // throw char *
+  void PutLine_t(const char *strBuffer); // throw char *
+  void PutString_t(const char *strString); // throw char *
+  void FPrintF_t(const char *strFormat, ...); // throw char *
   /* Get a line of text from stream. */
-  virtual void GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter='\n'); // throw char *
-  virtual void GetLine_t(CTString &strLine, char cDelimiter='\n'); // throw char *
+  void GetLine_t(char *strBuffer, SLONG slBufferSize, char cDelimiter='\n'); // throw char *
+  void GetLine_t(CTString &strLine, char cDelimiter='\n'); // throw char *
 
-  virtual CChunkID GetID_t(void); // throw char *
-  virtual CChunkID PeekID_t(void); // throw char *
-  virtual void ExpectID_t(const CChunkID &cidExpected); // throw char *
-  virtual void ExpectKeyword_t(const CTString &strKeyword); // throw char *
-  virtual SLONG GetSize_t(void); // throw char *
-  virtual void ReadRawChunk_t(void *pvBuffer, SLONG slSize); // throw char *
-  virtual void ReadChunk_t(void *pvBuffer, SLONG slExpectedSize); // throw char *
-  virtual void ReadFullChunk_t(const CChunkID &cidExpected, void *pvBuffer, SLONG slExpectedSize); // throw char *
-  virtual void *ReadChunkAlloc_t(SLONG slSize=0); // throw char *
-  virtual void ReadStream_t(CTStream &strmOther); // throw char *
+  CChunkID GetID_t(void); // throw char *
+  CChunkID PeekID_t(void); // throw char *
+  void ExpectID_t(const CChunkID &cidExpected); // throw char *
+  void ExpectKeyword_t(const CTString &strKeyword); // throw char *
+  SLONG GetSize_t(void); // throw char *
+  void ReadRawChunk_t(void *pvBuffer, SLONG slSize); // throw char *
+  void ReadChunk_t(void *pvBuffer, SLONG slExpectedSize); // throw char *
+  void ReadFullChunk_t(const CChunkID &cidExpected, void *pvBuffer, SLONG slExpectedSize); // throw char *
+  void *ReadChunkAlloc_t(SLONG slSize=0); // throw char *
+  void ReadStream_t(CTStream &strmOther); // throw char *
 
-  virtual void WriteID_t(const CChunkID &cidSave); // throw char *
-  virtual void WriteSize_t(SLONG slSize); // throw char *
-  virtual void WriteRawChunk_t(void *pvBuffer, SLONG slSize); // throw char *  // doesn't write length
-  virtual void WriteChunk_t(void *pvBuffer, SLONG slSize); // throw char *
-  virtual void WriteFullChunk_t(const CChunkID &cidSave, void *pvBuffer, SLONG slSize); // throw char *
-  virtual void WriteStream_t(CTStream &strmOther); // throw char *
-
-  // whether or not the given pointer is coming from this stream (mainly used for exception handling)
-  virtual BOOL PointerInStream(void* pPointer);
+  void WriteID_t(const CChunkID &cidSave); // throw char *
+  void WriteSize_t(SLONG slSize); // throw char *
+  void WriteRawChunk_t(void *pvBuffer, SLONG slSize); // throw char *  // doesn't write length
+  void WriteChunk_t(void *pvBuffer, SLONG slSize); // throw char *
+  void WriteFullChunk_t(const CChunkID &cidSave, void *pvBuffer, SLONG slSize); // throw char *
+  void WriteStream_t(CTStream &strmOther); // throw char *
 
   // filename dictionary operations
 
@@ -234,12 +256,8 @@ public:
 class ENGINE_API CTFileStream : public CTStream {
 private:
   FILE *fstrm_pFile;    // ptr to opened file
-
   INDEX fstrm_iZipHandle; // handle of zip-file entry
-  INDEX fstrm_iZipLocation; // location in zip-file entry
-  UBYTE* fstrm_pubZipBuffer; // buffer for zip-file entry
-  SLONG fstrm_slZipSize; // size of the zip-file entry
-
+  INDEX fstrm_iLastAccessedPage; // index of last commited page
   BOOL fstrm_bReadOnly;  // set if file is opened in read-only mode
 public:
   /* Default constructor. */
@@ -253,47 +271,30 @@ public:
   void Create_t(const CTFileName &fnFileName, enum CTStream::CreateMode cm=CTStream::CM_BINARY); // throw char *
   /* Close an open file. */
   void Close(void);
+  /* Writes given page into file */
+  void WritePageToFile(INDEX iPageToWrite);
+  /* Commites given page and reads it from file */
+  void FileCommitPage( INDEX iPageToCommit);
+  /* Decommites given page and writes it into file (if file is opened for writting) */
+  void FileDecommitPage( INDEX iPageToDecommit);
   /* Get CRC32 of stream */
   ULONG GetStreamCRC32_t(void);
-
-  /* Read a block of data from stream. */
-  void Read_t(void *pvBuffer, SLONG slSize); // throw char *
-  /* Write a block of data to stream. */
-  void Write_t(const void *pvBuffer, SLONG slSize); // throw char *
-
-  /* Seek in stream. */
-  void Seek_t(SLONG slOffset, enum SeekDir sd); // throw char *
-  /* Set absolute position in stream. */
-  void SetPos_t(SLONG slPosition); // throw char *
-  /* Get absolute position in stream. */
-  SLONG GetPos_t(void); // throw char *
-  /* Get size of stream */
-  SLONG GetStreamSize(void);
-  /* Check if file position points to the EOF */
-  BOOL AtEOF(void);
-
-  // whether or not the given pointer is coming from this stream (mainly used for exception handling)
-  virtual BOOL PointerInStream(void* pPointer);
 
   // from CTStream
   inline virtual BOOL IsWriteable(void){ return !fstrm_bReadOnly;};
   inline virtual BOOL IsReadable(void){ return TRUE;};
   inline virtual BOOL IsSeekable(void){ return TRUE;};
+  virtual void HandleAccess(INDEX iAccessedPage, BOOL bReadAttempted);
 };
 
 /*
  * CroTeam memory stream class
  */
 class ENGINE_API CTMemoryStream : public CTStream {
-public:
-  BOOL mstrm_bReadable;      // set if stream is readable
-  BOOL mstrm_bWriteable;     // set if stream is writeable
-  INDEX mstrm_ctLocked;      // counter for buffer locking
-
-  UBYTE* mstrm_pubBuffer;    // buffer of the stream
-  UBYTE* mstrm_pubBufferEnd; // pointer to the end of the stream buffer
-  SLONG mstrm_slLocation;    // location in the stream
-  UBYTE* mstrm_pubBufferMax; // furthest that the stream location has ever gotten
+private:
+  BOOL mstrm_bReadable;    // set if stream is readable
+  BOOL mstrm_bWriteable;   // set if stream is writeable
+  INDEX mstrm_ctLocked;    // counter for buffer locking
 public:
   /* Create dynamically resizing stream for reading/writing. */
   CTMemoryStream(void);
@@ -307,34 +308,60 @@ public:
     /* Unlock buffer. */
   void UnlockBuffer(void);
 
-  /* Read a block of data from stream. */
-  void Read_t(void *pvBuffer, SLONG slSize); // throw char *
-  /* Write a block of data to stream. */
-  void Write_t(const void *pvBuffer, SLONG slSize); // throw char *
-
-  /* Seek in stream. */
-  void Seek_t(SLONG slOffset, enum SeekDir sd); // throw char *
-  /* Set absolute position in stream. */
-  void SetPos_t(SLONG slPosition); // throw char *
-  /* Get absolute position in stream. */
-  SLONG GetPos_t(void); // throw char *
-  /* Get size of stream. */
-  SLONG GetSize_t(void); // throw char *
-  /* Get size of stream */
-  SLONG GetStreamSize(void);
-  /* Get CRC32 of stream */
-  ULONG GetStreamCRC32_t(void);
-  /* Check if file position points to the EOF */
-  BOOL AtEOF(void);
-
-  // whether or not the given pointer is coming from this stream (mainly used for exception handling)
-  virtual BOOL PointerInStream(void* pPointer);
-
-  // memory stream can be opened only for reading and writing
+  // memory stream can be opened only for reading and writting
   virtual BOOL IsWriteable(void);
   virtual BOOL IsReadable(void);
   virtual BOOL IsSeekable(void);
+  virtual void HandleAccess(INDEX iAccessedPage, BOOL bReadAttempted);
 };
+
+// --------------------------- Inline function implementations
+/*
+ * Read a block of data from stream.
+ */
+inline void CTStream::Read_t(void *pvBuffer, SLONG slSize)  // throws char *
+{
+  // check parameters
+  ASSERT(pvBuffer!=NULL && slSize>0);
+  // check that the stream can be read
+  ASSERT(IsReadable());
+
+#ifndef NDEBUG
+  // if EOF would be hit before reading entire chunk
+  if(strm_pubCurrentPos+slSize > strm_pubBufferEnd)
+  {
+    ASSERTALWAYS("Trying to read data after EOF!");
+  }
+#endif
+  // read from istream
+  memcpy( (char *)pvBuffer, strm_pubCurrentPos, slSize);
+  // increase file read ptr
+  strm_pubCurrentPos += slSize;
+}
+
+/*
+ * Write a block of data to stream.
+ */
+inline void CTStream::Write_t(const void *pvBuffer, SLONG slSize) // throws char *
+{
+  // check parameters
+  ASSERT(pvBuffer!=NULL && slSize>0);
+  // check that the stream can be written
+  ASSERT(IsWriteable());
+
+#ifndef NDEBUG
+  // if not successfull
+  if(strm_pubCurrentPos > strm_pubBufferEnd)
+  {
+    // throw exception
+    Throw_t(TRANS("EOF hit while writting"));
+  }
+#endif
+  // write to ostream
+  memcpy( strm_pubCurrentPos, (char *)pvBuffer, slSize);
+  // increase file read ptr
+  strm_pubCurrentPos += slSize;
+}
 
 // Test if a file exists.
 ENGINE_API BOOL FileExists(const CTFileName &fnmFile);

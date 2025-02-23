@@ -1030,23 +1030,18 @@ void CServer::SendSessionStateData(INDEX iClient)
     // prepare files or memory streams for connection info
     CTFileStream strmStateFile; CTMemoryStream strmStateMem;
     CTFileStream strmDeltaFile; CTMemoryStream strmDeltaMem;
-    CTStream *pstrmState; CTMemoryStream *pstrmDelta;
+    CTStream *pstrmState; CTStream *pstrmDelta;
     extern INDEX net_bDumpConnectionInfo;
 
-    UBYTE* pubSrc = NULL;
-    /*if (net_bDumpConnectionInfo) {
+    if (net_bDumpConnectionInfo) {
       strmStateFile.Create_t(CTString("Temp\\State.bin"));
       strmDeltaFile.Create_t(CTString("Temp\\Delta.bin"));
       pstrmState = &strmStateFile;
       pstrmDelta = &strmDeltaFile;
-    } else {*/
+    } else {
       pstrmState = &strmStateMem;
       pstrmDelta = &strmDeltaMem;
-
-      pubSrc = strmDeltaMem.mstrm_pubBuffer + strmDeltaMem.mstrm_slLocation;
-    //}
-
-    ASSERT(pubSrc != NULL);
+    }
 
     // write main session state
     _pNetwork->ga_sesSessionState.Write_t(pstrmState);
