@@ -151,7 +151,7 @@ ULONG GetSpawnFlagsForGameType(INDEX iGameType)
   if (iGameType == -1) return SPF_SINGLEPLAYER;
 
   // get function that will provide us the flags
-  CShellSymbol *pss = _pShell->GetSymbol("GetSpawnFlagsForGameTypeSS", /*bDeclaredOnly=*/ TRUE);
+  CShellSymbol *pss = _pShell->GetSymbol("GetSpawnFlagsForGameType", /*bDeclaredOnly=*/ TRUE);
   // if none
   if (pss == NULL) {
     // error
@@ -166,7 +166,7 @@ ULONG GetSpawnFlagsForGameType(INDEX iGameType)
 BOOL IsMenuEnabled(const CTString &strMenuName)
 {
   // get function that will provide us the flags
-  CShellSymbol *pss = _pShell->GetSymbol("IsMenuEnabledSS", /*bDeclaredOnly=*/ TRUE);
+  CShellSymbol *pss = _pShell->GetSymbol("IsMenuEnabled", /*bDeclaredOnly=*/ TRUE);
   // if none
   if (pss == NULL) {
     // error
@@ -182,7 +182,7 @@ BOOL IsMenuEnabled(const CTString &strMenuName)
 void InitGameTypes(void)
 {
   // get function that will provide us the info about gametype
-  CShellSymbol *pss = _pShell->GetSymbol("GetGameTypeNameSS", /*bDeclaredOnly=*/ TRUE);
+  CShellSymbol *pss = _pShell->GetSymbol("GetGameTypeName", /*bDeclaredOnly=*/ TRUE);
   // if none
   if (pss == NULL) {
     // error

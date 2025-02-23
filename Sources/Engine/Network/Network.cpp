@@ -285,24 +285,20 @@ extern BOOL MatchesBanMask(const CTString &strString, const CTString &strMask)
 
 extern CTString RemoveSubstring(const CTString &strFull, const CTString &strSub);
 
-static void AddIPMask(void* pArgs)
+static void AddIPMask(const CTString &strIP)
 {
-  CTString strIP = *NEXTARGUMENT(CTString*);
   ser_strIPMask+= strIP+"\n";
 }
-static void RemIPMask(void* pArgs)
+static void RemIPMask(const CTString &strIP)
 {
-  CTString strIP = *NEXTARGUMENT(CTString*);
   ser_strIPMask = RemoveSubstring(ser_strIPMask, strIP+"\n");
 }
-static void AddNameMask(void* pArgs)
+static void AddNameMask(const CTString &strName)
 {
-  CTString strName = *NEXTARGUMENT(CTString*);
   ser_strNameMask += strName+"\n";
 }
-static void RemNameMask(void* pArgs)
+static void RemNameMask(const CTString &strName)
 {
-  CTString strName = *NEXTARGUMENT(CTString*);
   ser_strNameMask = RemoveSubstring(ser_strNameMask, strName+"\n");
 }
 
@@ -421,12 +417,6 @@ static void KickClient(INDEX iClient, const CTString &strReason)
   CPrintF( TRANS("Kicking %d with explanation '%s'...\n"), iClient, strReason);
   _pNetwork->ga_srvServer.SendDisconnectMessage(iClient, "Admin: "+strReason);
 }
-static void KickClientCfunc(void* pArgs)
-{
-  INDEX iClient = NEXTARGUMENT(INDEX);
-  CTString strReason = *NEXTARGUMENT(CTString*);
-  KickClient(iClient, strReason);
-}
 static void KickByName(const CTString &strName, const CTString &strReason)
 {
   if (!_pNetwork->IsServer()) {
@@ -440,17 +430,9 @@ static void KickByName(const CTString &strName, const CTString &strReason)
     }
   }
 }
-static void KickByNameCfunc(void* pArgs)
-{
-  CTString strName = *NEXTARGUMENT(CTString*);
-  CTString strReason = *NEXTARGUMENT(CTString*);
-  KickByName(strName, strReason);
-}
 
-static void Admin(void* pArgs)
+static void Admin(const CTString &strCommand)
 {
-  CTString strCommand = *NEXTARGUMENT(CTString*);
-
   CNetworkMessage nm(MSG_ADMIN_COMMAND);
   nm<<net_strAdminPassword<<strCommand;
   _pNetwork->SendToServerReliable(nm);
@@ -738,8 +720,8 @@ void CNetworkLibrary::Init(const CTString &strGameID)
   _pShell->DeclareSymbol("user void RendererInfo(void);", &RendererInfo);
   _pShell->DeclareSymbol("user void ClearRenderer(void);",   &ClearRenderer);
   _pShell->DeclareSymbol("user void CacheShadows(void);",    &CacheShadows);
-  _pShell->DeclareSymbol("user void KickClient(INDEX, CTString);", &KickClientCfunc);
-  _pShell->DeclareSymbol("user void KickByName(CTString, CTString);", &KickByNameCfunc);
+  _pShell->DeclareSymbol("user void KickClient(INDEX, CTString);", &KickClient);
+  _pShell->DeclareSymbol("user void KickByName(CTString, CTString);", &KickByName);
   _pShell->DeclareSymbol("user void ListPlayers(void);", &ListPlayers);
   _pShell->DeclareSymbol("user void Admin(CTString);", &Admin);
 

@@ -207,7 +207,6 @@ void InitLensFlares(void);
 // close lens flares effects
 void CloseLensFlares(void);
 
-DECL_DLL BOOL SetPlayerAppearanceCfunc(void* pArgs);
 DECL_DLL BOOL SetPlayerAppearance(CModelObject *mo, CPlayerCharacter *ppc, CTString &strName, BOOL bPreview);
 
 // debugging functions

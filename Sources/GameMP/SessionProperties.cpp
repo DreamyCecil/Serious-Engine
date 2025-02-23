@@ -269,11 +269,6 @@ BOOL IsMenuEnabled(const CTString &strMenuName)
     return TRUE;
   }
 }
-BOOL IsMenuEnabledCfunc(void* pArgs)
-{
-  CTString strMenuName = *NEXTARGUMENT(CTString*);
-  return IsMenuEnabled(strMenuName);
-}
 
 CTString GetGameTypeName(INDEX iMode)
 {
@@ -294,11 +289,6 @@ CTString GetGameTypeName(INDEX iMode)
     return TRANS("Fragmatch");
     break;
   }
-}
-CTString GetGameTypeNameCfunc(void* pArgs)
-{
-  INDEX iMode = NEXTARGUMENT(INDEX);
-  return GetGameTypeName(iMode);
 }
 CTString GetCurrentGameTypeName()
 {
@@ -391,10 +381,5 @@ ULONG GetSpawnFlagsForGameType(INDEX iGameType)
   case CSessionProperties::GM_SCOREMATCH:   return SPF_DEATHMATCH;
   case CSessionProperties::GM_FRAGMATCH:    return SPF_DEATHMATCH;
   };
-}
-ULONG GetSpawnFlagsForGameTypeCfunc(void* pArgs)
-{
-  INDEX iGameType = NEXTARGUMENT(INDEX);
-  return GetSpawnFlagsForGameType(iGameType);
 }
 

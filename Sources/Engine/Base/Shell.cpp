@@ -180,18 +180,16 @@ CTString ScriptEsc(const CTString &str)
 }
 
 #pragma inline_depth(0)
-void MakeAccessViolation(void* pArgs)
+void MakeAccessViolation(INDEX bDont)
 {
-  INDEX bDont = NEXTARGUMENT(INDEX);
   if( bDont) return;
   char *p=NULL;
   *p=1;
 }
 
 extern int _a=123;
-void MakeStackOverflow(void* pArgs)
+void MakeStackOverflow(INDEX bDont)
 {
-  INDEX bDont = NEXTARGUMENT(INDEX);
   if( bDont) return;
   int a[1000];
   a[999] = _a;
@@ -199,9 +197,8 @@ void MakeStackOverflow(void* pArgs)
   _a=a[999];
 }
 
-void MakeFatalError(void* pArgs)
+void MakeFatalError(INDEX bDont)
 {
-  INDEX bDont = NEXTARGUMENT(INDEX);
   if( bDont) return;
   FatalError( "MakeFatalError()");
 }
@@ -387,28 +384,23 @@ static void ListSymbols(void)
 
 
 // output any string to console
-void Echo(void* pArgs)
+void Echo(const CTString &str)
 {
-  CTString str = *NEXTARGUMENT(CTString*);
   CPrintF("%s", str);
 }
 
 
 
-CTString UndecorateString(void* pArgs)
+CTString UndecorateString(const CTString &strString)
 {
-  CTString strString = *NEXTARGUMENT(CTString*);
   return strString.Undecorated();
 }
-BOOL MatchStrings(void* pArgs)
+BOOL MatchStrings(const CTString &strString, const CTString &strPattern)
 {
-  CTString strString = *NEXTARGUMENT(CTString*);
-  CTString strPattern = *NEXTARGUMENT(CTString*);
   return strString.Matches(strPattern);
 }
-CTString MyLoadString(void* pArgs)
+CTString MyLoadString(const CTString &strFileName)
 {
-  CTString strFileName = *NEXTARGUMENT(CTString*);
   try {
     CTString strString;
     strString.Load_t(strFileName);
@@ -418,10 +410,8 @@ CTString MyLoadString(void* pArgs)
     return "";
   }
 }
-void MySaveString(void* pArgs)
+void MySaveString(const CTString &strFileName, CTString &strString)
 {
-  CTString strFileName = *NEXTARGUMENT(CTString*);
-  CTString strString = *NEXTARGUMENT(CTString*);
   try {
     strString.Save_t(strFileName);
   } catch (char *strError) {
@@ -478,11 +468,6 @@ CTString ToUpper(const CTString &strResult)
   }
   return strResult;
 }
-CTString ToUpperCfunc(void* pArgs)
-{
-  CTString strResult = *NEXTARGUMENT(CTString*);
-  return ToUpper(strResult);
-}
 CTString ToLower(const CTString &strResult)
 {
   char *pch = (char*)(const char *)strResult;
@@ -490,11 +475,6 @@ CTString ToLower(const CTString &strResult)
     pch[i]=tolower(pch[i]);
   }
   return strResult;
-}
-CTString ToLowerCfunc(void* pArgs)
-{
-  CTString strResult = *NEXTARGUMENT(CTString*);
-  return ToLower(strResult);
 }
 
 CTString RemoveSubstring(const CTString &strFull, const CTString &strSub)
@@ -517,12 +497,6 @@ CTString RemoveSubstring(const CTString &strFull, const CTString &strSub)
   CTString strRight = strFull;
   strRight.TrimLeft(iLenFull-iOffset-iLenSub);
   return strLeft+strRight;
-}
-CTString RemoveSubstringCfunc(void* pArgs)
-{
-  CTString strFull = *NEXTARGUMENT(CTString*);
-  CTString strSub = *NEXTARGUMENT(CTString*);
-  return RemoveSubstring(strFull, strSub);
 }
 
 // Initialize the shell.
@@ -557,9 +531,9 @@ void CShell::Initialize(void)
   DeclareSymbol("user INDEX Matches(CTString, CTString);", &MatchStrings);
   DeclareSymbol("user CTString LoadString(CTString);", &MyLoadString);
   DeclareSymbol("user void SaveString(CTString, CTString);", &MySaveString);
-  DeclareSymbol("user CTString RemoveSubstring(CTString, CTString);", &RemoveSubstringCfunc);
-  DeclareSymbol("user CTString ToUpper(CTString);", &ToUpperCfunc);
-  DeclareSymbol("user CTString ToLower(CTString);", &ToLowerCfunc);
+  DeclareSymbol("user CTString RemoveSubstring(CTString, CTString);", &RemoveSubstring);
+  DeclareSymbol("user CTString ToUpper(CTString);", &ToUpper);
+  DeclareSymbol("user CTString ToLower(CTString);", &ToLower);
 }
 
 static BOOL _iParsing = 0;

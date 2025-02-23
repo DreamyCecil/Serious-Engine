@@ -209,7 +209,7 @@ static void ReportDemoProfile(void)
 #define MAX_SCRIPTSOUNDS 16
 static CSoundObject *_apsoScriptChannels[MAX_SCRIPTSOUNDS] = {0};
 
-static void PlayScriptSound(INDEX iChannel, const CTString &strSound, FLOAT fVolume, FLOAT fPitch, BOOL bLooping)
+static void PlayScriptSound(INDEX iChannel, const CTString &strSound, FLOAT fVolume, FLOAT fPitch, INDEX bLooping)
 {
   if (iChannel<0 || iChannel>=MAX_SCRIPTSOUNDS) {
     return;
@@ -225,18 +225,8 @@ static void PlayScriptSound(INDEX iChannel, const CTString &strSound, FLOAT fVol
     CPrintF("%s\n", strError);
   }
 }
-static void PlayScriptSoundCfunc(void* pArgs)
+static void StopScriptSound(INDEX iChannel)
 {
-  INDEX iChannel = NEXTARGUMENT(INDEX);
-  CTString strSound = *NEXTARGUMENT(CTString*);
-  FLOAT fVolume = NEXTARGUMENT(FLOAT);
-  FLOAT fPitch = NEXTARGUMENT(FLOAT);
-  BOOL bLooping = NEXTARGUMENT(INDEX);
-  PlayScriptSound(iChannel, strSound, fVolume, fPitch, bLooping);
-}
-static void StopScriptSound(void* pArgs)
-{
-  INDEX iChannel = NEXTARGUMENT(INDEX);
   if (iChannel<0 || iChannel>=MAX_SCRIPTSOUNDS||_apsoScriptChannels[iChannel]==NULL) {
     return;
   }
@@ -276,16 +266,12 @@ static void SaveScreenShot(void)
   bSaveScreenShot=TRUE;
 }
 
-static void Say(void* pArgs)
+static void Say(const CTString &strText)
 {
-  CTString strText = *NEXTARGUMENT(CTString*);
   _pNetwork->SendChat(-1, -1, strText);
 }
-static void SayFromTo(void* pArgs)
+static void SayFromTo(INDEX ulFrom, INDEX ulTo, const CTString &strText)
 {
-  INDEX ulFrom = NEXTARGUMENT(INDEX);
-  INDEX ulTo = NEXTARGUMENT(INDEX);
-  CTString strText = *NEXTARGUMENT(CTString*);
   _pNetwork->SendChat(ulFrom, ulTo, strText);
 }
 
@@ -987,23 +973,16 @@ void CGame::InitInternal( void)
   _pShell->DeclareSymbol("user void DumpDemoProfile(void);",   &DumpDemoProfile);
   extern CTString GetGameAgentRulesInfo(void);
   extern CTString GetGameTypeName(INDEX);
-  extern CTString GetGameTypeNameCfunc(void* pArgs);
   extern CTString GetCurrentGameTypeName(void);
   extern ULONG GetSpawnFlagsForGameType(INDEX);
-  extern ULONG GetSpawnFlagsForGameTypeCfunc(void* pArgs);
   extern BOOL IsMenuEnabled(const CTString &);
-  extern BOOL IsMenuEnabledCfunc(void* pArgs);
   _pShell->DeclareSymbol("user CTString GetGameAgentRulesInfo(void);",   &GetGameAgentRulesInfo);
-  _pShell->DeclareSymbol("user CTString GetGameTypeName(INDEX);",        &GetGameTypeNameCfunc);
+  _pShell->DeclareSymbol("user CTString GetGameTypeName(INDEX);",        &GetGameTypeName);
   _pShell->DeclareSymbol("user CTString GetCurrentGameTypeName(void);",  &GetCurrentGameTypeName);
-  _pShell->DeclareSymbol("user INDEX GetSpawnFlagsForGameType(INDEX);",  &GetSpawnFlagsForGameTypeCfunc);
-  _pShell->DeclareSymbol("user INDEX IsMenuEnabled(CTString);",          &IsMenuEnabledCfunc);
+  _pShell->DeclareSymbol("user INDEX GetSpawnFlagsForGameType(INDEX);",  &GetSpawnFlagsForGameType);
+  _pShell->DeclareSymbol("user INDEX IsMenuEnabled(CTString);",          &IsMenuEnabled);
   _pShell->DeclareSymbol("user void Say(CTString);",                     &Say);
   _pShell->DeclareSymbol("user void SayFromTo(INDEX, INDEX, CTString);", &SayFromTo);
-
-  _pShell->DeclareSymbol("CTString GetGameTypeNameSS(INDEX);",           &GetGameTypeName);
-  _pShell->DeclareSymbol("INDEX GetSpawnFlagsForGameTypeSS(INDEX);",     &GetSpawnFlagsForGameType);
-  _pShell->DeclareSymbol("INDEX IsMenuEnabledSS(CTString);",             &IsMenuEnabled);
 
   _pShell->DeclareSymbol("user const INDEX ctl_iCurrentPlayerLocal;", &ctl_iCurrentPlayerLocal);
   _pShell->DeclareSymbol("user const INDEX ctl_iCurrentPlayer;",      &ctl_iCurrentPlayer);
