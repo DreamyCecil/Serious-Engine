@@ -85,6 +85,10 @@ public:
 
 
 // ------------------------------------ Ogg Vorbis
+
+// [Cecil] 1.07 compatibility: No '_fseeki64' in MSVC 6.0
+#define _fseeki64 fseek
+
 #include <vorbis\vorbisfile.h>  // we define needed stuff ourselves, and ignore the rest
 
 // vorbis vars

@@ -113,7 +113,12 @@ functions:
   export virtual void GetGameAgentPlayerInfo( INDEX iPlayer, CTString &strOut) { };
   // provide info for MSLegacy enumeration
   export virtual void GetMSLegacyPlayerInf( INDEX iPlayer, CTString &strOut) { };
-  
+
+  // [Cecil] 1.07 compatibility
+  export virtual void GetGameSpyPlayerInfo(INDEX iPlayer, CTString &strKeys) {
+    GetMSLegacyPlayerInf(iPlayer, strKeys);
+  };
+
   // create a checksum value for sync-check
   export void ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
   {

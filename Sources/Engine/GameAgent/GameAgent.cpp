@@ -943,7 +943,7 @@ extern void GameAgent_EnumUpdate(void)
         CNetworkSession &ns = *new CNetworkSession;
         _pNetwork->ga_lhEnumeratedSessions.AddTail(ns.ns_lnNode);
 
-        long long tmPing = -1;
+        __int64 tmPing = -1;
         // find the request in the request array
         for(INDEX i=0; i<ga_asrRequests.Count(); i++) {
           CServerRequest &req = ga_asrRequests[i];
@@ -1158,7 +1158,7 @@ DWORD WINAPI _MS_Thread(LPVOID lpParam) {
                     strGameName = strActiveMod;
                 }
 				
-                long long tmPing = -1;
+                __int64 tmPing = -1;
                 // find the request in the request array
                 for(INDEX i=0; i<ga_asrRequests.Count(); i++) {
                     CServerRequest &req = ga_asrRequests[i];
@@ -1366,7 +1366,7 @@ DWORD WINAPI _LocalNet_Thread(LPVOID lpParam) {
                     strGameName = strActiveMod;
                 }
 
-                long long tmPing = -1;
+                __int64 tmPing = -1;
                 // find the request in the request array
                 for(INDEX i=0; i<ga_asrRequests.Count(); i++) {
                     CServerRequest &req = ga_asrRequests[i];

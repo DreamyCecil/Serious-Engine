@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Translation.h>
 
 #include <Engine/Base/ErrorReporting.h>
-#include <new.h>
 
 extern FLOAT _bCheckAllAllocations = FALSE;
 
@@ -34,8 +33,9 @@ typedef int (__cdecl * _PNH)( size_t );
 #define _PNH_DEFINED
 #endif
 
-/*_CRTIMP _PNH __cdecl _query_new_handler( void );
-_CRTIMP _PNH __cdecl _set_new_handler( _PNH );*/
+// [Cecil] 1.07 compatibility: Removed <new> include and uncommented these
+_CRTIMP _PNH __cdecl _query_new_handler( void );
+_CRTIMP _PNH __cdecl _set_new_handler( _PNH );
 
 #ifndef NDEBUG
 // include this for debug version of operator new

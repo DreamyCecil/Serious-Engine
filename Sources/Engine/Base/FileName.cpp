@@ -141,7 +141,8 @@ void CTFileName::SetAbsolutePath(void)
     }
   }
   // Remove certain path parts
-  for (INDEX iPart = 0; iPart < astrParts.Count(); ++iPart) {
+  INDEX iPart;
+  for (iPart = 0; iPart < astrParts.Count(); ++iPart) {
     if (CTString("..") != astrParts[iPart]) {
       continue;
     }
@@ -162,7 +163,7 @@ void CTFileName::SetAbsolutePath(void)
   }
   // Set new content
   strRemaining.Clear();
-  for (INDEX iPart = 0; iPart < astrParts.Count(); ++iPart) {
+  for (iPart = 0; iPart < astrParts.Count(); ++iPart) {
     strRemaining += astrParts[iPart];
     if (iPart < astrParts.Count() - 1) {
 #ifdef PLATFORM_WIN32

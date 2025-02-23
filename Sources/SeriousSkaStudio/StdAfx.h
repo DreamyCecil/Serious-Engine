@@ -42,6 +42,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 //#include "SeriousSkaStudio.h"
 //#include "SeriousSkaStudioDoc.h"
 
+#if _MSC_VER > 1200
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
 
 #endif // !defined(AFX_STDAFX_H__395D5845_FE79_4FF6_A71C_34C178CB4AE3__INCLUDED_)

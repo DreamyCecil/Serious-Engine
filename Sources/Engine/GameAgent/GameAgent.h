@@ -48,7 +48,7 @@ class CServerRequest {
 public:
   ULONG sr_ulAddress;
   USHORT sr_iPort;
-  long long sr_tmRequestTime;
+  __int64 sr_tmRequestTime;
 
 public:
   CServerRequest(void);
