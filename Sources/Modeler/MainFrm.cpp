@@ -1060,10 +1060,10 @@ LRESULT CMainFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::OnHelpFinder() 
 {
-  HtmlHelp(NULL); // Hmmm...
-  /*HtmlHelp(NULL, 
+  // [Cecil] 1.07 compatibility: Restored help
+  HtmlHelp(NULL, 
     _fnmApplicationPath+"Help\\ToolsHelp.chm::/SeriousModeler/Overview.htm", 
-    HH_DISPLAY_TOPIC, NULL);*/
+    HH_DISPLAY_TOPIC, NULL);
 }
 
 void CMainFrame::OnTessellateLess() 

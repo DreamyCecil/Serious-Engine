@@ -2913,9 +2913,9 @@ void CWorldEditorApp::DisplayHelp(const CTFileName &fnHlk, UINT uCommand, DWORD 
     }
     else if( strHelpFormatID=="CHM")
     {
-      HtmlHelp(dwData);
-      //HtmlHelp(NULL, 
-      //  _fnmApplicationPath+strHelpPath, uCommand, dwData);
+      // [Cecil] 1.07 compatibility: Restored help
+      HtmlHelp(NULL, 
+        _fnmApplicationPath+strHelpPath, uCommand, dwData);
       return;
     }
     else
@@ -2923,9 +2923,9 @@ void CWorldEditorApp::DisplayHelp(const CTFileName &fnHlk, UINT uCommand, DWORD 
       WarningMessage("Expected TXT, HTM, HTML, or CHM help format indentifier.");
     }
   }
-  HtmlHelp(dwData);
-  //HtmlHelp(NULL, 
-  //  _fnmApplicationPath+"Help\\ToolsHelp.chm::/SeriousEditor/Overview.htm", uCommand, dwData);
+  // [Cecil] 1.07 compatibility: Restored help
+  HtmlHelp(NULL, 
+    _fnmApplicationPath+"Help\\ToolsHelp.chm::/SeriousEditor/Overview.htm", uCommand, dwData);
 }
 
 CEntity *GetTerrainEntity(void)
