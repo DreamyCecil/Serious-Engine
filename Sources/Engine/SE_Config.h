@@ -146,4 +146,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // For making sure that all printing functions with variadic arguments only take numbers and pointers (e.g. allow 'char *' but not 'CTString')
 #define SE1_EXF_VERIFY_VA_IN_PRINTF 0
 
+// Toggle internal engine profiling (used to be a 'TIMER_PROFILING' switch in 'Engine/Base/ProfilingEnabled.h')
+#define SE1_EXF_TIMER_PROFILING 0
+
 #endif // include-once check

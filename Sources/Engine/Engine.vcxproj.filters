@@ -825,9 +825,6 @@
     <ClInclude Include="Base\Profiling.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Base\ProfilingEnabled.h">
-      <Filter>Header Files\Base Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Base\ProgressHook.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>

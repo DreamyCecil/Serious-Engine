@@ -366,12 +366,11 @@ static void NetworkInfo(void)
     }
   }
 
-
-    if (TIMER_PROFILING) {
-        CTString strNetProfile;
-        _pfNetworkProfile.Report(strNetProfile);
-        CPrintF(strNetProfile.ConstData());
-    }
+#if SE1_EXF_TIMER_PROFILING
+  CTString strNetProfile;
+  _pfNetworkProfile.Report(strNetProfile);
+  CPutString(strNetProfile.ConstData());
+#endif
 }
 
 static void ListPlayers(void)

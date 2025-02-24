@@ -57,9 +57,6 @@ private:
     CTimerValue tvAppElapsed, CTimerValue tvModElapsed);
 };
 
-// this file just defines TIMER_PROFILING as 1 or 0
-#include <Engine/Base/ProfilingEnabled.h>
-
 #endif // ENGINE_INTERNAL
 
 /*
@@ -118,7 +115,7 @@ public:
   /* Get current value of a counter. */
   INDEX GetCounterCount(INDEX iCounter);
 
-#if TIMER_PROFILING
+#if SE1_EXF_TIMER_PROFILING
   /* Start a timer. */
   inline void StartTimer(INDEX iTimer) {
     StartTimer_internal(iTimer);
@@ -145,7 +142,7 @@ public:
   #define SETCOUNTERNAME(a,b) SetCounterName_internal(a,b)
   #define SETTIMERNAME(a,b,c) SetTimerName_internal(a,b,c)
 
-#else //TIMER_PROFILING
+#else
   inline void StartTimer(INDEX iTimer) {};
   inline void StopTimer(INDEX iTimer) {};
   inline void IncrementTimerAveragingCounter(INDEX iTimer, INDEX ctAdd=1) {};
@@ -153,7 +150,7 @@ public:
   inline void SetTimerName_internal(INDEX iTimer, const CTString &strName, const CTString &strAveragingName) {};
   #define SETCOUNTERNAME(a,b) SetCounterName_internal(a,"")
   #define SETTIMERNAME(a,b,c) SetTimerName_internal(a,"","")
-#endif
+#endif // !SE1_EXF_TIMER_PROFILING
 
   /* Get current value of a timer in seconds or in percentage of module time. */
   double GetTimerPercentageOfModule(INDEX iTimer);
