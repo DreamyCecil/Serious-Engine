@@ -29,7 +29,7 @@ int qsort_CompareCTFileName(const void *elem1, const void *elem2 )
 }
 
 static void FillDirList_internal(CTFileName fnmBasePath,
-  CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnmDir, CTString strPattern, BOOL bRecursive, BOOL bModRead)
+  CDynamicStackArray<CTFileName> &afnm, const CTFileName &fnmDir, const CTString &strPattern, BOOL bRecursive, BOOL bModRead)
 {
   // add the directory to list of directories to search
   CListHead lhDirs;
@@ -39,18 +39,18 @@ static void FillDirList_internal(CTFileName fnmBasePath,
   while (!lhDirs.IsEmpty()) {
     // take the first one
     FileSystem::DirToRead *pdr = LIST_HEAD(lhDirs, FileSystem::DirToRead, lnInList);
-    CTString fnmDir = pdr->strDirToRead;
+    CTString fnmCurrentDir = pdr->strDirToRead; // Make a copy because the original is destroyed on the next line
     delete pdr;
 
     // if the dir is not allowed
-    if (bModRead && FileMatchesList(_afnmModRead, fnmDir)) {
+    if (bModRead && FileMatchesList(_afnmModRead, fnmCurrentDir)) {
       // skip it
       continue;
     }
     
     // start listing the directory
     FileSystem::Search search;
-    BOOL bOK = search.FindFirst((fnmBasePath + fnmDir + "*").ConstData());
+    BOOL bOK = search.FindFirst((fnmBasePath + fnmCurrentDir + "*").ConstData());
 
     // for each file in the directory
     while (bOK) {
@@ -61,7 +61,7 @@ static void FillDirList_internal(CTFileName fnmBasePath,
       }
 
       // get the file's filepath
-      CTString fnm = fnmDir + search.GetName();
+      const CTString fnm = fnmCurrentDir + search.GetName();
 
       // if it is a directory
       if (FileSystem::IsDirectory((fnmBasePath + fnm).ConstData())) {
