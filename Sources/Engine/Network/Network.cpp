@@ -695,7 +695,8 @@ CNetworkLibrary::CNetworkLibrary(void) :
   ga_bDemoPlay(FALSE),              // not playing demo
   ga_bDemoPlayFinished(FALSE),      // demo not finished
   ga_srvServer(*new CServer),
-  ga_sesSessionState(*new CSessionState)
+  ga_sesSessionState(*new CSessionState),
+  ga_pWorld(new CWorld) // [Cecil]
 {
   ga_aplsPlayers.New(NET_MAXLOCALPLAYERS);
 
@@ -723,8 +724,9 @@ CNetworkLibrary::CNetworkLibrary(void) :
 CNetworkLibrary::~CNetworkLibrary(void)
 {
   // clear the global world
-  ga_World.DeletePredictors();
-  ga_World.Clear();
+  ga_pWorld->DeletePredictors();
+  ga_pWorld->Clear();
+  delete ga_pWorld; // [Cecil]
 
   // free renderer info to free pointers to entities etc.
   if (!_bTempNetwork) {
@@ -1051,9 +1053,9 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   try {
     // load the world
     _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
-    ga_World.Load_t(fnmWorld);
+    ga_pWorld->Load_t(fnmWorld);
     // delete all entities that don't fit given spawn flags
-    ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
+    ga_pWorld->FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
   } catch(char *) {
     ga_fnmWorld = CTString("");
     _cmiComm.Server_Close();
@@ -1061,7 +1063,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
     throw;
   }
   // remember the world pointer
-  _pwoCurrentWorld = &ga_World;
+  _pwoCurrentWorld = ga_pWorld;
 
   SetProgressDescription(TRANS("starting server"));
   CallProgressHook_t(0.0f);
@@ -1069,8 +1071,8 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   try {
     ga_srvServer.Start_t();
   } catch (char *) {
-    ga_World.DeletePredictors();
-    ga_World.Clear();
+    ga_pWorld->DeletePredictors();
+    ga_pWorld->Clear();
     throw;
   }
   ga_IsServer = TRUE;
@@ -1089,8 +1091,8 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
     (void)strError;
     RemoveTimerHandler();
     ga_srvServer.Stop();
-    ga_World.DeletePredictors();
-    ga_World.Clear();
+    ga_pWorld->DeletePredictors();
+    ga_pWorld->Clear();
     throw;
   }
   CallProgressHook_t(1.0f);
@@ -1103,7 +1105,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   ga_sesSessionState.ses_fRealTimeFactor = 1.0f;
 
   // eventually cache all shadowmaps in world (memory eater!)
-  if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
+  if( shd_bCacheAll) ga_pWorld->wo_baBrushes.CacheAllShadowmaps();
   // flush stale caches
   FreeUnusedStock();
   // mark that pretouching is required
@@ -1211,7 +1213,7 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
   ga_srvServer.srv_assoSessions[0].sso_iLastSentSequence = ga_srvServer.srv_iLastProcessedSequence;
 
   // eventually cache all shadowmaps in world (memory eater!)
-  if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
+  if( shd_bCacheAll) ga_pWorld->wo_baBrushes.CacheAllShadowmaps();
   // flush stale caches
   FreeUnusedStock();
   // mark that pretouching is required
@@ -1298,10 +1300,10 @@ void CNetworkLibrary::JoinSession_t(const CNetworkSession &nsSesssion, INDEX ctL
   }
 
   // remember the world pointer
-  _pwoCurrentWorld = &ga_World;
+  _pwoCurrentWorld = ga_pWorld;
 
   // eventually cache all shadowmaps in world (memory eater!)
-  if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
+  if( shd_bCacheAll) ga_pWorld->wo_baBrushes.CacheAllShadowmaps();
   // flush stale caches
   FreeUnusedStock();
   // mark that pretouching is required
@@ -1363,14 +1365,14 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   }
 
   // eventually cache all shadowmaps in world (memory eater!)
-  if( shd_bCacheAll) ga_World.wo_baBrushes.CacheAllShadowmaps();
+  if( shd_bCacheAll) ga_pWorld->wo_baBrushes.CacheAllShadowmaps();
   // flush stale caches
   FreeUnusedStock();
   // mark that pretouching is required
   _bNeedPretouch = TRUE;
 
   // remember the world pointer
-  _pwoCurrentWorld = &ga_World;
+  _pwoCurrentWorld = ga_pWorld;
 
   // demo synchronization starts at the beginning initially
   ga_fDemoTimer = 0.0f;
@@ -1560,8 +1562,8 @@ void CNetworkLibrary::StopGame(void)
 
   ga_strSessionName = "";
 
-  ga_World.DeletePredictors();
-  ga_World.Clear();
+  ga_pWorld->DeletePredictors();
+  ga_pWorld->Clear();
 
   // free default state if existing
   if (ga_pubDefaultState!=NULL) {
@@ -1616,11 +1618,11 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   _pSound->Mute();
 
   // cancel all predictions before crossing levels
-  ga_World.DeletePredictors();
+  ga_pWorld->DeletePredictors();
 
   // find all entities that are to cross to next level
   CEntitySelection senToCross;
-  {FOREACHINDYNAMICCONTAINER(ga_World.wo_cenEntities, CEntity, iten) {
+  {FOREACHINDYNAMICCONTAINER(ga_pWorld->wo_cenEntities, CEntity, iten) {
     if (iten->en_ulFlags&ENF_CROSSESLEVELS) {
       senToCross.Select(*iten);
     }
@@ -1629,7 +1631,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   // copy them to a temporary world
   CWorld wldTemp;
   CEntitySelection senInTemp;
-  wldTemp.CopyEntities(ga_World, senToCross,
+  wldTemp.CopyEntities(*ga_pWorld, senToCross,
     senInTemp, CPlacement3D(FLOAT3D(0,0,0), ANGLE3D(0,0,0)));
 
   // remember characters for all player targets and disable them
@@ -1649,7 +1651,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   }}
 
   // destroy all entities that will cross level
-  ga_World.DestroyEntities(senToCross);
+  ga_pWorld->DestroyEntities(senToCross);
 
   // if should remember old levels
   if (ga_bNextRemember) {
@@ -1677,9 +1679,9 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     try {
       // load the new world
       _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
-      ga_World.Load_t(ga_fnmNextLevel);
+      ga_pWorld->Load_t(ga_fnmNextLevel);
       // delete all entities that don't fit given spawn flags
-      ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
+      ga_pWorld->FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
     // if failed
     } catch(char *strError) {
       // report error
@@ -1688,9 +1690,9 @@ void CNetworkLibrary::ChangeLevel_internal(void)
       try {
         // load the old world
         ga_fnmNextLevel = fnmOldWorld;
-        ga_World.Load_t(ga_fnmNextLevel);
+        ga_pWorld->Load_t(ga_fnmNextLevel);
         // delete all entities that don't fit given spawn flags
-        ga_World.FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
+        ga_pWorld->FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
       // if that fails
       } catch (char *strError2) {
         // fatal error
@@ -1703,7 +1705,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     // remember the world filename
     ga_fnmWorld = ga_fnmNextLevel;
     // remember the world pointer
-    _pwoCurrentWorld = &ga_World;
+    _pwoCurrentWorld = ga_pWorld;
   // if there is remembered level
   } else {
     // restore it
@@ -1711,11 +1713,11 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   }
 
   // set overdue timers in just loaded world to be due in current time
-  ga_World.AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
+  ga_pWorld->AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
 
   // copy entities from temporary world into new one
   CEntitySelection senCrossed;
-  ga_World.CopyEntities(wldTemp, senInTemp,
+  ga_pWorld->CopyEntities(wldTemp, senInTemp,
     senCrossed, CPlacement3D(FLOAT3D(0,0,0), ANGLE3D(0,0,0)));
 
   // restore pointers to entities for all active player targets
@@ -1725,7 +1727,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
       plt.Activate();
       plt.plt_paLastAction    = apaActions[i][0];
       plt.plt_paPreLastAction = apaActions[i][1];
-      plt.AttachEntity(ga_World.FindEntityWithCharacter(apc[i]));
+      plt.AttachEntity(ga_pWorld->FindEntityWithCharacter(apc[i]));
     }
   }}
 
@@ -1756,7 +1758,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     }}
     // for each player
     {for( INDEX iPlayer=0; iPlayer<NET_MAXGAMEPLAYERS; iPlayer++) {
-      CPlayerBuffer &plb = _pNetwork->ga_srvServer.srv_aplbPlayers[iPlayer];
+      CPlayerBuffer &plb = ga_srvServer.srv_aplbPlayers[iPlayer];
       if (plb.plb_Active) {
         // add one dummy action
         CPlayerAction pa;
@@ -1851,7 +1853,7 @@ void CNetworkLibrary::MainLoop(void)
   CTSingleLock slNetwork(&ga_csNetwork, TRUE);
 
   // update network state variable (to control usage of some cvars that cannot be altered in mulit-player mode)
-  _bMultiPlayer = (_pNetwork->ga_sesSessionState.GetPlayersCount() > 1);
+  _bMultiPlayer = (ga_sesSessionState.GetPlayersCount() > 1);
 
   // if should change world
   if (_lphCurrent==LCP_SIGNALLED) {
@@ -1918,7 +1920,7 @@ void CNetworkLibrary::MainLoop(void)
 
   // mark all predictable entities that will be predicted using user-set criterions
   if (bUsePrediction) {
-    ga_World.MarkForPrediction();
+    ga_pWorld->MarkForPrediction();
   }
   // process the game stream coming from the server
   ga_sesSessionState.ProcessGameStream();
@@ -1927,11 +1929,11 @@ void CNetworkLibrary::MainLoop(void)
   // process additional prediction steps
   if (bUsePrediction) {
     // mark all new predictable entities that might have been spawned
-    ga_World.UnmarkForPrediction();
-    ga_World.MarkForPrediction();
+    ga_pWorld->UnmarkForPrediction();
+    ga_pWorld->MarkForPrediction();
     ga_sesSessionState.ProcessPrediction();
     // unmark all predictable entities marked for prediction
-    ga_World.UnmarkForPrediction();
+    ga_pWorld->UnmarkForPrediction();
   }
 
   ga_sesSessionState.ses_tmLastUpdated = _pTimer->GetRealTimeTick();
@@ -2162,7 +2164,7 @@ CEntity *CNetworkLibrary::GetPlayerEntityByName(const CTString &strName)
 INDEX CNetworkLibrary::GetNumberOfEntitiesWithName(const CTString &strName)
 {
   INDEX ctEntities = 0;
-  {FOREACHINDYNAMICCONTAINER(ga_World.wo_cenEntities, CEntity, iten) {
+  {FOREACHINDYNAMICCONTAINER(ga_pWorld->wo_cenEntities, CEntity, iten) {
     if (iten->GetName()==strName) {
       ctEntities++;
     }
@@ -2175,7 +2177,7 @@ CEntity *CNetworkLibrary::GetEntityWithName(const CTString &strName, INDEX iEnti
 {
   INDEX ctEntities = 0;
   CEntity *pen = NULL;
-  {FOREACHINDYNAMICCONTAINER(ga_World.wo_cenEntities, CEntity, iten) {
+  {FOREACHINDYNAMICCONTAINER(ga_pWorld->wo_cenEntities, CEntity, iten) {
     if (iten->GetName()==strName) {
       pen = iten;
       if (ctEntities==iEntityWithThatName) {
@@ -2261,7 +2263,7 @@ void *CNetworkLibrary::GetSessionProperties(void)
 void CNetworkLibrary::SendChat(ULONG ulFrom, ULONG ulTo, const CTString &strMessage)
 {
   // if the string is too long and we're not server
-  if (strMessage.Length() > 256 && !_pNetwork->IsServer()) {
+  if (strMessage.Length() > 256 && !IsServer()) {
     // refuse it
     return;
   }
@@ -2398,9 +2400,9 @@ extern void NET_MakeDefaultState_t(
     try {
       // load the world
       _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
-      _pNetwork->ga_World.Load_t(fnmWorld);
+      _pNetwork->ga_pWorld->Load_t(fnmWorld);
       // delete all entities that don't fit given spawn flags
-      _pNetwork->ga_World.FilterEntitiesBySpawnFlags(_pNetwork->ga_sesSessionState.ses_ulSpawnFlags);
+      _pNetwork->ga_pWorld->FilterEntitiesBySpawnFlags(_pNetwork->ga_sesSessionState.ses_ulSpawnFlags);
     } catch(char *) {
       throw;
     }
@@ -2408,7 +2410,7 @@ extern void NET_MakeDefaultState_t(
     _pNetwork->ga_fnmWorld = fnmWorld;
     _pNetwork->ga_fnmNextLevel = CTString("");
     // remember the world pointer
-    _pwoCurrentWorld = &_pNetwork->ga_World;
+    _pwoCurrentWorld = _pNetwork->ga_pWorld;
 
     // reset random number generator
     _pNetwork->ga_sesSessionState.ResetRND();
@@ -2478,7 +2480,7 @@ void CNetworkLibrary::GameInactive(void)
       // create response
       CNetworkMessage nmEnum(MSG_SERVERINFO);
       nmEnum<<ga_strSessionName;
-      nmEnum<<ga_World.wo_strName;
+      nmEnum<<ga_pWorld->wo_strName;
       nmEnum<<ga_srvServer.GetPlayersCount();
       nmEnum<<ga_sesSessionState.ses_ctMaxPlayers;
 

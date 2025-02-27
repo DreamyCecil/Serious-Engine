@@ -997,7 +997,7 @@ void CServer::ConnectRemoteSessionState(INDEX iClient, CNetworkMessage &nm)
     CTMemoryStream strmInfo;
     strmInfo<<INDEX(MSG_REP_CONNECTREMOTESESSIONSTATE);
     strmInfo<<ser_strMOTD;
-    strmInfo.WriteFileName(_pNetwork->ga_World.wo_fnmFileName);
+    strmInfo.WriteFileName(_pNetwork->ga_pWorld->wo_fnmFileName);
     strmInfo<<_pNetwork->ga_sesSessionState.ses_ulSpawnFlags;
     strmInfo.Write_t(_pNetwork->ga_aubDefaultProperties, NET_MAXSESSIONPROPERTIES);
     SLONG slSize = strmInfo.GetStreamSize();

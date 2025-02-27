@@ -412,7 +412,7 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
 void CSessionState::SendLevelChangeNotification(CEntityEvent &ee)
 {
   // for each entity in the world
-  {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
+  {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_pWorld->wo_cenEntities, CEntity, iten) {
     // if it should be notified
     if (iten->en_ulFlags&ENF_NOTIFYLEVELCHANGE) {
       // send the event
@@ -583,7 +583,7 @@ void CSessionState::HandleMovers(void)
 
   // put all movers in active list, pushing ones first
   CListHead lhActiveMovers, lhDoneMovers, lhDummyMovers;
-  {FORDELETELIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_World.wo_lhMovers, itenMover) {
+  {FORDELETELIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_pWorld->wo_lhMovers, itenMover) {
     CMovableEntity *pen = itenMover;
     pen->en_lnInMovers.Remove();
     // if predicting, and it is not a predictor
@@ -646,7 +646,7 @@ void CSessionState::HandleMovers(void)
 //    CPrintF("\n");
 
     // if any mover is re-added, put it to the end of active list
-    lhActiveMovers.MoveList(_pNetwork->ga_World.wo_lhMovers);
+    lhActiveMovers.MoveList(_pNetwork->ga_pWorld->wo_lhMovers);
   }
 
   // for each done mover
@@ -680,8 +680,8 @@ void CSessionState::HandleMovers(void)
   }}
   
   // return all done movers to the world's list
-  _pNetwork->ga_World.wo_lhMovers.MoveList(lhDummyMovers);
-  _pNetwork->ga_World.wo_lhMovers.MoveList(lhDoneMovers);
+  _pNetwork->ga_pWorld->wo_lhMovers.MoveList(lhDummyMovers);
+  _pNetwork->ga_pWorld->wo_lhMovers.MoveList(lhDoneMovers);
 
   // handle all the sent events
   CEntity::HandleSentEvents();
@@ -698,7 +698,7 @@ void CSessionState::HandleTimers(TIME tmCurrentTick)
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLETIMERS);
   // repeat
-  CListHead &lhTimers = _pNetwork->ga_World.wo_lhTimers;
+  CListHead &lhTimers = _pNetwork->ga_pWorld->wo_lhTimers;
   FOREVER {
     // no entity found initially
     CRationalEntity *penTimer = NULL;
@@ -776,14 +776,14 @@ void CSessionState::ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
   // if all entities should be synced
   if (iExtensiveSyncCheck>1) {
     // for each active entity in the world
-    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
+    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_pWorld->wo_cenEntities, CEntity, iten) {
       if (iten->IsPredictor()) {
         continue;
       }
       iten->ChecksumForSync(ulCRC, iExtensiveSyncCheck);
     }}
     // for each entity in the world
-    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenAllEntities, CEntity, iten) {
+    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_pWorld->wo_cenAllEntities, CEntity, iten) {
       if (iten->IsPredictor()) {
         continue;
       }
@@ -793,7 +793,7 @@ void CSessionState::ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
 
   if (iExtensiveSyncCheck>0) {
     // checksum all movers
-    {FOREACHINLIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_World.wo_lhMovers, iten) {
+    {FOREACHINLIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_pWorld->wo_lhMovers, iten) {
       if (iten->IsPredictor()) {
         continue;
       }
@@ -823,7 +823,7 @@ void CSessionState::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // th
     strm.FPrintF_t("Random seed: 0x%08x\n", ses_ulRandomSeed);
   }
 
-  _pNetwork->ga_World.LockAll();
+  _pNetwork->ga_pWorld->LockAll();
 
   strm.FPrintF_t("\n\n======================== players:\n");
   // dump all active players
@@ -840,7 +840,7 @@ void CSessionState::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // th
   if (iExtensiveSyncCheck>0) {
     strm.FPrintF_t("\n\n======================== movers:\n");
     // dump all movers
-    {FOREACHINLIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_World.wo_lhMovers, iten) {
+    {FOREACHINLIST(CMovableEntity, en_lnInMovers, _pNetwork->ga_pWorld->wo_lhMovers, iten) {
       if (iten->IsPredictor()) {
         continue;
       }
@@ -851,18 +851,18 @@ void CSessionState::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // th
   // if all entities should be synced
   if (iExtensiveSyncCheck>1) {
     strm.FPrintF_t("\n\n======================== active entities (%d):\n",
-      _pNetwork->ga_World.wo_cenEntities.Count());
+      _pNetwork->ga_pWorld->wo_cenEntities.Count());
     // for each entity in the world
-    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenEntities, CEntity, iten) {
+    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_pWorld->wo_cenEntities, CEntity, iten) {
       if (iten->IsPredictor()) {
         continue;
       }
       iten->DumpSync_t(strm, iExtensiveSyncCheck);
     }}
     strm.FPrintF_t("\n\n======================== all entities (%d):\n",
-      _pNetwork->ga_World.wo_cenEntities.Count());
+      _pNetwork->ga_pWorld->wo_cenEntities.Count());
     // for each entity in the world
-    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_World.wo_cenAllEntities, CEntity, iten) {
+    {FOREACHINDYNAMICCONTAINER(_pNetwork->ga_pWorld->wo_cenAllEntities, CEntity, iten) {
       if (iten->IsPredictor()) {
         continue;
       }
@@ -870,7 +870,7 @@ void CSessionState::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // th
     }}
   }
 
-  _pNetwork->ga_World.UnlockAll();
+  _pNetwork->ga_pWorld->UnlockAll();
 }
 
 #if DEBUG_SYNCSTREAMDUMPING
@@ -984,11 +984,11 @@ void CSessionState::ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTi
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_WORLDBASETICK);
   // let the worldbase execute its tick function
-  if (_pNetwork->ga_World.wo_pecWorldBaseClass!=NULL
-    &&_pNetwork->ga_World.wo_pecWorldBaseClass->ec_pdecDLLClass!=NULL
-    &&_pNetwork->ga_World.wo_pecWorldBaseClass->ec_pdecDLLClass->dec_OnWorldTick!=NULL) {
-    _pNetwork->ga_World.wo_pecWorldBaseClass->ec_pdecDLLClass->
-      dec_OnWorldTick(&_pNetwork->ga_World);
+  if (_pNetwork->ga_pWorld->wo_pecWorldBaseClass!=NULL
+    &&_pNetwork->ga_pWorld->wo_pecWorldBaseClass->ec_pdecDLLClass!=NULL
+    &&_pNetwork->ga_pWorld->wo_pecWorldBaseClass->ec_pdecDLLClass->dec_OnWorldTick!=NULL) {
+    _pNetwork->ga_pWorld->wo_pecWorldBaseClass->ec_pdecDLLClass->
+      dec_OnWorldTick(_pNetwork->ga_pWorld);
   }
   // handle all the sent events
   CEntity::HandleSentEvents();
@@ -1289,12 +1289,12 @@ void CSessionState::ProcessPrediction(void)
 
   // remember random seed and entity ID
   ULONG ulOldRandom = ses_ulRandomSeed;
-  ULONG ulEntityID = _pNetwork->ga_World.wo_ulNextEntityID;
+  ULONG ulEntityID = _pNetwork->ga_pWorld->wo_ulNextEntityID;
 
   // delete all predictors (if any left from last time)
-  _pNetwork->ga_World.DeletePredictors();
+  _pNetwork->ga_pWorld->DeletePredictors();
   // create new predictors
-  _pNetwork->ga_World.CreatePredictors();
+  _pNetwork->ga_pWorld->CreatePredictors();
 
   // for each step
   TIME tmPredictedTick = ses_tmLastProcessedTick;
@@ -1306,7 +1306,7 @@ void CSessionState::ProcessPrediction(void)
   }
   // restore random seed and entity ID
   ses_ulRandomSeed = ulOldRandom;
-  _pNetwork->ga_World.wo_ulNextEntityID = ulEntityID;
+  _pNetwork->ga_pWorld->wo_ulNextEntityID = ulEntityID;
 }
 
 /*
@@ -1328,19 +1328,19 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       nmMessage>>pcCharacter;     // player character
 
       // delete all predictors
-      _pNetwork->ga_World.DeletePredictors();
+      _pNetwork->ga_pWorld->DeletePredictors();
 
       // activate the player
       ses_apltPlayers[iNewPlayer].Activate();
 
       // if there is no entity with that character in the world
-      CPlayerEntity *penNewPlayer = _pNetwork->ga_World.FindEntityWithCharacter(pcCharacter);
+      CPlayerEntity *penNewPlayer = _pNetwork->ga_pWorld->FindEntityWithCharacter(pcCharacter);
       if (penNewPlayer==NULL) {
         // create an entity for it
         CPlacement3D pl(FLOAT3D(0.0f,0.0f,0.0f), ANGLE3D(0,0,0));
         try {
           CTFileName fnmPlayer = CTString("Classes\\Player.ecl"); // this must not be a dependency!
-          penNewPlayer = (CPlayerEntity*)(_pNetwork->ga_World.CreateEntity_t(pl, fnmPlayer));
+          penNewPlayer = (CPlayerEntity*)(_pNetwork->ga_pWorld->CreateEntity_t(pl, fnmPlayer));
           // attach entity to client data
           ses_apltPlayers[iNewPlayer].AttachEntity(penNewPlayer);
           // attach the character to it
@@ -1373,7 +1373,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       nmMessage>>iPlayer;      // player index
 
       // delete all predictors
-      _pNetwork->ga_World.DeletePredictors();
+      _pNetwork->ga_pWorld->DeletePredictors();
 
       // inform entity of disconnnection
       CPrintF(TRANS("%s left\n"), ses_apltPlayers[iPlayer].plt_penPlayerEntity->GetPlayerName().ConstData());
@@ -1395,7 +1395,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       nmMessage>>iPlayer>>pcCharacter;
 
       // delete all predictors
-      _pNetwork->ga_World.DeletePredictors();
+      _pNetwork->ga_pWorld->DeletePredictors();
 
       // change the character
       ses_apltPlayers[iPlayer].plt_penPlayerEntity->CharacterChanged(pcCharacter);
@@ -1429,7 +1429,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
       ses_bWaitAllPlayers = FALSE;
 
       // delete all predictors
-      _pNetwork->ga_World.DeletePredictors();
+      _pNetwork->ga_pWorld->DeletePredictors();
       // process the tick
       ProcessGameTick(nmMessage, tmPacket);
 
@@ -1440,7 +1440,7 @@ void CSessionState::ProcessGameStreamBlock(CNetworkMessage &nmMessage)
     _pNetwork->AddNetGraphValue(NGET_NONACTION, 1.0f); // non-action sequence
 
     // delete all predictors
-    _pNetwork->ga_World.DeletePredictors();
+    _pNetwork->ga_pWorld->DeletePredictors();
 
     BOOL bPauseBefore = ses_bPause;
     // read the pause state and pauser from it
@@ -1647,13 +1647,13 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
   }
 
   // prepare the world for loading
-  _pNetwork->ga_World.DeletePredictors();
-  _pNetwork->ga_World.Clear();
-  _pNetwork->ga_World.LockAll();
+  _pNetwork->ga_pWorld->DeletePredictors();
+  _pNetwork->ga_pWorld->Clear();
+  _pNetwork->ga_pWorld->LockAll();
   // load the world brushes from the world file
-  _pNetwork->ga_World.LoadBrushes_t(_pNetwork->ga_fnmWorld);
+  _pNetwork->ga_pWorld->LoadBrushes_t(_pNetwork->ga_fnmWorld);
   // read world situation
-  _pNetwork->ga_World.ReadState_t(pstr);
+  _pNetwork->ga_pWorld->ReadState_t(pstr);
 
   // create an empty list for relinking timers
   CListHead lhNewTimers;
@@ -1661,14 +1661,14 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
   pstr->ExpectID_t("TMRS");   // timers
   INDEX ctTimers;
   *pstr>>ctTimers;
-//  ASSERT(ctTimers == _pNetwork->ga_World.wo_lhTimers.Count());
+//  ASSERT(ctTimers == _pNetwork->ga_pWorld->wo_lhTimers.Count());
   // for each entity in the timer list
   {for(INDEX ienTimer=0; ienTimer<ctTimers; ienTimer++) {
     // read its index in container of all entities
     INDEX ien;
     *pstr>>ien;
     // get the entity
-    CRationalEntity *pen = (CRationalEntity*)_pNetwork->ga_World.EntityFromID(ien);
+    CRationalEntity *pen = (CRationalEntity*)_pNetwork->ga_pWorld->EntityFromID(ien);
     // remove it from the timer list and add it at the end of the new timer list
     if (pen->en_lnInTimers.IsLinked()) {
       pen->en_lnInTimers.Remove();
@@ -1676,8 +1676,8 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
     }
   }}
   // use the new timer list instead the old one
-  ASSERT(_pNetwork->ga_World.wo_lhTimers.IsEmpty());
-  _pNetwork->ga_World.wo_lhTimers.MoveList(lhNewTimers);
+  ASSERT(_pNetwork->ga_pWorld->wo_lhTimers.IsEmpty());
+  _pNetwork->ga_pWorld->wo_lhTimers.MoveList(lhNewTimers);
 
   // create an empty list for relinking movers
   CListHead lhNewMovers;
@@ -1685,14 +1685,14 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
   pstr->ExpectID_t("MVRS");   // movers
   INDEX ctMovers;
   *pstr>>ctMovers;
-  ASSERT(ctMovers == _pNetwork->ga_World.wo_lhMovers.Count());
+  ASSERT(ctMovers == _pNetwork->ga_pWorld->wo_lhMovers.Count());
   // for each entity in the mover list
   {for(INDEX ienMover=0; ienMover<ctMovers; ienMover++) {
     // read its index in container of all entities
     INDEX ien;
     *pstr>>ien;
     // get the entity
-    CMovableEntity *pen = (CMovableEntity*)_pNetwork->ga_World.EntityFromID(ien);
+    CMovableEntity *pen = (CMovableEntity*)_pNetwork->ga_pWorld->EntityFromID(ien);
     // remove it from the mover list and add it at the end of the new mover list
     if (pen->en_lnInMovers.IsLinked()) {
       pen->en_lnInMovers.Remove();
@@ -1700,8 +1700,8 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
     lhNewMovers.AddTail(pen->en_lnInMovers);
   }}
   // use the new mover list instead the old one
-  ASSERT(_pNetwork->ga_World.wo_lhMovers.IsEmpty());
-  _pNetwork->ga_World.wo_lhMovers.MoveList(lhNewMovers);
+  ASSERT(_pNetwork->ga_pWorld->wo_lhMovers.IsEmpty());
+  _pNetwork->ga_pWorld->wo_lhMovers.MoveList(lhNewMovers);
 
   // read number of players
   INDEX ctPlayers;
@@ -1713,7 +1713,7 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
     itclt->Read_t(pstr);
   }
 
-  _pNetwork->ga_World.UnlockAll();
+  _pNetwork->ga_pWorld->UnlockAll();
 }
 
 void CSessionState::ReadRememberedLevels_t(CTStream *pstr)
@@ -1770,8 +1770,8 @@ void CSessionState::Write_t(CTStream *pstr)  // throw char *
 void CSessionState::WriteWorldAndState_t(CTStream *pstr)   // throw char *
 {
   // delete all predictor entities before saving
-  _pNetwork->ga_World.UnmarkForPrediction();
-  _pNetwork->ga_World.DeletePredictors();
+  _pNetwork->ga_pWorld->UnmarkForPrediction();
+  _pNetwork->ga_pWorld->DeletePredictors();
 
   // save engine build
   _pNetwork->WriteVersion_t(*pstr);
@@ -1780,12 +1780,12 @@ void CSessionState::WriteWorldAndState_t(CTStream *pstr)   // throw char *
   pstr->WriteFileName(_pNetwork->ga_fnmWorld);
 
   // write world situation
-  _pNetwork->ga_World.LockAll();
-  _pNetwork->ga_World.WriteState_t(pstr, TRUE);
+  _pNetwork->ga_pWorld->LockAll();
+  _pNetwork->ga_pWorld->WriteState_t(pstr, TRUE);
 
   // write number of entities in timer list
   pstr->WriteID_t("TMRS");   // timers
-  CListHead &lhTimers = _pNetwork->ga_World.wo_lhTimers;
+  CListHead &lhTimers = _pNetwork->ga_pWorld->wo_lhTimers;
   *pstr<<lhTimers.Count();
   // for each entity in the timer list
   {FOREACHINLIST(CRationalEntity, en_lnInTimers, lhTimers, iten) {
@@ -1795,7 +1795,7 @@ void CSessionState::WriteWorldAndState_t(CTStream *pstr)   // throw char *
 
   // write number of entities in mover list
   pstr->WriteID_t("MVRS");   // movers
-  CListHead &lhMovers = _pNetwork->ga_World.wo_lhMovers;
+  CListHead &lhMovers = _pNetwork->ga_pWorld->wo_lhMovers;
   *pstr<<lhMovers.Count();
   // for each entity in the mover list
   {FOREACHINLIST(CMovableEntity, en_lnInMovers, lhMovers, iten) {
@@ -1811,7 +1811,7 @@ void CSessionState::WriteWorldAndState_t(CTStream *pstr)   // throw char *
     itclt->Write_t(pstr);
   }
 
-  _pNetwork->ga_World.UnlockAll();
+  _pNetwork->ga_pWorld->UnlockAll();
 }
 
 void CSessionState::WriteRememberedLevels_t(CTStream *pstr)

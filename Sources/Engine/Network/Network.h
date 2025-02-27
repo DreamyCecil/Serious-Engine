@@ -178,7 +178,7 @@ public:
   void FinishCRCGather(void);
 
 public:
-  CWorld ga_World;                // local copy of world
+  CWorld *ga_pWorld;              // [Cecil] Dynamically created local copy of a world instead of a full instance
   FLOAT ga_fDemoTimer;            // timer for demo playback (in seconds)
   FLOAT ga_fDemoRealTimeFactor;   // slow/fast playback factor (for DEMOSYNC_REALTIME only)
   FLOAT ga_fGameRealTimeFactor;   // game time accelerator

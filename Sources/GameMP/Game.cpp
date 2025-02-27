@@ -2503,7 +2503,7 @@ CTString CGame::GetDefaultGameDescription(BOOL bWithInfo)
   strTimeline = achTimeLine;
   setlocale(LC_ALL, "C");
 
-  strDescription.PrintF("%s - %s", TranslateConst(_pNetwork->ga_World.GetName(), 0), strTimeline.ConstData());
+  strDescription.PrintF("%s - %s", TranslateConst(_pNetwork->ga_pWorld->GetName(), 0), strTimeline.ConstData());
 
   if (bWithInfo) {
     CPlayer *penPlayer = (CPlayer *)&*CEntity::GetPlayerEntity(0);

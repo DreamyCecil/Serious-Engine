@@ -80,7 +80,7 @@ void ILegacy::ServerParsePacket(INDEX iLength) {
     CTString strPacket;
     strPacket.PrintF(_strStatusResponseFormat,
       sam_strGameName, _SE_VER_STRING, strLocation.ConstData(), Game_SessionName, net_iPort,
-      _pNetwork->ga_World.wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(),
+      _pNetwork->ga_pWorld->wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(),
       ctPlayers, ctMaxPlayers, symptrFF, symptrWeap, symptrAmmo,
       symptrVital, symptrHP, symptrAR, symptrIA, symptrResp);
 
@@ -122,7 +122,7 @@ void ILegacy::ServerParsePacket(INDEX iLength) {
       "\\numplayers\\%d\\maxplayers\\%d\\gamemode\\openplaying\\final\\"
       "\\queryid\\8.1",
       Game_SessionName, net_iPort,
-      _pNetwork->ga_World.wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(),
+      _pNetwork->ga_pWorld->wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(),
       ctPlayers, ctMaxPlayers);
 
     IQuery::SendReply(strPacket);

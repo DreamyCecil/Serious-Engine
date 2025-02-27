@@ -158,7 +158,7 @@ void IGameAgent::BuildHearthbeatPacket(CTString &strPacket, INDEX iChallenge)
 {
   strPacket.PrintF("0;challenge;%d;players;%d;maxplayers;%d;level;%s;gametype;%s;version;%s;product;%s",
     iChallenge, _pNetwork->ga_srvServer.GetPlayersCount(), _pNetwork->ga_sesSessionState.ses_ctMaxPlayers,
-    _pNetwork->ga_World.wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(), _SE_VER_STRING, sam_strGameName);
+    _pNetwork->ga_pWorld->wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(), _SE_VER_STRING, sam_strGameName);
 };
 
 void IGameAgent::EnumTrigger(BOOL bInternet) {
@@ -209,7 +209,7 @@ void IGameAgent::ServerParsePacket(INDEX iLength) {
       // Send status response
       strPacket.PrintF("0;players;%d;maxplayers;%d;level;%s;gametype;%s;version;%s;gamename;%s;sessionname;%s",
         ctPlayers, _pNetwork->ga_sesSessionState.ses_ctMaxPlayers,
-        _pNetwork->ga_World.wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(),
+        _pNetwork->ga_pWorld->wo_strName.ConstData(), Query_GetCurrentGameTypeName().ConstData(),
         _SE_VER_STRING, sam_strGameName, Game_SessionName);
 
       IQuery::SendReply(strPacket);

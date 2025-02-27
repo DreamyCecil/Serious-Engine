@@ -59,7 +59,7 @@ void CPlayerTarget::Read_t(CTStream *pstr) // throw char *
     Activate();
     // read data
     (*pstr)>>iEntity>>plt_paLastAction>>plt_paPreLastAction;
-    CPlayerEntity *penPlayer = (CPlayerEntity *)&_pNetwork->ga_World.wo_cenAllEntities[iEntity];
+    CPlayerEntity *penPlayer = (CPlayerEntity *)&_pNetwork->ga_pWorld->wo_cenAllEntities[iEntity];
     ASSERT(penPlayer != NULL);
     AttachEntity(penPlayer);
   }
@@ -81,7 +81,7 @@ void CPlayerTarget::Write_t(CTStream *pstr) // throw char *
   // if client is active
   if (bActive) {
     // prepare its data
-    iEntity = _pNetwork->ga_World.wo_cenAllEntities.Index(plt_penPlayerEntity);
+    iEntity = _pNetwork->ga_pWorld->wo_cenAllEntities.Index(plt_penPlayerEntity);
     // write data
     (*pstr)<<iEntity<<plt_paLastAction<<plt_paPreLastAction;
   }

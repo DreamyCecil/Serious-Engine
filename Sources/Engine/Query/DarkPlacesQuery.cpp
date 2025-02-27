@@ -243,7 +243,7 @@ static void ComposeStatusPacket(CTString &strPacket, const char *strChallenge, B
     // Game info
     sam_strGameName, "", _SE_VER_STRING,
     // Server info
-    ctMaxPlayers, ctClients, 0, _pNetwork->ga_World.wo_strName.ConstData(), Game_SessionName, _iProtocolVersion,
+    ctMaxPlayers, ctClients, 0, _pNetwork->ga_pWorld->wo_strName.ConstData(), Game_SessionName, _iProtocolVersion,
     // Server status
     Query_GetCurrentGameTypeName().ConstData(), "0.8.2", 0, ctMaxPlayers - ctClients, 0, sam_strGameName);
 
