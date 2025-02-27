@@ -26,12 +26,23 @@ public:
   FLOAT phi_fCompleted;           // completed ratio [0..1]
 };
 
-// set hook for loading/connecting
-extern ENGINE_API void SetProgressHook(void (*pHook_t)(CProgressHookInfo *pgli));
-// call loading/connecting hook
-extern ENGINE_API void SetProgressDescription(const CTString &strDescription);
-extern ENGINE_API void CallProgressHook_t(FLOAT fCompleted);
+// [Cecil] Function pointer type for convenience
+typedef void (*FProgressHook)(CProgressHookInfo *pgli);
 
+// set hook for loading/connecting
+ENGINE_API void SetProgressHook(FProgressHook pHook_t);
+// call loading/connecting hook
+ENGINE_API void SetProgressDescription(const CTString &strDescription);
+ENGINE_API void CallProgressHook_t(FLOAT fCompleted);
+
+// [Cecil] Get current hook (e.g. for restoration purposes)
+ENGINE_API FProgressHook GetProgressHook(void);
+
+// [Cecil] Toggle hook state
+ENGINE_API void SetProgressHookState(BOOL bState);
+
+// [Cecil] Get hook state
+ENGINE_API BOOL GetProgressHookState(void);
 
 #endif  /* include-once check. */
 
