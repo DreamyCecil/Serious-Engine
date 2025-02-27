@@ -757,11 +757,18 @@ void CWorld::ReinitializeEntities(void)
 
   CTmpPrecachingNow tpn;
 
+  // [Cecil] Enable random while reinitializing
+  const BOOL bOldRandom = _pNetwork->ga_sesSessionState.ses_bAllowRandom;
+  _pNetwork->ga_sesSessionState.ses_bAllowRandom = TRUE;
+
   // for each entity in the world
   FOREACHINDYNAMICCONTAINER(wo_cenEntities, CEntity, iten) {
     // reinitialize it
     iten->Reinitialize();
   }
+
+  // [Cecil] Restore random state
+  _pNetwork->ga_sesSessionState.ses_bAllowRandom = bOldRandom;
 
   _pfWorldEditingProfile.StopTimer(CWorldEditingProfile::PTI_REINITIALIZEENTITIES);
 }
