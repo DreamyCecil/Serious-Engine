@@ -777,10 +777,10 @@ BOOL CAnimObject::IsPaused(){
 /*
  * Test if some updateable object is up to date with this anim object.
  */
-BOOL CAnimObject::IsUpToDate(const CUpdateable &ud) const
+BOOL CAnimObject::IsUpToDate(const TUpdateable<false> &ud) const
 {
   // if the object itself has changed, or its data has changed
-  if (!CChangeable::IsUpToDate(ud) || !ao_AnimData->IsUpToDate(ud)) {
+  if (!TChangeable<false>::IsUpToDate(ud) || !ao_AnimData->IsUpToDate(ud)) {
     // something has changed
     return FALSE;
   }

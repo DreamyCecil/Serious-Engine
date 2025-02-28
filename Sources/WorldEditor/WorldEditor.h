@@ -498,8 +498,8 @@ public:
   // obtain currently active view
   CWorldEditorView *GetActiveView(void);
 
-  CChangeableRT m_ctTerrainPage;
-  CChangeableRT m_ctTerrainPageCanvas;
+  TChangeable<true> m_ctTerrainPage;
+  TChangeable<true> m_ctTerrainPageCanvas;
 
 // Operations
   CWorldEditorApp();

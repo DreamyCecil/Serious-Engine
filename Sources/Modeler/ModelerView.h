@@ -114,7 +114,7 @@ public:
 	ANGLE3D m_angViewerOrientation;
   CModelObject m_ModelObject;
 
-  CUpdateable m_udViewPicture;
+  TUpdateable<false> m_udViewPicture;
 
   ModelTextureVertex *m_pmtvClosestVertex;
 

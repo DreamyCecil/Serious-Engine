@@ -33,7 +33,7 @@ public:
   CTString m_strLastSelectedName;
   CEntity *GetSelectedBrushEntity(void);
   
-  CUpdateableRT m_udComboEntries;
+  TUpdateable<true> m_udComboEntries;
   CWorldEditorDoc *m_pLastDoc;
 
 // Attributes

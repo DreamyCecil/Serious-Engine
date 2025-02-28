@@ -35,10 +35,6 @@ class TChangeable {
     BOOL IsUpToDate(const TUpdateable<bRealTime> &ud) const;
 };
 
-// [Cecil] Aliases for compatibility
-typedef TChangeable<false> CChangeable;
-typedef TChangeable<true> CChangeableRT;
-
 // [Cecil] Define template methods
 #include <Engine/Base/Changeable.inl>
 

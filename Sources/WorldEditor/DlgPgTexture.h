@@ -37,7 +37,7 @@ public:
   BOOL OnIdle(LONG lCount);
 
   CViewTexture m_wndViewTexture;
-  CUpdateableRT m_udTextureData;
+  TUpdateable<true> m_udTextureData;
 
 // Dialog Data
 	//{{AFX_DATA(CDlgPgTexture)

@@ -92,7 +92,7 @@ public:
   CTextureObject m_toBcgPicture;// used for background texture 
   CTString m_strMeasuring;
 
-  CChangeableRT m_chViewChanged;// when view has been rendered
+  TChangeable<true> m_chViewChanged; // when view has been rendered
   BOOL m_bCutMode;              // if we are in cut mode
 
   // type of view

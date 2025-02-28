@@ -134,8 +134,8 @@ public:
   CPoint m_ptMouseCenter;
   CPoint m_ptMouseCenterScreen;
 
-  CUpdateableRT m_udTerrainPage;
-  CUpdateableRT m_udTerrainPageCanvas;
+  TUpdateable<true> m_udTerrainPage;
+  TUpdateable<true> m_udTerrainPageCanvas;
 // Attributes
 public:
 

@@ -25,7 +25,7 @@ class CDlgInfoPgGlobal : public CPropertyPage
 
 // Construction
 public:
-	CUpdateable m_udAllValues;
+	TUpdateable<false> m_udAllValues;
 	BOOL OnIdle(LONG lCount);
 	CDlgInfoPgGlobal();
 	~CDlgInfoPgGlobal();

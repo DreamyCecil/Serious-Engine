@@ -27,7 +27,7 @@ class CDlgPgCollision : public CPropertyPage
 
 // Construction
 public:
-	CUpdateable m_udAllValues;
+	TUpdateable<false> m_udAllValues;
 	CDlgPgCollision();
 	~CDlgPgCollision();
 	BOOL OnIdle(LONG lCount);

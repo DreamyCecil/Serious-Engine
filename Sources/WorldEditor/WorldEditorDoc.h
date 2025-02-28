@@ -141,8 +141,8 @@ public:
   CStaticArray<CPlacement3D> m_aSelectedEntityPlacements;
   CBrushPolygon *m_pbpoLastCentered;
 
-  CChangeableRT m_chSelections;
-  CChangeableRT m_chDocument;
+  TChangeable<true> m_chSelections;
+  TChangeable<true> m_chDocument;
 
   BOOL m_bWasEverSaved;     // set if saved at least once (if not - play from testgame.wld)
   BOOL m_bReadOnly;     // opened file was read-only

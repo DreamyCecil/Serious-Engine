@@ -37,10 +37,6 @@ class TUpdateable {
     void Invalidate(void);
 };
 
-// [Cecil] Aliases for compatibility
-typedef TUpdateable<false> CUpdateable;
-typedef TUpdateable<true> CUpdateableRT;
-
 // [Cecil] Define template methods
 #include <Engine/Base/Updateable.inl>
 

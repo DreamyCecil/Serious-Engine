@@ -27,7 +27,7 @@ class CDlgInfoSheet : public CPropertySheet
 {
 // Construction
 public:
-	CUpdateable m_Updateable;
+	TUpdateable<false> m_Updateable;
   CModelerView *m_LastViewUpdated;
   INDEX m_InfoMode;
 	BOOL OnIdle(LONG lCount);

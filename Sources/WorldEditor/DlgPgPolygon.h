@@ -34,7 +34,7 @@ public:
   FLOAT m_fPretenderDistance;
   BOOL m_bPretenderDistance;
 
-  CUpdateableRT m_udPolygonSelection;
+  TUpdateable<true> m_udPolygonSelection;
 
 // Dialog Data
 	//{{AFX_DATA(CDlgPgPolygon)

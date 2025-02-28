@@ -137,8 +137,8 @@ public:
 	class CDlgInfoPgColorizingSurface *m_pPgInfoColorizingSurface;
 
   // variables for display modes for different modes
-	CChangeable m_chPlacement;
-	CChangeable m_chGlobal;
+	TChangeable<false> m_chPlacement;
+	TChangeable<false> m_chGlobal;
 
   CModelerApp();
   ~CModelerApp();

@@ -27,7 +27,7 @@ class CDlgPgRenderingStatistics : public CPropertyPage
 
 // Construction
 public:
-  CUpdateableRT m_udStatsUpdated;
+  TUpdateable<true> m_udStatsUpdated;
 	CDlgPgRenderingStatistics();
 	~CDlgPgRenderingStatistics();
   BOOL OnIdle(LONG lCount);

@@ -31,7 +31,7 @@ class CDlgPgInfoAttachingPlacement : public CPropertyPage
 
 // Construction
 public:
-	CUpdateable m_udAllValues;
+	TUpdateable<false> m_udAllValues;
   INDEX m_iActivePlacement;
 	CDlgPgInfoAttachingPlacement();
 	~CDlgPgInfoAttachingPlacement();

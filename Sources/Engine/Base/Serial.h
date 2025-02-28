@@ -25,7 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  /*
  * Abstract base class for objects that can be saved and loaded.
  */
-class ENGINE_API CSerial : public CChangeable {
+class ENGINE_API CSerial : public TChangeable<false> {
 public:
   INDEX ser_ctUsed;         // use count
   CTFileName ser_FileName;  // last file name loaded

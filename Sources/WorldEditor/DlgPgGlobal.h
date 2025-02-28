@@ -32,7 +32,7 @@ public:
   BOOL OnIdle(LONG lCount);
 	CActiveTextureWnd	m_wndActiveTexture;
 
-  CUpdateableRT m_udSelectionCounts;
+  TUpdateable<true> m_udSelectionCounts;
 
 // Dialog Data
 	//{{AFX_DATA(CDlgPgGlobal)

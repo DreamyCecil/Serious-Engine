@@ -36,7 +36,7 @@ public:
   BOOL OnIdle(LONG lCount);
   void InitComboBoxes(void);
 
-  CUpdateableRT m_udPolygonSelection;
+  TUpdateable<true> m_udPolygonSelection;
 
 // Dialog Data
 	//{{AFX_DATA(CDlgPgShadow)

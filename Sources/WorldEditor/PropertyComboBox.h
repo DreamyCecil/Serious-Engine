@@ -72,7 +72,7 @@ public:
   CPropertyComboBar *m_pDialog;
   // list head for holding intersected properties
   CListHead m_lhProperties;
-  CUpdateableRT m_udComboEntries;
+  TUpdateable<true> m_udComboEntries;
   INDEX m_iLastMode;
   CWorldEditorDoc *m_pLastDoc;
 

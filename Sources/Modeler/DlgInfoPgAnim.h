@@ -31,7 +31,7 @@ public:
 	~CDlgInfoPgAnim();
   void SetAnimPageFromView(CModelerView* pModelerView);
 	BOOL OnIdle(LONG lCount);
-  CUpdateable m_udAllValues;
+  TUpdateable<false> m_udAllValues;
   
 // Dialog Data
 	//{{AFX_DATA(CDlgInfoPgAnim)

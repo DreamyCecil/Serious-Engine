@@ -117,7 +117,7 @@ public:
 #define AOF_NORESTART     (1L<<2)     // don't restart anim (used for PlayAnim())
 #define AOF_SMOOTHCHANGE  (1L<<3)     // smoothly change between anims
 
-class CAnimObject : public CChangeable {
+class CAnimObject : public TChangeable<false> {
 public:
   TIME ao_tmAnimStart;      // time when current anim was started
   INDEX ao_iCurrentAnim;	  // index of active animation
@@ -166,7 +166,7 @@ public:
   /* Select last frame */
   ENGINE_API void LastFrame(void);
   /* Test if some updateable object is up to date with this anim object. */
-  ENGINE_API BOOL IsUpToDate(const CUpdateable &ud) const;
+  ENGINE_API BOOL IsUpToDate(const TUpdateable<false> &ud) const;
 	void Read_t( CTStream *istrFile); // throw char *
 	void Write_t( CTStream *ostrFile); // throw char *
 

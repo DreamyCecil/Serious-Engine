@@ -36,8 +36,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define ENGINE_INTERNAL
 #include <EngineGUI/EngineGUI.h>
 #include <GameGUIMP/GameGUI.h> // [Cecil] Direct linking
-#include <Engine/Base/ChangeableRT.h>
-#include <Engine/Base/UpdateableRT.h>
 #include <Engine/Terrain/Terrain.h>
 #include <Engine/Terrain/TerrainMisc.h>
 

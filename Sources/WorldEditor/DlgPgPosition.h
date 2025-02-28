@@ -30,7 +30,7 @@ public:
 	CDlgPgPosition();
 	~CDlgPgPosition();
   BOOL OnIdle(LONG lCount);
-  CUpdateableRT m_udSelection;
+  TUpdateable<true> m_udSelection;
 
 // Dialog Data
 	//{{AFX_DATA(CDlgPgPosition)

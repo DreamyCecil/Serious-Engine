@@ -49,7 +49,7 @@ class CTextureEffectGlobal {
 public:
   CTextureData *teg_ptdTexture;  // texture of this global effect
   ULONG teg_ulEffectType;
-  CUpdateable teg_updTexture;   // when the texture was last updated
+  TUpdateable<false> teg_updTexture; // when the texture was last updated
   CDynamicArray<CTextureEffectSource> teg_atesEffectSources;
 
   // Constructor.

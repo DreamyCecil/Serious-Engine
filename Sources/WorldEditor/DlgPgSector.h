@@ -37,7 +37,7 @@ public:
 
   COLOR m_colLastSectorAmbientColor;
   BOOL m_bLastSectorAmbientColorMixed;
-  CUpdateableRT m_udSectorsData;
+  TUpdateable<true> m_udSectorsData;
 
 // Dialog Data
 	//{{AFX_DATA(CDlgPgSector)
