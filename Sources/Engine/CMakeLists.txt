@@ -23,7 +23,6 @@ set(ENGINE_SRCS
   "API/CurrentVersion.cpp"
 
   "Base/Anim.cpp"
-  "Base/Changeable.cpp"
   "Base/Console.cpp"
   "Base/CRC.cpp"
   "Base/CRCTable.cpp"
@@ -55,7 +54,6 @@ set(ENGINE_SRCS
   "Base/Timer.cpp"
   "Base/Translation.cpp"
   "Base/Unzip.cpp"
-  "Base/Updateable.cpp"
 
   "Base/Scanner.cpp"
   "Base/Parser.cpp"

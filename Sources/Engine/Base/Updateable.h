@@ -19,23 +19,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-/*
- * Object that can be updated to reflect changes in some changeable object(s).
- */
-class ENGINE_API CUpdateable {
-private:
-  TIME ud_LastUpdateTime;   // last time this object has been updated
-public:
-  /* Constructor. */
-  CUpdateable(void);
-  /* Get time when last updated. */
-  TIME LastUpdateTime(void) const ;
-  /* Mark that the object has been updated. */
-  void MarkUpdated(void);
-  /* Mark that the object has become invalid in spite of its time stamp. */
-  void Invalidate(void);
+// Object that can be updated to reflect changes in some changeable object(s)
+// [Cecil] Unified logic of old CUpdateable & CUpdateableRT classes behind a template
+template<bool bRealTime>
+class TUpdateable {
+  private:
+    TIME ud_LastUpdateTime; // last time this object has been updated
+
+  public:
+    // Constructor
+    TUpdateable(void);
+    // Get time when last updated
+    TIME LastUpdateTime(void) const;
+    // Mark that the object has been updated
+    void MarkUpdated(void);
+    // Mark that the object has become invalid in spite of its time stamp
+    void Invalidate(void);
 };
 
+// [Cecil] Aliases for compatibility
+typedef TUpdateable<false> CUpdateable;
+typedef TUpdateable<true> CUpdateableRT;
+
+// [Cecil] Define template methods
+#include <Engine/Base/Updateable.inl>
 
 #endif  /* include-once check. */
-

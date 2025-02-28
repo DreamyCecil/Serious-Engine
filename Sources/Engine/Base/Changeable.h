@@ -19,21 +19,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-/*
- * Object that can change in time.
- */
-class ENGINE_API CChangeable {
-private:
-  TIME ch_LastChangeTime;   // last time this object has been changed
-public:
-  /* Constructor. */
-  CChangeable(void);
-  /* Mark that something has changed in this object. */
-  void MarkChanged(void);
-  /* Test if some updateable object is up to date with this changeable. */
-  BOOL IsUpToDate(const CUpdateable &ud) const;
+// Object that can change in time
+// [Cecil] Unified logic of old CChangeable & CChangeableRT classes behind a template
+template<bool bRealTime>
+class TChangeable {
+  private:
+    TIME ch_LastChangeTime; // last time this object has been changed
+
+  public:
+    // Constructor
+    TChangeable(void);
+    // Mark that something has changed in this object
+    void MarkChanged(void);
+    // Test if some updateable object is up to date with this changeable
+    BOOL IsUpToDate(const TUpdateable<bRealTime> &ud) const;
 };
 
+// [Cecil] Aliases for compatibility
+typedef TChangeable<false> CChangeable;
+typedef TChangeable<true> CChangeableRT;
+
+// [Cecil] Define template methods
+#include <Engine/Base/Changeable.inl>
 
 #endif  /* include-once check. */
-

@@ -613,7 +613,6 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClCompile Include="API\CommandLine.cpp" />
     <ClCompile Include="API\CurrentVersion.cpp" />
     <ClCompile Include="Base\Anim.cpp" />
-    <ClCompile Include="Base\Changeable.cpp" />
     <ClCompile Include="Base\Console.cpp" />
     <ClCompile Include="Base\CRC.cpp" />
     <ClCompile Include="Base\CRCTable.cpp" />
@@ -654,7 +653,6 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClCompile Include="Base\Timer.cpp" />
     <ClCompile Include="Base\Translation.cpp" />
     <ClCompile Include="Base\Unzip.cpp" />
-    <ClCompile Include="Base\Updateable.cpp" />
     <ClCompile Include="Math\Float.cpp" />
     <ClCompile Include="Math\Functions.cpp" />
     <ClCompile Include="Math\Geometry.cpp" />
@@ -1063,7 +1061,6 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClInclude Include="Base\Base.h" />
     <ClInclude Include="Base\ByteSwap.h" />
     <ClInclude Include="Base\Changeable.h" />
-    <ClInclude Include="Base\ChangeableRT.h" />
     <ClInclude Include="Base\Console.h" />
     <ClInclude Include="Base\Console_internal.h" />
     <ClInclude Include="Base\CRC.h" />
@@ -1100,7 +1097,6 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClInclude Include="Base\Types.h" />
     <ClInclude Include="Base\Unzip.h" />
     <ClInclude Include="Base\Updateable.h" />
-    <ClInclude Include="Base\UpdateableRT.h" />
     <ClInclude Include="Graphics\GfxInterface.h" />
     <ClInclude Include="Graphics\Gfx_wrapper_Direct3D.h" />
     <ClInclude Include="Graphics\Gfx_wrapper_Null.h" />
@@ -1588,6 +1584,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Base\Changeable.inl" />
+    <None Include="Base\Updateable.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

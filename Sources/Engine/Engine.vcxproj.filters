@@ -130,9 +130,6 @@
     <ClCompile Include="Base\Anim.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Base\Changeable.cpp">
-      <Filter>Source Files\Base</Filter>
-    </ClCompile>
     <ClCompile Include="Base\Console.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
@@ -212,9 +209,6 @@
       <Filter>Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Base\Unzip.cpp">
-      <Filter>Source Files\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Base\Updateable.cpp">
       <Filter>Source Files\Base</Filter>
     </ClCompile>
     <ClCompile Include="Math\Float.cpp">
@@ -774,9 +768,6 @@
     <ClInclude Include="Base\Changeable.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Base\ChangeableRT.h">
-      <Filter>Header Files\Base Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Base\Console.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
@@ -877,9 +868,6 @@
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
     <ClInclude Include="Base\Updateable.h">
-      <Filter>Header Files\Base Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Base\UpdateableRT.h">
       <Filter>Header Files\Base Headers</Filter>
     </ClInclude>
     <ClInclude Include="Math\AABBox.h">
@@ -1460,5 +1448,13 @@
     <CustomBuild Include="Classes\PlayerEntity.es">
       <Filter>Entity Class Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Base\Updateable.inl">
+      <Filter>Header Files\Base Headers</Filter>
+    </None>
+    <None Include="Base\Changeable.inl">
+      <Filter>Header Files\Base Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>
