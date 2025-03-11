@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "stdafx.h"
 #include <Engine/Templates/Stock_CTextureData.h>
 
+// [Cecil] For HtmlHelpA()
+#include <htmlhelp.h>
+#pragma comment(lib, "Htmlhelp.lib")
+
 #ifdef _DEBUG
 #undef new
 #define new DEBUG_NEW
@@ -1060,10 +1064,8 @@ LRESULT CMainFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::OnHelpFinder() 
 {
-  HtmlHelp(NULL); // Hmmm...
-  /*HtmlHelp(NULL, 
-    _fnmApplicationPath+"Help\\ToolsHelp.chm::/SeriousModeler/Overview.htm", 
-    HH_DISPLAY_TOPIC, NULL);*/
+  // [Cecil] Restored help
+  HtmlHelpA(NULL, ExpandPath::OnDisk("Help\\ToolsHelp.chm::/SeriousModeler/Overview.htm"), HH_DISPLAY_TOPIC, NULL);
 }
 
 void CMainFrame::OnTessellateLess() 

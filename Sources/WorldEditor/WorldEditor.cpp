@@ -26,6 +26,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <sys/utime.h>
 #include <process.h>
 
+// [Cecil] For HtmlHelpA()
+#include <htmlhelp.h>
+#pragma comment(lib, "Htmlhelp.lib")
 
 #ifdef _DEBUG
 #undef new
@@ -2829,9 +2832,8 @@ void CWorldEditorApp::DisplayHelp(const CTFileName &fnHlk, UINT uCommand, DWORD 
     }
     else if( strHelpFormatID=="CHM")
     {
-      HtmlHelp(dwData);
-      //HtmlHelp(NULL, 
-      //  _fnmApplicationPath+strHelpPath, uCommand, dwData);
+      // [Cecil] Restored help
+      HtmlHelpA(NULL, ExpandPath::OnDisk(strHelpPath), uCommand, dwData);
       return;
     }
     else
@@ -2839,9 +2841,8 @@ void CWorldEditorApp::DisplayHelp(const CTFileName &fnHlk, UINT uCommand, DWORD 
       WarningMessage("Expected TXT, HTM, HTML, or CHM help format indentifier.");
     }
   }
-  HtmlHelp(dwData);
-  //HtmlHelp(NULL, 
-  //  _fnmApplicationPath+"Help\\ToolsHelp.chm::/SeriousEditor/Overview.htm", uCommand, dwData);
+  // [Cecil] Restored help
+  HtmlHelpA(NULL, ExpandPath::OnDisk("Help\\ToolsHelp.chm::/SeriousEditor/Overview.htm"), uCommand, dwData);
 }
 
 CEntity *GetTerrainEntity(void)
