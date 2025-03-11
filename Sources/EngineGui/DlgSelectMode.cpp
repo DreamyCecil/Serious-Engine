@@ -314,7 +314,7 @@ void CDlgSelectMode::OnTestButton()
 
   BOOL bDisplayModeSet = _pGfx->SetDisplayMode( GAT_OGL, 0, pixSizeI, pixSizeJ, dm.dm_ddDepth);
   if( !bDisplayModeSet) {
-    AfxMessageBox( L"Unable to setup full screen display. Test mode failed.");
+    AfxMessageBox(_T("Unable to setup full screen display. Test mode failed."));
     return;
   }
 
@@ -329,15 +329,15 @@ void CDlgSelectMode::OnTestButton()
 	int iScreenY = ::GetSystemMetrics(SM_CYSCREEN);
 
   // open window of display mode size
-  const wchar_t *strWindowClass = AfxRegisterWndClass( CS_OWNDC|CS_NOCLOSE);
-  wndTestWindowedMode.CreateEx( WS_EX_TOPMOST, strWindowClass, L"Test mode",
+  const TCHAR *strWindowClass = AfxRegisterWndClass( CS_OWNDC|CS_NOCLOSE);
+  wndTestWindowedMode.CreateEx( WS_EX_TOPMOST, strWindowClass, _T("Test mode"),
                                 WS_POPUP|WS_VISIBLE, 0,0, iScreenX,iScreenY, m_hWnd, 0);
   // create window canvas
   _pGfx->CreateWindowCanvas( wndTestWindowedMode.m_hWnd, &pViewPort, &pDrawPort);
 
   // if screen or window opening was not successful
   if( pViewPort == NULL) {
-    AfxMessageBox( L"Unable to setup full screen display. Test mode failed.");
+    AfxMessageBox(_T("Unable to setup full screen display. Test mode failed."));
     return;
   }
 
@@ -365,10 +365,10 @@ void CDlgSelectMode::OnTestButton()
   // restore old mode
   _pGfx->ResetDisplayMode();
 
-  if( AfxMessageBox( L"Did You see displayed message correctly?", MB_YESNO) == IDYES) {
+  if( AfxMessageBox(_T("Did You see displayed message correctly?"), MB_YESNO) == IDYES) {
     GetDlgItem( IDOK)->SetFocus(); // set focus to apply button
   } else {
-    AfxMessageBox( L"Mode is not valid and it is rejected. Choose another one.");
+    AfxMessageBox(_T("Mode is not valid and it is rejected. Choose another one."));
   }
 
   Invalidate( FALSE);

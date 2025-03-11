@@ -747,16 +747,14 @@ void CModelerView::RenderView( CDrawPort *pDrawPort)
     // obtain translation speed value
     CString csSpeed;
     pmf->m_ctrlZSpeed.GetWindowText( csSpeed);
-    CTString strSpeed = CStringA(csSpeed).GetString();
     FLOAT fSpeed;
-    BOOL bSpeedValid = strSpeed.ScanF( "%g", &fSpeed);
+    BOOL bSpeedValid = _tscanf(csSpeed, _T("%g"), &fSpeed);
     
     // obtain loop value
     CString csLoop;
     pmf->m_ctrlZLoop.GetWindowText( csLoop);
-    CTString strLoop = CStringA(csLoop).GetString();
     INDEX iLoop;
-    BOOL bLoopValid = strLoop.ScanF( "%d", &iLoop);
+    BOOL bLoopValid = _tscanf(csLoop, _T("%d"), &iLoop);
     
     // simulate translation along z-axis
     CPlacement3D plTranslated = m_plModelPlacement;
@@ -2170,7 +2168,7 @@ void CModelerView::OnFileRemoveTexture()
 void CModelerView::OnScriptOpen() 
 {
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
-  CTFileName fnDocName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnDocName = MfcStringToCT(pDoc->GetPathName());
   AfxGetApp()->OpenDocumentFile(CString(fnDocName.NoExt() + ".scr"));
 }
 
@@ -2183,7 +2181,7 @@ BOOL CModelerView::UpdateAnimations(void)
 {
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
-  CTFileName fnModelName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnModelName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnScriptName = fnModelName.NoExt() + ".scr";
 
   pDoc->OnSaveDocument( pDoc->GetPathName());
@@ -2215,7 +2213,7 @@ void CModelerView::OnScriptUpdateMipmodels()
 {
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
-  CTFileName fnModelName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnModelName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnScriptName = fnModelName.NoExt() + ".scr";
 
   if( ::MessageBoxA( this->m_hWnd, "Updating mip-models will discard current mip-model mapping "
@@ -2938,7 +2936,7 @@ void CModelerView::OnSaveThumbnail()
   // mark that thumbnail settings have been set
   pDoc->m_emEditModel.edm_tsThumbnailSettings.ts_bSet = TRUE;
   SaveThumbnail();
-  STATUS_LINE_MESSAGE( L"Thumbnail saved."); 
+  STATUS_LINE_MESSAGE(_T("Thumbnail saved.")); 
 }
 
 void CModelerView::SaveThumbnail() 
@@ -2982,7 +2980,7 @@ void CModelerView::SaveThumbnail()
       pDrawPort->Unlock();
     }
     
-    CTFileName fnDocName = CTString(CStringA(GetDocument()->GetPathName()));
+    CTFileName fnDocName = MfcStringToCT(GetDocument()->GetPathName());
     CTFileName fnThumbnail = fnDocName.NoExt() + ".tbn";
 
     pDrawPort->GrabScreen( iiImageInfo);
@@ -3206,17 +3204,17 @@ BOOL CModelerView::PreTranslateMessage(MSG* pMsg)
       // nothing
       if( !bShift && !bAlt && !bControl && !bSpace && !bLMB && !bRMB)
       {
-        STATUS_LINE_MESSAGE( L"Try: Space, Ctrl+Space"); 
+        STATUS_LINE_MESSAGE(_T("Try: Space, Ctrl+Space")); 
       }
       // space
       else if( !bShift && !bAlt && !bControl && bSpace && !bLMB && !bRMB)
       {
-        STATUS_LINE_MESSAGE( L"Move with LMB, zoom with RMB, center with LMBx2. Try: Ctrl+Space");
+        STATUS_LINE_MESSAGE(_T("Move with LMB, zoom with RMB, center with LMBx2. Try: Ctrl+Space"));
       }
       // ctrl+space
       else if( !bShift && !bAlt && bControl && bSpace && !bLMB && !bRMB)
       {
-        STATUS_LINE_MESSAGE( L"LMB zooms in, RMB zooms out");
+        STATUS_LINE_MESSAGE(_T("LMB zooms in, RMB zooms out"));
       }
     }
     // model view mode
@@ -3226,27 +3224,27 @@ BOOL CModelerView::PreTranslateMessage(MSG* pMsg)
       if( !bShift && !bAlt && !bControl && !bSpace && !bLMB && !bRMB)
       {
         // nothing pressed
-        STATUS_LINE_MESSAGE( L"Try: Space, Ctrl+Space, Ctrl, Shift"); 
+        STATUS_LINE_MESSAGE(_T("Try: Space, Ctrl+Space, Ctrl, Shift")); 
       }
       // space
       else if( !bShift && !bAlt && !bControl && bSpace && !bLMB && !bRMB && !m_bMappingMode)
       {
-        STATUS_LINE_MESSAGE( L"LMB moves, RMB zoomes, LMB+RMB rotates viewer. Try: Ctrl+Space");
+        STATUS_LINE_MESSAGE(_T("LMB moves, RMB zoomes, LMB+RMB rotates viewer. Try: Ctrl+Space"));
       }
       // ctrl+space
       else if( !bShift && !bAlt && bControl && bSpace && !bLMB && !bRMB && !m_bMappingMode)
       {
-        STATUS_LINE_MESSAGE( L"LMB zooms in, RMB zoomes out");
+        STATUS_LINE_MESSAGE(_T("LMB zooms in, RMB zoomes out"));
       }
       // ctrl
       else if( !bShift && !bAlt && bControl && !bSpace && !bLMB && !bRMB && !m_bMappingMode)
       {
-        STATUS_LINE_MESSAGE( L"LMB moves, RMB zoomes, LMB+RMB rotates model");
+        STATUS_LINE_MESSAGE(_T("LMB moves, RMB zoomes, LMB+RMB rotates model"));
       }
       // shift
       else if( bShift && !bAlt && !bControl && !bSpace && !bLMB && !bRMB && !m_bMappingMode)
       {
-        STATUS_LINE_MESSAGE( L"RMB zoomes, LMB+RMB rotates light");
+        STATUS_LINE_MESSAGE(_T("RMB zoomes, LMB+RMB rotates light"));
       }
     }
   }
@@ -3367,7 +3365,7 @@ void CModelerView::OnCreateMipModels()
 	char achrRestFrameFullPath[ PATH_MAX] = "";
 
   CModelerDoc* pDoc = GetDocument();
-  CTFileName fnModelName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnModelName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnScriptName = fnModelName.NoExt() + ".scr";
   try
   {
@@ -3799,7 +3797,7 @@ void CModelerView::OnWindowTogglemax()
 void CModelerView::OnExportForSkining() 
 {
   CModelerDoc* pDoc = GetDocument();
-  CTFileName fnDocName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnDocName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnDirectory = fnDocName.FileDir();
   CTFileName fnDefaultSelected = fnDocName.FileName()+CTString(".tga");
 

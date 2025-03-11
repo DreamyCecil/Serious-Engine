@@ -158,7 +158,7 @@ UINT_PTR APIENTRY FileOpenRequesterHook( HWND hdlg, UINT uiMsg, WPARAM wParam,	L
             _pDrawPort->DrawLine( CX-pixRad+iPix, CY-pixRad, CX+pixRad+iPix, CY+pixRad, C_RED|CT_OPAQUE);
             _pDrawPort->DrawLine( CX-pixRad+iPix, CY+pixRad, CX+pixRad+iPix, CY-pixRad, C_RED|CT_OPAQUE);
           }
-          CWnd::FromHandle( GetDlgItem( hdlg, IDC_THUMBNAIL_DESCRIPTION))->SetWindowText( L"No thumbnail");
+          CWnd::FromHandle( GetDlgItem( hdlg, IDC_THUMBNAIL_DESCRIPTION))->SetWindowText(_T("No thumbnail"));
         }
         // unlock the drawport
         _pDrawPort->Unlock();
@@ -206,8 +206,8 @@ CTFileName CEngineGUI::FileRequester(
   CTString strRequestInDirectory = ExpandPath::OnDisk(strDefaultDir);
 
   if (pchrRegistry != NULL) {
-    CStringA strASCII = AfxGetApp()->GetProfileString(L"Scape", CString(pchrRegistry), CString(strRequestInDirectory.ConstData()));
-    strRequestInDirectory = strASCII.GetString();
+    CString strW = AfxGetApp()->GetProfileString(_T("Scape"), CString(pchrRegistry), CString(strRequestInDirectory.ConstData()));
+    strRequestInDirectory = MfcStringToCT(strW);
   }
 
   // if directory is not inside engine dir
@@ -246,7 +246,7 @@ CTFileName CEngineGUI::FileRequester(
       chrFiles[ ofnRequestFiles.nFileOffset-1] = 0;
       if( pchrRegistry != NULL)
       {
-        AfxGetApp()->WriteProfileString(L"Scape", CString(pchrRegistry), CString(chrFiles));
+        AfxGetApp()->WriteProfileString(_T("Scape"), CString(pchrRegistry), CString(chrFiles));
       }
       CTFileName fnDirectory = CTString( chrFiles) + "\\";
 
@@ -284,7 +284,7 @@ CTFileName CEngineGUI::FileRequester(
       strChooseFilePath.SetAt( ofnRequestFiles.nFileOffset, 0);
       if( pchrRegistry != NULL)
       {
-        AfxGetApp()->WriteProfileString(L"Scape", CString(pchrRegistry), strChooseFilePath);
+        AfxGetApp()->WriteProfileString(_T("Scape"), CString(pchrRegistry), strChooseFilePath);
       }
       CTFileName fnResult = CTString( chrFiles);
       try

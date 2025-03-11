@@ -29,55 +29,55 @@ static char THIS_FILE[] = __FILE__;
 
 // Macros used for ini i/o operations
 #define INI_READ( strname, def)                               \
-  wcscpy( strIni, theApp.GetProfileString( L"Modeler prefs", CString(strname), CString(def)))
+  _tcscpy( strIni, theApp.GetProfileString(_T("Modeler prefs"), CString(strname), CString(def)))
 #define GET_FLAG( var)                                        \
-  if( wcscmp( strIni, L"YES") == 0)   var = TRUE;              \
+  if (_tcscmp( strIni, _T("YES")) == 0)   var = TRUE;         \
   else                          var = FALSE;
 #define GET_COLOR( var)                                       \
-  swscanf( strIni, L"0X%08x", &var);
+  _stscanf( strIni, _T("0X%08x"), &var);
 #define GET_INDEX( var)                                       \
-  swscanf( strIni, L"%d", &var);
+  _stscanf( strIni, _T("%d"), &var);
 #define GET_FLOAT( var)                                       \
-  swscanf( strIni, L"%f", &var);
+  _stscanf( strIni, _T("%f"), &var);
 
 #define SET_FLAG( var)                                        \
-  if( var) wcscpy( strIni, L"YES");                            \
-  else     wcscpy( strIni, L"NO");
+  if (var) _tcscpy( strIni, _T("YES"));                       \
+  else     _tcscpy( strIni, _T("NO"));
 #define SET_COLOR( var)                                       \
-  swprintf( strIni, L"0x%08x", var);                            \
-  _wcsupr( strIni);
+  _stprintf( strIni, _T("0x%08x"), var);                      \
+  _tcsupr( strIni);
 #define SET_INDEX( var)                                       \
-  swprintf( strIni, L"%d", var);                                \
-  _wcsupr( strIni);
+  _stprintf( strIni, _T("%d"), var);                          \
+  _tcsupr( strIni);
 #define SET_FLOAT( var)                                       \
-  swprintf( strIni, L"%f", var);                                \
-  _wcsupr( strIni);
+  _stprintf( strIni, _T("%f"), var);                          \
+  _tcsupr( strIni);
 #define INI_WRITE( strname)                                   \
-  theApp.WriteProfileString( L"Modeler prefs", CString(strname), strIni)
+  theApp.WriteProfileString(_T("Modeler prefs"), CString(strname), strIni)
 
 BOOL GetFlagFromProfile( CTString strVarName, BOOL bDefault)
 {
   CTString strDefault;
   if( bDefault) strDefault = "YES";
   else          strDefault = "NO";
-  CTString strTemp = CStringA(theApp.GetProfileString( L"Modeler prefs", CString(strVarName), CString(strDefault))).GetString();
-  if( strTemp == "YES") return TRUE;
+  CString strTemp = theApp.GetProfileString(_T("Modeler prefs"), CString(strVarName), CString(strDefault));
+  if (strTemp == _T("YES")) return TRUE;
   return FALSE;
 };
 
 void SetFlagToProfile( CTString strVarName, BOOL bValue)
 {
-  if( bValue) theApp.WriteProfileString( L"Modeler prefs", CString(strVarName), L"YES");
-  else        theApp.WriteProfileString( L"Modeler prefs", CString(strVarName), L"NO");
+  if( bValue) theApp.WriteProfileString(_T("Modeler prefs"), CString(strVarName), _T("YES"));
+  else        theApp.WriteProfileString(_T("Modeler prefs"), CString(strVarName), _T("NO"));
 };
 
 INDEX GetIndexFromProfile( CTString strVarName, INDEX iDefault)
 {
   CTString strDefault;
   strDefault.PrintF("%d", iDefault);
-  CTString strTemp = CStringA(theApp.GetProfileString( L"Modeler prefs", CString(strVarName), CString(strDefault))).GetString();
+  CString strTemp = theApp.GetProfileString(_T("Modeler prefs"), CString(strVarName), CString(strDefault));
   INDEX iValue;
-  sscanf( strTemp, "%d", &iValue);
+  _tscanf(strTemp, _T("%d"), &iValue);
   return iValue;
 };
 
@@ -85,16 +85,16 @@ void SetIndexToProfile( CTString strVarName, INDEX iValue)
 {
   CTString strTemp;
   strTemp.PrintF("%d", iValue);
-  theApp.WriteProfileString( L"Modeler prefs", CString(strVarName), CString(strTemp));
+  theApp.WriteProfileString(_T("Modeler prefs"), CString(strVarName), CString(strTemp));
 };
 
 COLOR GetColorFromProfile( CTString strVarName, COLOR colDefault)
 {
   CTString strDefault;
   strDefault.PrintF("0x%08x", colDefault);
-  CTString strTemp = CStringA(theApp.GetProfileString( L"Modeler prefs", CString(strVarName), CString(strDefault))).GetString();
+  CString strTemp = theApp.GetProfileString(_T("Modeler prefs"), CString(strVarName), CString(strDefault));
   COLOR colValue;
-  sscanf( strTemp, "0x%08x", &colValue);
+  _tscanf(strTemp, _T("0x%08x"), &colValue);
   return colValue;
 };
 
@@ -102,7 +102,7 @@ void SetColorToProfile( CTString strVarName, COLOR colValue)
 {
   CTString strTemp;
   strTemp.PrintF("0x%08x", colValue);
-  theApp.WriteProfileString( L"Modeler prefs", CString(strVarName), CString(strTemp));
+  theApp.WriteProfileString(_T("Modeler prefs"), CString(strVarName), CString(strTemp));
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -197,7 +197,7 @@ static BOOL _bModelerInitialized = FALSE;
 
 BOOL CModelerApp::SubInitInstance()
 {
-  wchar_t strIni[ 128];
+  TCHAR strIni[128];
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	//  of your final executable, you should remove from the following
@@ -210,7 +210,7 @@ BOOL CModelerApp::SubInitInstance()
 #endif
 
   // settings will be saved into registry instead of ini file
-  SetRegistryKey( L"CroTeam");
+  SetRegistryKey(_T("CroTeam"));
 
 	LoadStdProfileSettings(8);  // Load standard INI file options (including MRU)
 
@@ -234,7 +234,7 @@ BOOL CModelerApp::SubInitInstance()
 
   // [Cecil] Parse command line arguments
   {
-    CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
+    CTString strCmdLine = MfcStringToCT(m_lpCmdLine);
     CommandLineSetup cmd(strCmdLine.ConstData());
     SE_ParseCommandLine(cmd);
   }
@@ -271,31 +271,31 @@ BOOL CModelerApp::SubInitInstance()
   _pShell->Execute( "include \"Scripts\\Modeler_startup.ini\"");
   
   m_iApi=GAT_OGL;
-  m_iApi=GetProfileInt(L"Display modes", L"SED Gfx API", GAT_OGL);
+  m_iApi=GetProfileInt(_T("Display modes"), _T("SED Gfx API"), GAT_OGL);
   // (re)set default display mode
   _pGfx->ResetDisplayMode((enum GfxAPIType) m_iApi);
 
   m_Preferences.ReadFromIniFile();
 
   // load background textures
-  INDEX iWorkingTexturesCt = theApp.GetProfileInt( L"Modeler prefs", 
-                                                   L"Modeler working textures count", -1);
+  INDEX iWorkingTexturesCt = theApp.GetProfileInt(_T("Modeler prefs"), 
+                                                  _T("Modeler working textures count"), -1);
   if( iWorkingTexturesCt != -1) {
     char strWTName[ 128];
     for( INDEX i=0; i<iWorkingTexturesCt; i++) {
       sprintf( strWTName, "Working texture %02d", i);
       INI_READ( strWTName, "Error in INI .file!");
-      AddModelerWorkingTexture( CTString(CStringA(strIni)));
+      AddModelerWorkingTexture(MfcStringToCT(strIni));
     }
   }
   // load working patches
-  INDEX iWorkingPatchesCt = theApp.GetProfileInt( L"Modeler prefs", 
-                                                 L"Modeler working patches count", -1);
+  INDEX iWorkingPatchesCt = theApp.GetProfileInt(_T("Modeler prefs"), 
+                                                 _T("Modeler working patches count"), -1);
   char strWPName[ 128];
   for( INDEX i=0; i<iWorkingPatchesCt; i++) {
     sprintf( strWPName, "Working patch %02d", i);
     INI_READ( strWPName, "Error in INI .file!");
-    AddModelerWorkingPatch( CTString(CStringA(strIni)));
+    AddModelerWorkingPatch(MfcStringToCT(strIni));
   }
   pMainFrame->m_StainsComboBox.Refresh();
 
@@ -687,7 +687,7 @@ void CModelerApp::OnFilePreferences()
 int CModelerApp::ExitInstance() 
 {
   m_Preferences.WriteToIniFile();
-  WriteProfileInt(L"Display modes", L"SED Gfx API", m_iApi);
+  WriteProfileInt(_T("Display modes"), _T("SED Gfx API"), m_iApi);
 
   // [Cecil] Modeler is shutdown
   if (!_bModelerInitialized) return CWinApp::ExitInstance();
@@ -857,7 +857,7 @@ CAppPrefs::~CAppPrefs()
 // Modeler ini read function for preferences
 void CAppPrefs::ReadFromIniFile()
 {
-  wchar_t strIni[ 128];
+  TCHAR strIni[128];
   
   INI_READ( "Copy existing window preferences", "NO");
   GET_FLAG( ap_CopyExistingWindowPrefs);
@@ -902,7 +902,7 @@ void CAppPrefs::ReadFromIniFile()
   GET_COLOR( ap_MappingWinBcgColor);
 
   INI_READ( "Default background texture", "");
-  ap_DefaultWinBcgTexture = CTString(CStringA(strIni));
+  ap_DefaultWinBcgTexture = MfcStringToCT(strIni);
   
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
 }
@@ -910,7 +910,7 @@ void CAppPrefs::ReadFromIniFile()
 // Modeler ini write function for preferences
 void CAppPrefs::WriteToIniFile()
 {
-  wchar_t strIni[ 128];
+  TCHAR strIni[128];
   
   SET_FLAG( ap_CopyExistingWindowPrefs);
   INI_WRITE( "Copy existing window preferences");
@@ -954,32 +954,32 @@ void CAppPrefs::WriteToIniFile()
   SET_COLOR( ap_MappingWinBcgColor);
   INI_WRITE( "Mapping view win bcg color");
 
-  wcscpy( strIni, CString(ap_DefaultWinBcgTexture));
+  _tcscpy(strIni, CString(ap_DefaultWinBcgTexture));
   INI_WRITE( "Default background texture");
   
   // Now for working textures
   INDEX iWorkingTexturesCt = theApp.m_WorkingTextures.Count();
-  theApp.WriteProfileInt( L"Modeler prefs", L"Modeler working textures count",
+  theApp.WriteProfileInt(_T("Modeler prefs"), _T("Modeler working textures count"),
                          iWorkingTexturesCt);
   INDEX iWTCt = 0;
   FOREACHINLIST( CBcgTexture, wt_ListNode, theApp.m_WorkingTextures, it_wt)
   {
     char strWTName[ 128];
     sprintf( strWTName, "Working texture %02d", iWTCt);
-    theApp.WriteProfileString( L"Modeler prefs", CString(strWTName), CString(it_wt->wt_FileName));
+    theApp.WriteProfileString(_T("Modeler prefs"), CString(strWTName), CString(it_wt->wt_FileName));
     iWTCt++;
   }
   
   // And now for patches....
   INDEX iWorkingPatchesCt = theApp.m_WorkingPatches.Count();
-  theApp.WriteProfileInt( L"Modeler prefs", L"Modeler working patches count",
+  theApp.WriteProfileInt(_T("Modeler prefs"), _T("Modeler working patches count"),
                          iWorkingPatchesCt);
   INDEX iWPCt = 0;
   FOREACHINLIST( CWorkingPatch, wp_ListNode, theApp.m_WorkingPatches, it_wp)
   {
     char strWPName[ 128];
     sprintf( strWPName, "Working patch %02d", iWPCt);
-    theApp.WriteProfileString( L"Modeler prefs", CString(strWPName), CString(it_wp->wp_FileName));
+    theApp.WriteProfileString(_T("Modeler prefs"), CString(strWPName), CString(it_wp->wp_FileName));
     iWPCt++;
   }
 }

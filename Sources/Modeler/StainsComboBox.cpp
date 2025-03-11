@@ -62,7 +62,7 @@ void CStainsComboBox::Refresh()
   }
   else
   {
-    AddString( L"None available");
+    AddString(_T("None available"));
     SetCurSel( 0);
   }
 }

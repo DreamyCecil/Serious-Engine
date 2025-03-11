@@ -133,7 +133,7 @@ void CModelerDoc::Dump(CDumpContext& dc) const
 BOOL CModelerDoc::OnOpenDocument(LPCTSTR lpszPathName) 
 {
 	m_bDocLoadedOk = FALSE;
-  CTFileName fnModelFile = CTString(CStringA(lpszPathName));
+  CTFileName fnModelFile = MfcStringToCT(lpszPathName);
 
   try
   {
@@ -193,7 +193,7 @@ BOOL CModelerDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
   CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
 	//return CDocument::OnSaveDocument(lpszPathName);
-  CTFileName fnModelFile = CTString(CStringA(lpszPathName));
+  CTFileName fnModelFile = MfcStringToCT(lpszPathName);
   try
   {
     fnModelFile.RemoveApplicationPath_t();
@@ -235,7 +235,7 @@ BOOL CModelerDoc::OnSaveDocument(LPCTSTR lpszPathName)
       if( pmdCurrent->IsModified())
       {
         CTString strMessage;
-        CTFileName fnDoc = CTString(CStringA(pmdCurrent->GetPathName()));
+        CTFileName fnDoc = MfcStringToCT(pmdCurrent->GetPathName());
         strMessage.PrintF("Do you want to save model \"%s\" before reloading its attachments?", fnDoc.FileName().ConstData());
         if( ::MessageBoxA( pMainFrame->m_hWnd, strMessage,
                         "Warning !", MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON1 | 
@@ -295,8 +295,8 @@ void CModelerDoc::OnFileAddTexture()
 
   // call file requester for adding textures
   CDynamicArray<CTFileName> afnTextures;
-  CTFileName fnDocName = CTString(CStringA(GetPathName()));
-  theApp.WriteProfileString( L"Scape", L"Add texture directory", CString(fnDocName.FileDir()));
+  CTFileName fnDocName = MfcStringToCT(GetPathName());
+  theApp.WriteProfileString(_T("Scape"), _T("Add texture directory"), CString(fnDocName.FileDir()));
   _EngineGUI.FileRequester( "Choose textures to add", FILTER_TEX FILTER_END,
     "Add texture directory", "Textures\\", fnDocName.FileName()+".tex", &afnTextures);
   MEX mexWidth, mexHeight;
@@ -335,13 +335,13 @@ void CModelerDoc::OnUpdateFileAddTexture(CCmdUI* pCmdUI)
 
 CTString CModelerDoc::GetModelDirectory( void)
 {
-  CTFileName fnResult = CTFileName( CTString(CStringA(GetPathName()))).FileDir();
+  CTFileName fnResult = CTFileName(MfcStringToCT(GetPathName())).FileDir();
   return CTString( fnResult);
 }
 
 CTString CModelerDoc::GetModelName( void)
 {
-  CTFileName fnResult = CTFileName( CTString(CStringA(GetPathName()))).FileName();
+  CTFileName fnResult = CTFileName(MfcStringToCT(GetPathName())).FileName();
   return CTString( fnResult);
 }
 

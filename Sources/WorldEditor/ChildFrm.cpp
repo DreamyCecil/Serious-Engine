@@ -431,7 +431,7 @@ void CChildFrame::TestGame( BOOL bFullScreen)
   // if the world is not modified (it is saved on disk)
   } else
   { // use the saved world
-    fnmWorldToPlay = CTString(CStringA(pDoc->GetPathName()));
+    fnmWorldToPlay = MfcStringToCT(pDoc->GetPathName());
     try {
       fnmWorldToPlay.RemoveApplicationPath_t();
     } catch( char *strError) {

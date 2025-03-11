@@ -1285,7 +1285,7 @@ void OnDropIntoLayerTexture(CTIButton *ptib, CPoint pt, CDrawPort *pdp, CTFileNa
   // if it is not texture, report error
   if( fnDropped.FileExt() != ".tex" )
   {
-    AfxMessageBox( L"You can only drop textures here.");
+    AfxMessageBox(_T("You can only drop textures here."));
     return;
   }
   
@@ -1973,7 +1973,7 @@ void InvokeTerrainBrushPalette( PIX pixX, PIX pixY)
     //CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     // FIXME: Can't create with WS_CHILD flag, possibly due to AfxGetMainWnd() returning a pointer to CMainFrame from another thread
     BOOL bResult = _pBrushPalette->CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Brush palette", WS_POPUP | WS_VISIBLE,
+      NULL, _T("Brush palette"), WS_POPUP | WS_VISIBLE,
       rectWindow, NULL, NULL, NULL);
 
     _pBrushPalette->SetFocus();
@@ -1982,7 +1982,7 @@ void InvokeTerrainBrushPalette( PIX pixX, PIX pixY)
       DWORD err = GetLastError();
 
       CString str;
-      str.Format(L"Error %d: Failed to create brush palette", err);
+      str.Format(_T("Error %d: Failed to create brush palette"), err);
       AfxMessageBox(str);
 
       if (_pBrushPalette) {
@@ -2319,16 +2319,16 @@ void CTerrainInterface::OnDropFiles(HDROP hDropInfo)
   
   if( iNoOfFiles != 1)
   {
-    AfxMessageBox( L"You can drop only one file at a time.");
+    AfxMessageBox(_T("You can drop only one file at a time."));
     return;
   }
 
 	// buffer for dropped file name
-  wchar_t chrFile[ 256];
+  TCHAR chrFile[ 256];
   // place dropped file name into buffer
   DragQueryFile( hDropInfo, 0, chrFile, 256);
   // create file name from buffer
-  CTFileName fnDropped = CTString(CStringA(chrFile));
+  CTFileName fnDropped = MfcStringToCT(chrFile);
 
   CPoint ptMouse;
   GetCursorPos( &ptMouse); 

@@ -210,12 +210,12 @@ BOOL CCustomComboWnd::Initialize(FLOAT *pfResult, void (*pOnSelect)(INDEX iSelec
     //CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     // FIXME: Can't create with WS_CHILD flag, possibly due to AfxGetMainWnd() returning a pointer to CMainFrame from another thread
     BOOL bResult = CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Custom combo", WS_POPUP | WS_VISIBLE,
+      NULL, _T("Custom combo"), WS_POPUP | WS_VISIBLE,
       rectWindow.left, rectWindow.top, rectWindow.Width(), rectWindow.Height(),
       NULL, NULL, NULL);
     if( !bResult)
     {
-      AfxMessageBox( L"Error: Failed to create custom combo!");
+      AfxMessageBox(_T("Error: Failed to create custom combo!"));
       return FALSE;
     }
     _pGfx->CreateWindowCanvas( m_hWnd, &m_pViewPort, &m_pDrawPort);

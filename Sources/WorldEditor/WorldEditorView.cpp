@@ -2609,11 +2609,11 @@ void CWorldEditorView::OnLButtonDown(UINT nFlags, CPoint point)
     if( pDoc->IsModified() )
     {
       // report error
-      AfxMessageBox(L"You must save your document before you can perform drag.");
+      AfxMessageBox(_T("You must save your document before you can perform drag."));
     }
     else
     {
-      CTFileName fnDocument = CTString(CStringA(pDoc->GetPathName()));
+      CTFileName fnDocument = MfcStringToCT(pDoc->GetPathName());
       // save the thumbnail
       pDoc->SaveThumbnail();
       // try to
@@ -4842,7 +4842,7 @@ void CWorldEditorView::OnDropFiles(HDROP hDropInfo)
   // there can be only one file dropped
   if( iNoOfFiles != 1)
   {
-    AfxMessageBox( L"You can drop only one file at a time.");
+    AfxMessageBox(_T("You can drop only one file at a time."));
     return;
   }
 
@@ -5001,14 +5001,14 @@ void CWorldEditorView::OnDropFiles(HDROP hDropInfo)
     else
     {
       // inform user that drop can be achived only over polygons
-      AfxMessageBox( L"You can drop textures only by hitting some polygon, but You hit some entity.");
+      AfxMessageBox(_T("You can drop textures only by hitting some polygon, but You hit some entity."));
       return;
     }
   }
   else
   {
     // the drop was not successful, report error
-    AfxMessageBox( L"You can drop only textures, classes and worlds.");
+    AfxMessageBox(_T("You can drop only textures, classes and worlds."));
     return;
   }
 }
@@ -5724,7 +5724,7 @@ void CWorldEditorView::OnTakeSs()
   pdpValidDrawPort->GrabScreen( iiImageInfo, 1);
 
   // ask for save screen shot name
-  CTFileName fnDocName = CTString( CStringA(GetDocument()->GetPathName()));
+  CTFileName fnDocName = MfcStringToCT(GetDocument()->GetPathName());
   CTFileName fnScreenShoot =  _EngineGUI.FileRequester(
     "Choose file name for screen shoot", FILTER_TGA FILTER_ALL FILTER_END, KEY_NAME_SCREEN_SHOT_DIR,
     ExpandPath::ToUser("ScreenShots\\"), fnDocName.FileName()+"xx"+".tga", NULL, FALSE); // [Cecil] From user data
@@ -6387,42 +6387,42 @@ BOOL CWorldEditorView::PreTranslateMessage(MSG* pMsg)
     // space without mouse buttons but ctrl pressed
     if( bSpace && !bLMB && !bRMB && bCtrl)
     {
-      STATUS_LINE_MESASGE( L"LMB zoomes in 2x, RMB zoomes out 2x");
+      STATUS_LINE_MESASGE(_T("LMB zoomes in 2x, RMB zoomes out 2x"));
     }
     // space without mouse buttons
     else if( bSpace && !bLMB && !bRMB && !bShift)
     {
-      STATUS_LINE_MESASGE( L"Rotate or move viewer. Try: LMB,RMB,LMB+RMB,Space+Ctrl");
+      STATUS_LINE_MESASGE(_T("Rotate or move viewer. Try: LMB,RMB,LMB+RMB,Space+Ctrl"));
     }
     // space with left mouse button
     else if( bSpace && bLMB && !bRMB)
     {
-      STATUS_LINE_MESASGE( L"Move viewer in view plane");
+      STATUS_LINE_MESASGE(_T("Move viewer in view plane"));
     }
     // space with right mouse button
     else if( bSpace && !bLMB && bRMB)
     {
-      STATUS_LINE_MESASGE( L"Move viewer in floor plane");
+      STATUS_LINE_MESASGE(_T("Move viewer in floor plane"));
     }
     // space with both mouse buttons
     else if( bSpace && bLMB && bRMB)
     {
-      STATUS_LINE_MESASGE( L"Rotate viewer");
+      STATUS_LINE_MESASGE(_T("Rotate viewer"));
     }
     // Alt pressed
     else if( bAlt && !bCtrl && !bShift)
     {
-      STATUS_LINE_MESASGE( L"You can drag any view and drop it into browser");
+      STATUS_LINE_MESASGE(_T("You can drag any view and drop it into browser"));
     }
     // for measure mode
     else if( theApp.m_bMeasureModeOn)
     {
-      STATUS_LINE_MESASGE( L"Use LMB to measure distances");
+      STATUS_LINE_MESASGE(_T("Use LMB to measure distances"));
     }
     // for cut mode
     else if( theApp.m_bCutModeOn)
     {
-      STATUS_LINE_MESASGE( L"Use LMB to move cut/mirror line, enter to apply");
+      STATUS_LINE_MESASGE(_T("Use LMB to move cut/mirror line, enter to apply"));
     }
     // for CSG mode
     else if( bCSGOn)
@@ -6433,48 +6433,48 @@ BOOL CWorldEditorView::PreTranslateMessage(MSG* pMsg)
         // primitive mode, only <Ctrl> pressed
         if( bCtrl && !bLMB && !bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Use LMBx2 to teleport primitive. Try: LMB,RMB,LMB+RMB,Shift");
+          STATUS_LINE_MESASGE(_T("Use LMBx2 to teleport primitive. Try: LMB,RMB,LMB+RMB,Shift"));
         }
         //-------- <Ctrl+Shift> commands for primitive
         // primitive mode, <Ctrl+Shift> pressed
         else if( bCtrl && !bLMB && !bRMB && bShift)
         {
-          STATUS_LINE_MESASGE( L"Size and shear primitive. Try: LMB,RMB");
+          STATUS_LINE_MESASGE(_T("Size and shear primitive. Try: LMB,RMB"));
         }
         // primitive mode, <Ctrl+Shift+LMB> pressed
         else if( bCtrl && bLMB && !bRMB && bShift)
         {
-          STATUS_LINE_MESASGE( L"Resize primitive");
+          STATUS_LINE_MESASGE(_T("Resize primitive"));
         }
         // primitive mode, <Ctrl+Shift+RMB> pressed
         else if( bCtrl && !bLMB && bRMB && bShift)
         {
-          STATUS_LINE_MESASGE( L"Shear primitive");
+          STATUS_LINE_MESASGE(_T("Shear primitive"));
         }
         // primitive mode, <Ctrl+LMB> pressed
         else if( bCtrl && bLMB && !bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Move primitive in view plane");
+          STATUS_LINE_MESASGE(_T("Move primitive in view plane"));
         }
         // primitive mode, <Ctrl+RMB> pressed
         else if( bCtrl && !bLMB && bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Move primitive in floor plane");
+          STATUS_LINE_MESASGE(_T("Move primitive in floor plane"));
         }
         // primitive mode, <Ctrl+LMB+RMB> pressed
         else if( bCtrl && bLMB && bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Rotate primitive in view plane");
+          STATUS_LINE_MESASGE(_T("Rotate primitive in view plane"));
         }
         // <Shift> pressed
         else if( !bCtrl && !bLMB && !bRMB && bShift)
         {
-          STATUS_LINE_MESASGE( L"LMB inserts vertex, RMB deletes vertex. Try: Ctrl");
+          STATUS_LINE_MESASGE(_T("LMB inserts vertex, RMB deletes vertex. Try: Ctrl"));
         }
         // primitive mode, nothing pressed
         else
         {
-          STATUS_LINE_MESASGE( L"Primitive mode. Try: Alt,Ctrl,Shift");
+          STATUS_LINE_MESASGE(_T("Primitive mode. Try: Alt,Ctrl,Shift"));
         }
       }
       // for template mode
@@ -6484,27 +6484,27 @@ BOOL CWorldEditorView::PreTranslateMessage(MSG* pMsg)
         // template mode, only <Ctrl> pressed
         if( bCtrl && !bLMB && !bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Use LMB dbl. click to teleport template. Try: LMB,RMB,LMB+RMB");
+          STATUS_LINE_MESASGE(_T("Use LMB dbl. click to teleport template. Try: LMB,RMB,LMB+RMB"));
         }
         // template mode, <Ctrl+LMB> pressed
         else if( bCtrl && bLMB && !bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Move template in view plane");
+          STATUS_LINE_MESASGE(_T("Move template in view plane"));
         }
         // template mode, <Ctrl+RMB> pressed
         else if( bCtrl && !bLMB && bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Move template in floor plane");
+          STATUS_LINE_MESASGE(_T("Move template in floor plane"));
         }
         // template mode, <Ctrl+LMB+RMB> pressed
         else if( bCtrl && bLMB && bRMB && !bShift)
         {
-          STATUS_LINE_MESASGE( L"Rotate template");
+          STATUS_LINE_MESASGE(_T("Rotate template"));
         }
         // template mode, nothing pressed
         else
         {
-          STATUS_LINE_MESASGE( L"Template primitive mode. Try: Ctrl");
+          STATUS_LINE_MESASGE(_T("Template primitive mode. Try: Ctrl"));
         }
       }
     }
@@ -6522,63 +6522,63 @@ BOOL CWorldEditorView::PreTranslateMessage(MSG* pMsg)
       // entity mode, <Ctrl+Shift> pressed
       if( bEditingProperties && bCtrl && bShift )
       {
-        STATUS_LINE_MESASGE( L"Use LMB to change range or direction");
+        STATUS_LINE_MESASGE(_T("Use LMB to change range or direction"));
       }
       // <Alt + Ctrl> pressed
       else if( bAlt && bCtrl)
       {
-        STATUS_LINE_MESASGE( L"Use LMB to set entity ptr. (Entity ptr property must be selected)");
+        STATUS_LINE_MESASGE(_T("Use LMB to set entity ptr. (Entity ptr property must be selected)"));
       }
       else if( bCtrl && bShift)
       {
-        STATUS_LINE_MESASGE( L"Use RMB to set mip switch distance (in auto mode)");
+        STATUS_LINE_MESASGE(_T("Use RMB to set mip switch distance (in auto mode)"));
       }
       else if( bSpace && bShift)
       {
-        STATUS_LINE_MESASGE( L"Use RMB to change virtual mip distance");
+        STATUS_LINE_MESASGE(_T("Use RMB to change virtual mip distance"));
       }
       // entity mode, <Shift> pressed
       else if( !bCtrl && bShift)
       {
-        STATUS_LINE_MESASGE( L"Use LMB to toggle selection of one entity . Try: Ctrl,Space");
+        STATUS_LINE_MESASGE(_T("Use LMB to toggle selection of one entity . Try: Ctrl,Space"));
       }
       // entity mode, <Ctrl> pressed
       else if( bCtrl && !bLMB && !bRMB && !bShift)
       {
         if( bEditingProperties)
         {
-          STATUS_LINE_MESASGE( L"Use LMBx2 click to teleport entity. Try: LMB,RMB,LMB+RMB,Shift");
+          STATUS_LINE_MESASGE(_T("Use LMBx2 click to teleport entity. Try: LMB,RMB,LMB+RMB,Shift"));
         }
         else
         {
-          STATUS_LINE_MESASGE( L"Use LMBx2 click to teleport entity. Try: Alt,LMB,RMB,LMB+RMB");
+          STATUS_LINE_MESASGE(_T("Use LMBx2 click to teleport entity. Try: Alt,LMB,RMB,LMB+RMB"));
         }
       }
       // entity mode, <Ctrl+LMB> pressed
       else if( bCtrl && bLMB && !bRMB && !bShift)
       {
-        STATUS_LINE_MESASGE( L"Move entities in view plane");
+        STATUS_LINE_MESASGE(_T("Move entities in view plane"));
       }
       // entity mode, <Ctrl+RMB> pressed
       else if( bCtrl && !bLMB && bRMB && !bShift)
       {
-        STATUS_LINE_MESASGE( L"Move entities in floor plane");
+        STATUS_LINE_MESASGE(_T("Move entities in floor plane"));
       }
       // entity mode, <Ctrl+LMB+RMB> pressed
       else if( bCtrl && bLMB && bRMB && !bShift)
       {
-        STATUS_LINE_MESASGE( L"Rotate entities");
+        STATUS_LINE_MESASGE(_T("Rotate entities"));
       }
       // entity mode, nothing pressed
       else
       {
         if( bEditingProperties)
         {
-          STATUS_LINE_MESASGE( L"Use LMB to select entities. Try: Ctrl,Shift");
+          STATUS_LINE_MESASGE(_T("Use LMB to select entities. Try: Ctrl,Shift"));
         }
         else
         {
-          STATUS_LINE_MESASGE( L"Use LMB to select entities. Try: Ctrl,Shift,Ctrl+Alt");
+          STATUS_LINE_MESASGE(_T("Use LMB to select entities. Try: Ctrl,Shift,Ctrl+Alt"));
         }
       }
     }
@@ -6588,36 +6588,36 @@ BOOL CWorldEditorView::PreTranslateMessage(MSG* pMsg)
       // polygon mode, <Ctrl> pressed
       if( bCtrl && !bLMB && !bRMB && !bShift && !bAlt)
       {
-        STATUS_LINE_MESASGE( L"LMBx2 centers texture. RMBx2 selects similar by texture. Try: LMB,LMB+RMB");
+        STATUS_LINE_MESASGE(_T("LMBx2 centers texture. RMBx2 selects similar by texture. Try: LMB,LMB+RMB"));
       }
       // polygon mode, <Shift> pressed
       else if( !bCtrl && !bLMB && !bRMB && bShift && !bAlt)
       {
-        STATUS_LINE_MESASGE( L"Toggle polygon using LMB or RMB. Add simillar with LMB dbl. click");
+        STATUS_LINE_MESASGE(_T("Toggle polygon using LMB or RMB. Add simillar with LMB dbl. click"));
       }
       // polygon mode, <Ctrl+LMB> pressed
       else if( bCtrl && bLMB && !bRMB && !bShift && !bAlt)
       {
-        STATUS_LINE_MESASGE( L"Scroll polygon's mapping texture");
+        STATUS_LINE_MESASGE(_T("Scroll polygon's mapping texture"));
       }
       // polygon mode, <Ctrl+LMB+RMB> pressed
       else if( bCtrl && bLMB && bRMB && !bShift && !bAlt)
       {
-        STATUS_LINE_MESASGE( L"Rotate polygon's mapping texture");
+        STATUS_LINE_MESASGE(_T("Rotate polygon's mapping texture"));
       }
       else if( bCtrl && bAlt)
       {
-        STATUS_LINE_MESASGE( L"Zoom in texture 2x using LMB, zoom out texture 2x using RMB");
+        STATUS_LINE_MESASGE(_T("Zoom in texture 2x using LMB, zoom out texture 2x using RMB"));
       }
       // polygon mode, <Ctrl+Shift> pressed
       else if( bCtrl && bShift)
       {
-        STATUS_LINE_MESASGE( L"Select polygons similar by texture in sector with LMBx2, similar by color with RMBx2");
+        STATUS_LINE_MESASGE(_T("Select polygons similar by texture in sector with LMBx2, similar by color with RMBx2"));
       }
       // polygon mode, nothing pressed
       else if( !bCtrl && !bLMB && !bRMB && !bShift && !bAlt)
       {
-        STATUS_LINE_MESASGE( L"Select polygons using LMB or RMB, by color using LMBx2. Try: Alt,Ctrl,Shift,Ctrl+Alt");
+        STATUS_LINE_MESASGE(_T("Select polygons using LMB or RMB, by color using LMBx2. Try: Alt,Ctrl,Shift,Ctrl+Alt"));
       }
     }
     // for sector mode
@@ -6626,12 +6626,12 @@ BOOL CWorldEditorView::PreTranslateMessage(MSG* pMsg)
       // sector mode, <Shift> pressed
       if( !bCtrl && !bLMB && !bRMB && bShift)
       {
-        STATUS_LINE_MESASGE( L"Add to selection or deselect sector using LMB or LMB dbl. click");
+        STATUS_LINE_MESASGE(_T("Add to selection or deselect sector using LMB or LMB dbl. click"));
       }
       // sector mode, nothing pressed
       else
       {
-        STATUS_LINE_MESASGE( L"Select or deselect sector using LMB or LMB dbl. click. Try: Alt,Shift");
+        STATUS_LINE_MESASGE(_T("Select or deselect sector using LMB or LMB dbl. click. Try: Alt,Shift"));
       }
     }
 
@@ -6709,7 +6709,7 @@ void CWorldEditorView::OnCloneCSG()
     // get wanted count of clones
     ctClones = dlgAutoDeltaCSG.m_ctNumberOfClones;
     // write it to .ini file for the next time
-    theApp.WriteProfileInt(L"World editor", L"Number of CSG clones", ctClones);
+    theApp.WriteProfileInt(_T("World editor"), _T("Number of CSG clones"), ctClones);
   }
   // set wait cursor
   CWaitCursor StartWaitCursor;
@@ -6719,7 +6719,7 @@ void CWorldEditorView::OnCloneCSG()
   {
     // create progress dialog
     dlgProgressDialog.Create( IDD_PROGRESS_DIALOG);
-    dlgProgressDialog.SetWindowText(L"Repeat CSG");
+    dlgProgressDialog.SetWindowText(_T("Repeat CSG"));
     // show progress window
     dlgProgressDialog.ShowWindow( SW_SHOW);
     // center window
@@ -11202,7 +11202,7 @@ void CWorldEditorView::OnExportDisplaceMap()
     fMaxX, fMaxY, fMaxZ, 
     fDeltaX, fDeltaZ);
 
-  CTFileName fnDocName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnDocName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnDirectory = fnDocName.FileDir();
   CTFileName fnDefaultSelected = fnDocName.FileName()+CTString("DisplaceMap.tga");
 
@@ -11793,7 +11793,7 @@ void CWorldEditorView::PumpWindowsMessagesInFreeMode(BOOL &bRunning, FLOAT &fSpe
     if(msg.message==_uiMessengerMsg)
     {
       // if one application allready started
-      HWND hwndMessenger = ::FindWindow(NULL, L"Croteam Messenger");
+      HWND hwndMessenger = ::FindWindow(NULL, _T("Croteam Messenger"));
       if(hwndMessenger != NULL)
       {
         // force messenger to popup

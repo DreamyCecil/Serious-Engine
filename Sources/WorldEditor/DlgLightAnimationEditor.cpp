@@ -70,7 +70,7 @@ CDlgLightAnimationEditor::CDlgLightAnimationEditor(CWnd* pParent /*=NULL*/)
   // try to load animation that was last edited
   try
   {
-    CTFileName fnLastEditted = CTString( CStringA(theApp.GetProfileString(L"World editor", L"Last edited light animation", CString(DEFAULT_ANIMATION_FILE))));
+    CTFileName fnLastEditted = MfcStringToCT(theApp.GetProfileString(_T("World editor"), _T("Last edited light animation"), CString(DEFAULT_ANIMATION_FILE)));
     m_padAnimData = _pAnimStock->Obtain_t( fnLastEditted);
     m_fnSaveName = fnLastEditted;
   }
@@ -95,7 +95,7 @@ CDlgLightAnimationEditor::CDlgLightAnimationEditor(CWnd* pParent /*=NULL*/)
 
 CDlgLightAnimationEditor::~CDlgLightAnimationEditor()
 {
-  theApp.WriteProfileString(L"World editor", L"Last edited light animation", CString(m_padAnimData->GetName()));
+  theApp.WriteProfileString(_T("World editor"), _T("Last edited light animation"), CString(m_padAnimData->GetName()));
   m_wndTestAnimation.m_aoAnimObject.SetData( NULL);
   _pAnimStock->Release( m_padAnimData);
 }
@@ -203,7 +203,7 @@ void CDlgLightAnimationEditor::StoreData(void)
   }
 
   // and set new name to anim data
-  m_padAnimData->SetName( iLightAnimation, CTString(CStringA(m_strLightAnimationName)));
+  m_padAnimData->SetName(iLightAnimation, MfcStringToCT(m_strLightAnimationName));
   //------------ Prepare new array of frames for current animation (key frames changing is
   // not applied here but in control LMB down handler)
   CAnimData *pAD = m_padAnimData;

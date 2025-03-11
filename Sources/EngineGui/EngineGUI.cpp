@@ -263,13 +263,13 @@ void CEngineGUI::GetFullScreenModeFromRegistry( CTString strSectionName, CDispla
   dm.dm_pixSizeJ = 480;
   dm.dm_ddDepth  = DD_DEFAULT;
   // read FS parameters from registry
-  CTString strResult = CStringA(AfxGetApp()->GetProfileString(CString(strSectionName.ConstData()), L"Full screen mode", L"640 x 480 x 0")).GetString();
+  CTString strResult = MfcStringToCT(AfxGetApp()->GetProfileString(CString(strSectionName.ConstData()), _T("Full screen mode"), _T("640 x 480 x 0")));
   strResult.ScanF( "%d x %d x %d", &dm.dm_pixSizeI, &dm.dm_pixSizeJ, &dm.dm_ddDepth);
   if( dm.dm_ddDepth<DD_DEFAULT || dm.dm_ddDepth>DD_32BIT) dm.dm_ddDepth = DD_DEFAULT;
 
   // [Cecil] API name
   const CTString &strOGL = _pGfx->GetApiName(GAT_OGL);
-  strResult = CStringA(AfxGetApp()->GetProfileString(CString(strSectionName.ConstData()), L"Full screen API", CString(strOGL.ConstData())));
+  strResult = MfcStringToCT(AfxGetApp()->GetProfileString(CString(strSectionName.ConstData()), _T("Full screen API"), CString(strOGL.ConstData())));
 
   gat = (strResult != strOGL) ? GAT_D3D : GAT_OGL;
 }
@@ -282,6 +282,6 @@ void CEngineGUI::SetFullScreenModeToRegistry( CTString strSectionName, CDisplayM
   // [Cecil] API name
   CTString strGAT = _pGfx->GetApiName(_pGfx->GetCurrentAPI());
 
-  AfxGetApp()->WriteProfileString(CString(strSectionName.ConstData()), L"Full screen mode", CString(strDM.ConstData()));
-  AfxGetApp()->WriteProfileString(CString(strSectionName.ConstData()), L"Full screen API", CString(strGAT.ConstData()));
+  AfxGetApp()->WriteProfileString(CString(strSectionName.ConstData()), _T("Full screen mode"), CString(strDM.ConstData()));
+  AfxGetApp()->WriteProfileString(CString(strSectionName.ConstData()), _T("Full screen API"), CString(strGAT.ConstData()));
 }

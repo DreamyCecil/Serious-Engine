@@ -39,6 +39,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 #include <Engine/Engine.h>
+#include <EngineGUI/MfcStringToCT.inl> // [Cecil]
 
 #ifdef _UNICODE
 #if defined _M_IX86

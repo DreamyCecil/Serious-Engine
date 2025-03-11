@@ -78,7 +78,7 @@ void CScriptView::OnScriptMakeModel()
 {
 	// First we save script file
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
-  CTFileName fnScriptName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnScriptName = MfcStringToCT(pDoc->GetPathName());
 
   CTFileName fnModelName = fnScriptName.NoExt() + ".mdl";
   try
@@ -97,7 +97,7 @@ void CScriptView::OnScriptMakeModel()
   while (pos!=NULL)
   {
     CModelerDoc *pmdCurrent = (CModelerDoc *)theApp.m_pdtModelDocTemplate->GetNextDoc(pos);
-    if( CTFileName( CTString(CStringA(pmdCurrent->GetPathName()))) == fnModelName)
+    if (MfcStringToCT(pmdCurrent->GetPathName()) == fnModelName)
     {
       pmdCurrent->OnCloseDocument();
       break;
@@ -158,14 +158,14 @@ void CScriptView::OnScriptUpdateAnimations()
 {
 	// find document with same name
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
-  CTFileName fnScriptName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnScriptName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnModelName = fnScriptName.NoExt() + ".mdl";
 
 	POSITION pos = theApp.m_pdtModelDocTemplate->GetFirstDocPosition();
   while (pos!=NULL)
   {
     CModelerDoc *pmdCurrent = (CModelerDoc *)theApp.m_pdtModelDocTemplate->GetNextDoc(pos);
-    if( CTFileName( CTString(CStringA(pmdCurrent->GetPathName()))) == fnModelName)
+    if (MfcStringToCT(pmdCurrent->GetPathName()) == fnModelName)
     {
       POSITION pos = pmdCurrent->GetFirstViewPosition();
       CView *pView = pmdCurrent->GetNextView( pos);
@@ -193,14 +193,14 @@ void CScriptView::OnScriptUpdateMipmodels()
 {
 	// find document with same name
   CModelerDoc *pDoc = (CModelerDoc *) GetDocument();
-  CTFileName fnScriptName = CTString(CStringA(pDoc->GetPathName()));
+  CTFileName fnScriptName = MfcStringToCT(pDoc->GetPathName());
   CTFileName fnModelName = fnScriptName.NoExt() + ".mdl";
 
 	POSITION pos = theApp.m_pdtModelDocTemplate->GetFirstDocPosition();
   while (pos!=NULL)
   {
     CModelerDoc *pmdCurrent = (CModelerDoc *)theApp.m_pdtModelDocTemplate->GetNextDoc(pos);
-    if( CTFileName( CTString(CStringA(pmdCurrent->GetPathName()))) == fnModelName)
+    if (MfcStringToCT(pmdCurrent->GetPathName()) == fnModelName)
     {
       POSITION pos = pmdCurrent->GetFirstViewPosition();
       CView *pView = pmdCurrent->GetNextView( pos);

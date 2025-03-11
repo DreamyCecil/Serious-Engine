@@ -52,10 +52,10 @@ void CTextBox::ValueChanged()
 {
   CSeriousSkaStudioDoc *pDoc = theApp.GetDocument();
 
-  wchar_t wstrText[32];
+  TCHAR wstrText[32];
   // get value from text box
   GetWindowText(wstrText,31);
-  CTString strText = CStringA(wstrText).GetString();
+  CTString strText = MfcStringToCT(wstrText);
   CModelTreeCtrl &m_TreeCtrl = theApp.m_dlgBarTreeView.m_TreeCtrl;
   // get selected item in tree view
   HTREEITEM hSelected = m_TreeCtrl.GetSelectedItem();

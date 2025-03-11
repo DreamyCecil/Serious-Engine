@@ -778,7 +778,7 @@ void CDlgBarTreeView::SelItemChanged(HTREEITEM hSelected)
       // set this mesh lod as forced lod
       pDoc->fCustomMeshLodDist=pmlod->mlod_fMaxDistance-0.01f;
       ShowControlGroup(GR_LOD);
-      SetCustomTabText(L"Mesh lod");
+      SetCustomTabText(_T("Mesh lod"));
     }
     break;
     case NT_SKELETONLOD:
@@ -789,7 +789,7 @@ void CDlgBarTreeView::SelItemChanged(HTREEITEM hSelected)
       // set this skleleton lod as forced lod
       pDoc->fCustomSkeletonLodDist=pslod->slod_fMaxDistance-0.01f;
       ShowControlGroup(GR_LOD);
-      SetCustomTabText(L"Skeleton lod");
+      SetCustomTabText(_T("Skeleton lod"));
     }
     break;
     case NT_BONE:
@@ -851,7 +851,7 @@ void CDlgBarTreeView::SelItemChanged(HTREEITEM hSelected)
       ((CButton*)m_dlgAnimSet.GetDlgItem(IDC_CB_COMPRESION))->SetCheck(pan->an_bCompresed);
       CheckSecPerFrameCtrl(pan->an_bCustomSpeed);
       ShowControlGroup(GR_ANIMSET);
-      SetCustomTabText(L"Animation");
+      SetCustomTabText(_T("Animation"));
     }
     break;
     case NT_MESHSURFACE:
@@ -887,20 +887,20 @@ void CDlgBarTreeView::SelItemChanged(HTREEITEM hSelected)
       // set it to be curent colision box
       pmiSelected->mi_iCurentBBox = iIndex;
       ShowControlGroup(GR_COLISION);
-      SetCustomTabText(L"Colision");
+      SetCustomTabText(_T("Colision"));
     }
     break;
     case NT_ALLFRAMESBBOX:
     {
       ShowControlGroup(GR_ALLFRAMES_BBOX);
-      SetCustomTabText(L"All frames");
+      SetCustomTabText(_T("All frames"));
     }
     break;
     default:
       // no custom group
       //iShowCustomGroup = -1;
       ShowControlGroup(-1);
-      SetCustomTabText(L"Custom");
+      SetCustomTabText(_T("Custom"));
     break;
   }
   
@@ -1275,14 +1275,14 @@ HTREEITEM CDlgBarTreeView::AddModelInst(CModelInstance &mi, CModelInstance *pmiP
   // expand only root model
   if(hParent == TVI_ROOT) {
     // add parent model instance
-    hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_STATE , L"", 0, 0, TVIS_EXPANDED, TVIS_EXPANDED, 0, hParent, 0 );
+    hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_STATE , _T(""), 0, 0, TVIS_EXPANDED, TVIS_EXPANDED, 0, hParent, 0 );
     m_TreeCtrl.SetItemText(hItem, CString(mi.GetName().ConstData()));
   } else {
     int iIcon = 0;
     if(mi.mi_fnSourceFile != pmiParent->mi_fnSourceFile) iIcon = 8;
 
     // add child model instance
-    hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_STATE , L"", iIcon, iIcon, TVIS_EXPANDED, TVIS_EXPANDED, 0, hParent, 0 );
+    hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_STATE , _T(""), iIcon, iIcon, TVIS_EXPANDED, TVIS_EXPANDED, 0, hParent, 0 );
     // get parent bone name
     CTString strParentBoneName = ska_GetStringFromTable(mi.mi_iParentBoneID);
     CTString strText = mi.GetName() + " [" + strParentBoneName + "]";
@@ -1319,7 +1319,7 @@ void CDlgBarTreeView::AddSkeleton(CModelInstance &mi, HTREEITEM hParent)
   if(mi.mi_psklSkeleton == NULL) return;
   CSkeleton &sk = *mi.mi_psklSkeleton;
   // insert skeleton
-  HTREEITEM hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE  , L"", 5, 5, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0 );
+  HTREEITEM hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE  , _T(""), 5, 5, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0 );
   CTString strSkeletonName;
   strSkeletonName.PrintF("%s [%d]", sk.GetName().FileName().ConstData(), sk.skl_aSkeletonLODs.Count());
 
@@ -1330,7 +1330,7 @@ void CDlgBarTreeView::AddSkeleton(CModelInstance &mi, HTREEITEM hParent)
   for(INDEX islod=0;islod<ctslod;islod++) {
     SkeletonLOD &slod = sk.skl_aSkeletonLODs[islod];
     // insert skeleton lod
-    HTREEITEM hSlod = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"", 5, 5, TVIS_SELECTED, TVIF_STATE, 0, hItem, 0 );
+    HTREEITEM hSlod = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""), 5, 5, TVIS_SELECTED, TVIF_STATE, 0, hItem, 0 );
     // count bones
     INDEX ctb = slod.slod_aBones.Count();
 
@@ -1344,7 +1344,7 @@ void CDlgBarTreeView::AddSkeleton(CModelInstance &mi, HTREEITEM hParent)
     for(INDEX ib=0;ib<ctb;ib++) {
       SkeletonBone &sb = sk.skl_aSkeletonLODs[islod].slod_aBones[ib];
       // insert bone
-      HTREEITEM hBone = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"", 7, 7, TVIS_SELECTED, TVIF_STATE, 0, hSlod , 0 );
+      HTREEITEM hBone = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""), 7, 7, TVIS_SELECTED, TVIF_STATE, 0, hSlod , 0 );
       m_TreeCtrl.SetItemText(hBone, CString(ska_GetStringFromTable(sb.sb_iID).ConstData()));
       m_TreeCtrl.SetItemData(hBone, AddNode(NT_BONE, &sb, &mi));
     }
@@ -1360,7 +1360,7 @@ void CDlgBarTreeView::AddSurfaces(CModelInstance &mi,MeshLOD &mlod,HTREEITEM hPa
     CShader *pShader =  msrf.msrf_pShader;
     CTString strShaderName;
     if(pShader!=NULL) strShaderName = pShader->GetName().FileName();
-    HTREEITEM hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  11, 11, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
+    HTREEITEM hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  11, 11, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
     CTString strSurfName;
     strSurfName.PrintF("%s [%d]-[%d]", ska_GetStringFromTable(msrf.msrf_iSurfaceID).ConstData(),
       msrf.msrf_ctVertices,msrf.msrf_aTriangles.Count());
@@ -1376,7 +1376,7 @@ void CDlgBarTreeView::AddMeshInstances(CModelInstance &mi,HTREEITEM hParent)
   for(INDEX imsh=0;imsh<ctmsh;imsh++)
   {
     MeshInstance &mshi = mi.mi_aMeshInst[imsh];
-    HTREEITEM hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  1, 1, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
+    HTREEITEM hItem = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  1, 1, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
     CTString strMeshName;
     strMeshName.PrintF("%s [%d]", mshi.mi_pMesh->GetName().FileName().ConstData(), mshi.mi_pMesh->msh_aMeshLODs.Count());
     m_TreeCtrl.SetItemText(hItem, CString(strMeshName.ConstData()));
@@ -1387,7 +1387,7 @@ void CDlgBarTreeView::AddMeshInstances(CModelInstance &mi,HTREEITEM hParent)
     for(INDEX imlod=0;imlod<ctmlod;imlod++)
     {
       MeshLOD &mlod = mshi.mi_pMesh->msh_aMeshLODs[imlod];
-      HTREEITEM hMlod = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  3, 3, TVIS_SELECTED, TVIF_STATE, 0, hItem, 0);
+      HTREEITEM hMlod = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  3, 3, TVIS_SELECTED, TVIF_STATE, 0, hItem, 0);
 
       CTString strMeshLod;
       CTFileName fnMlodSource = mlod.mlod_fnSourceFile;
@@ -1404,7 +1404,7 @@ void CDlgBarTreeView::AddMeshInstances(CModelInstance &mi,HTREEITEM hParent)
     {
       TextureInstance &ti = mshi.mi_tiTextures[itex];
       CTString strTextName = ska_GetStringFromTable(ti.GetID());
-      HTREEITEM hTexture = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  4, 4, TVIS_SELECTED, TVIF_STATE, 0, hItem, 0 );
+      HTREEITEM hTexture = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  4, 4, TVIS_SELECTED, TVIF_STATE, 0, hItem, 0 );
       m_TreeCtrl.SetItemText(hTexture, CString(strTextName.ConstData()));
       m_TreeCtrl.SetItemData(hTexture, AddNode(NT_TEXINSTANCE, &ti, &mi));
     }
@@ -1419,7 +1419,7 @@ void CDlgBarTreeView::AddColisionBoxes(CModelInstance &mi,HTREEITEM hParent)
   {
     // add collision box
     ColisionBox &cb = mi.mi_cbAABox[icb];
-    HTREEITEM hColisionBox = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  2, 2, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
+    HTREEITEM hColisionBox = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  2, 2, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
     m_TreeCtrl.SetItemText(hColisionBox, CString(cb.GetName().ConstData()));
     m_TreeCtrl.SetItemData(hColisionBox, AddNode(NT_COLISIONBOX, &cb, &mi));
   }
@@ -1430,8 +1430,8 @@ void CDlgBarTreeView::AddAllFramesBBox(CModelInstance &mi,HTREEITEM hParent)
 #pragma message(">> Remove AddAllFramesBBox")
   // add all frames bounding box
   ColisionBox &cb = mi.mi_cbAllFramesBBox;
-  HTREEITEM hAllFramesBBox = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  6, 6, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
-  m_TreeCtrl.SetItemText(hAllFramesBBox,L"All frames BBox");
+  HTREEITEM hAllFramesBBox = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  6, 6, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
+  m_TreeCtrl.SetItemText(hAllFramesBBox,_T("All frames BBox"));
   m_TreeCtrl.SetItemData(hAllFramesBBox,AddNode(NT_ALLFRAMESBBOX,&cb,&mi));
 }
 
@@ -1446,7 +1446,7 @@ HTREEITEM CDlgBarTreeView::AddAnimSet(CModelInstance &mi,HTREEITEM hParent)
     INDEX ctan = as.as_Anims.Count();
     CTString strAnimSetName;
     strAnimSetName.PrintF("%s [%d]", as.GetName().FileName().ConstData(), ctan);
-    HTREEITEM hAnimSet = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  9, 9, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
+    HTREEITEM hAnimSet = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  9, 9, TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
     m_TreeCtrl.SetItemText(hAnimSet, CString(strAnimSetName.ConstData()));
     m_TreeCtrl.SetItemData(hAnimSet, AddNode(NT_ANIMSET, &as, &mi));
     // for each anim
@@ -1455,7 +1455,7 @@ HTREEITEM CDlgBarTreeView::AddAnimSet(CModelInstance &mi,HTREEITEM hParent)
       Animation &an = as.as_Anims[ian];
       CTString strAnimName;
       strAnimName.PrintF("%s [%d]", ska_GetStringFromTable(an.an_iID).ConstData(), an.an_iFrames);
-      HTREEITEM hAnim = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  9, 9, TVIS_SELECTED, TVIF_STATE, 0, hAnimSet, 0);
+      HTREEITEM hAnim = m_TreeCtrl.InsertItem( TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  9, 9, TVIS_SELECTED, TVIF_STATE, 0, hAnimSet, 0);
       m_TreeCtrl.SetItemText(hAnim, CString(strAnimName.ConstData()));
       m_TreeCtrl.SetItemData(hAnim, AddNode(NT_ANIMATION, &an, &mi));
       INDEX ctbe=an.an_abeBones.Count();
@@ -1469,7 +1469,7 @@ HTREEITEM CDlgBarTreeView::AddAnimSet(CModelInstance &mi,HTREEITEM hParent)
         if(an.an_bCompresed) ctr = be.be_arRotOpt.Count();
 
         strBoneEnvName.PrintF("%s [%d]-[%d]", strBoneName.ConstData(), ctr, be.be_apPos.Count());
-        HTREEITEM hBoneEnv = m_TreeCtrl.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE , L"",  9, 9, TVIS_SELECTED, TVIF_STATE, 0, hAnim, 0);
+        HTREEITEM hBoneEnv = m_TreeCtrl.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE , _T(""),  9, 9, TVIS_SELECTED, TVIF_STATE, 0, hAnim, 0);
         m_TreeCtrl.SetItemText(hBoneEnv, CString(strBoneEnvName.ConstData()));
         m_TreeCtrl.SetItemData(hBoneEnv, AddNode(NT_ANIM_BONEENV, &be, &mi));
       }
@@ -1567,7 +1567,7 @@ void CDlgBarTreeView::UpdateModelInstInfo(CModelInstance *pmi)
   // if root item exists
   if(hRoot!=NULL) {
     // remember its name
-    strRoot = CStringA(m_TreeCtrl.GetItemText(hRoot));
+    strRoot = MfcStringToCT(m_TreeCtrl.GetItemText(hRoot));
   }
 
   // clear array for selected item
@@ -1602,7 +1602,7 @@ void CDlgBarTreeView::UpdateModelInstInfo(CModelInstance *pmi)
   HTREEITEM hParent = AddModelInst(*pmi,NULL,TVI_ROOT);
 
   // get name of root item
-  CTString strNewRoot = CStringA(m_TreeCtrl.GetItemText(hParent)).GetString();
+  CTString strNewRoot = MfcStringToCT(m_TreeCtrl.GetItemText(hParent));
   // if root item name is different then old root item name clear selection
   if(strRoot != strNewRoot && strRoot.Length() > 0) _aSelectItem.PopAll();
   if(_aSelectItem.Count() > 0)
@@ -1687,14 +1687,14 @@ void CDlgBarTreeView::FillBonesToComboBox(CSkeleton *pskl,INDEX iSelectedIndex)
 }
 
 // set text for 'custom' tab in tab control
-void CDlgBarTreeView::SetCustomTabText(const wchar_t *strText)
+void CDlgBarTreeView::SetCustomTabText(const TCHAR *strText)
 {
   // fill tab control item
   TCITEM tcitem;
   memset(&tcitem,0,sizeof(tcitem));
   tcitem.mask = TCIF_TEXT;
   tcitem.cchTextMax = 256;
-  tcitem.pszText = (LPWSTR)strText; // [Cecil] FIXME: I don't like this conversion but what else am I supposed to do?
+  tcitem.pszText = (LPTSTR)strText; // [Cecil] FIXME: I don't like this conversion but what else am I supposed to do?
   ((CTabCtrl*)GetDlgItem(IDC_MODE_SELECT_TAB))->SetItem(2,&tcitem);
 }
 // reset all controls on dialog
@@ -1702,7 +1702,7 @@ void CDlgBarTreeView::ResetControls()
 {
   m_TreeCtrl.DeleteAllItems();
   m_TreeCtrl.hLastSelected = NULL;
-  GetDlgItem(IDC_SELECTEDMI)->SetWindowText(L"(none)");
+  GetDlgItem(IDC_SELECTEDMI)->SetWindowText(_T("(none)"));
   ((CComboBox*)m_dlgParent.GetDlgItem(IDC_CB_PARENTBONE))->ResetContent();
   ((CComboBox*)m_dlgParent.GetDlgItem(IDC_CB_PARENTMODEL))->ResetContent();
   ((CButton*)m_dlgAnimSet.GetDlgItem(IDC_CB_COMPRESION))->SetCheck(FALSE);
@@ -1710,25 +1710,25 @@ void CDlgBarTreeView::ResetControls()
   ShowControlGroup(-1);
 
   
-  m_tbOffPosX.SetWindowText(L"");
-  m_tbOffPosY.SetWindowText(L"");
-  m_tbOffPosZ.SetWindowText(L"");
-  m_tbOffRotH.SetWindowText(L"");
-  m_tbOffRotP.SetWindowText(L"");
-  m_tbOffRotB.SetWindowText(L"");
+  m_tbOffPosX.SetWindowText(_T(""));
+  m_tbOffPosY.SetWindowText(_T(""));
+  m_tbOffPosZ.SetWindowText(_T(""));
+  m_tbOffRotH.SetWindowText(_T(""));
+  m_tbOffRotP.SetWindowText(_T(""));
+  m_tbOffRotB.SetWindowText(_T(""));
 
-  m_tbTreshold.SetWindowText(L"");
-  m_tbAnimSpeed.SetWindowText(L"");
+  m_tbTreshold.SetWindowText(_T(""));
+  m_tbAnimSpeed.SetWindowText(_T(""));
 
-  m_tbColName.SetWindowText(L"");
-  m_tbColWidth.SetWindowText(L"");
-  m_tbColHeight.SetWindowText(L"");
-  m_tbColLength.SetWindowText(L"");
-  m_tbColPosX.SetWindowText(L"");
-  m_tbColPosY.SetWindowText(L"");
-  m_tbColPosZ.SetWindowText(L"");
+  m_tbColName.SetWindowText(_T(""));
+  m_tbColWidth.SetWindowText(_T(""));
+  m_tbColHeight.SetWindowText(_T(""));
+  m_tbColLength.SetWindowText(_T(""));
+  m_tbColPosX.SetWindowText(_T(""));
+  m_tbColPosY.SetWindowText(_T(""));
+  m_tbColPosZ.SetWindowText(_T(""));
 
-  m_tbDistance.SetWindowText(L"");
+  m_tbDistance.SetWindowText(_T(""));
   //GET_CTRL(IDC_CB_TEXNAME)->SetWindowText("");
 }
 

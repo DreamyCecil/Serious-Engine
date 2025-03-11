@@ -256,7 +256,7 @@ void CDlgPgTexture::DoDataExchange(CDataExchange* pDX)
       }
       else
       {
-        pDoc->PasteTextureOverSelection_t( CTString( CStringA(m_strTextureFile)));
+        pDoc->PasteTextureOverSelection_t(MfcStringToCT(m_strTextureFile));
       }
     }
     // obtain masks for setting and clearing texture flags
@@ -304,7 +304,7 @@ void CDlgPgTexture::DoDataExchange(CDataExchange* pDX)
   // set file name of texture for thumbnail window
   CString strWindowText;
   GetDlgItem( IDC_TEXTURE_FILE_T)->GetWindowText( strWindowText);
-  m_wndViewTexture.m_strTexture = CStringA(strWindowText);
+  m_wndViewTexture.m_strTexture = MfcStringToCT(strWindowText);
   if( IsWindow( m_wndViewTexture.m_hWnd))
   {
     m_wndViewTexture.Invalidate( FALSE);
@@ -398,7 +398,7 @@ void CDlgPgTexture::OnBrowseTexture()
 
 void CDlgPgTexture::OnRemoveTexture()
 {
-  GetDlgItem( IDC_TEXTURE_FILE_T)->SetWindowText( L"No texture");
+  GetDlgItem( IDC_TEXTURE_FILE_T)->SetWindowText(_T("No texture"));
   // apply data change
 	UpdateData( TRUE);
 }
@@ -448,7 +448,7 @@ void CDlgPgTexture::OnDropFiles(HDROP hDropInfo)
 
   if( iNoOfFiles != 1)
   {
-    AfxMessageBox( L"You can drop only one file at a time.");
+    AfxMessageBox(_T("You can drop only one file at a time."));
     return;
   }
 
@@ -461,7 +461,7 @@ void CDlgPgTexture::OnDropFiles(HDROP hDropInfo)
   // if it is not texture, report error
   if( fnDropped.FileExt() != ".tex" )
   {
-    AfxMessageBox( L"You can only drop textures here.");
+    AfxMessageBox(_T("You can only drop textures here."));
     return;
   }
   try

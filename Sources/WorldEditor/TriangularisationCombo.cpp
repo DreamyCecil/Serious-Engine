@@ -61,7 +61,7 @@ BOOL CTriangularisationCombo::OnIdle(LONG lCount)
     // remove all combo entries
     ResetContent();
     // set none available message
-    AddString( L"None Available");
+    AddString(_T("None Available"));
     SetCurSel( 0);
   }
   // we should enable triangularisation combo 
@@ -71,24 +71,24 @@ BOOL CTriangularisationCombo::OnIdle(LONG lCount)
     if(GetCount() != 1) return TRUE;
     ResetContent();
     // add all possible triangularisation types
-    AddString( L"None");
-    AddString( L"Center");
-    AddString( L"Vertex 1");
-    AddString( L"Vertex 2");
-    AddString( L"Vertex 3");
-    AddString( L"Vertex 4");
-    AddString( L"Vertex 5");
-    AddString( L"Vertex 6");
-    AddString( L"Vertex 7");
-    AddString( L"Vertex 8");
-    AddString( L"Vertex 9");
-    AddString( L"Vertex 10");
-    AddString( L"Vertex 11");
-    AddString( L"Vertex 12");
-    AddString( L"Vertex 13");
-    AddString( L"Vertex 14");
-    AddString( L"Vertex 15");
-    AddString( L"Vertex 16");
+    AddString(_T("None"));
+    AddString(_T("Center"));
+    AddString(_T("Vertex 1"));
+    AddString(_T("Vertex 2"));
+    AddString(_T("Vertex 3"));
+    AddString(_T("Vertex 4"));
+    AddString(_T("Vertex 5"));
+    AddString(_T("Vertex 6"));
+    AddString(_T("Vertex 7"));
+    AddString(_T("Vertex 8"));
+    AddString(_T("Vertex 9"));
+    AddString(_T("Vertex 10"));
+    AddString(_T("Vertex 11"));
+    AddString(_T("Vertex 12"));
+    AddString(_T("Vertex 13"));
+    AddString(_T("Vertex 14"));
+    AddString(_T("Vertex 15"));
+    AddString(_T("Vertex 16"));
     // select currently selected triangularisation type
     SetCurSel( (int)theApp.m_vfpCurrent.vfp_ttTriangularisationType);
   }

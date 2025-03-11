@@ -150,7 +150,7 @@ void CDlgPgGlobal::OnDropFiles(HDROP hDropInfo)
   
   if( iNoOfFiles != 1)
   {
-    AfxMessageBox( L"You can drop only one file at a time.");
+    AfxMessageBox(_T("You can drop only one file at a time."));
     return;
   }
 
@@ -163,7 +163,7 @@ void CDlgPgGlobal::OnDropFiles(HDROP hDropInfo)
   // if it is not texture, report error
   if( fnDropped.FileExt() != ".tex" )
   {
-    AfxMessageBox( L"You can only drop textures here.");
+    AfxMessageBox(_T("You can only drop textures here."));
     return;
   }
   theApp.SetNewActiveTexture( fnDropped);

@@ -180,7 +180,7 @@ void CDlgLinkTree::AddEntityPtrsRecursiv(CEntity *pen, HTREEITEM hParent, CTStri
   if( _penAdded.IsMember( pen)) return;
   // Insert entity's ptrs into directory tree
   HTREEITEM InsertedEntity;
-  InsertedEntity = m_ctrTree.InsertItem( 0, L"", 0, 0,
+  InsertedEntity = m_ctrTree.InsertItem( 0, _T(""), 0, 0,
     TVIS_SELECTED, TVIF_STATE, 0, hParent, 0);
   m_ctrTree.SetItemData(InsertedEntity, (UINT_PTR)pen);
   CTString strText="";

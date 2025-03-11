@@ -159,7 +159,7 @@ void CDlgEditTerrainLayer::DoDataExchange(CDataExchange* pDX)
 	    ptlLayer->tl_fMinAltitude=m_fAltitudeMin/100.0f;
 	    ptlLayer->tl_fMinAltitudeFade=m_fAltitudeMinFade/100.0f;
 	    ptlLayer->tl_fCoverage=m_fLayerCoverage/100.0f;
-	    ptlLayer->tl_strName=CStringA(m_strLayerName);
+	    ptlLayer->tl_strName=MfcStringToCT(m_strLayerName);
 	    ptlLayer->tl_fOffsetX=m_fTextureOffsetX;
 	    ptlLayer->tl_fOffsetY=m_fTextureOffsetY;
 	    ptlLayer->tl_fRotateX=m_fTextureRotationU;

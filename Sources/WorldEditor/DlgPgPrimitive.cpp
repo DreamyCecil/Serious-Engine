@@ -100,19 +100,19 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
         GetDlgItem(IDC_HEIGHT_T)->EnableWindow( TRUE);
         GetDlgItem(IDC_EDIT1)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT1_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT1_T)->SetWindowText( L"Shear x:");
+        GetDlgItem(IDC_EDIT1_T)->SetWindowText(_T("Shear x:"));
         GetDlgItem(IDC_EDIT2)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT2_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT2_T)->SetWindowText( L"Shear y:");
+        GetDlgItem(IDC_EDIT2_T)->SetWindowText(_T("Shear y:"));
         GetDlgItem(IDC_EDIT3)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT3_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT3_T)->SetWindowText( L"Base vtx:");
+        GetDlgItem(IDC_EDIT3_T)->SetWindowText(_T("Base vtx:"));
         GetDlgItem(IDC_EDIT4)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT4_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT4_T)->SetWindowText( L"Stretch x:");
+        GetDlgItem(IDC_EDIT4_T)->SetWindowText(_T("Stretch x:"));
         GetDlgItem(IDC_EDIT5)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT5_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT5_T)->SetWindowText( L"Stretch y:");
+        GetDlgItem(IDC_EDIT5_T)->SetWindowText(_T("Stretch y:"));
         GetDlgItem(IDC_IF_SPIRAL)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_IF_OUTER)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_TOP_SHAPE)->ShowWindow( SW_HIDE);
@@ -134,16 +134,16 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
         GetDlgItem(IDC_HEIGHT_T)->EnableWindow( TRUE);
         GetDlgItem(IDC_EDIT1)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT1_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT1_T)->SetWindowText( L"Slices in 360:");
+        GetDlgItem(IDC_EDIT1_T)->SetWindowText(_T("Slices in 360:"));
         GetDlgItem(IDC_EDIT2)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT2_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT2_T)->SetWindowText( L"No of slices:");
+        GetDlgItem(IDC_EDIT2_T)->SetWindowText(_T("No of slices:"));
         GetDlgItem(IDC_EDIT3)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT3_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT3_T)->SetWindowText( L"Base vtx:");
+        GetDlgItem(IDC_EDIT3_T)->SetWindowText(_T("Base vtx:"));
         GetDlgItem(IDC_EDIT4)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT4_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT4_T)->SetWindowText( L"Radius:");
+        GetDlgItem(IDC_EDIT4_T)->SetWindowText(_T("Radius:"));
         GetDlgItem(IDC_EDIT5)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_EDIT5_T)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_TOP_SHAPE)->ShowWindow( SW_HIDE);
@@ -164,19 +164,19 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
         GetDlgItem(IDC_HEIGHT_T)->EnableWindow( TRUE);
         GetDlgItem(IDC_EDIT2)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT2_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT2_T)->SetWindowText( L"No of stairs:");
+        GetDlgItem(IDC_EDIT2_T)->SetWindowText(_T("No of stairs:"));
         GetDlgItem(IDC_EDIT3)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_EDIT3_T)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_EDIT4)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_EDIT4_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT4_T)->SetWindowText( L"Top:");
+        GetDlgItem(IDC_EDIT4_T)->SetWindowText(_T("Top:"));
         GetDlgItem(IDC_EDIT5)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_EDIT5_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT5_T)->SetWindowText( L"Bottom:");
+        GetDlgItem(IDC_EDIT5_T)->SetWindowText(_T("Bottom:"));
         GetDlgItem(IDC_TOP_SHAPE)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_BOTTOM_SHAPE)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_IF_SPIRAL)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_IF_SPIRAL)->SetWindowText( L"Spiral:");
+        GetDlgItem(IDC_IF_SPIRAL)->SetWindowText(_T("Spiral:"));
 
 	      if( theApp.m_vfpCurrent.vfp_bLinearStaircases)
         {
@@ -192,10 +192,10 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
           GetDlgItem(IDC_LENGHT_T)->EnableWindow( FALSE);
           GetDlgItem(IDC_EDIT1)->ShowWindow( SW_SHOW);
           GetDlgItem(IDC_EDIT1_T)->ShowWindow( SW_SHOW);
-          GetDlgItem(IDC_EDIT1_T)->SetWindowText( L"Slices in 360:");
+          GetDlgItem(IDC_EDIT1_T)->SetWindowText(_T("Slices in 360:"));
           GetDlgItem(IDC_EDIT3)->ShowWindow( SW_SHOW);
           GetDlgItem(IDC_EDIT3_T)->ShowWindow( SW_SHOW);
-          GetDlgItem(IDC_EDIT3_T)->SetWindowText( L"Radius:");
+          GetDlgItem(IDC_EDIT3_T)->SetWindowText(_T("Radius:"));
           GetDlgItem(IDC_IF_OUTER)->ShowWindow( SW_SHOW);
         }
         m_fEdit1 = (float)theApp.m_vfpCurrent.vfp_iSlicesIn360;
@@ -216,16 +216,16 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
         GetDlgItem(IDC_HEIGHT_T)->EnableWindow( TRUE);
         GetDlgItem(IDC_EDIT1)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT1_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT1_T)->SetWindowText( L"Meridians:");
+        GetDlgItem(IDC_EDIT1_T)->SetWindowText(_T("Meridians:"));
         GetDlgItem(IDC_EDIT2)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT2_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT2_T)->SetWindowText( L"Parallels:");
+        GetDlgItem(IDC_EDIT2_T)->SetWindowText(_T("Parallels:"));
         GetDlgItem(IDC_EDIT3)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_EDIT3_T)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_TOP_SHAPE)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_BOTTOM_SHAPE)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_IF_SPIRAL)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_IF_SPIRAL)->SetWindowText( L"Equal parallels:");
+        GetDlgItem(IDC_IF_SPIRAL)->SetWindowText(_T("Equal parallels:"));
         GetDlgItem(IDC_IF_OUTER)->ShowWindow( SW_HIDE);
         m_fEdit1 = (float)theApp.m_vfpCurrent.vfp_iMeridians;
         m_fEdit2 = (float)theApp.m_vfpCurrent.vfp_iParalels;
@@ -243,16 +243,16 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
         GetDlgItem(IDC_HEIGHT_T)->EnableWindow( TRUE);
         GetDlgItem(IDC_EDIT1)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT1_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT1_T)->SetWindowText( L"Slices per W:");
+        GetDlgItem(IDC_EDIT1_T)->SetWindowText(_T("Slices per W:"));
         GetDlgItem(IDC_EDIT2)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT2_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT2_T)->SetWindowText( L"Slices per H");
+        GetDlgItem(IDC_EDIT2_T)->SetWindowText(_T("Slices per H"));
         GetDlgItem(IDC_EDIT4)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT4_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT4_T)->SetWindowText( L"Mip start");
+        GetDlgItem(IDC_EDIT4_T)->SetWindowText(_T("Mip start"));
         GetDlgItem(IDC_EDIT5)->ShowWindow( SW_SHOW);
         GetDlgItem(IDC_EDIT5_T)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT5_T)->SetWindowText( L"Mip step");
+        GetDlgItem(IDC_EDIT5_T)->SetWindowText(_T("Mip step"));
         GetDlgItem(IDC_TOP_SHAPE)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_BOTTOM_SHAPE)->ShowWindow( SW_HIDE);
         GetDlgItem(IDC_IF_SPIRAL)->ShowWindow( SW_HIDE);
@@ -270,7 +270,7 @@ void CDlgPgPrimitive::DoDataExchange(CDataExchange* pDX)
         GetDlgItem(IDC_DISPLACE_FILE)->ShowWindow( SW_SHOW);
 
         GetDlgItem(IDC_EDIT3)->ShowWindow( SW_SHOW);
-        GetDlgItem(IDC_EDIT3_T)->SetWindowText( L"Amplitude:");
+        GetDlgItem(IDC_EDIT3_T)->SetWindowText(_T("Amplitude:"));
         GetDlgItem(IDC_EDIT3_T)->ShowWindow( SW_SHOW);
         m_strDisplacePicture =
           theApp.m_vfpCurrent.vfp_fnDisplacement.FileName()+

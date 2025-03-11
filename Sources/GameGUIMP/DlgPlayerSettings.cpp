@@ -123,7 +123,7 @@ void CDlgPlayerSettings::InitPlayersAndControlsLists(void)
     CTString strPlayer = _pGame->gm_apcPlayers[ iPC].pc_strName;
     m_listAvailablePlayers.AddString(CString(strPlayer.ConstData()));
     //CTString strControls = _pGame->gm_actrlControls[ iPC].ctrl_strName;
-    m_listAvailableControls.AddString(CString("dummy"));
+    m_listAvailableControls.AddString(_T("dummy"));
   }
   m_listAvailableControls.SetCurSel( 0);
   m_listAvailablePlayers.SetCurSel( 0);
@@ -205,7 +205,7 @@ void CDlgPlayerSettings::OnRenamePlayer()
   if( (dlgRename.DoModal() == IDOK) &&
       (dlgRename.m_strName.GetLength() != 0) )
   {
-    _pGame->gm_apcPlayers[ iSelectedPlayer].pc_strName = CStringA(dlgRename.m_strName);
+    _pGame->gm_apcPlayers[iSelectedPlayer].pc_strName = MfcStringToCT(dlgRename.m_strName);
     // save players and controls
     _pGame->SavePlayersAndControls();
     InitPlayersAndControlsLists();

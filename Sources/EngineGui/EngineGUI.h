@@ -68,3 +68,6 @@ class ENGINEGUI_API CEngineGUI : public IEngineGUI {
 
 // global engine gui handling object
 ENGINEGUI_API extern CEngineGUI _EngineGUI;
+
+// [Cecil] Define function for converting strings
+#include <EngineGUI/MfcStringToCT.inl>

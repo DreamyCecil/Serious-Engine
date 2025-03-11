@@ -89,7 +89,7 @@ BOOL CEditConsole::PreTranslateMessage(MSG* pMsg)
       INDEX ctLetters = GetLine( iCurrentLine, achrToExecute, 1023);
       // set EOF delimiter
       achrToExecute[ ctLetters] = 0;
-      CTString strToExecute = CStringA(achrToExecute).GetString();
+      CTString strToExecute = MfcStringToCT(achrToExecute);
       CPrintF( ">%s\n", strToExecute.ConstData());
       if (strToExecute[strToExecute.Length() - 1] != ';')
       {
@@ -101,7 +101,7 @@ BOOL CEditConsole::PreTranslateMessage(MSG* pMsg)
       // remember input text into console input buffer
       CString sHistory;
       GetWindowText(sHistory);
-      _pGame->gam_strConsoleInputBuffer = CStringA(sHistory);
+      _pGame->gam_strConsoleInputBuffer = MfcStringToCT(sHistory);
     }
     // if Ctrl is not pressed and current line is not last line, "swallow return"
     if( !bCtrl && (ctLinesEdited-1 != iCurrentLine) )

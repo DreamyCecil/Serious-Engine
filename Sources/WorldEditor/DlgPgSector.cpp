@@ -39,9 +39,7 @@ CDlgPgSector::CDlgPgSector() : CPropertyPage(CDlgPgSector::IDD)
 	m_radioInclude = -1;
 	//}}AFX_DATA_INIT
   
-  if( 
-    CTString( CStringA(theApp.GetProfileString(L"World editor", L"Color browsing mode (info)"))) ==
-    CTString("RGB"))
+  if (theApp.GetProfileString(_T("World editor"), _T("Color browsing mode (info)")) == _T("RGB"))
   {
 	  m_iBrowseModeRadio = 0;
   }
@@ -220,7 +218,7 @@ void CDlgPgSector::DoDataExchange(CDataExchange* pDX)
         {
           m_SectorAmbientColor.SetMixedColor();
         }
-        if( CTString( CStringA(m_strSectorName)) != bsc.bsc_strName)
+        if (MfcStringToCT(m_strSectorName) != bsc.bsc_strName)
         {
           m_strSectorName = MIXED_NAME;
         }
@@ -292,7 +290,7 @@ void CDlgPgSector::DoDataExchange(CDataExchange* pDX)
       }
       if( m_strSectorName != MIXED_NAME)
       {
-        bsc.bsc_strName = CStringA(m_strSectorName);
+        bsc.bsc_strName = MfcStringToCT(m_strSectorName);
       }
       
       INDEX iNewForceField = m_comboForceField.GetCurSel();

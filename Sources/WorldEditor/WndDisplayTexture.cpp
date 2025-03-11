@@ -161,12 +161,12 @@ BOOL CWndDisplayTexture::Initialize(PIX pixX, PIX pixY, CTextureData *ptd,
     //CMainFrame* pMainFrame = STATIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     // FIXME: Can't create with WS_CHILD flag, possibly due to AfxGetMainWnd() returning a pointer to CMainFrame from another thread
     BOOL bResult = CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Display texture", WS_POPUP | WS_VISIBLE,
+      NULL, _T("Display texture"), WS_POPUP | WS_VISIBLE,
       rectWindow.left, rectWindow.top, rectWindow.Width(), rectWindow.Height(),
       NULL, NULL, NULL);
     if( !bResult)
     {
-      AfxMessageBox( L"Error: Failed to create display texture window!");
+      AfxMessageBox(_T("Error: Failed to create display texture window!"));
       return FALSE;
     }
     _pGfx->CreateWindowCanvas( m_hWnd, &m_pViewPort, &m_pDrawPort);

@@ -212,10 +212,10 @@ BOOL CRConDlg::PreTranslateMessage(MSG* pMsg)
 
       // send chat string to user(s)
       m_strLog += ">" + strConCommand + "\r\n";
-      pwndCommand->SetWindowText(L"");
+      pwndCommand->SetWindowText(_T(""));
 
       // [Cecil] Get a meaningful command from the console
-      CTString strCommand = CStringA(strConCommand).GetString();
+      CTString strCommand = MfcStringToCT(strConCommand);
       strCommand.TrimSpacesLeft();
       strCommand.TrimSpacesRight();
 

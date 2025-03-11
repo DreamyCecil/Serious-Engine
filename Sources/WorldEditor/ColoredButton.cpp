@@ -185,12 +185,12 @@ void CColoredButton::OnClicked()
     rectWindow.bottom = ptMousePoint.y;
     // create window
     BOOL bResult = pColorPalette->CreateEx( WS_EX_TOOLWINDOW,
-      NULL, L"Palette", WS_CHILD|WS_POPUP|WS_VISIBLE,
+      NULL, _T("Palette"), WS_CHILD|WS_POPUP|WS_VISIBLE,
       rectWindow.left, rectWindow.top, rectWindow.Width(), rectWindow.Height(),
       m_hWnd, NULL, NULL);
     if( !bResult)
     {
-      AfxMessageBox( L"Error: Failed to create color palette");
+      AfxMessageBox(_T("Error: Failed to create color palette"));
       return;
     }
     // initialize canvas for active texture button
@@ -377,8 +377,8 @@ INT_PTR CColoredButton::OnToolHitTest( CPoint point, TOOLINFO* pTI ) const
   {
     strColor.PrintF( "HSV=(%d,%d,%d),   RGB=(%d,%d,%d),    Alpha=%d", ubH, ubS, ubV, ubR, ubG, ubB, ubA);
   }
-  pTI->lpszText = (wchar_t *)malloc(sizeof(wchar_t) * (strColor.Length() + 1));
-  wcscpy( pTI->lpszText, CString(strColor));
+  pTI->lpszText = (TCHAR *)malloc(sizeof(TCHAR) * (strColor.Length() + 1));
+  _tcscpy(pTI->lpszText, CString(strColor));
   RECT rectToolTip;
   rectToolTip.left = 50;
   rectToolTip.right = 60;

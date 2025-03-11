@@ -200,7 +200,7 @@ void CDlgPgCollision::DoDataExchange(CDataExchange* pDX)
     }
 
     // set name of curently selected collision box
-    pDoc->m_emEditModel.SetCollisionBoxName( CTString( CStringA(m_strCollisionBoxName)) );
+    pDoc->m_emEditModel.SetCollisionBoxName(MfcStringToCT(m_strCollisionBoxName));
     
     // get collision min and max vectors
     FLOAT3D vMinCollisionBox;

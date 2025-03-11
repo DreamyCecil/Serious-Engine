@@ -357,8 +357,8 @@ void CBrowseWindow::OnContextMenu( CPoint point)
   CVirtualTreeNode *pVTNDir = m_pBrowser->GetSelectedDirectory();
   if( pVTNDir == NULL)
   {
-    AfxMessageBox( L"Virtual tree doesn't yet exists. Create at least one virtual directory "
-                   L"to be able to insert items into it.");
+    AfxMessageBox(_T("Virtual tree doesn't yet exists. Create at least one virtual directory ")
+                  _T("to be able to insert items into it."));
     return;
   }
 
@@ -621,7 +621,7 @@ void CBrowseWindow::OnDropFiles(HDROP hDropInfo)
   }
   else
   {
-    AfxMessageBox( L"ERROR: Virtual tree doesn't exist.");
+    AfxMessageBox(_T("ERROR: Virtual tree doesn't exist."));
   }
   CWnd::OnDropFiles(hDropInfo);
 }
@@ -922,9 +922,9 @@ void CBrowseWindow::OpenDirectory( CVirtualTreeNode *pVTNDir)
   ASSERT( pVTNDir != NULL);
   // remember name of last opened virtual tree
   theApp.m_strOpenedVTDirectory = theApp.GetNameForVirtualTreeNode( pVTNDir);
-  wchar_t achrOpenedDirectoryMessage[ 256];
-  swprintf( achrOpenedDirectoryMessage, L"Opened directory: \"%s\"",
-    (const wchar_t *)CString(theApp.m_strOpenedVTDirectory.ConstData()));
+  TCHAR achrOpenedDirectoryMessage[256];
+  _stprintf(achrOpenedDirectoryMessage, _T("Opened directory: \"%s\""),
+    (const TCHAR *)CString(theApp.m_strOpenedVTDirectory.ConstData()));
   // put selected directory name into status line
   pMainFrame->m_wndStatusBar.SetPaneText( STATUS_LINE_PANE, achrOpenedDirectoryMessage, TRUE);
 
@@ -1048,7 +1048,7 @@ void CBrowseWindow::OnInsertItems()
   CVirtualTreeNode *pVTNDir = m_pBrowser->GetSelectedDirectory();
   if( pVTNDir == NULL)
   {
-    AfxMessageBox( L"ERROR: Virtual tree doesn't exist.");
+    AfxMessageBox(_T("ERROR: Virtual tree doesn't exist."));
     return;
   }
 

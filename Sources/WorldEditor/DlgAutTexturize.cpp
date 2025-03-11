@@ -50,9 +50,9 @@ void CDlgAutTexturize::DoDataExchange(CDataExchange* pDX)
   {
     CWorldEditorDoc* pDoc = theApp.GetActiveDocument();
   	COLOR colOld=pDoc->m_woWorld.wo_colBackground;
-    colOld=AfxGetApp()->GetProfileInt( L"World editor", L"Pretender bcg color", colOld);
+    colOld=AfxGetApp()->GetProfileInt(_T("World editor"), _T("Pretender bcg color"), colOld);
     m_bExpandEdges=TRUE;
-    m_bExpandEdges=AfxGetApp()->GetProfileInt( L"World editor", L"Auto expand edges", m_bExpandEdges);
+    m_bExpandEdges=AfxGetApp()->GetProfileInt(_T("World editor"), _T("Auto expand edges"), m_bExpandEdges);
     m_colBcg.SetColor(colOld);
     m_colBcg.SetPickerType( CColoredButton::PT_MFC);
   }
@@ -73,12 +73,12 @@ void CDlgAutTexturize::DoDataExchange(CDataExchange* pDX)
     m_pixWidth=1<<iSelected;
     m_pixHeight=1<<iSelected;
     COLOR colResult=m_colBcg.GetColor();
-    AfxGetApp()->WriteProfileInt( L"World editor", L"Pretender bcg color", m_colBcg.GetColor());
-    AfxGetApp()->WriteProfileInt( L"World editor", L"Pretender resolution", iSelected);
-    AfxGetApp()->WriteProfileInt( L"World editor", L"Auto expand edges", m_bExpandEdges);
+    AfxGetApp()->WriteProfileInt(_T("World editor"), _T("Pretender bcg color"), m_colBcg.GetColor());
+    AfxGetApp()->WriteProfileInt(_T("World editor"), _T("Pretender resolution"), iSelected);
+    AfxGetApp()->WriteProfileInt(_T("World editor"), _T("Auto expand edges"), m_bExpandEdges);
     
     m_iPretenderStyle=m_ctrlPretenderTextureStyle.GetCurSel();
-    AfxGetApp()->WriteProfileInt( L"World editor", L"Pretender style", m_iPretenderStyle);
+    AfxGetApp()->WriteProfileInt(_T("World editor"), _T("Pretender style"), m_iPretenderStyle);
   }
 }
 
@@ -104,15 +104,15 @@ BOOL CDlgAutTexturize::OnInitDialog()
     m_ctrPretenderTextureSize.AddString( CString(strSize));
   }
   INDEX iSelected=6;
-  iSelected=AfxGetApp()->GetProfileInt( L"World editor", L"Pretender resolution", iSelected);
+  iSelected=AfxGetApp()->GetProfileInt(_T("World editor"), _T("Pretender resolution"), iSelected);
   m_ctrPretenderTextureSize.SetCurSel(iSelected);
 
 	m_ctrlPretenderTextureStyle.ResetContent();
-  m_ctrlPretenderTextureStyle.AddString( L"Front view only");
-  m_ctrlPretenderTextureStyle.AddString( L"Cylindrical view (FRBL)");
-  m_ctrlPretenderTextureStyle.AddString( L"Boxed view (FRBLUD)");
+  m_ctrlPretenderTextureStyle.AddString(_T("Front view only"));
+  m_ctrlPretenderTextureStyle.AddString(_T("Cylindrical view (FRBL)"));
+  m_ctrlPretenderTextureStyle.AddString(_T("Boxed view (FRBLUD)"));
   iSelected=1;
-  iSelected=AfxGetApp()->GetProfileInt( L"World editor", L"Pretender style", iSelected);
+  iSelected=AfxGetApp()->GetProfileInt(_T("World editor"), _T("Pretender style"), iSelected);
   m_ctrlPretenderTextureStyle.SetCurSel(iSelected);
 	return TRUE;
 }

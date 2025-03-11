@@ -55,7 +55,7 @@ BOOL CAnimComboBox::OnIdle(LONG lCount)
   {
     m_pvLastUpdatedView = NULL;
     ResetContent();
-    AddString( L"None available");
+    AddString(_T("None available"));
     SetCurSel( 0);
   }
   else if( (pModelerView != NULL) &&

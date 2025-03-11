@@ -71,7 +71,7 @@ BOOL CRConApp::SubInitInstance()
 {
   // [Cecil] Parse command line arguments
   {
-    CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
+    CTString strCmdLine = MfcStringToCT(m_lpCmdLine);
     CommandLineSetup cmd(strCmdLine.ConstData());
     cmd.AddInitialParser(&HandleInitialArgs, 3);
     SE_ParseCommandLine(cmd);

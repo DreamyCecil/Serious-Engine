@@ -264,7 +264,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create model speed edit control\n");
 		return FALSE;
 	}
-  m_ctrlZSpeed.SetWindowText(L"0");
+  m_ctrlZSpeed.SetWindowText(_T("0"));
   
   // Set z-loop edit ctrl
   m_AnimToolBar.SetButtonInfo(1, ID_Z_LOOP_TIMES, TBBS_SEPARATOR, 25);
@@ -278,7 +278,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create model loop edit control\n");
 		return FALSE;
 	}
-  m_ctrlZLoop.SetWindowText(L"4");
+  m_ctrlZLoop.SetWindowText(_T("4"));
 
   m_AnimToolBar.SetButtonInfo(6, ID_ANIM_CHOOSE, TBBS_SEPARATOR, 150);
   m_TextureToolBar.SetButtonInfo(2, ID_TEXTURE_CHOOSE, TBBS_SEPARATOR, 150);
@@ -318,13 +318,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return FALSE;
 	}
 
-  m_AnimComboBox.AddString( L"None available");
+  m_AnimComboBox.AddString(_T("None available"));
   m_AnimComboBox.SetCurSel( 0);
 	
-  m_SkinComboBox.AddString( L"None available");
+  m_SkinComboBox.AddString(_T("None available"));
   m_SkinComboBox.SetCurSel( 0);
 	
-  m_StainsComboBox.AddString( L"None available");
+  m_StainsComboBox.AddString(_T("None available"));
   m_StainsComboBox.SetCurSel( 0);
 	
   //  Create a font for the comboboxes
@@ -618,7 +618,7 @@ void CMainFrame::OnFileCreateTexture()
   {
     pDoc = pView->GetDocument();
     // setup create texture directory
-    theApp.WriteProfileString(L"Scape", CString(KEY_NAME_CREATE_TEXTURE_DIR), 
+    theApp.WriteProfileString(_T("Scape"), CString(KEY_NAME_CREATE_TEXTURE_DIR), 
       CString(ExpandPath::OnDisk(pDoc->GetModelDirectory())));
   }
   // call create texture dialog
@@ -1006,7 +1006,7 @@ void CMainFrame::ToggleInfoWindow(void)
 	  m_pInfoFrame = new CDlgInfoFrame;
     // set initial size of rect window
     CRect rectInfoWindow(0, 0, 0, 0);
-    if( !m_pInfoFrame->Create( NULL, L"Tools info",
+    if( !m_pInfoFrame->Create( NULL, _T("Tools info"),
         MFS_SYNCACTIVE|WS_POPUP|WS_CAPTION|WS_SYSMENU, rectInfoWindow, this))
 	  {
 		  TRACE0("Failed to create Tools info window!\n");
@@ -1065,7 +1065,7 @@ LRESULT CMainFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 void CMainFrame::OnHelpFinder() 
 {
   // [Cecil] Restored help
-  HtmlHelpA(NULL, ExpandPath::OnDisk("Help\\ToolsHelp.chm::/SeriousModeler/Overview.htm"), HH_DISPLAY_TOPIC, NULL);
+  ::HtmlHelpA(NULL, ExpandPath::OnDisk("Help\\ToolsHelp.chm::/SeriousModeler/Overview.htm"), HH_DISPLAY_TOPIC, NULL);
 }
 
 void CMainFrame::OnTessellateLess() 

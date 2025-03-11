@@ -143,7 +143,7 @@ BOOL CSeriousSkaStudioApp::SubInitInstance()
 	// Change the registry key under which our settings are stored.
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization.
-	SetRegistryKey( L"CroTeam");
+	SetRegistryKey(_T("CroTeam"));
 
 	LoadStdProfileSettings(8);  // Load standard INI file options (including MRU)
 
@@ -160,7 +160,7 @@ BOOL CSeriousSkaStudioApp::SubInitInstance()
 
   // [Cecil] Parse command line arguments
   {
-    CTString strCmdLine = CStringA(m_lpCmdLine).GetString();
+    CTString strCmdLine = MfcStringToCT(m_lpCmdLine);
     CommandLineSetup cmd(strCmdLine.ConstData());
     SE_ParseCommandLine(cmd);
   }
@@ -284,9 +284,10 @@ void CSeriousSkaStudioApp::OnFileNew()
 
   // add file to mru
   CTString strFileName = pmi->mi_fnSourceFile.NoDir();
-  CString strOpenPath;
-  strOpenPath = theApp.GetProfileString(L"SeriousSkaStudio", L"Open directory", L"");
-  strOpenPath += pmi->mi_fnSourceFile;
+  // [Cecil] NOTE: Unused
+  /*CString strOpenPath;
+  strOpenPath = theApp.GetProfileString(_T("SeriousSkaStudio"), _T("Open directory"), _T(""));
+  strOpenPath += pmi->mi_fnSourceFile;*/
 
   pDocument->SetPathName(CString(strFileName), TRUE);
   pDocument->SetTitle(CString(strFileName));
@@ -340,9 +341,10 @@ void CSeriousSkaStudioApp::OnFileOpen()
 
   // add file to mru
   CTString strFileName = pmi->mi_fnSourceFile.NoDir();
-  CString strOpenPath;
-  strOpenPath = theApp.GetProfileString(L"SeriousSkaStudio", L"Open directory", L"");
-  strOpenPath += pmi->mi_fnSourceFile;
+  // [Cecil] NOTE: Unused
+  /*CString strOpenPath;
+  strOpenPath = theApp.GetProfileString(_T("SeriousSkaStudio"), _T("Open directory"), _T(""));
+  strOpenPath += pmi->mi_fnSourceFile;*/
 
   pDocument->SetPathName(CString(strFileName), TRUE);
   pDocument->SetTitle(CString(strFileName));

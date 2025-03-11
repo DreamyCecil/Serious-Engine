@@ -105,37 +105,37 @@ void CDlgRenderingPreferences::DoDataExchange(CDataExchange* pDX)
 
     // fill values for vertice's combo box
     m_VertexFillType.ResetContent();
-    m_VertexFillType.AddString( L"No vertices");
-    m_VertexFillType.AddString( L"Vertices ink");
-    m_VertexFillType.AddString( L"Polygon color");
-    m_VertexFillType.AddString( L"Sector color");
+    m_VertexFillType.AddString(_T("No vertices"));
+    m_VertexFillType.AddString(_T("Vertices ink"));
+    m_VertexFillType.AddString(_T("Polygon color"));
+    m_VertexFillType.AddString(_T("Sector color"));
     // fill values for edges's combo box
     m_EdgesFillType.ResetContent();
-    m_EdgesFillType.AddString( L"No edges");
-    m_EdgesFillType.AddString( L"Edges ink");
-    m_EdgesFillType.AddString( L"Polygon color");
-    m_EdgesFillType.AddString( L"Sector color");
+    m_EdgesFillType.AddString(_T("No edges"));
+    m_EdgesFillType.AddString(_T("Edges ink"));
+    m_EdgesFillType.AddString(_T("Polygon color"));
+    m_EdgesFillType.AddString(_T("Sector color"));
     // fill values for polygons's combo box
     m_PolygonFillType.ResetContent();
-    m_PolygonFillType.AddString( L"No polygons");
-    m_PolygonFillType.AddString( L"Polygons ink");
-    m_PolygonFillType.AddString( L"Polygon color");
-    m_PolygonFillType.AddString( L"Sector color");
-    m_PolygonFillType.AddString( L"Texture");
+    m_PolygonFillType.AddString(_T("No polygons"));
+    m_PolygonFillType.AddString(_T("Polygons ink"));
+    m_PolygonFillType.AddString(_T("Polygon color"));
+    m_PolygonFillType.AddString(_T("Sector color"));
+    m_PolygonFillType.AddString(_T("Texture"));
     // fill values for model's texture combo
     m_TextureFillType.ResetContent();
-    m_TextureFillType.AddString( L"No fill");
-    m_TextureFillType.AddString( L"White color");
-    m_TextureFillType.AddString( L"Surface colors");
-    m_TextureFillType.AddString( L"On colors");
-    m_TextureFillType.AddString( L"Off colors");
-    m_TextureFillType.AddString( L"Texture");
+    m_TextureFillType.AddString(_T("No fill"));
+    m_TextureFillType.AddString(_T("White color"));
+    m_TextureFillType.AddString(_T("Surface colors"));
+    m_TextureFillType.AddString(_T("On colors"));
+    m_TextureFillType.AddString(_T("Off colors"));
+    m_TextureFillType.AddString(_T("Texture"));
     // fill values for flare FX combo
     m_comboFlareFX.ResetContent();
-    m_comboFlareFX.AddString( L"None");
-    m_comboFlareFX.AddString( L"Single flare");
-    m_comboFlareFX.AddString( L"Reflections");
-    m_comboFlareFX.AddString( L"Reflections and glare");
+    m_comboFlareFX.AddString(_T("None"));
+    m_comboFlareFX.AddString(_T("Single flare"));
+    m_comboFlareFX.AddString(_T("Reflections"));
+    m_comboFlareFX.AddString(_T("Reflections and glare"));
   	  
     INDEX iFillType;
     // set current fill type to vertices combo box

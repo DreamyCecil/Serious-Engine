@@ -375,7 +375,7 @@ void CPropertyComboBar::DoDataExchange(CDataExchange* pDX)
             // discard old entity settings
             iten->End();
             // set new string
-            ENTITYPROPERTY( &*iten, penpProperty->ep_slOffset, CTString) = CStringA(m_strEditingString);
+            ENTITYPROPERTY( &*iten, penpProperty->ep_slOffset, CTString) = MfcStringToCT(m_strEditingString);
             // apply new entity settings
             iten->Initialize();
           }
@@ -1124,7 +1124,7 @@ void CPropertyComboBar::ArrangeControls()
                 else
                 {
                   // add it to combo
-                  iAddedAs = m_EditEnumComboBox.AddString( L"Unnamed");
+                  iAddedAs = m_EditEnumComboBox.AddString(_T("Unnamed"));
                 }
                 // set entity ptr as item's data
                 m_EditEnumComboBox.SetItemData(iAddedAs, (UINT_PTR)&*iten);
@@ -1132,7 +1132,7 @@ void CPropertyComboBar::ArrangeControls()
             }}
 
             // set NULL entity name
-            INDEX iAddedAs = m_EditEnumComboBox.InsertString( 0, L"None");
+            INDEX iAddedAs = m_EditEnumComboBox.InsertString( 0, _T("None"));
             // set NULL entity ptr as item's data
             m_EditEnumComboBox.SetItemData( iAddedAs, NULL);
 
@@ -1362,7 +1362,7 @@ void CPropertyComboBar::ArrangeControls()
             {
               CTString strString = ENTITYPROPERTY( &*iten, penpProperty->ep_slOffset, CTString);
               // if string is different from first one
-              if( CTString( CStringA(m_strEditingString)) != strString)
+              if (MfcStringToCT(m_strEditingString) != strString)
               {
                 // all selected entities do not share same string
                 m_strEditingString = "";

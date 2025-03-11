@@ -159,7 +159,7 @@ void CBrowser::AddDirectoryRecursiv(CVirtualTreeNode *pOneDirectory, HTREEITEM h
 {
   // Insert one entry into virtual directory tree
   HTREEITEM InsertedDir;
-  InsertedDir = m_TreeCtrl.InsertItem( 0, L"", 0, 0, TVIS_SELECTED, TVIF_STATE, 0,
+  InsertedDir = m_TreeCtrl.InsertItem( 0, _T(""), 0, 0, TVIS_SELECTED, TVIF_STATE, 0,
                                        hParent, TVI_SORT );
 
   pOneDirectory->vtn_Handle = (UINT_PTR)InsertedDir;
@@ -193,7 +193,7 @@ void CBrowser::OnCreateDirectory()
       // Set data in instanciated CVirtualTreeNode because it is Root
       m_VirtualTree.vtn_bIsDirectory = TRUE;
       m_VirtualTree.vtn_itIconType = dlg.m_iSelectedIconType;
-      m_VirtualTree.vtn_strName = CTString( CStringA(dlg.m_strDirectoryName));
+      m_VirtualTree.vtn_strName = MfcStringToCT(dlg.m_strDirectoryName);
       // Root's parent is NULL
       m_VirtualTree.vnt_pvtnParent = NULL;
       pvtnCurrent = &m_VirtualTree;
@@ -205,7 +205,7 @@ void CBrowser::OnCreateDirectory()
       pvtnCurrent = pvtnNewDir;
       pvtnNewDir->vtn_bIsDirectory = TRUE;
       pvtnNewDir->vtn_itIconType = dlg.m_iSelectedIconType;
-      pvtnNewDir->vtn_strName = CTString( CStringA(dlg.m_strDirectoryName));
+      pvtnNewDir->vtn_strName = MfcStringToCT(dlg.m_strDirectoryName);
       // Get ptr to parent CVirtualTreeNode
       HTREEITEM pSelectedItem = m_TreeCtrl.GetSelectedItem();
       if( pSelectedItem == NULL) return;
@@ -348,7 +348,7 @@ INDEX CBrowser::GetSelectedDirectory( CTString strArray[])
   if( pItem == NULL) return -1;
   FOREVER
   {
-    CTString strItemName = CTString( CStringA(m_TreeCtrl.GetItemText(pItem)));
+    CTString strItemName = MfcStringToCT(m_TreeCtrl.GetItemText(pItem));
     strArray[ iSubDirsCt] = strItemName;
     iSubDirsCt ++;
 
@@ -378,7 +378,7 @@ HTREEITEM CBrowser::GetVirtualDirectoryItem( CTString strArray[], INDEX iSubDirs
         break;
       }
       // get current directory's (starting from root) first subdirectory 
-      CTString strItemName = CTString( CStringA(m_TreeCtrl.GetItemText(pItem)));
+      CTString strItemName = MfcStringToCT(m_TreeCtrl.GetItemText(pItem));
       // is this subdirectory's name same as one in list of selected along given path
       if( strArray[ j] == strItemName)
       {
@@ -769,7 +769,7 @@ void CBrowser::OnRenameDirectory()
     if( dlg.DoModal() == IDOK)
     {
       pVTN->vtn_itIconType = dlg.m_iSelectedIconType;
-      pVTN->vtn_strName = CTString( CStringA(dlg.m_strDirectoryName));
+      pVTN->vtn_strName = MfcStringToCT(dlg.m_strDirectoryName);
       m_TreeCtrl.SetItemImage( pSelectedItem, pVTN->vtn_itIconType,
                                               pVTN->vtn_itIconType + NO_OF_ICONS);
       m_TreeCtrl.SetItemText( pSelectedItem, CString(pVTN->vtn_strName));

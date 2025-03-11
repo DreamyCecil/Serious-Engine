@@ -254,8 +254,8 @@ INT_PTR CCtrlEditFlags::OnToolHitTest( CPoint point, TOOLINFO* pTI ) const
   if( iArea==-1) return 0;
 
   CTString strToolTip=GetTipForArea(iArea);
-  pTI->lpszText = (wchar_t *)malloc(sizeof(wchar_t) * (strToolTip.Length() + 1));
-  wcscpy( pTI->lpszText, CString(strToolTip));
+  pTI->lpszText = (TCHAR *)malloc(sizeof(TCHAR) * (strToolTip.Length() + 1));
+  _tcscpy(pTI->lpszText, CString(strToolTip));
   RECT rectToolTip;
   rectToolTip.left = 50;
   rectToolTip.right = 60;

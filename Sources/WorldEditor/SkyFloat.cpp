@@ -34,7 +34,7 @@ void AFXAPI DDX_SkyFloat(CDataExchange* pDX, int nIDC, float &fNumber, BOOL &bVa
 	{
     if (!FloatFromString(hWndCtrl, fNumber, bValid))
 		{
-			AfxMessageBox(L"Invalid character entered");
+			AfxMessageBox(_T("Invalid character entered"));
 			pDX->Fail();
 		}
 	}
@@ -48,7 +48,7 @@ BOOL FloatFromString(HWND hWnd, float &fNumber, BOOL &bValid)
 {
 	TCHAR szWindowText[20];
 	::GetWindowText(hWnd, szWindowText, 19);
-  if( CTString( CStringA(szWindowText)) == "")
+  if (MfcStringToCT(szWindowText) == "")
   {
     bValid = FALSE;
     return TRUE;
@@ -56,8 +56,8 @@ BOOL FloatFromString(HWND hWnd, float &fNumber, BOOL &bValid)
   
   bValid = TRUE;  
   float fTmpNumber = fNumber;
-  size_t iNumLen = strlen(CStringA(szWindowText));
-  int iRetLen = sscanf(CStringA(szWindowText), "%f", &fTmpNumber);
+  size_t iNumLen = _tcslen(szWindowText);
+  int iRetLen = _tscanf(szWindowText, _T("%f"), &fTmpNumber);
   if( (iRetLen == 1)  || ((iNumLen == 1) && (szWindowText[0] == '-') || (iNumLen == 0)) )
   {
     fNumber = fTmpNumber;
@@ -73,7 +73,7 @@ void StringFromFloat(HWND hWnd, float fNumber, BOOL &bValid)
 {
 	if( !bValid) 
   {
-    ::SetWindowText(hWnd, L"");
+    ::SetWindowText(hWnd, _T(""));
     return;
   }
   CString str;

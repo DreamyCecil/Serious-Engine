@@ -86,7 +86,7 @@ BOOL CDlgSelectPlayer::OnInitDialog()
     CTString strPlayer = _pGame->gm_apcPlayers[ iPC].pc_strName;
     m_comboAvailablePlayers.AddString(CString(strPlayer.ConstData()));
 //    CTString strControls = _pGame->gm_actrlControls[ iPC].ctrl_strName;
-    m_comboAvailableControls.AddString(CString("dummy"));
+    m_comboAvailableControls.AddString(_T("dummy"));
   }
   m_comboAvailablePlayers.SetCurSel( _pGame->gm_iWEDSinglePlayer);
   m_comboAvailableControls.SetCurSel( _pGame->gm_iWEDSinglePlayer);

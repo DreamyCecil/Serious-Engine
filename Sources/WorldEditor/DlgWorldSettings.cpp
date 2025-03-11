@@ -155,25 +155,25 @@ void CDlgWorldSettings::DoDataExchange(CDataExchange* pDX)
   if( pDX->m_bSaveAndValidate != FALSE)
   {
     CWorldEditorDoc *pDoc = theApp.GetDocument();
-    pDoc->m_woWorld.wo_strBackdropUp = CStringA(m_strTopViewPicture);
+    pDoc->m_woWorld.wo_strBackdropUp = MfcStringToCT(m_strTopViewPicture);
     pDoc->m_woWorld.wo_fUpW = m_fTopViewWidth;
 	  pDoc->m_woWorld.wo_fUpL = m_fTopViewHeight;
 	  pDoc->m_woWorld.wo_fUpCX = m_fTopViewCenterX;
 	  pDoc->m_woWorld.wo_fUpCZ = m_fTopViewCenterY;
 
-    pDoc->m_woWorld.wo_strBackdropFt = CStringA(m_strFrontViewPicture);
+    pDoc->m_woWorld.wo_strBackdropFt = MfcStringToCT(m_strFrontViewPicture);
     pDoc->m_woWorld.wo_fFtW = m_fFrontViewWidth;
 	  pDoc->m_woWorld.wo_fFtH = m_fFrontViewHeight;
 	  pDoc->m_woWorld.wo_fFtCX = m_fFrontViewCenterX;
 	  pDoc->m_woWorld.wo_fFtCY = m_fFrontViewCenterY;
 
-    pDoc->m_woWorld.wo_strBackdropRt = CStringA(m_strRightViewPicture);
+    pDoc->m_woWorld.wo_strBackdropRt = MfcStringToCT(m_strRightViewPicture);
     pDoc->m_woWorld.wo_fRtL = m_fRightViewWidth;
 	  pDoc->m_woWorld.wo_fRtH = m_fRightViewHeight;
 	  pDoc->m_woWorld.wo_fRtCZ = m_fRightViewCenterX;
 	  pDoc->m_woWorld.wo_fRtCY = m_fRightViewCenterY;
 
-    pDoc->m_woWorld.wo_strBackdropObject = CStringA(m_strBackdropObject);
+    pDoc->m_woWorld.wo_strBackdropObject = MfcStringToCT(m_strBackdropObject);
     // try to load object for backdrops
     if( pDoc->m_woWorld.wo_strBackdropObject != "")
     {
@@ -197,16 +197,16 @@ void CDlgWorldSettings::DoDataExchange(CDataExchange* pDX)
 
     if( m_fnBackgroundPicture != "")
     {
-      theApp.WriteProfileString( L"World editor prefs", L"Default background picture",
+      theApp.WriteProfileString(_T("World editor prefs"), _T("Default background picture"),
         m_fnBackgroundPicture);
     }
 
     char chrColor[ 16];
     sprintf( chrColor, "0x%08x", m_BackgroundColor.GetColor());
     _strupr( chrColor);
-    theApp.WriteProfileString( L"World editor prefs", L"Default background color", CString(chrColor));
+    theApp.WriteProfileString(_T("World editor prefs"), _T("Default background color"), CString(chrColor));
 
-    pDoc->m_woWorld.SetName( CTString(CStringA(m_strLevelName)));
+    pDoc->m_woWorld.SetName(MfcStringToCT(m_strLevelName));
 
     // apply new spawn flags
     ULONG ulSpawnFlags = 0;
@@ -272,16 +272,16 @@ void CDlgWorldSettings::OnBrowseBackgroundPicture()
 // setups background settings dialog
 void CDlgWorldSettings::SetupBcgSettings( BOOL bOnNewDocument)
 {
-  char chrColor[ 16];
+  TCHAR chrColor[ 16];
   COLOR colBackground;
 
   // if change bcg settings dialog was called on new document
   if( bOnNewDocument)
   {
     // obtain background color form INI file
-    strcpy( chrColor, CStringA(theApp.GetProfileString( L"World editor prefs",
-                                               L"Default background color", L"0XFF000000")));
-    sscanf( chrColor, "0X%08x", &colBackground);
+    _tcscpy(chrColor, theApp.GetProfileString(_T("World editor prefs"),
+                                              _T("Default background color"), _T("0XFF000000")));
+    _tscanf(chrColor, _T("0X%08x"), &colBackground);
     // set background color to color button
     m_BackgroundColor.SetColor( colBackground);
     // set default texture for background
@@ -319,7 +319,7 @@ void CDlgWorldSettings::OnBrowseTopViewPicture()
   GetDlgItem( IDC_TOP_VIEW_PICTURE_T)->SetWindowText( CString(fnPicture));
 	m_strTopViewPicture = fnPicture;
   CWorldEditorDoc *pDoc = theApp.GetDocument();
-  pDoc->SetupBackdropTextureObject( CTString(CStringA(m_strTopViewPicture)), pDoc->m_toBackdropUp);
+  pDoc->SetupBackdropTextureObject(MfcStringToCT(m_strTopViewPicture), pDoc->m_toBackdropUp);
 }
 
 void CDlgWorldSettings::OnBrowseFrontViewPicture()
@@ -330,7 +330,7 @@ void CDlgWorldSettings::OnBrowseFrontViewPicture()
   GetDlgItem( IDC_FRONT_VIEW_PICTURE_T)->SetWindowText( CString(fnPicture));
 	m_strFrontViewPicture = fnPicture;
   CWorldEditorDoc *pDoc = theApp.GetDocument();
-  pDoc->SetupBackdropTextureObject( CTString(CStringA(m_strFrontViewPicture)), pDoc->m_toBackdropFt);
+  pDoc->SetupBackdropTextureObject(MfcStringToCT(m_strFrontViewPicture), pDoc->m_toBackdropFt);
 }
 
 void CDlgWorldSettings::OnBrowseRightViewPicture()
@@ -341,7 +341,7 @@ void CDlgWorldSettings::OnBrowseRightViewPicture()
   GetDlgItem( IDC_RIGHT_VIEW_PICTURE_T)->SetWindowText( CString(fnPicture));
 	m_strRightViewPicture = fnPicture;
   CWorldEditorDoc *pDoc = theApp.GetDocument();
-  pDoc->SetupBackdropTextureObject( CTString(CStringA(m_strRightViewPicture)), pDoc->m_toBackdropRt);
+  pDoc->SetupBackdropTextureObject(MfcStringToCT(m_strRightViewPicture), pDoc->m_toBackdropRt);
 }
 
 

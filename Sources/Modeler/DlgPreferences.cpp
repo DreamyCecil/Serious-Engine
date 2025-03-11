@@ -214,7 +214,7 @@ void CDlgPreferences::InitTextureCombos()
   INDEX iChoosedWinBcg = 0;
   if( theApp.m_WorkingTextures.IsEmpty())
   {
-    m_ComboWinBcgTexture.AddString( L"None available");
+    m_ComboWinBcgTexture.AddString(_T("None available"));
     m_ComboWinBcgTexture.EnableWindow( FALSE);
   }
   else

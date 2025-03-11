@@ -92,11 +92,10 @@ BOOL CEditMipSwitchDistance::PreTranslateMessage(MSG* pMsg)
       // set new mip switch distance
       CString strWindowText;
       GetWindowText( strWindowText);
-      CTString strValue = CStringA(strWindowText).GetString();
       FLOAT fValue = 100.0f;
       CBrushMip *pbrm = GetMipBrush();
       // if value is valid and brush exists
-      if( (strValue.ScanF( "%g", &fValue) == 1) && (pbrm != NULL) )
+      if( (_tscanf(strWindowText, _T("%g"), &fValue) == 1) && (pbrm != NULL) )
       {
         pbrm->SetMipDistance( fValue);
         m_fLastValue = fValue;
