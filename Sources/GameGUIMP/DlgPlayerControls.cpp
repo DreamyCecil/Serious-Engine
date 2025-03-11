@@ -337,13 +337,11 @@ void CDlgPlayerControls::ActivatePressKey(const char *strFirstOrSecond)
 
   // leave left mouse button !
   while( (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0) NOTHING;
-  
-  char achrMessage[ 256];
-  // prepare message
-  sprintf( achrMessage, "Press new %s button for action:\n\"%s\"", strFirstOrSecond,
-    m_listButtonActions.GetItemText( m_iSelectedAction, 0));
+
   // set message string to dialog
-  m_strPressNewButton = achrMessage;
+  m_strPressNewButton.Format(_T("Press new %s button for action:\n\"%s\""),
+    CString(strFirstOrSecond).GetString(), m_listButtonActions.GetItemText(m_iSelectedAction, 0).GetString());
+
   // activate string in text control
 	UpdateData( FALSE);
   
