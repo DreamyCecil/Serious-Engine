@@ -23,16 +23,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/CTString.h>
 #include <Engine/Graphics/ViewPort.h>
 #include <Engine/Templates/StaticArray.h>
+#include <Engine/Base/KeyNames.h>
 
 // Maximum amount of supported game controllers
 #define MAX_JOYSTICKS 8
 
-// Number of reserved key IDs (in KeyNames.h)
-#define KID_TOTALCOUNT 256
-
-#define FIRST_JOYBUTTON (KID_TOTALCOUNT)
-#define MAX_OVERALL_BUTTONS (KID_TOTALCOUNT + MAX_JOYSTICKS * SDL_GAMEPAD_BUTTON_COUNT)
-#define FIRST_AXIS_ACTION (MAX_OVERALL_BUTTONS)
+#define FIRST_JOYBUTTON     (KID_MAX)
+#define MAX_OVERALL_BUTTONS (FIRST_JOYBUTTON + MAX_JOYSTICKS * SDL_GAMEPAD_BUTTON_COUNT)
+#define FIRST_AXIS_ACTION   (MAX_OVERALL_BUTTONS)
 
 enum EInputAxis {
   EIA_NONE = 0, // Invalid/no axis
@@ -51,7 +49,7 @@ enum EInputAxis {
 };
 
 // All possible input actions
-#define MAX_INPUT_ACTIONS (MAX_OVERALL_BUTTONS + EIA_MAX_ALL)
+#define MAX_INPUT_ACTIONS (FIRST_AXIS_ACTION + EIA_MAX_ALL)
 
 // Information about a single input action
 struct InputDeviceAction {

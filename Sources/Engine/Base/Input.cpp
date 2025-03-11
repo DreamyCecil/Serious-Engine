@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Timer.h>
 #include <Engine/Base/Input.h>
 #include <Engine/Base/Translation.h>
-#include <Engine/Base/KeyNames.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Graphics/ViewPort.h>
 #include <Engine/Base/Console.h>
@@ -59,7 +58,7 @@ NOTE: Three different types of key codes are used here:
 
 // basic key conversion table
 struct KeyConversion {
-  INDEX kc_iKID;
+  EInputKeyID kc_eKID;
   INDEX kc_iVirtKey;
 
   // [Cecil] NOTE: Some keys are offsetted by 256 to account for the "extended" flag that's being set
@@ -234,7 +233,7 @@ static void MakeConversionTables(void) {
   for (i = 0; i < _ctKeyArray; i++) {
     const KeyConversion &kc = _akcKeys[i];
 
-    const INDEX iKID  = kc.kc_iKID;
+    const EInputKeyID eKID  = kc.kc_eKID;
     const INDEX iVirt = kc.kc_iVirtKey;
 
     if (iVirt >= 0) {
@@ -250,7 +249,7 @@ static void MakeConversionTables(void) {
       INDEX iScan = kc.kc_iScanCode;
     #endif
 
-      _aiScanToKid[iScan] = iKID;
+      _aiScanToKid[iScan] = eKID;
     }
   }
 
@@ -459,8 +458,8 @@ void CInput::SetKeyNames( void)
     const KeyConversion &kc = _akcKeys[iKey];
     if (kc.kc_strName == NULL) continue;
 
-    inp_aInputActions[kc.kc_iKID].ida_strNameInt = kc.kc_strName;
-    CTString &strTranslated = inp_aInputActions[kc.kc_iKID].ida_strNameTra;
+    inp_aInputActions[kc.kc_eKID].ida_strNameInt = kc.kc_strName;
+    CTString &strTranslated = inp_aInputActions[kc.kc_eKID].ida_strNameTra;
 
     if (strlen(kc.kc_strNameTrans) == 0) {
       strTranslated = kc.kc_strName;
@@ -660,10 +659,10 @@ void CInput::GetInput(BOOL bPreScan)
     for (INDEX iKey = 0; iKey < _ctKeyArray; iKey++) {
       const KeyConversion &kc = _akcKeys[iKey];
       // get codes
-      INDEX iKID  = kc.kc_iKID;
+      const EInputKeyID eKID  = kc.kc_eKID;
       INDEX iVirt = kc.kc_iVirtKey;
 
-      InputDeviceAction &idaKey = inp_aInputActions[iKID];
+      InputDeviceAction &idaKey = inp_aInputActions[eKID];
 
       // if reading async keystate
       if (inp_iKeyboardReadingMethod == 0) {
@@ -700,7 +699,7 @@ void CInput::GetInput(BOOL bPreScan)
         }
 
       // if snooping messages
-      } else if (_abKeysPressed[iKID]) {
+      } else if (_abKeysPressed[eKID]) {
         // mark it as pressed
         idaKey.ida_fReading = 1;
       }
