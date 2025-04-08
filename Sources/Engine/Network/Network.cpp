@@ -2549,6 +2549,11 @@ void CNetworkLibrary::MakeDefaultState(const CTFileName &fnmWorld,
   NET_MakeDefaultState_t(fnmWorld, ulSpawnFlags, pvSessionProperties, *pstrmState);
   pstrmState->SetPos_t(0);
 
+  // [Cecil] Clean up the previous state
+  if (ga_pubDefaultState != NULL) {
+    FreeMemory(ga_pubDefaultState);
+  }
+
   ga_slDefaultStateSize = pstrmState->GetStreamSize();
   ga_pubDefaultState = (UBYTE*)AllocMemory(ga_slDefaultStateSize);
   pstrmState->Read_t(ga_pubDefaultState, ga_slDefaultStateSize);
