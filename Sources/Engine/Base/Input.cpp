@@ -550,7 +550,7 @@ void CInput::EnableInput(OS::Window hwnd)
 #endif // !SE1_PREFER_SDL
 
   // clear button's buffer
-  memset( _abKeysPressed, 0, sizeof( _abKeysPressed));
+  memset(_abKeysPressed, 0, sizeof(_abKeysPressed));
 
   // This can be enabled to pre-read the state of currently pressed keys
   // for snooping methods, since they only detect transitions.
@@ -640,9 +640,7 @@ void CInput::GetInput(BOOL bPreScan)
   // if not pre-scanning
   if (!bPreScan) {
     // [Cecil] Reset key readings
-    for (INDEX iResetAction = 0; iResetAction < MAX_OVERALL_BUTTONS; iResetAction++) {
-      inp_aInputActions[iResetAction].ida_fReading = 0;
-    }
+    ClearKeyInput();
 
     #if SE1_PREFER_SDL
       // [Cecil] SDL: Get current keyboard and mouse states just once
@@ -817,10 +815,16 @@ void CInput::GetInput(BOOL bPreScan)
   PollJoysticks(bPreScan); // [Cecil]
 }
 
-// Clear all input states (keys become not pressed, axes are reset to zero)
-void CInput::ClearInput(void)
-{
-  for (INDEX i = 0; i < MAX_INPUT_ACTIONS; i++) {
+// [Cecil] Clear states of all keys (as if they are all released)
+void CInput::ClearKeyInput(void) {
+  for (INDEX i = 0; i < MAX_OVERALL_BUTTONS; i++) {
+    inp_aInputActions[i].ida_fReading = 0;
+  }
+};
+
+// [Cecil] Clear movements of all axes (as if they are still)
+void CInput::ClearAxisInput(void) {
+  for (INDEX i = FIRST_AXIS_ACTION; i < MAX_INPUT_ACTIONS; i++) {
     inp_aInputActions[i].ida_fReading = 0;
   }
 };

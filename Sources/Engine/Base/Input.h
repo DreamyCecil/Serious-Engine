@@ -127,8 +127,17 @@ public:
   // Scan states of all available input sources
   void GetInput(BOOL bPreScan);
 
-  // Clear all input states (keys become not pressed, axes are reset to zero)
-  void ClearInput(void);
+  // [Cecil] Clear states of all keys (as if they are all released)
+  void ClearKeyInput(void);
+
+  // [Cecil] Clear movements of all axes (as if they are still)
+  void ClearAxisInput(void);
+
+  // [Cecil] Old method for compatibility
+  __forceinline void ClearInput(void) {
+    ClearKeyInput();
+    ClearAxisInput();
+  };
 
 // [Cecil] Joystick interface
 public:
