@@ -448,7 +448,7 @@ BOOL CGfxLibrary::SetupPixelFormat_OGL(OS::DvcContext hdc, BOOL bReport/*=FALSE*
     iPixelFormat = pwglChoosePixelFormat( hdc, &pfd);
   }
 
-  if (CheckGenericError(iPixelFormat == 0, "ChoosePixelFormat")) return FALSE;
+  if (CheckGenericError(iPixelFormat != 0, "ChoosePixelFormat")) return FALSE;
 
   BOOL bSetPixelFormat = pwglSetPixelFormat(hdc, iPixelFormat, &pfd);
   if (CheckGenericError(bSetPixelFormat, "SetPixelFormat")) return FALSE;
