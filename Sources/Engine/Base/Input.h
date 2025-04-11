@@ -81,7 +81,6 @@ class ENGINE_API CInput {
 public:
 // Attributes
 
-  BOOL inp_bLastPrescan;
   BOOL inp_bInputEnabled;
   BOOL inp_bPollJoysticks;
 

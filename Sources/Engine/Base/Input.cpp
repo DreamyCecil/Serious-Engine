@@ -257,13 +257,6 @@ static void MakeConversionTables(void) {
   _aiScanToKid[SDL_SCANCODE_UNKNOWN] = -1;
 };
 
-// variables for message interception
-static int _iMouseZ = 0;
-static BOOL _bWheelUp = FALSE;
-static BOOL _bWheelDn = FALSE;
-
-CTCriticalSection csInput;
-
 // which keys are pressed, as recorded by message interception (by KIDs)
 static UBYTE _abKeysPressed[256];
 
@@ -271,6 +264,9 @@ static UBYTE _abKeysPressed[256];
 #define KEYPRESSED_NONE        UBYTE(0)
 #define KEYPRESSED_NUM(_Index) UBYTE(1 << _Index)
 #define KEYPRESSED_ALL         UBYTE(0xFF)
+
+// [Cecil] Accumulated wheel scroll in a certain direction (Z)
+static FLOAT _fGlobalMouseScroll = 0.0f;
 
 #if SE1_PREFER_SDL
 
@@ -312,7 +308,11 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
     } break;
 
     case SDL_EVENT_MOUSE_WHEEL: {
-      _iMouseZ += pEvent->wheel.y * MOUSEWHEEL_SCROLL_INTERVAL;
+      _fGlobalMouseScroll = Sgn(pEvent->wheel.y);
+
+      // Determine which direction the wheel is scrolled, which is reset later in CInput::GetInput()
+      _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
+      _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
     } break;
 
     case SDL_EVENT_KEY_DOWN: SetKeyFromEvent(pEvent, KEYPRESSED_ALL); break;
@@ -395,7 +395,11 @@ LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam) {
   }
 
   if (pMsg->message == WM_MOUSEWHEEL) {
-    _iMouseZ += SWORD(UWORD(HIWORD(pMsg->wParam)));
+    _fGlobalMouseScroll = Sgn(SWORD(UWORD(HIWORD(pMsg->wParam))));
+
+    // Determine which direction the wheel is scrolled, which is reset later in CInput::GetInput()
+    _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
+    _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
   }
 
   return r;
@@ -425,7 +429,6 @@ CInput::CInput(void)
   // disable control scaning
   inp_bInputEnabled = FALSE;
   inp_bPollJoysticks = FALSE;
-  inp_bLastPrescan = FALSE;
 
   // [Cecil] Clear all actions
   for (INDEX iAction = 0; iAction < MAX_INPUT_ACTIONS; iAction++) {
@@ -552,6 +555,9 @@ void CInput::EnableInput(OS::Window hwnd)
   // clear button's buffer
   memset(_abKeysPressed, 0, sizeof(_abKeysPressed));
 
+  // [Cecil] Clear mouse movements
+  _fGlobalMouseScroll = 0;
+
   // This can be enabled to pre-read the state of currently pressed keys
   // for snooping methods, since they only detect transitions.
   // That has effect of detecting key presses for keys that were held down before
@@ -622,20 +628,14 @@ void CInput::DisableInput(OS::Window hwnd)
   inp_bPollJoysticks = FALSE;
 }
 
-/*
- * Scan states of all available input sources
- */
+// Scan states of all available input sources
 void CInput::GetInput(BOOL bPreScan)
 {
-//  CTSingleLock sl(&csInput, TRUE);
+  // Game input is disabled
+  if (!inp_bInputEnabled) return;
 
-  if (!inp_bInputEnabled) {
-    return;
-  }
-
-  if (bPreScan && !inp_bAllowPrescan) {
-    return;
-  }
+  // Cannot pre-scan input every possible frame
+  if (bPreScan && !inp_bAllowPrescan) return;
 
   // if not pre-scanning
   if (!bPreScan) {
@@ -698,6 +698,10 @@ void CInput::GetInput(BOOL bPreScan)
       } else if (_abKeysPressed[eKID] & ubKeyPressedMask) {
         // mark it as pressed
         idaKey.ida_fReading = 1;
+
+        // [Cecil] Release mouse wheel after "pressing" it because wheel scrolling is always momentary
+        if (eKID == KID_MOUSEWHEELUP)   _abKeysPressed[KID_MOUSEWHEELUP]   &= ~ubKeyPressedMask;
+        if (eKID == KID_MOUSEWHEELDOWN) _abKeysPressed[KID_MOUSEWHEELDOWN] &= ~ubKeyPressedMask;
       }
     }
   }
@@ -710,6 +714,10 @@ void CInput::GetInput(BOOL bPreScan)
 #else
   OS::GetMouseState(&fMouseX, &fMouseY, FALSE);
 #endif
+
+  // [Cecil] Use accumulated mouse scroll
+  float fDZ = _fGlobalMouseScroll;
+  _fGlobalMouseScroll = 0;
 
   {
   #if SE1_PREFER_SDL
@@ -758,52 +766,12 @@ void CInput::GetInput(BOOL bPreScan)
     if (inp_bInvertMouse) {
       fMouseRelY = -fMouseRelY;
     }
-    FLOAT fMouseRelZ = _iMouseZ;
 
     // just interpret values as normal
     inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_X].ida_fReading = fMouseRelX;
     inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Y].ida_fReading = fMouseRelY;
-    inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Z].ida_fReading = fMouseRelZ;
+    inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Z].ida_fReading = fDZ * MOUSEWHEEL_SCROLL_INTERVAL;
   }
-
-  // if not pre-scanning
-  if (!bPreScan) {
-    // [Cecil] FIXME: This whole block should be executed at all times and not just when input is needed,
-    // otherwise it produces bugs where if you scroll the wheel in the menu a bunch of times, it will:
-    // 1. Rapidly switch weapons as soon as you return to the game or...
-    // 2. Keep auto-forcing "Mouse Wheel Up" or "Mouse Wheel Dn" to controls on any active key bind
-    // until the accumulated _iMouseZ reaches zero
-    _bWheelUp = _bWheelDn = FALSE; // [Cecil] TEMP: Reset states to prevent it from toggling each step
-
-    InputDeviceAction &idaUp = inp_aInputActions[KID_MOUSEWHEELUP];
-
-    // Detect wheel up/down movement
-    if (_iMouseZ > 0) {
-      if (_bWheelUp) {
-        idaUp.ida_fReading = 0;
-      } else {
-        idaUp.ida_fReading = 1;
-        _iMouseZ = ClampDn(_iMouseZ - MOUSEWHEEL_SCROLL_INTERVAL, 0);
-      }
-    }
-
-    _bWheelUp = idaUp.IsActive();
-
-    InputDeviceAction &idaDn = inp_aInputActions[KID_MOUSEWHEELDOWN];
-
-    if (_iMouseZ < 0) {
-      if (_bWheelDn) {
-        idaDn.ida_fReading = 0;
-      } else {
-        idaDn.ida_fReading = 1;
-        _iMouseZ = ClampUp(_iMouseZ + MOUSEWHEEL_SCROLL_INTERVAL, 0);
-      }
-    }
-
-    _bWheelDn = idaDn.IsActive();
-  }
-
-  inp_bLastPrescan = bPreScan;
 
 #if !SE1_PREFER_SDL
   // set cursor position to screen center
