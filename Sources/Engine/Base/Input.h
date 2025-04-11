@@ -37,8 +37,6 @@ enum EInputAxis {
   EIA_MOUSE_X,  // Mouse movement
   EIA_MOUSE_Y,
   EIA_MOUSE_Z,  // Mouse wheel
-  EIA_MOUSE2_X, // Second mouse movement
-  EIA_MOUSE2_Y,
 
   // Amount of mouse axes / first controller axis
   EIA_MAX_MOUSE,
@@ -131,14 +129,6 @@ public:
 
   // Clear all input states (keys become not pressed, axes are reset to zero)
   void ClearInput(void);
-
-// [Cecil] Second mouse interface
-public:
-
-  void Mouse2_Clear(void);
-  void Mouse2_Startup(void);
-  void Mouse2_Shutdown(void);
-  void Mouse2_Update(void);
 
 // [Cecil] Joystick interface
 public:

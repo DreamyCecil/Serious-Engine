@@ -624,7 +624,6 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClCompile Include="Base\GameDir.cpp" />
     <ClCompile Include="Base\IFeel.cpp" />
     <ClCompile Include="Base\Input.cpp" />
-    <ClCompile Include="Base\Input2ndMouse.cpp" />
     <ClCompile Include="Base\InputJoystick.cpp" />
     <ClCompile Include="Base\Lists.cpp" />
     <ClCompile Include="Base\Memory.cpp" />

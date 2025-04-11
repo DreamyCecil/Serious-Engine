@@ -439,7 +439,6 @@ CInput::CInput(void)
 CInput::~CInput() {
   // [Cecil] Various cleanups
   ShutdownJoysticks();
-  Mouse2_Clear();
 };
 
 /*
@@ -473,11 +472,9 @@ void CInput::SetKeyNames( void)
     inp_aInputActions[FIRST_AXIS_ACTION + _Axis].ida_strNameInt = _Name; \
     inp_aInputActions[FIRST_AXIS_ACTION + _Axis].ida_strNameTra = TRANS(_Name);
 
-  SET_AXIS_NAME(EIA_MOUSE_X,  "mouse X");
-  SET_AXIS_NAME(EIA_MOUSE_Y,  "mouse Y");
-  SET_AXIS_NAME(EIA_MOUSE_Z,  "mouse Z");
-  SET_AXIS_NAME(EIA_MOUSE2_X, "2nd mouse X");
-  SET_AXIS_NAME(EIA_MOUSE2_Y, "2nd mouse Y");
+  SET_AXIS_NAME(EIA_MOUSE_X, "mouse X");
+  SET_AXIS_NAME(EIA_MOUSE_Y, "mouse Y");
+  SET_AXIS_NAME(EIA_MOUSE_Z, "mouse Z");
 
   #undef SET_AXIS_NAME
 
@@ -494,7 +491,6 @@ void CInput::Initialize( void )
 
   // [Cecil] Various initializations
   StartupJoysticks();
-  Mouse2_Clear();
 
   SetKeyNames();
   CPutString("\n");
@@ -547,9 +543,6 @@ void CInput::EnableInput(OS::Window hwnd)
   _hGetMsgHook  = SetWindowsHookEx(WH_GETMESSAGE, &GetMsgProc, NULL, GetCurrentThreadId());
   _hSendMsgHook = SetWindowsHookEx(WH_CALLWNDPROC, &SendMsgProc, NULL, GetCurrentThreadId());
 #endif // !SE1_PREFER_SDL
-
-  // if required, try to enable 2nd mouse
-  Mouse2_Startup(); // [Cecil]
 
   // clear button's buffer
   memset( _abKeysPressed, 0, sizeof( _abKeysPressed));
@@ -618,9 +611,6 @@ void CInput::DisableInput(OS::Window hwnd)
   // set system mouse settings
   SystemParametersInfo(SPI_SETMOUSE, 0, &inp_mscMouseSettings, 0);
 #endif // !SE1_PREFER_SDL
-
-  // eventually disable 2nd mouse
-  Mouse2_Shutdown(); // [Cecil]
 
   // remember current status
   inp_bInputEnabled = FALSE;
@@ -815,9 +805,6 @@ void CInput::GetInput(BOOL bPreScan)
     SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
   }
 #endif
-
-  // readout 2nd mouse if enabled
-  Mouse2_Update(); // [Cecil]
 
   PollJoysticks(bPreScan); // [Cecil]
 }
