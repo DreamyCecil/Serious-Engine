@@ -267,14 +267,19 @@ CTCriticalSection csInput;
 // which keys are pressed, as recorded by message interception (by KIDs)
 static UBYTE _abKeysPressed[256];
 
+// [Cecil] State flags for pressed keys per device (up to 8)
+#define KEYPRESSED_NONE        UBYTE(0)
+#define KEYPRESSED_NUM(_Index) UBYTE(1 << _Index)
+#define KEYPRESSED_ALL         UBYTE(0xFF)
+
 #if SE1_PREFER_SDL
 
 // [Cecil] SDL: Set key state according to the key event
-static void SetKeyFromEvent(const SDL_Event *pEvent, const BOOL bDown) {
+static void SetKeyFromEvent(const SDL_Event *pEvent, const UBYTE ubDown) {
   const INDEX iKID = _aiScanToKid[pEvent->key.scancode];
 
   if (iKID != -1) {
-    _abKeysPressed[iKID] = bDown;
+    _abKeysPressed[iKID] = ubDown;
   }
 };
 
@@ -302,7 +307,7 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
       }
 
       if (iKID != KID_NONE) {
-        _abKeysPressed[iKID] = pEvent->button.down;
+        _abKeysPressed[iKID] = (pEvent->button.down ? KEYPRESSED_ALL : KEYPRESSED_NONE);
       }
     } break;
 
@@ -310,8 +315,8 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
       _iMouseZ += pEvent->wheel.y * MOUSEWHEEL_SCROLL_INTERVAL;
     } break;
 
-    case SDL_EVENT_KEY_DOWN: SetKeyFromEvent(pEvent, TRUE); break;
-    case SDL_EVENT_KEY_UP: SetKeyFromEvent(pEvent, FALSE); break;
+    case SDL_EVENT_KEY_DOWN: SetKeyFromEvent(pEvent, KEYPRESSED_ALL); break;
+    case SDL_EVENT_KEY_UP: SetKeyFromEvent(pEvent, KEYPRESSED_NONE); break;
 
     default: break;
   }
@@ -325,56 +330,56 @@ static HHOOK _hGetMsgHook = NULL;
 static HHOOK _hSendMsgHook = NULL;
 
 // Set key state according to the key message
-static void SetKeyFromMsg(MSG *pMsg, BOOL bDown) {
+static void SetKeyFromMsg(MSG *pMsg, const UBYTE ubDown) {
   // Get key ID from scan code
   const INDEX iScan = (pMsg->lParam >> 16) & 0x1FF; // Use extended bit too!
   const INDEX iKID = _aiScanToKid[iScan];
 
   if (iKID != -1) {
-    //CPrintF("%s: %d\n", _pInput->inp_strButtonNames[iKID], bDown);
-    _abKeysPressed[iKID] = bDown;
+    //CPrintF("%s: %d\n", _pInput->inp_strButtonNames[iKID], ubDown);
+    _abKeysPressed[iKID] = ubDown;
   }
 };
 
 static void CheckMessage(MSG *pMsg)
 {
   if (pMsg->message == WM_LBUTTONUP) {
-    _abKeysPressed[KID_MOUSE1] = FALSE;
+    _abKeysPressed[KID_MOUSE1] = KEYPRESSED_NONE;
   } else if (pMsg->message == WM_LBUTTONDOWN || pMsg->message == WM_LBUTTONDBLCLK) {
-    _abKeysPressed[KID_MOUSE1] = TRUE;
+    _abKeysPressed[KID_MOUSE1] = KEYPRESSED_ALL;
 
   } else if (pMsg->message == WM_RBUTTONUP) {
-    _abKeysPressed[KID_MOUSE2] = FALSE;
+    _abKeysPressed[KID_MOUSE2] = KEYPRESSED_NONE;
   } else if (pMsg->message == WM_RBUTTONDOWN || pMsg->message == WM_RBUTTONDBLCLK) {
-    _abKeysPressed[KID_MOUSE2] = TRUE;
+    _abKeysPressed[KID_MOUSE2] = KEYPRESSED_ALL;
 
   } else if (pMsg->message == WM_MBUTTONUP) {
-    _abKeysPressed[KID_MOUSE3] = FALSE;
+    _abKeysPressed[KID_MOUSE3] = KEYPRESSED_NONE;
   } else if (pMsg->message == WM_MBUTTONDOWN || pMsg->message == WM_MBUTTONDBLCLK) {
-    _abKeysPressed[KID_MOUSE3] = TRUE;
+    _abKeysPressed[KID_MOUSE3] = KEYPRESSED_ALL;
 
   // [Cecil] Proper support for MB4 and MB5
   } else if (pMsg->message == WM_XBUTTONUP) {
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON1) {
-      _abKeysPressed[KID_MOUSE4] = FALSE;
+      _abKeysPressed[KID_MOUSE4] = KEYPRESSED_NONE;
     }
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON2) {
-      _abKeysPressed[KID_MOUSE5] = FALSE;
+      _abKeysPressed[KID_MOUSE5] = KEYPRESSED_NONE;
     }
 
   } else if (pMsg->message == WM_XBUTTONDOWN || pMsg->message == WM_XBUTTONDBLCLK) {
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON1) {
-      _abKeysPressed[KID_MOUSE4] = TRUE;
+      _abKeysPressed[KID_MOUSE4] = KEYPRESSED_ALL;
     }
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON2) {
-      _abKeysPressed[KID_MOUSE5] = TRUE;
+      _abKeysPressed[KID_MOUSE5] = KEYPRESSED_ALL;
     }
 
   } else if (pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP) {
-    SetKeyFromMsg(pMsg, FALSE);
+    SetKeyFromMsg(pMsg, KEYPRESSED_NONE);
 
   } else if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN) {
-    SetKeyFromMsg(pMsg, TRUE);
+    SetKeyFromMsg(pMsg, KEYPRESSED_ALL);
   }
 };
 
@@ -576,7 +581,7 @@ void CInput::EnableInput(OS::Window hwnd)
       // is state is pressed
       if (OS::GetAsyncKeyState(iVirt) & 0x8000) {
         // mark it as pressed
-        _abKeysPressed[iKID] = 0xFF;
+        _abKeysPressed[iKID] = KEYPRESSED_ALL;
       }
     }
   }}
@@ -645,6 +650,9 @@ void CInput::GetInput(BOOL bPreScan)
       const ULONG ulMouseState = SDL_GetMouseState(NULL, NULL);
     #endif
 
+    // [Cecil] Determine key mask for buttons of the specified device
+    UBYTE ubKeyPressedMask = KEYPRESSED_ALL;
+
     // for each Key
     for (INDEX iKey = 0; iKey < _ctKeyArray; iKey++) {
       const KeyConversion &kc = _akcKeys[iKey];
@@ -689,7 +697,7 @@ void CInput::GetInput(BOOL bPreScan)
         }
 
       // if snooping messages
-      } else if (_abKeysPressed[eKID]) {
+      } else if (_abKeysPressed[eKID] & ubKeyPressedMask) {
         // mark it as pressed
         idaKey.ida_fReading = 1;
       }
