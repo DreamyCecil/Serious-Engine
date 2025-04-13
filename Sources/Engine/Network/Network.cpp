@@ -216,15 +216,6 @@ FLOAT inp_bInvertMouse = FALSE;
 INDEX inp_bFilterMouse = FALSE;
 INDEX inp_bAllowPrescan = TRUE;
 
-INDEX inp_i2ndMousePort = 0; // COM no (0=disable)
-FLOAT inp_f2ndMouseSensitivity = 1.0f;
-INDEX inp_b2ndMousePrecision = FALSE;
-FLOAT inp_f2ndMousePrecisionFactor = 4.0f;
-FLOAT inp_f2ndMousePrecisionThreshold = 10.0f;
-FLOAT inp_f2ndMousePrecisionTimeout = 0.25f;
-INDEX inp_bInvert2ndMouse = FALSE;
-INDEX inp_bFilter2ndMouse = FALSE;
-
 extern INDEX inp_ctJoysticksAllowed;
 extern INDEX inp_bForceJoystickPolling;
 
@@ -899,15 +890,6 @@ void CNetworkLibrary::Init(void)
   _pShell->DeclareSymbol("persistent user INDEX inp_bInvertMouse;",    &inp_bInvertMouse);
   _pShell->DeclareSymbol("persistent user INDEX inp_bFilterMouse;",    &inp_bFilterMouse);
   _pShell->DeclareSymbol("persistent user INDEX inp_bAllowPrescan;",   &inp_bAllowPrescan);
-
-  _pShell->DeclareSymbol("persistent user INDEX inp_i2ndMousePort;",   &inp_i2ndMousePort);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bInvert2ndMouse;", &inp_bInvert2ndMouse);
-  _pShell->DeclareSymbol("persistent user INDEX inp_bFilter2ndMouse;", &inp_bFilter2ndMouse);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMouseSensitivity;",        &inp_f2ndMouseSensitivity);
-  _pShell->DeclareSymbol("persistent user INDEX inp_b2ndMousePrecision;",          &inp_b2ndMousePrecision);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionFactor;",    &inp_f2ndMousePrecisionFactor);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionThreshold;", &inp_f2ndMousePrecisionThreshold);
-  _pShell->DeclareSymbol("persistent user FLOAT inp_f2ndMousePrecisionTimeout;",   &inp_f2ndMousePrecisionTimeout);
 
   _pShell->DeclareSymbol("persistent user INDEX inp_ctJoysticksAllowed;",    &inp_ctJoysticksAllowed);
   _pShell->DeclareSymbol("persistent user INDEX inp_bForceJoystickPolling;", &inp_bForceJoystickPolling);

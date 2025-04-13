@@ -174,10 +174,10 @@ private:
   void AddJoystickAbbilities(INDEX iSlot);
 
   // Scans axis and buttons for given joystick
-  void ScanJoystick(INDEX iSlot, BOOL bPreScan);
+  void ScanJoystick(INDEX iSlot);
 
   // [Cecil] Get input from joysticks
-  void PollJoysticks(BOOL bPreScan);
+  void PollJoysticks(void);
 
 public:
 

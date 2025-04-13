@@ -315,7 +315,7 @@ void CInput::AddJoystickAbbilities(INDEX iSlot) {
 };
 
 // Scans axis and buttons for given joystick
-void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
+void CInput::ScanJoystick(INDEX iSlot) {
   SDL_Gamepad *pController = inp_aControllers[iSlot].handle;
 
   const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_GAMEPAD_AXIS_COUNT;
@@ -331,21 +331,8 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
       continue;
     }
 
-    // [Cecil] FIXME: I cannot put a bigger emphasis on why it's important to reset readings during pre-scanning here.
-    // If this isn't done and the sticks are being used for the camera rotation, the rotation speed changes drastically
-    // depending on the current FPS, either making it suddenly too fast or too slow.
-    // It doesn't affect the speed only when the maximum FPS is limited, either by using sam_iMaxFPSActive command or
-    // by building with SE1_PREFER_SDL, which always seems to lock framerate at the monitor's refresh rate.
-    //
-    // But even when you reset it, there's still a noticable choppiness that sometimes happens during view rotation if
-    // the maximum FPS is set too high because the reading is only being set once every CTimer::TickQuantum seconds.
-    //
-    // I have tried multiple methods to try and solve it, even multipling the reading by the time difference between
-    // calling this function (per axis), but it always ended up broken. This is the most stable fix I could figure out.
-    if (bPreScan) {
-      ida.ida_fReading = 0.0;
-      continue;
-    }
+    // [Cecil] FIXME: This code cannot be called during pre-scanning right now because it sets inconsistent rotation speed
+    // via gamepad axes. It should be multiplied the same way the mouse axes are handled during pre-scanning and outside of it
 
     // Read its state
     SLONG slAxisReading = SDL_GetGamepadAxis(pController, (SDL_GamepadAxis)iAxis);
@@ -357,25 +344,23 @@ void CInput::ScanJoystick(INDEX iSlot, BOOL bPreScan) {
     ida.ida_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
   }
 
-  if (!bPreScan) {
-    const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_GAMEPAD_BUTTON_COUNT;
+  const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_GAMEPAD_BUTTON_COUNT;
 
-    // For each available button
-    for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
-      // Test if the button is pressed
-      const BOOL bJoyButtonPressed = SDL_GetGamepadButton(pController, (SDL_GamepadButton)iButton);
+  // For each available button
+  for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
+    // Test if the button is pressed
+    const BOOL bJoyButtonPressed = SDL_GetGamepadButton(pController, (SDL_GamepadButton)iButton);
 
-      if (bJoyButtonPressed) {
-        inp_aInputActions[iFirstButton + iButton].ida_fReading = 1;
-      } else {
-        inp_aInputActions[iFirstButton + iButton].ida_fReading = 0;
-      }
+    if (bJoyButtonPressed) {
+      inp_aInputActions[iFirstButton + iButton].ida_fReading = 1;
+    } else {
+      inp_aInputActions[iFirstButton + iButton].ida_fReading = 0;
     }
   }
 };
 
 // [Cecil] Get input from joysticks
-void CInput::PollJoysticks(BOOL bPreScan) {
+void CInput::PollJoysticks(void) {
   // Only if joystick polling is enabled or forced
   if (!inp_bPollJoysticks && !inp_bForceJoystickPolling) return;
 
@@ -385,6 +370,6 @@ void CInput::PollJoysticks(BOOL bPreScan) {
   for (INDEX i = 0; i < ct; i++) {
     if (!inp_aControllers[i].IsConnected() || i >= inp_ctJoysticksAllowed) continue;
 
-    ScanJoystick(i, bPreScan);
+    ScanJoystick(i);
   }
 };

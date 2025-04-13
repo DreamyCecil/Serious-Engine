@@ -704,39 +704,47 @@ void CInput::GetInput(BOOL bPreScan)
         if (eKID == KID_MOUSEWHEELDOWN) _abKeysPressed[KID_MOUSEWHEELDOWN] &= ~ubKeyPressedMask;
       }
     }
+
+    // [Cecil] Polling gamepads during pre-scanning does nothing anyway
+    PollJoysticks();
   }
 
+  // [Cecil] Reset axis readings
+  ClearAxisInput();
+
   // read mouse position
-  float fMouseX, fMouseY;
+  float fMouseX, fMouseY, fDX, fDY, fDZ;
 
 #if SE1_PREFER_SDL
   SDL_GetRelativeMouseState(&fMouseX, &fMouseY);
+  fDX = fMouseX;
+  fDY = fMouseY;
+
 #else
   OS::GetMouseState(&fMouseX, &fMouseY, FALSE);
+  fDX = FLOAT(fMouseX - inp_slScreenCenterX);
+  fDY = FLOAT(fMouseY - inp_slScreenCenterY);
 #endif
 
   // [Cecil] Use accumulated mouse scroll
-  float fDZ = _fGlobalMouseScroll;
+  fDZ = _fGlobalMouseScroll;
   _fGlobalMouseScroll = 0;
 
   {
-  #if SE1_PREFER_SDL
-    FLOAT fDX = fMouseX;
-    FLOAT fDY = fMouseY;
-  #else
-    FLOAT fDX = FLOAT(fMouseX - inp_slScreenCenterX);
-    FLOAT fDY = FLOAT(fMouseY - inp_slScreenCenterY);
-  #endif
-
     FLOAT fSensitivity = inp_fMouseSensitivity;
-    if( inp_bAllowMouseAcceleration) fSensitivity *= 0.25f;
+    if (inp_bAllowMouseAcceleration) fSensitivity *= 0.25f;
 
-    FLOAT fD = Sqrt(fDX*fDX+fDY*fDY);
     if (inp_bMousePrecision) {
       static FLOAT _tmTime = 0.0f;
-      if( fD<inp_fMousePrecisionThreshold) _tmTime += 0.05f;
-      else _tmTime = 0.0f;
-      if( _tmTime>inp_fMousePrecisionTimeout) fSensitivity /= inp_fMousePrecisionFactor;
+      FLOAT fD = Sqrt(fDX * fDX + fDY * fDY);
+
+      if (fD < inp_fMousePrecisionThreshold) {
+        _tmTime += 0.05f;
+      } else {
+        _tmTime = 0.0f;
+      }
+
+      if (_tmTime > inp_fMousePrecisionTimeout) fSensitivity /= inp_fMousePrecisionFactor;
     }
 
     static FLOAT fDXOld;
@@ -744,25 +752,25 @@ void CInput::GetInput(BOOL bPreScan)
     static TIME tmOldDelta;
     static CTimerValue tvBefore;
     CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
-    TIME tmNowDelta = (tvNow-tvBefore).GetSeconds();
-    if (tmNowDelta<0.001f) {
-      tmNowDelta = 0.001f;
-    }
+    TIME tmNowDelta = ClampDn((tvNow - tvBefore).GetSeconds(), 0.001);
+
     tvBefore = tvNow;
 
-    FLOAT fDXSmooth = (fDXOld*tmOldDelta+fDX*tmNowDelta)/(tmOldDelta+tmNowDelta);
-    FLOAT fDYSmooth = (fDYOld*tmOldDelta+fDY*tmNowDelta)/(tmOldDelta+tmNowDelta);
+    FLOAT fDXSmooth = (fDXOld * tmOldDelta + fDX * tmNowDelta) / (tmOldDelta + tmNowDelta);
+    FLOAT fDYSmooth = (fDYOld * tmOldDelta + fDY * tmNowDelta) / (tmOldDelta + tmNowDelta);
     fDXOld = fDX;
     fDYOld = fDY;
     tmOldDelta = tmNowDelta;
+
     if (inp_bFilterMouse) {
       fDX = fDXSmooth;
       fDY = fDYSmooth;
     }
 
     // get final mouse values
-    FLOAT fMouseRelX = +fDX*fSensitivity;
-    FLOAT fMouseRelY = -fDY*fSensitivity;
+    FLOAT fMouseRelX = +fDX * fSensitivity;
+    FLOAT fMouseRelY = -fDY * fSensitivity;
+
     if (inp_bInvertMouse) {
       fMouseRelY = -fMouseRelY;
     }
@@ -779,9 +787,7 @@ void CInput::GetInput(BOOL bPreScan)
     SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
   }
 #endif
-
-  PollJoysticks(bPreScan); // [Cecil]
-}
+};
 
 // [Cecil] Clear states of all keys (as if they are all released)
 void CInput::ClearKeyInput(void) {
