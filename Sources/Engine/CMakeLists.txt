@@ -35,6 +35,7 @@ set(ENGINE_SRCS
   "Base/IFeel.cpp"
   "Base/Input.cpp"
   "Base/InputJoystick.cpp"
+  "Base/InputMouse.cpp"
   "Base/Lists.cpp"
   "Base/Memory.cpp"
   "Base/Profiling.cpp"

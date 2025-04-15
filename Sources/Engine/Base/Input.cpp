@@ -27,14 +27,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ErrorReporting.h>
 
 extern INDEX inp_iKeyboardReadingMethod;
-extern FLOAT inp_fMouseSensitivity;
-extern INDEX inp_bAllowMouseAcceleration;
-extern INDEX inp_bMousePrecision;
-extern FLOAT inp_fMousePrecisionFactor;
-extern FLOAT inp_fMousePrecisionThreshold;
-extern FLOAT inp_fMousePrecisionTimeout;
-extern FLOAT inp_bInvertMouse;
-extern INDEX inp_bFilterMouse;
 extern INDEX inp_bAllowPrescan;
 
 #if SE1_PREFER_SDL
@@ -260,13 +252,8 @@ static void MakeConversionTables(void) {
 // which keys are pressed, as recorded by message interception (by KIDs)
 static UBYTE _abKeysPressed[256];
 
-// [Cecil] State flags for pressed keys per device (up to 8)
-#define KEYPRESSED_NONE        UBYTE(0)
-#define KEYPRESSED_NUM(_Index) UBYTE(1 << _Index)
-#define KEYPRESSED_ALL         UBYTE(0xFF)
-
 // [Cecil] Accumulated wheel scroll in a certain direction (Z)
-static FLOAT _fGlobalMouseScroll = 0.0f;
+extern FLOAT _fGlobalMouseScroll;
 
 #if SE1_PREFER_SDL
 
@@ -303,7 +290,7 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
       }
 
       if (iKID != KID_NONE) {
-        _abKeysPressed[iKID] = (pEvent->button.down ? KEYPRESSED_ALL : KEYPRESSED_NONE);
+        _abKeysPressed[iKID] = (pEvent->button.down ? INPUTDEVICES_ALL : INPUTDEVICES_NONE);
       }
     } break;
 
@@ -311,12 +298,12 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
       _fGlobalMouseScroll = Sgn(pEvent->wheel.y);
 
       // Determine which direction the wheel is scrolled, which is reset later in CInput::GetInput()
-      _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
-      _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
+      _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
+      _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
     } break;
 
-    case SDL_EVENT_KEY_DOWN: SetKeyFromEvent(pEvent, KEYPRESSED_ALL); break;
-    case SDL_EVENT_KEY_UP: SetKeyFromEvent(pEvent, KEYPRESSED_NONE); break;
+    case SDL_EVENT_KEY_DOWN: SetKeyFromEvent(pEvent, INPUTDEVICES_ALL); break;
+    case SDL_EVENT_KEY_UP: SetKeyFromEvent(pEvent, INPUTDEVICES_NONE); break;
 
     default: break;
   }
@@ -344,42 +331,42 @@ static void SetKeyFromMsg(MSG *pMsg, const UBYTE ubDown) {
 static void CheckMessage(MSG *pMsg)
 {
   if (pMsg->message == WM_LBUTTONUP) {
-    _abKeysPressed[KID_MOUSE1] = KEYPRESSED_NONE;
+    _abKeysPressed[KID_MOUSE1] = INPUTDEVICES_NONE;
   } else if (pMsg->message == WM_LBUTTONDOWN || pMsg->message == WM_LBUTTONDBLCLK) {
-    _abKeysPressed[KID_MOUSE1] = KEYPRESSED_ALL;
+    _abKeysPressed[KID_MOUSE1] = INPUTDEVICES_ALL;
 
   } else if (pMsg->message == WM_RBUTTONUP) {
-    _abKeysPressed[KID_MOUSE2] = KEYPRESSED_NONE;
+    _abKeysPressed[KID_MOUSE2] = INPUTDEVICES_NONE;
   } else if (pMsg->message == WM_RBUTTONDOWN || pMsg->message == WM_RBUTTONDBLCLK) {
-    _abKeysPressed[KID_MOUSE2] = KEYPRESSED_ALL;
+    _abKeysPressed[KID_MOUSE2] = INPUTDEVICES_ALL;
 
   } else if (pMsg->message == WM_MBUTTONUP) {
-    _abKeysPressed[KID_MOUSE3] = KEYPRESSED_NONE;
+    _abKeysPressed[KID_MOUSE3] = INPUTDEVICES_NONE;
   } else if (pMsg->message == WM_MBUTTONDOWN || pMsg->message == WM_MBUTTONDBLCLK) {
-    _abKeysPressed[KID_MOUSE3] = KEYPRESSED_ALL;
+    _abKeysPressed[KID_MOUSE3] = INPUTDEVICES_ALL;
 
   // [Cecil] Proper support for MB4 and MB5
   } else if (pMsg->message == WM_XBUTTONUP) {
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON1) {
-      _abKeysPressed[KID_MOUSE4] = KEYPRESSED_NONE;
+      _abKeysPressed[KID_MOUSE4] = INPUTDEVICES_NONE;
     }
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON2) {
-      _abKeysPressed[KID_MOUSE5] = KEYPRESSED_NONE;
+      _abKeysPressed[KID_MOUSE5] = INPUTDEVICES_NONE;
     }
 
   } else if (pMsg->message == WM_XBUTTONDOWN || pMsg->message == WM_XBUTTONDBLCLK) {
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON1) {
-      _abKeysPressed[KID_MOUSE4] = KEYPRESSED_ALL;
+      _abKeysPressed[KID_MOUSE4] = INPUTDEVICES_ALL;
     }
     if (GET_XBUTTON_WPARAM(pMsg->wParam) & XBUTTON2) {
-      _abKeysPressed[KID_MOUSE5] = KEYPRESSED_ALL;
+      _abKeysPressed[KID_MOUSE5] = INPUTDEVICES_ALL;
     }
 
   } else if (pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP) {
-    SetKeyFromMsg(pMsg, KEYPRESSED_NONE);
+    SetKeyFromMsg(pMsg, INPUTDEVICES_NONE);
 
   } else if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN) {
-    SetKeyFromMsg(pMsg, KEYPRESSED_ALL);
+    SetKeyFromMsg(pMsg, INPUTDEVICES_ALL);
   }
 };
 
@@ -398,8 +385,8 @@ LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam) {
     _fGlobalMouseScroll = Sgn(SWORD(UWORD(HIWORD(pMsg->wParam))));
 
     // Determine which direction the wheel is scrolled, which is reset later in CInput::GetInput()
-    _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
-    _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? KEYPRESSED_ALL : KEYPRESSED_NONE;
+    _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
+    _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
   }
 
   return r;
@@ -540,11 +527,14 @@ void CInput::EnableInput(OS::Window hwnd)
   while (OS::ShowCursor(FALSE) >= 0);
   // save system mouse settings
   SystemParametersInfo(SPI_GETMOUSE, 0, &inp_mscMouseSettings, 0);
+
   // set new mouse speed
+  extern INDEX inp_bAllowMouseAcceleration;
   if (!inp_bAllowMouseAcceleration) {
     MouseSpeedControl mscNewSetting = { 0, 0, 0 };
     SystemParametersInfo(SPI_SETMOUSE, 0, &mscNewSetting, 0);
   }
+
   // set cursor position to screen center
   SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
 
@@ -587,7 +577,7 @@ void CInput::EnableInput(OS::Window hwnd)
       // is state is pressed
       if (OS::GetAsyncKeyState(iVirt) & 0x8000) {
         // mark it as pressed
-        _abKeysPressed[iKID] = KEYPRESSED_ALL;
+        _abKeysPressed[iKID] = INPUTDEVICES_ALL;
       }
     }
   }}
@@ -637,6 +627,9 @@ void CInput::GetInput(BOOL bPreScan)
   // Cannot pre-scan input every possible frame
   if (bPreScan && !inp_bAllowPrescan) return;
 
+  // [Cecil] Reset axis readings
+  ClearAxisInput();
+
   // if not pre-scanning
   if (!bPreScan) {
     // [Cecil] Reset key readings
@@ -649,7 +642,7 @@ void CInput::GetInput(BOOL bPreScan)
     #endif
 
     // [Cecil] Determine key mask for buttons of the specified device
-    UBYTE ubKeyPressedMask = KEYPRESSED_ALL;
+    UBYTE ubKeyPressedMask = INPUTDEVICES_ALL;
 
     // for each Key
     for (INDEX iKey = 0; iKey < _ctKeyArray; iKey++) {
@@ -709,84 +702,8 @@ void CInput::GetInput(BOOL bPreScan)
     PollJoysticks();
   }
 
-  // [Cecil] Reset axis readings
-  ClearAxisInput();
-
-  // read mouse position
-  float fMouseX, fMouseY, fDX, fDY, fDZ;
-
-#if SE1_PREFER_SDL
-  SDL_GetRelativeMouseState(&fMouseX, &fMouseY);
-  fDX = fMouseX;
-  fDY = fMouseY;
-
-#else
-  OS::GetMouseState(&fMouseX, &fMouseY, FALSE);
-  fDX = FLOAT(fMouseX - inp_slScreenCenterX);
-  fDY = FLOAT(fMouseY - inp_slScreenCenterY);
-#endif
-
-  // [Cecil] Use accumulated mouse scroll
-  fDZ = _fGlobalMouseScroll;
-  _fGlobalMouseScroll = 0;
-
-  {
-    FLOAT fSensitivity = inp_fMouseSensitivity;
-    if (inp_bAllowMouseAcceleration) fSensitivity *= 0.25f;
-
-    if (inp_bMousePrecision) {
-      static FLOAT _tmTime = 0.0f;
-      FLOAT fD = Sqrt(fDX * fDX + fDY * fDY);
-
-      if (fD < inp_fMousePrecisionThreshold) {
-        _tmTime += 0.05f;
-      } else {
-        _tmTime = 0.0f;
-      }
-
-      if (_tmTime > inp_fMousePrecisionTimeout) fSensitivity /= inp_fMousePrecisionFactor;
-    }
-
-    static FLOAT fDXOld;
-    static FLOAT fDYOld;
-    static TIME tmOldDelta;
-    static CTimerValue tvBefore;
-    CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
-    TIME tmNowDelta = ClampDn((tvNow - tvBefore).GetSeconds(), 0.001);
-
-    tvBefore = tvNow;
-
-    FLOAT fDXSmooth = (fDXOld * tmOldDelta + fDX * tmNowDelta) / (tmOldDelta + tmNowDelta);
-    FLOAT fDYSmooth = (fDYOld * tmOldDelta + fDY * tmNowDelta) / (tmOldDelta + tmNowDelta);
-    fDXOld = fDX;
-    fDYOld = fDY;
-    tmOldDelta = tmNowDelta;
-
-    if (inp_bFilterMouse) {
-      fDX = fDXSmooth;
-      fDY = fDYSmooth;
-    }
-
-    // get final mouse values
-    FLOAT fMouseRelX = +fDX * fSensitivity;
-    FLOAT fMouseRelY = -fDY * fSensitivity;
-
-    if (inp_bInvertMouse) {
-      fMouseRelY = -fMouseRelY;
-    }
-
-    // just interpret values as normal
-    inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_X].ida_fReading = fMouseRelX;
-    inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Y].ida_fReading = fMouseRelY;
-    inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Z].ida_fReading = fDZ * MOUSEWHEEL_SCROLL_INTERVAL;
-  }
-
-#if !SE1_PREFER_SDL
-  // set cursor position to screen center
-  if (FloatToInt(fMouseX) != inp_slScreenCenterX || FloatToInt(fMouseY) != inp_slScreenCenterY) {
-    SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
-  }
-#endif
+  // [Cecil] Read mouse axes
+  GetMouseInput(bPreScan);
 };
 
 // [Cecil] Clear states of all keys (as if they are all released)

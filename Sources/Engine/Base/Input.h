@@ -49,6 +49,11 @@ enum EInputAxis {
 // All possible input actions
 #define MAX_INPUT_ACTIONS (FIRST_AXIS_ACTION + EIA_MAX_ALL)
 
+// [Cecil] Mask of connected devices of a specific type, such as different mice (up to 8)
+#define INPUTDEVICES_NONE        UBYTE(0)           // No devices
+#define INPUTDEVICES_NUM(_Index) UBYTE(1 << _Index) // Device under a specific index (0-7)
+#define INPUTDEVICES_ALL         UBYTE(0xFF)        // All devices
+
 // Information about a single input action
 struct InputDeviceAction {
   CTString ida_strNameInt; // Internal name
@@ -125,6 +130,9 @@ public:
 
   // Scan states of all available input sources
   void GetInput(BOOL bPreScan);
+
+  // [Cecil] Get input from a mouse
+  void GetMouseInput(BOOL bPreScan);
 
   // [Cecil] Clear states of all keys (as if they are all released)
   void ClearKeyInput(void);
