@@ -31,7 +31,7 @@ GameController_t::~GameController_t() {
 
 // Open a game controller under some slot
 void GameController_t::Connect(SDL_JoystickID iDevice, INDEX iArraySlot) {
-  ASSERT(handle == NULL && iInfoSlot == -1);
+  ASSERT(!IsConnected() && iInfoSlot == -1);
 
   handle = SDL_OpenGamepad(iDevice);
   iInfoSlot = iArraySlot + 1;
@@ -39,9 +39,15 @@ void GameController_t::Connect(SDL_JoystickID iDevice, INDEX iArraySlot) {
 
 // Close an open game controller
 void GameController_t::Disconnect(void) {
-  if (handle != NULL) {
+  if (IsConnected()) {
     SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(handle);
-    CPrintF(TRANS("Disconnected '%s' from controller slot %d\n"), SDL_GetJoystickName(pJoystick), iInfoSlot);
+    const char *strName = SDL_GetJoystickName(pJoystick);
+
+    if (strName == NULL) {
+      strName = SDL_GetError();
+    }
+
+    CPrintF(TRANS("Disconnected '%s' from controller slot %d\n"), strName, iInfoSlot);
 
     SDL_CloseGamepad(handle);
   }
