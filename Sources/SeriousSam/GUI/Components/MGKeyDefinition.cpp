@@ -173,7 +173,7 @@ void CMGKeyDefinition::Think(void)
 
       if (!bActivationKey) {
         // [Cecil] See if any controller buttons for binding activation are being held
-        for (INDEX iCtrl = 0; iCtrl < MAX_JOYSTICKS; iCtrl++) {
+        for (INDEX iCtrl = 0; iCtrl < _ctMaxInputDevices; iCtrl++) {
           const INDEX iFirstButton = FIRST_JOYBUTTON + iCtrl * SDL_GAMEPAD_BUTTON_COUNT;
 
           if (_pInput->GetButtonState(iFirstButton + SDL_GAMEPAD_BUTTON_SOUTH)

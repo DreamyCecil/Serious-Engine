@@ -25,11 +25,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.h>
 #include <Engine/Base/KeyNames.h>
 
-// Maximum amount of supported game controllers
-#define MAX_JOYSTICKS 8
+// [Cecil] Maximum amount of supported devices of a specific type (mice, gamepads etc.)
+const INDEX _ctMaxInputDevices = 8;
 
 #define FIRST_JOYBUTTON     (KID_MAX)
-#define MAX_OVERALL_BUTTONS (FIRST_JOYBUTTON + MAX_JOYSTICKS * SDL_GAMEPAD_BUTTON_COUNT)
+#define MAX_OVERALL_BUTTONS (FIRST_JOYBUTTON + _ctMaxInputDevices * SDL_GAMEPAD_BUTTON_COUNT)
 #define FIRST_AXIS_ACTION   (MAX_OVERALL_BUTTONS)
 
 enum EInputAxis {
@@ -43,7 +43,7 @@ enum EInputAxis {
   EIA_CONTROLLER_OFFSET = EIA_MAX_MOUSE,
 
   // Amount of axes (mouse axes + all controller axes * all controllers)
-  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_GAMEPAD_AXIS_COUNT * MAX_JOYSTICKS),
+  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_GAMEPAD_AXIS_COUNT * _ctMaxInputDevices),
 };
 
 // All possible input actions

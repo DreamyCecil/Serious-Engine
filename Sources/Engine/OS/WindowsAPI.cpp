@@ -66,7 +66,7 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
   GameController_t &ctrl = _pInput->inp_aControllers[iCtrl];
   if (!ctrl.IsConnected()) return FALSE;
 
-  static BOOL _abButtonStates[MAX_JOYSTICKS * SDL_GAMEPAD_BUTTON_COUNT] = { 0 };
+  static BOOL _abButtonStates[_ctMaxInputDevices * SDL_GAMEPAD_BUTTON_COUNT] = { 0 };
   const INDEX iFirstButton = iCtrl * SDL_GAMEPAD_BUTTON_COUNT;
 
   for (ULONG eButton = 0; eButton < SDL_GAMEPAD_BUTTON_COUNT; eButton++) {
@@ -94,7 +94,7 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
     }
   }
 
-  static BOOL _abAxisStates[MAX_JOYSTICKS * SDL_GAMEPAD_AXIS_COUNT] = { 0 };
+  static BOOL _abAxisStates[_ctMaxInputDevices * SDL_GAMEPAD_AXIS_COUNT] = { 0 };
   const INDEX iFirstAxis = iCtrl * SDL_GAMEPAD_AXIS_COUNT;
 
   // [Cecil] NOTE: This code only checks whether some axis has been moved past 50% in either direction

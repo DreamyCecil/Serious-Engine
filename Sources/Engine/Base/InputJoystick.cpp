@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Input.h>
 
 INDEX inp_bForceJoystickPolling = 0;
-INDEX inp_ctJoysticksAllowed = MAX_JOYSTICKS;
+INDEX inp_ctJoysticksAllowed = _ctMaxInputDevices;
 
 GameController_t::GameController_t() : handle(NULL), iInfoSlot(-1)
 {
@@ -232,7 +232,7 @@ void CInput::SetJoystickNames(void) {
 void CInput::StartupJoysticks(void) {
   // Create an empty array of controllers
   ASSERT(inp_aControllers.Count() == 0);
-  inp_aControllers.New(MAX_JOYSTICKS);
+  inp_aControllers.New(_ctMaxInputDevices);
 
   // Report on available controller amounts
   int ctJoysticks;
