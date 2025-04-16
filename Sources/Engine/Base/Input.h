@@ -95,10 +95,11 @@ public:
   // [Cecil] Game controllers
   CStaticArray<GameController_t> inp_aControllers;
 
+  FLOAT inp_aOldMousePos[2]; // Old mouse position
+
 #if !SE1_PREFER_SDL
   SLONG inp_slScreenCenterX; // Screen center X in pixels
   SLONG inp_slScreenCenterY; // Screen center Y in pixels
-  FLOAT inp_aOldMousePos[2]; // Old mouse position
 
   // System mouse settings
   struct MouseSpeedControl {

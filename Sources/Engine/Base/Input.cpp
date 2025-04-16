@@ -500,6 +500,9 @@ void CInput::EnableInput(OS::Window hwnd)
   if( inp_bInputEnabled) return;
 
 #if SE1_PREFER_SDL
+  // [Cecil] Remember mouse position relative to the window
+  OS::GetMouseState(&inp_aOldMousePos[0], &inp_aOldMousePos[1], TRUE);
+
   // [Cecil] SDL: Hide mouse cursor and clear relative movement since last time
   SDL_SetWindowRelativeMouseMode(hwnd, true);
   SDL_GetRelativeMouseState(NULL, NULL);
@@ -595,7 +598,8 @@ void CInput::DisableInput(OS::Window hwnd)
   if( !inp_bInputEnabled) return;
 
 #if SE1_PREFER_SDL
-  // [Cecil] SDL: Show mouse cursor
+  // [Cecil] SDL: Restore mouse position and show mouse cursor
+  SDL_WarpMouseInWindow(hwnd, inp_aOldMousePos[0], inp_aOldMousePos[1]);
   SDL_SetWindowRelativeMouseMode(hwnd, false);
 
 #else
