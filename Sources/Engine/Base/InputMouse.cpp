@@ -27,7 +27,22 @@ extern FLOAT inp_bInvertMouse;
 extern INDEX inp_bFilterMouse;
 
 // Accumulated wheel scroll in a certain direction (Z)
-FLOAT _fGlobalMouseScroll = 0.0f;
+FLOAT _fGlobalMouseScroll = 0;
+
+// Specific mouse data that's remembered between the input reads
+struct MouseInputData_t {
+  FLOAT tmTime;
+  FLOAT fDXOld;
+  FLOAT fDYOld;
+  TIME tmOldDelta;
+  CTimerValue tvBefore;
+
+  MouseInputData_t() : tmTime(0.0f), fDXOld(0.0f), fDYOld(0.0f), tmOldDelta(0.0) {
+    tvBefore.Clear();
+  };
+};
+
+static MouseInputData_t _midGlobal;
 
 // Get input from a mouse
 void CInput::GetMouseInput(BOOL bPreScan) {
@@ -47,36 +62,33 @@ void CInput::GetMouseInput(BOOL bPreScan) {
   fDZ = _fGlobalMouseScroll;
   _fGlobalMouseScroll = 0;
 
+  MouseInputData_t &mid = _midGlobal;
+
   FLOAT fSensitivity = inp_fMouseSensitivity;
   if (inp_bAllowMouseAcceleration) fSensitivity *= 0.25f;
 
   if (inp_bMousePrecision) {
-    static FLOAT _tmTime = 0.0f;
     FLOAT fD = Sqrt(fDX * fDX + fDY * fDY);
 
     if (fD < inp_fMousePrecisionThreshold) {
-      _tmTime += 0.05f;
+      mid.tmTime += 0.05f;
     } else {
-      _tmTime = 0.0f;
+      mid.tmTime = 0.0f;
     }
 
-    if (_tmTime > inp_fMousePrecisionTimeout) fSensitivity /= inp_fMousePrecisionFactor;
+    if (mid.tmTime > inp_fMousePrecisionTimeout) fSensitivity /= inp_fMousePrecisionFactor;
   }
 
-  static FLOAT fDXOld;
-  static FLOAT fDYOld;
-  static TIME tmOldDelta;
-  static CTimerValue tvBefore;
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
-  TIME tmNowDelta = ClampDn((tvNow - tvBefore).GetSeconds(), 0.001);
+  TIME tmNowDelta = ClampDn((tvNow - mid.tvBefore).GetSeconds(), 0.001);
 
-  tvBefore = tvNow;
+  mid.tvBefore = tvNow;
 
-  FLOAT fDXSmooth = (fDXOld * tmOldDelta + fDX * tmNowDelta) / (tmOldDelta + tmNowDelta);
-  FLOAT fDYSmooth = (fDYOld * tmOldDelta + fDY * tmNowDelta) / (tmOldDelta + tmNowDelta);
-  fDXOld = fDX;
-  fDYOld = fDY;
-  tmOldDelta = tmNowDelta;
+  FLOAT fDXSmooth = (mid.fDXOld * mid.tmOldDelta + fDX * tmNowDelta) / (mid.tmOldDelta + tmNowDelta);
+  FLOAT fDYSmooth = (mid.fDYOld * mid.tmOldDelta + fDY * tmNowDelta) / (mid.tmOldDelta + tmNowDelta);
+  mid.fDXOld = fDX;
+  mid.fDYOld = fDY;
+  mid.tmOldDelta = tmNowDelta;
 
   if (inp_bFilterMouse) {
     fDX = fDXSmooth;
