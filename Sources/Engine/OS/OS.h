@@ -167,6 +167,7 @@ class ENGINE_API OS {
       ULONG button;
       SLONG x;
       SLONG y;
+      ULONG id;
     };
 
     struct ControllerEvent {

@@ -156,16 +156,20 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
       // Mouse events
       case SDL_EVENT_MOUSE_MOTION: {
         event.type = WM_MOUSEMOVE;
+        event.mouse.id = sdlevent.motion.which;
         event.mouse.x = sdlevent.motion.x;
         event.mouse.y = sdlevent.motion.y;
       } return TRUE;
 
       case SDL_EVENT_MOUSE_WHEEL: {
         event.type = WM_MOUSEWHEEL;
+        event.mouse.id = sdlevent.wheel.which;
         event.mouse.y = sdlevent.wheel.y * MOUSEWHEEL_SCROLL_INTERVAL;
       } return TRUE;
 
       case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+        event.mouse.id = sdlevent.button.which;
+
         switch (sdlevent.button.button) {
           case SDL_BUTTON_LEFT:   event.type = WM_LBUTTONDOWN; break;
           case SDL_BUTTON_RIGHT:  event.type = WM_RBUTTONDOWN; break;
@@ -180,6 +184,8 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
       } return TRUE;
 
       case SDL_EVENT_MOUSE_BUTTON_UP: {
+        event.mouse.id = sdlevent.button.which;
+
         switch (sdlevent.button.button) {
           case SDL_BUTTON_LEFT:   event.type = WM_LBUTTONUP; break;
           case SDL_BUTTON_RIGHT:  event.type = WM_RBUTTONUP; break;
@@ -273,49 +279,58 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
 
       // Mouse events
       case WM_MOUSEMOVE: {
+        event.mouse.id = 0;
         event.mouse.y = HIWORD(msg.lParam);
         event.mouse.x = LOWORD(msg.lParam);
       } return TRUE;
 
       case WM_MOUSEWHEEL: {
+        event.mouse.id = 0;
         event.mouse.y = (SWORD)(UWORD)HIWORD(msg.wParam);
       } return TRUE;
 
       case WM_LBUTTONDOWN: case WM_LBUTTONDBLCLK: {
         event.type = WM_LBUTTONDOWN;
+        event.mouse.id = 0;
         event.mouse.button = SDL_BUTTON_LEFT;
         event.mouse.pressed = TRUE;
       } return TRUE;
 
       case WM_LBUTTONUP: {
+        event.mouse.id = 0;
         event.mouse.button = SDL_BUTTON_LEFT;
         event.mouse.pressed = FALSE;
       } return TRUE;
 
       case WM_RBUTTONDOWN: case WM_RBUTTONDBLCLK: {
         event.type = WM_RBUTTONDOWN;
+        event.mouse.id = 0;
         event.mouse.button = SDL_BUTTON_RIGHT;
         event.mouse.pressed = TRUE;
       } return TRUE;
 
       case WM_RBUTTONUP: {
+        event.mouse.id = 0;
         event.mouse.button = SDL_BUTTON_RIGHT;
         event.mouse.pressed = FALSE;
       } return TRUE;
 
       case WM_MBUTTONDOWN: case WM_MBUTTONDBLCLK: {
         event.type = WM_MBUTTONDOWN;
+        event.mouse.id = 0;
         event.mouse.button = SDL_BUTTON_MIDDLE;
         event.mouse.pressed = TRUE;
       } return TRUE;
 
       case WM_MBUTTONUP: {
+        event.mouse.id = 0;
         event.mouse.button = SDL_BUTTON_MIDDLE;
         event.mouse.pressed = FALSE;
       } return TRUE;
 
       case WM_XBUTTONDOWN: case WM_XBUTTONDBLCLK: {
         event.type = WM_XBUTTONDOWN;
+        event.mouse.id = 0;
 
         if (GET_XBUTTON_WPARAM(msg.wParam) & XBUTTON2) {
           event.mouse.button = SDL_BUTTON_X2;
@@ -326,6 +341,8 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
       } return TRUE;
 
       case WM_XBUTTONUP: {
+        event.mouse.id = 0;
+
         if (GET_XBUTTON_WPARAM(msg.wParam) & XBUTTON2) {
           event.mouse.button = SDL_BUTTON_X2;
         } else {
