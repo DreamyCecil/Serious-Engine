@@ -618,7 +618,8 @@ void CInput::DisableInput(OS::Window hwnd)
 }
 
 // Scan states of all available input sources
-void CInput::GetInput(BOOL bPreScan)
+// [Cecil] And from specific devices
+void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
 {
   // Game input is disabled
   if (!inp_bInputEnabled) return;
@@ -641,7 +642,7 @@ void CInput::GetInput(BOOL bPreScan)
     #endif
 
     // [Cecil] Determine key mask for buttons of the specified device
-    UBYTE ubKeyPressedMask = INPUTDEVICES_ALL;
+    const UBYTE ubKeyPressedMask = (ulDevices & 0xFF);
 
     // for each Key
     for (INDEX iKey = 0; iKey < _ctKeyArray; iKey++) {
@@ -652,6 +653,7 @@ void CInput::GetInput(BOOL bPreScan)
 
       InputDeviceAction &idaKey = inp_aInputActions[eKID];
 
+      // [Cecil] FIXME: Asynchronous reading does not distinguish mouse buttons between different mice
       // if reading async keystate
       if (inp_iKeyboardReadingMethod == 0) {
         // if there is a valid virtkey

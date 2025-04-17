@@ -166,7 +166,7 @@ void CMGKeyDefinition::Think(void)
     extern BOOL _bMouseUsedLast;
     _bMouseUsedLast = FALSE;
     _pInput->SetJoyPolling(TRUE);
-    _pInput->GetInput(FALSE);
+    _pInput->GetInput(FALSE, INPUTDEVICES_ALL);
 
     if (_pInput->IsInputEnabled()) {
       BOOL bActivationKey = !!_pInput->GetButtonState(KID_ENTER) || !!_pInput->GetButtonState(KID_MOUSE1);
@@ -192,7 +192,7 @@ void CMGKeyDefinition::Think(void)
   else if (mg_iState == PRESS_KEY_WAITING)
   {
     _pInput->SetJoyPolling(TRUE);
-    _pInput->GetInput(FALSE);
+    _pInput->GetInput(FALSE, INPUTDEVICES_ALL);
 
     // [Cecil] Include axes with buttons
     for (INDEX iDik = 0; iDik < MAX_INPUT_ACTIONS; iDik++)

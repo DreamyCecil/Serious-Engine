@@ -130,7 +130,8 @@ public:
   BOOL IsInputEnabled( void) const { return inp_bInputEnabled; };
 
   // Scan states of all available input sources
-  void GetInput(BOOL bPreScan);
+  // [Cecil] And from specific devices
+  void GetInput(BOOL bPreScan, ULONG ulDevices = INPUTDEVICES_ALL);
 
   // [Cecil] Get input from a mouse
   void GetMouseInput(BOOL bPreScan);

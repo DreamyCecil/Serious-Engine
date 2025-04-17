@@ -762,58 +762,72 @@ void CGame::GameHandleTimer(void)
   // if direct input is active
   if( _pInput->IsInputEnabled() && !gm_bMenuOn)
   {
+    // [Cecil] Count local players
+    INDEX iLocal;
+    INDEX ctLocalPlayers = 0;
+
+    for (iLocal = 0; iLocal < 4; iLocal++) {
+      if (gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource != NULL) {
+        ctLocalPlayers++;
+      }
+    }
 
     // check if any active control uses joystick
     BOOL bAnyJoy = _ctrlCommonControls.UsesJoystick();
-    for( INDEX iPlayer=0; iPlayer<4; iPlayer++) {
-      if( gm_lpLocalPlayers[ iPlayer].lp_pplsPlayerSource != NULL) {
-        INDEX iCurrentPlayer = gm_lpLocalPlayers[ iPlayer].lp_iPlayer;
-        CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
-        if (ctrls.UsesJoystick()) {
-          bAnyJoy = TRUE;
-          break;
-        }
+
+    for (iLocal = 0; iLocal < ctLocalPlayers; iLocal++) {
+      INDEX iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_iPlayer;
+      CControls &ctrls = gm_actrlControls[iCurrentPlayer];
+
+      if (ctrls.UsesJoystick()) {
+        bAnyJoy = TRUE;
+        break;
       }
     }
-    _pInput->SetJoyPolling(bAnyJoy);
 
-    // read input devices
-    _pInput->GetInput(FALSE);
+    _pInput->SetJoyPolling(bAnyJoy);
 
     // if game is currently active, and not paused
     if (gm_bGameOn && !_pNetwork->IsPaused() && !_pNetwork->GetLocalPause())
     {
       // for all possible local players
-      for( INDEX iPlayer=0; iPlayer<4; iPlayer++)
-      {
-        // if this player exist
-        if( gm_lpLocalPlayers[ iPlayer].lp_pplsPlayerSource != NULL)
+      for (iLocal = 0; iLocal < ctLocalPlayers; iLocal++) {
         {
           // publish player index to console
-          ctl_iCurrentPlayerLocal = iPlayer;
-          ctl_iCurrentPlayer = gm_lpLocalPlayers[ iPlayer].lp_pplsPlayerSource->pls_Index;
+          ctl_iCurrentPlayerLocal = iLocal;
+          ctl_iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource->pls_Index;
+
+          // [Cecil] Get input from all devices if there's only one local player
+          if (ctLocalPlayers <= 1) {
+            _pInput->GetInput(FALSE, INPUTDEVICES_ALL);
+
+          // Or from specific ones for this player
+          } else {
+            _pInput->GetInput(FALSE, INPUTDEVICES_NUM(iLocal));
+          }
 
           // copy its local controls to current controls
           memcpy(
             ctl_pvPlayerControls,
-            gm_lpLocalPlayers[ iPlayer].lp_ubPlayerControlsState,
+            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
             ctl_slPlayerControlsSize);
 
           // create action for it for this tick
           CPlayerAction paAction;
-          INDEX iCurrentPlayer = gm_lpLocalPlayers[ iPlayer].lp_iPlayer;
+          INDEX iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_iPlayer;
           CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
           ctrls.CreateAction(gm_apcPlayers[iCurrentPlayer], paAction, FALSE);
           // set the action in the client source object
-          gm_lpLocalPlayers[ iPlayer].lp_pplsPlayerSource->SetAction(paAction);
+          gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource->SetAction(paAction);
 
           // copy the local controls back
           memcpy(
-            gm_lpLocalPlayers[ iPlayer].lp_ubPlayerControlsState,
+            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
             ctl_pvPlayerControls,
             ctl_slPlayerControlsSize);
         }
       }
+
       // clear player indices
       ctl_iCurrentPlayerLocal = -1;
       ctl_iCurrentPlayer = -1;
@@ -2135,13 +2149,15 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
     }
     MakeSplitDrawports(gm_CurrentSplitScreenCfg, ctObservers, pdpDrawPort);
 
-    // get number of local players
-    INDEX ctLocals = 0;
-    {for (INDEX i=0; i<4; i++) {
-      if (gm_lpLocalPlayers[i].lp_pplsPlayerSource!=NULL) {
-        ctLocals++;
+    // [Cecil] Count local players
+    INDEX iLocal;
+    INDEX ctLocalPlayers = 0;
+
+    for (iLocal = 0; iLocal < 4; iLocal++) {
+      if (gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource != NULL) {
+        ctLocalPlayers++;
       }
-    }}
+    }
 
     CEntity *apenViewers[7];
     apenViewers[0] = NULL;
@@ -2154,44 +2170,50 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
     INDEX ctViewers = 0;
 
     // check if input is enabled
-    BOOL bDoPrescan = _pInput->IsInputEnabled() &&
-      !_pNetwork->IsPaused() && !_pNetwork->GetLocalPause() &&
-      _pShell->GetINDEX("inp_bAllowPrescan");
-    // prescan input
-    if (bDoPrescan) {
-      _pInput->GetInput(TRUE);
-    }
-    // timer must not occur during prescanning
-    { CTSingleLock csTimer(&_pTimer->tm_csHooks, TRUE);
-    // for each local player
-    for( INDEX i=0; i<4; i++) {
-      // if local player
-      CPlayerSource *ppls = gm_lpLocalPlayers[i].lp_pplsPlayerSource;
-      if( ppls!=NULL) {
+    const BOOL bDoPrescan = _pInput->IsInputEnabled() && !_pNetwork->IsPaused() && !_pNetwork->GetLocalPause();
+
+    {
+      // timer must not occur during prescanning
+      CTSingleLock csTimer(&_pTimer->tm_csHooks, TRUE);
+
+      // for each local player
+      for (iLocal = 0; iLocal < ctLocalPlayers; iLocal++) {
+        CPlayerSource *ppls = gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource;
+
         // get local player entity
         apenViewers[ctViewers++] = _pNetwork->GetLocalPlayerEntity(ppls);
+
         // precreate action for it for this tick
         if (bDoPrescan) {
+          // [Cecil] Get pre-scanned input from any mouse if there's only one local player
+          if (ctLocalPlayers <= 1) {
+            _pInput->GetInput(TRUE, INPUTDEVICES_ALL);
+
+          // Or from a specific mouse for this player
+          } else {
+            _pInput->GetInput(TRUE, INPUTDEVICES_NUM(iLocal));
+          }
+
           // copy its local controls to current controls
           memcpy(
             ctl_pvPlayerControls,
-            gm_lpLocalPlayers[i].lp_ubPlayerControlsState,
+            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
             ctl_slPlayerControlsSize);
 
           // do prescanning
           CPlayerAction paPreAction;
-          INDEX iCurrentPlayer = gm_lpLocalPlayers[i].lp_iPlayer;
+          INDEX iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_iPlayer;
           CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
           ctrls.CreateAction(gm_apcPlayers[iCurrentPlayer], paPreAction, TRUE);
 
           // copy the local controls back
           memcpy(
-            gm_lpLocalPlayers[i].lp_ubPlayerControlsState,
+            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
             ctl_pvPlayerControls,
             ctl_slPlayerControlsSize);
         }
       }
-    }}
+    }
 
     // fill in all players that are not local
     INDEX ctNonlocals = 0;

@@ -352,7 +352,7 @@ void CDlgPlayerControls::ActivatePressKey(const char *strFirstOrSecond)
   // enable direct input
   _pInput->EnableInput(m_hWnd);
   // initial reading of all available inputs
-  _pInput->GetInput(FALSE);
+  _pInput->GetInput(FALSE, INPUTDEVICES_ALL);
   // as long as direct input is enabled
   while( _pInput->IsInputEnabled())
   {
