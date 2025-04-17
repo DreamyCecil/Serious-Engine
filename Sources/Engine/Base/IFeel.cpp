@@ -158,7 +158,7 @@ BOOL IFeel_InitDevice(HINSTANCE &hInstance, HWND &hWnd)
 #endif
 
   if (_hLib == NULL) {
-    CPrintF("Error loading ImmWraper.dll.\n\tIFeel disabled\n");
+    CPutString("Error loading ImmWrapper.dll.\n  IFeel disabled\n");
     return FALSE;
   }
 

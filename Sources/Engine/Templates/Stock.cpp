@@ -30,7 +30,7 @@ template<class Type>
 CResourceStock<Type>::~CResourceStock()
 {
   // Free all unused elements of the stock
-  FreeUnused();
+  FreeUnused_internal();
 };
 
 // Obtain an object from stock - loads if not loaded
