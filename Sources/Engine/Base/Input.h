@@ -66,6 +66,36 @@ struct InputDeviceAction {
   bool IsActive(DOUBLE fThreshold = 0.5) const;
 };
 
+#if SE1_PREFER_SDL
+
+// [Cecil] Individual mouse
+struct MouseDevice_t {
+  SDL_MouseID iID; // Device ID of a connected mouse
+  INDEX iInfoSlot; // Used controller slot for info output
+
+  // [Cecil] TEMP: Cached mouse device name for the SDL_EVENT_MOUSE_REMOVED event
+  CTString strName;
+
+  FLOAT vMotion[2]; // Movement relative to the last position (X, Y)
+  FLOAT fScroll; // Accumulated wheel scroll in a certain direction (Z)
+
+  // Specific data that's remembered between the input reads
+  struct MouseInputData_t *pmid;
+
+  MouseDevice_t();
+  ~MouseDevice_t();
+
+  __forceinline void ResetMotion(void) {
+    vMotion[0] = vMotion[1] = fScroll = 0;
+  };
+
+  void Connect(SDL_MouseID iDevice, INDEX iArraySlot);
+  void Disconnect(void);
+  BOOL IsConnected(void);
+};
+
+#endif
+
 // [Cecil] Individual game controller
 struct GameController_t {
   SDL_Gamepad *handle; // Opened controller
@@ -84,20 +114,21 @@ struct GameController_t {
  */
 class ENGINE_API CInput {
 public:
-// Attributes
-
   BOOL inp_bInputEnabled;
   BOOL inp_bPollJoysticks;
+  FLOAT inp_aOldMousePos[2]; // Old mouse position
 
   // [Cecil] All possible actions that can be used as controls
   InputDeviceAction inp_aInputActions[MAX_INPUT_ACTIONS];
 
-  // [Cecil] Game controllers
+  // [Cecil] Connected game controllers
   CStaticArray<GameController_t> inp_aControllers;
 
-  FLOAT inp_aOldMousePos[2]; // Old mouse position
+#if SE1_PREFER_SDL
+  // [Cecil] Connected mice
+  CStaticArray<MouseDevice_t> inp_aMice;
 
-#if !SE1_PREFER_SDL
+#else
   SLONG inp_slScreenCenterX; // Screen center X in pixels
   SLONG inp_slScreenCenterY; // Screen center Y in pixels
 
@@ -108,7 +139,6 @@ public:
 #endif
 
 public:
-// Operations
   CInput();
   ~CInput();
 
@@ -133,8 +163,8 @@ public:
   // [Cecil] And from specific devices
   void GetInput(BOOL bPreScan, ULONG ulDevices = INPUTDEVICES_ALL);
 
-  // [Cecil] Get input from a mouse
-  void GetMouseInput(BOOL bPreScan);
+  // [Cecil] Get input from a specific mouse (-1 for any)
+  void GetMouseInput(BOOL bPreScan, INDEX iMouse);
 
   // [Cecil] Clear states of all keys (as if they are all released)
   void ClearKeyInput(void);
@@ -147,6 +177,28 @@ public:
     ClearKeyInput();
     ClearAxisInput();
   };
+
+// [Cecil] Mouse interface
+public:
+
+#if SE1_PREFER_SDL
+  // [Cecil] Open a mouse under some device index
+  void OpenMouse(SDL_MouseID iDevice);
+
+  // [Cecil] Close a mouse under some device index
+  void CloseMouse(SDL_MouseID iDevice);
+
+  // [Cecil] Find mouse slot from its device index
+  INDEX GetMouseSlotForDevice(SDL_MouseID iDevice);
+#endif
+
+private:
+
+  // [Cecil] Mouse setup on initialization
+  void StartupMice(void);
+
+  // [Cecil] Mouse cleanup on destruction
+  void ShutdownMice(void);
 
 // [Cecil] Joystick interface
 public:

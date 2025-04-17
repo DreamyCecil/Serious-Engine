@@ -272,6 +272,23 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
   if (!iRet) return iRet;
 
   switch (pEvent->type) {
+    case SDL_EVENT_MOUSE_ADDED: {
+      _pInput->OpenMouse(pEvent->mdevice.which);
+    } break;
+
+    case SDL_EVENT_MOUSE_REMOVED: {
+      _pInput->CloseMouse(pEvent->mdevice.which);
+    } break;
+
+    case SDL_EVENT_MOUSE_MOTION: {
+      INDEX iMouse = _pInput->GetMouseSlotForDevice(pEvent->motion.which);
+      if (iMouse == -1) break;
+
+      MouseDevice_t &mouse = _pInput->inp_aMice[iMouse];
+      mouse.vMotion[0] += pEvent->motion.xrel;
+      mouse.vMotion[1] += pEvent->motion.yrel;
+    } break;
+
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     case SDL_EVENT_MOUSE_BUTTON_UP: {
       INDEX iKID = KID_NONE;
@@ -284,17 +301,56 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
         case SDL_BUTTON_X2: iKID = KID_MOUSE5; break;
       }
 
-      if (iKID != KID_NONE) {
-        _abKeysPressed[iKID] = (pEvent->button.down ? INPUTDEVICES_ALL : INPUTDEVICES_NONE);
+      if (iKID == KID_NONE) break;
+
+      // Press/release mouse button for a specific mouse device
+      INDEX iMouse = _pInput->GetMouseSlotForDevice(pEvent->motion.which);
+      if (iMouse == -1) break;
+
+      if (pEvent->button.down) {
+        _abKeysPressed[iKID] |= INPUTDEVICES_NUM(iMouse);
+      } else {
+        _abKeysPressed[iKID] &= ~INPUTDEVICES_NUM(iMouse);
       }
     } break;
 
     case SDL_EVENT_MOUSE_WHEEL: {
-      _fGlobalMouseScroll = Sgn(pEvent->wheel.y);
+      const FLOAT fMotion = Sgn(pEvent->wheel.y);
+
+      // Reset wheel scroll if it's suddenly in the opposite direction
+      if (Sgn(_fGlobalMouseScroll) != fMotion) {
+        _fGlobalMouseScroll = 0;
+      }
+
+      // Add to the global mouse scroll
+      _fGlobalMouseScroll += fMotion;
+
+      // Then do the same for a specific mouse device
+      INDEX iMouse = _pInput->GetMouseSlotForDevice(pEvent->motion.which);
+      if (iMouse == -1) break;
+
+      MouseDevice_t &mouse = _pInput->inp_aMice[iMouse];
+      FLOAT &fScroll = mouse.fScroll;
+
+      // Reset wheel scroll if it's suddenly in the opposite direction
+      if (Sgn(fScroll) != Sgn(fMotion)) {
+        fScroll = 0.0f;
+      }
+
+      fScroll += fMotion;
 
       // Determine which direction the wheel is scrolled, which is reset later in CInput::GetInput()
-      _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
-      _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
+      if (fScroll > 0) {
+        _abKeysPressed[KID_MOUSEWHEELUP] |= INPUTDEVICES_NUM(iMouse);
+      } else {
+        _abKeysPressed[KID_MOUSEWHEELUP] &= ~INPUTDEVICES_NUM(iMouse);
+      }
+
+      if (fScroll < 0) {
+        _abKeysPressed[KID_MOUSEWHEELDOWN] |= INPUTDEVICES_NUM(iMouse);
+      } else {
+        _abKeysPressed[KID_MOUSEWHEELDOWN] &= ~INPUTDEVICES_NUM(iMouse);
+      }
     } break;
 
     case SDL_EVENT_KEY_DOWN: SetKeyFromEvent(pEvent, INPUTDEVICES_ALL); break;
@@ -377,11 +433,19 @@ LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam) {
   }
 
   if (pMsg->message == WM_MOUSEWHEEL) {
-    _fGlobalMouseScroll = Sgn(SWORD(UWORD(HIWORD(pMsg->wParam))));
+    const SWORD swDir = Sgn(SWORD(UWORD(HIWORD(pMsg->wParam))));
+
+    // Reset wheel scroll if it's suddenly in the opposite direction
+    if (Sgn(_fGlobalMouseScroll) != swDir) {
+      _fGlobalMouseScroll = 0;
+    }
+
+    // Add to the global mouse scroll
+    _fGlobalMouseScroll += swDir;
 
     // Determine which direction the wheel is scrolled, which is reset later in CInput::GetInput()
-    _abKeysPressed[KID_MOUSEWHEELUP]   = (_fGlobalMouseScroll > 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
-    _abKeysPressed[KID_MOUSEWHEELDOWN] = (_fGlobalMouseScroll < 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
+    _abKeysPressed[KID_MOUSEWHEELUP]   = (swDir > 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
+    _abKeysPressed[KID_MOUSEWHEELDOWN] = (swDir < 0) ? INPUTDEVICES_ALL : INPUTDEVICES_NONE;
   }
 
   return r;
@@ -428,6 +492,7 @@ CInput::CInput(void)
 // Destructor
 CInput::~CInput() {
   // [Cecil] Various cleanups
+  ShutdownMice();
   ShutdownJoysticks();
 };
 
@@ -480,6 +545,7 @@ void CInput::Initialize( void )
   CPutString(TRANS("Detecting input devices...\n"));
 
   // [Cecil] Various initializations
+  StartupMice();
   StartupJoysticks();
 
   SetKeyNames();
@@ -544,6 +610,11 @@ void CInput::EnableInput(OS::Window hwnd)
   memset(_abKeysPressed, 0, sizeof(_abKeysPressed));
 
   // [Cecil] Clear mouse movements
+#if SE1_PREFER_SDL
+  FOREACHINSTATICARRAY(inp_aMice, MouseDevice_t, itMouse) {
+    itMouse->ResetMotion();
+  }
+#endif
   _fGlobalMouseScroll = 0;
 
   // This can be enabled to pre-read the state of currently pressed keys
@@ -703,8 +774,12 @@ void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
     PollJoysticks();
   }
 
-  // [Cecil] Read mouse axes
-  GetMouseInput(bPreScan);
+  // [Cecil] Read axes of specific mice
+  for (INDEX iFlag = 0; iFlag < _ctMaxInputDevices; iFlag++) {
+    if (ulDevices & INPUTDEVICES_NUM(iFlag)) {
+      GetMouseInput(bPreScan, iFlag);
+    }
+  }
 };
 
 // [Cecil] Clear states of all keys (as if they are all released)

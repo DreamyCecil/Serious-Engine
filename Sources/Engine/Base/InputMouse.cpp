@@ -44,25 +44,197 @@ struct MouseInputData_t {
 
 static MouseInputData_t _midGlobal;
 
-// Get input from a mouse
-void CInput::GetMouseInput(BOOL bPreScan) {
+#if SE1_PREFER_SDL
+
+MouseDevice_t::MouseDevice_t() : iID(0), iInfoSlot(-1), pmid(new MouseInputData_t)
+{
+  ResetMotion();
+};
+
+MouseDevice_t::~MouseDevice_t() {
+  Disconnect();
+  delete pmid;
+};
+
+// Open a mouse under some slot
+void MouseDevice_t::Connect(SDL_MouseID iDevice, INDEX iArraySlot) {
+  ASSERT(!IsConnected() && iInfoSlot == -1);
+
+  iID = iDevice;
+  iInfoSlot = iArraySlot + 1;
+
+  ResetMotion();
+  *pmid = MouseInputData_t();
+
+  // [Cecil] TEMP: Remember device name
+  const char *strDevice = SDL_GetMouseNameForID(iID);
+  if (strDevice == NULL) strDevice = SDL_GetError();
+
+  strName = strDevice;
+};
+
+// Close an open mouse
+void MouseDevice_t::Disconnect(void) {
+  if (IsConnected()) {
+    // [Cecil] FIXME: Doesn't work during SDL_EVENT_MOUSE_REMOVED
+    /*const char *strName = SDL_GetMouseNameForID(iID);
+
+    if (strName == NULL) {
+      strName = SDL_GetError();
+    }*/
+
+    CPrintF(TRANS("Disconnected '%s' from controller slot %d\n"), strName.ConstData(), iInfoSlot);
+  }
+
+  iID = 0;
+  iInfoSlot = -1;
+};
+
+// Check if the mouse is connected
+BOOL MouseDevice_t::IsConnected(void) {
+  return (iID != 0);
+};
+
+// Open a mouse under some device index
+void CInput::OpenMouse(SDL_MouseID iDevice) {
+  // Check if this mouse is already connected
+  if (GetMouseSlotForDevice(iDevice) != -1) return;
+
+  // Find an empty slot for opening a new mouse
+  MouseDevice_t *pToOpen = NULL;
+  INDEX iArraySlot = -1;
+  const INDEX ct = inp_aMice.Count();
+
+  for (INDEX i = 0; i < ct; i++) {
+    if (!inp_aMice[i].IsConnected()) {
+      // Remember mouse and its slot
+      pToOpen = &inp_aMice[i];
+      iArraySlot = i;
+      break;
+    }
+  }
+
+  // No slots left
+  if (pToOpen == NULL || iArraySlot == -1) {
+    CPrintF(TRANS("Cannot open another mouse due to all %d slots being occupied!\n"), ct);
+    return;
+  }
+
+  pToOpen->Connect(iDevice, iArraySlot);
+
+  if (!pToOpen->IsConnected()) {
+    CPrintF(TRANS("Cannot open another mouse! SDL Error: %s\n"), SDL_GetError());
+    return;
+  }
+
+  // Report mouse info
+  CPrintF(TRANS("Connected '%s' to mouse slot %d\n"), pToOpen->strName.ConstData(), pToOpen->iInfoSlot);
+};
+
+// Close a mouse under some device index
+void CInput::CloseMouse(SDL_MouseID iDevice) {
+  INDEX iSlot = GetMouseSlotForDevice(iDevice);
+
+  if (iSlot != -1) {
+    inp_aMice[iSlot].Disconnect();
+  }
+};
+
+// Find mouse slot from its device index
+INDEX CInput::GetMouseSlotForDevice(SDL_MouseID iDevice) {
+  INDEX i = inp_aMice.Count();
+
+  while (--i >= 0) {
+    MouseDevice_t &mouse = inp_aMice[i];
+
+    // No open mouse
+    if (!mouse.IsConnected()) continue;
+
+    // Check device ID of the mouse
+    if (mouse.iID == iDevice) {
+      return i;
+    }
+  }
+
+  // Couldn't find
+  return -1;
+};
+
+#endif // SE1_PREFER_SDL
+
+// Mouse setup on initialization
+void CInput::StartupMice(void) {
+#if SE1_PREFER_SDL
+  // Create an empty array of mice
+  ASSERT(inp_aMice.Count() == 0);
+  inp_aMice.New(_ctMaxInputDevices);
+
+  // Report on available mouse amounts
+  int ctMice;
+  SDL_MouseID *aMice = SDL_GetMice(&ctMice);
+
+  if (aMice != NULL) {
+    CPrintF(TRANS("  mice found: %d\n"), ctMice);
+    CPrintF(TRANS("  mice allowed: %d\n"), inp_aMice.Count());
+
+    // [Cecil] FIXME: This will "register" all connected mice on game start, though ideally SDL should be sending
+    // an SDL_EVENT_MOUSE_ADDED event for each mouse automatically like it already does for game controllers.
+    for (int iMouse = 0; iMouse < ctMice; iMouse++) {
+      _pInput->OpenMouse(aMice[iMouse]);
+    }
+
+    SDL_free(aMice);
+    return;
+  }
+
+  CPrintF(TRANS("  Cannot retrieve an array of mice! SDL Error: %s\n"), SDL_GetError());
+  CPrintF(TRANS("  mice allowed: %d\n"), inp_aMice.Count());
+#endif // SE1_PREFER_SDL
+};
+
+// Mouse cleanup on destruction
+void CInput::ShutdownMice(void) {
+#if SE1_PREFER_SDL
+  inp_aMice.Clear();
+#endif
+};
+
+// Get input from a specific mouse (-1 for any)
+void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   float fMouseX, fMouseY, fDX, fDY, fDZ;
 
 #if SE1_PREFER_SDL
-  SDL_GetRelativeMouseState(&fMouseX, &fMouseY);
-  fDX = fMouseX;
-  fDY = fMouseY;
+  MouseInputData_t *pmid = &_midGlobal;
+
+  if (iMouse >= 0 && iMouse < inp_aMice.Count()) {
+    MouseDevice_t &mouse = inp_aMice[iMouse];
+
+    // Get accumulated mouse motion and reset it
+    fDX = mouse.vMotion[0];
+    fDY = mouse.vMotion[1];
+    fDZ = mouse.fScroll;
+    mouse.ResetMotion();
+    pmid = inp_aMice[iMouse].pmid;
+
+  } else {
+    SDL_GetRelativeMouseState(&fMouseX, &fMouseY);
+    fDX = fMouseX;
+    fDY = fMouseY;
+    fDZ = _fGlobalMouseScroll;
+    _fGlobalMouseScroll = 0;
+  }
+
+  MouseInputData_t &mid = *pmid;
 
 #else
   OS::GetMouseState(&fMouseX, &fMouseY, FALSE);
   fDX = FLOAT(fMouseX - inp_slScreenCenterX);
   fDY = FLOAT(fMouseY - inp_slScreenCenterY);
-#endif
-
   fDZ = _fGlobalMouseScroll;
   _fGlobalMouseScroll = 0;
 
   MouseInputData_t &mid = _midGlobal;
+#endif
 
   FLOAT fSensitivity = inp_fMouseSensitivity;
   if (inp_bAllowMouseAcceleration) fSensitivity *= 0.25f;
