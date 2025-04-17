@@ -898,7 +898,10 @@ void CNetworkLibrary::Init(void)
   _pShell->DeclareSymbol("persistent user FLOAT inp_fAxisPressThreshold;", &inp_fAxisPressThreshold);
   _pShell->DeclareSymbol("persistent user INDEX inp_iMouseMovePressThreshold;", &inp_iMouseMovePressThreshold);
 
-  // [Cecil] Display info about current joysticks
+  // [Cecil] Display info about current devices
+#if SE1_PREFER_SDL
+  _pShell->DeclareSymbol("user void inp_MiceInfo(void);",      &CInput::PrintMiceInfo);
+#endif
   _pShell->DeclareSymbol("user void inp_JoysticksInfo(void);", &CInput::PrintJoysticksInfo);
 
   // [Cecil] Initialize query manager

@@ -182,6 +182,9 @@ public:
 public:
 
 #if SE1_PREFER_SDL
+  // [Cecil] Display info about current mice
+  static void PrintMiceInfo(void);
+
   // [Cecil] Open a mouse under some device index
   void OpenMouse(SDL_MouseID iDevice);
 

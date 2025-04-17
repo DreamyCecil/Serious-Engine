@@ -95,6 +95,28 @@ BOOL MouseDevice_t::IsConnected(void) {
   return (iID != 0);
 };
 
+// Display info about current mice
+void CInput::PrintMiceInfo(void) {
+  if (_pInput == NULL) return;
+
+  const INDEX ct = _pInput->inp_aMice.Count();
+  CPrintF(TRANS("%d mouse slots:\n"), ct);
+
+  for (INDEX i = 0; i < ct; i++) {
+    MouseDevice_t &mouse = _pInput->inp_aMice[i];
+    CPrintF(" %d. ", i + 1);
+
+    if (!mouse.IsConnected()) {
+      CPutString(TRANS("not connected\n"));
+      continue;
+    }
+
+    CPrintF("'%s'\n", mouse.strName.ConstData());
+  }
+
+  CPutString("-\n");
+};
+
 // Open a mouse under some device index
 void CInput::OpenMouse(SDL_MouseID iDevice) {
   // Check if this mouse is already connected
