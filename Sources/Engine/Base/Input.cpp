@@ -534,7 +534,7 @@ void CInput::SetKeyNames( void)
   #undef SET_AXIS_NAME
 
   // [Cecil] Set joystick names separately
-  SetJoystickNames();
+  AddJoystickAbbilities();
 }
 
 /*
@@ -771,15 +771,24 @@ void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
     }
 
     // [Cecil] Polling gamepads during pre-scanning does nothing anyway
-    PollJoysticks();
+    PollJoysticks(ulDevices);
   }
 
   // [Cecil] Read axes of specific mice
-  for (INDEX iFlag = 0; iFlag < _ctMaxInputDevices; iFlag++) {
-    if (ulDevices & INPUTDEVICES_NUM(iFlag)) {
-      GetMouseInput(bPreScan, iFlag);
+#if SE1_PREFER_SDL
+  const INDEX ct = inp_aMice.Count();
+
+  for (INDEX i = 0; i < ct; i++) {
+    if (ulDevices & INPUTDEVICES_NUM(i)) {
+      GetMouseInput(bPreScan, i);
     }
   }
+
+#else
+  if (ulDevices & INPUTDEVICES_ALL) {
+    GetMouseInput(bPreScan, -1);
+  }
+#endif
 };
 
 // [Cecil] Clear states of all keys (as if they are all released)

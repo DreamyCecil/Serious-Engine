@@ -227,6 +227,8 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   MouseInputData_t &mid = *pmid;
 
 #else
+  (void)iMouse;
+
   OS::GetMouseState(&fMouseX, &fMouseY, FALSE);
   fDX = FLOAT(fMouseX - inp_slScreenCenterX);
   fDY = FLOAT(fMouseY - inp_slScreenCenterY);

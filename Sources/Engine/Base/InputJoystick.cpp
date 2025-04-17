@@ -219,15 +219,6 @@ void CInput::UpdateJoysticks(void) {
   }
 };
 
-// [Cecil] Set names for joystick axes and buttons in a separate method
-void CInput::SetJoystickNames(void) {
-  const INDEX ct = inp_aControllers.Count();
-
-  for (INDEX i = 0; i < ct; i++) {
-    AddJoystickAbbilities(i);
-  }
-};
-
 // [Cecil] Joystick setup on initialization
 void CInput::StartupJoysticks(void) {
   // Create an empty array of controllers
@@ -256,75 +247,72 @@ void CInput::ShutdownJoysticks(void) {
   inp_aControllers.Clear();
 };
 
-// Adds axis and buttons for given joystick
-void CInput::AddJoystickAbbilities(INDEX iSlot) {
-  const CTString strJoystickNameInt(0, "[C%d] ", iSlot + 1);
-  const CTString strJoystickNameTra(0, TRANS("[C%d] "), iSlot + 1);
-
+// Adds axis and buttons for joysticks
+void CInput::AddJoystickAbbilities(void) {
   // Set proper names for axes
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_GAMEPAD_AXIS_COUNT;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
-    inp_aInputActions[iFirstAxis + _Axis].ida_strNameInt = strJoystickNameInt + _Name; \
-    inp_aInputActions[iFirstAxis + _Axis].ida_strNameTra = strJoystickNameTra + _Translated;
+    inp_aInputActions[iFirstAxis + _Axis].ida_strNameInt = _Name; \
+    inp_aInputActions[iFirstAxis + _Axis].ida_strNameTra = _Translated;
 
   // Set default names for all axes
   for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
-    SET_AXIS_NAMES(iAxis, CTString(0, "Unknown %d", iAxis), CTString(0, TRANS("Unknown %d"), iAxis));
+    SET_AXIS_NAMES(iAxis, CTString(0, "Gamepad Axis %d", iAxis), CTString(0, TRANS("Gamepad Axis %d"), iAxis));
   }
 
   // Set proper names for axes
-  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFTX,         "L Stick X", TRANS("L Stick X"));
-  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFTY,         "L Stick Y", TRANS("L Stick Y"));
-  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHTX,        "R Stick X", TRANS("R Stick X"));
-  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHTY,        "R Stick Y", TRANS("R Stick Y"));
-  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFT_TRIGGER,  "L2",              "L2");
-  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, "R2",              "R2");
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFTX,         "(L Stick X)", TRANS("(L Stick X)"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFTY,         "(L Stick Y)", TRANS("(L Stick Y)"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHTX,        "(R Stick X)", TRANS("(R Stick X)"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHTY,        "(R Stick Y)", TRANS("(R Stick Y)"));
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFT_TRIGGER,  "[L2]",              "[L2]");
+  SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, "[R2]",              "[R2]");
 
-  const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_GAMEPAD_BUTTON_COUNT;
+  const INDEX iFirstButton = FIRST_JOYBUTTON;
 
   #define SET_BUTTON_NAMES(_Button, _Name, _Translated) \
-    inp_aInputActions[iFirstButton + _Button].ida_strNameInt = strJoystickNameInt + _Name; \
-    inp_aInputActions[iFirstButton + _Button].ida_strNameTra = strJoystickNameTra + _Translated;
+    inp_aInputActions[iFirstButton + _Button].ida_strNameInt = _Name; \
+    inp_aInputActions[iFirstButton + _Button].ida_strNameTra = _Translated;
 
   // Set default names for all buttons
   for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
-    SET_BUTTON_NAMES(iButton, CTString(0, "Unknown %d", iButton), CTString(0, TRANS("Unknown %d"), iButton));
+    SET_BUTTON_NAMES(iButton, CTString(0, "Gamepad Button %d", iButton), CTString(0, TRANS("Gamepad Button %d"), iButton));
   }
 
   // Set proper names for buttons
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_SOUTH,          "A",                 "A");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_EAST,           "B",                 "B");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_WEST,           "X",                 "X");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_NORTH,          "Y",                 "Y");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_BACK,           "Back",        TRANS("Back"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_GUIDE,          "Guide",       TRANS("Guide"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_START,          "Start",       TRANS("Start"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_STICK,     "L3",                "L3");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_STICK,    "R3",                "R3");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  "L1",                "L1");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, "R1",                "R1");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_UP,        "D-pad Up",    TRANS("D-pad Up"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_DOWN,      "D-pad Down",  TRANS("D-pad Down"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_LEFT,      "D-pad Left",  TRANS("D-pad Left"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_RIGHT,     "D-pad Right", TRANS("D-pad Right"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC1,          "Misc 1",      TRANS("Misc 1"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,  "R4",                "R4");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,   "L4",                "L4");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,  "R5",                "R5");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,   "L5",                "L5");
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC2,          "Misc 2",      TRANS("Misc 2"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC3,          "Misc 3",      TRANS("Misc 3"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC4,          "Misc 4",      TRANS("Misc 4"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC5,          "Misc 5",      TRANS("Misc 5"));
-  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC6,          "Misc 6",      TRANS("Misc 6"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_SOUTH,          "(A)",                 "(A)");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_EAST,           "(B)",                 "(B)");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_WEST,           "(X)",                 "(X)");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_NORTH,          "(Y)",                 "(Y)");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_BACK,           "(Back)",        TRANS("(Back)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_GUIDE,          "(Guide)",       TRANS("(Guide)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_START,          "(Start)",       TRANS("(Start)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_STICK,     "[L3]",                "[L3]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_STICK,    "[R3]",                "[R3]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  "[L1]",                "[L1]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, "[R1]",                "[R1]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_UP,        "(D-pad Up)",    TRANS("(D-pad Up)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_DOWN,      "(D-pad Down)",  TRANS("(D-pad Down)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_LEFT,      "(D-pad Left)",  TRANS("(D-pad Left)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_DPAD_RIGHT,     "(D-pad Right)", TRANS("(D-pad Right)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC1,          "(Misc 1)",      TRANS("(Misc 1)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,  "[R4]",                "[R4]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,   "[L4]",                "[L4]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,  "[R5]",                "[R5]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,   "[L5]",                "[L5]");
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC2,          "(Misc 2)",      TRANS("(Misc 2)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC3,          "(Misc 3)",      TRANS("(Misc 3)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC4,          "(Misc 4)",      TRANS("(Misc 4)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC5,          "(Misc 5)",      TRANS("(Misc 5)"));
+  SET_BUTTON_NAMES(SDL_GAMEPAD_BUTTON_MISC6,          "(Misc 6)",      TRANS("(Misc 6)"));
 };
 
 // Scans axis and buttons for given joystick
-void CInput::ScanJoystick(INDEX iSlot) {
-  SDL_Gamepad *pController = inp_aControllers[iSlot].handle;
+void CInput::ScanJoystick(INDEX iJoy) {
+  SDL_Gamepad *pController = inp_aControllers[iJoy].handle;
 
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iSlot * SDL_GAMEPAD_AXIS_COUNT;
+  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET;
 
   // For each available axis
   for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
@@ -350,7 +338,7 @@ void CInput::ScanJoystick(INDEX iSlot) {
     ida.ida_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
   }
 
-  const INDEX iFirstButton = FIRST_JOYBUTTON + iSlot * SDL_GAMEPAD_BUTTON_COUNT;
+  const INDEX iFirstButton = FIRST_JOYBUTTON;
 
   // For each available button
   for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
@@ -366,7 +354,7 @@ void CInput::ScanJoystick(INDEX iSlot) {
 };
 
 // [Cecil] Get input from joysticks
-void CInput::PollJoysticks(void) {
+void CInput::PollJoysticks(ULONG ulDevices) {
   // Only if joystick polling is enabled or forced
   if (!inp_bPollJoysticks && !inp_bForceJoystickPolling) return;
 
@@ -374,8 +362,10 @@ void CInput::PollJoysticks(void) {
   const INDEX ct = inp_aControllers.Count();
 
   for (INDEX i = 0; i < ct; i++) {
-    if (!inp_aControllers[i].IsConnected() || i >= inp_ctJoysticksAllowed) continue;
+    if (ulDevices & INPUTDEVICES_NUM(i)) {
+      if (!inp_aControllers[i].IsConnected() || i >= inp_ctJoysticksAllowed) continue;
 
-    ScanJoystick(i);
+      ScanJoystick(i);
+    }
   }
 };

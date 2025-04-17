@@ -29,7 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 const INDEX _ctMaxInputDevices = 8;
 
 #define FIRST_JOYBUTTON     (KID_MAX)
-#define MAX_OVERALL_BUTTONS (FIRST_JOYBUTTON + _ctMaxInputDevices * SDL_GAMEPAD_BUTTON_COUNT)
+#define MAX_OVERALL_BUTTONS (FIRST_JOYBUTTON + SDL_GAMEPAD_BUTTON_COUNT)
 #define FIRST_AXIS_ACTION   (MAX_OVERALL_BUTTONS)
 
 enum EInputAxis {
@@ -42,8 +42,8 @@ enum EInputAxis {
   EIA_MAX_MOUSE,
   EIA_CONTROLLER_OFFSET = EIA_MAX_MOUSE,
 
-  // Amount of axes (mouse axes + all controller axes * all controllers)
-  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_GAMEPAD_AXIS_COUNT * _ctMaxInputDevices),
+  // Amount of axes (mouse axes + all controller axes)
+  EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_GAMEPAD_AXIS_COUNT),
 };
 
 // All possible input actions
@@ -223,23 +223,20 @@ public:
 
 private:
 
-  // [Cecil] Set names for joystick axes and buttons in a separate method
-  void SetJoystickNames(void);
-
   // [Cecil] Joystick setup on initialization
   void StartupJoysticks(void);
 
   // [Cecil] Joystick cleanup on destruction
   void ShutdownJoysticks(void);
 
-  // Adds axis and buttons for given joystick
-  void AddJoystickAbbilities(INDEX iSlot);
+  // Adds axis and buttons for joysticks
+  void AddJoystickAbbilities(void);
 
   // Scans axis and buttons for given joystick
-  void ScanJoystick(INDEX iSlot);
+  void ScanJoystick(INDEX iJoy);
 
   // [Cecil] Get input from joysticks
-  void PollJoysticks(void);
+  void PollJoysticks(ULONG ulDevices);
 
 public:
 
