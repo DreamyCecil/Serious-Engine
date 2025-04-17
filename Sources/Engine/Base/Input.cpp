@@ -201,11 +201,6 @@ static const KeyConversion _akcKeys[] = {
   { KID_MOUSE5          , SE1K_XBUTTON2, -1, TRANAME("Mouse Button 5")},
   { KID_MOUSEWHEELUP    , -1, -1, TRANAME("Mouse Wheel Up")},
   { KID_MOUSEWHEELDOWN  , -1, -1, TRANAME("Mouse Wheel Down")},
-
-  // 2nd mouse buttons
-  { KID_2MOUSE1         , -1, -1, TRANAME("2nd Mouse Button 1")},
-  { KID_2MOUSE2         , -1, -1, TRANAME("2nd Mouse Button 2")},
-  { KID_2MOUSE3         , -1, -1, TRANAME("2nd Mouse Button 3")},
 };
 
 static const size_t _ctKeyArray = ARRAYCOUNT(_akcKeys);

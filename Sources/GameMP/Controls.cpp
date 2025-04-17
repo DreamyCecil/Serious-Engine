@@ -192,7 +192,7 @@ void CControls::Load_t( CTFileName fnFile)
     delete &*itButtonAction;
   }}
 
-	do
+  do
   {
     achrLine[0] = 0;
     achrID[0] = 0;
@@ -269,7 +269,7 @@ void CControls::Load_t( CTFileName fnFile)
       sscanf( achrLine, "GlobalSensitivity %g", &ctrl_fSensitivity);
     }
   }
-	while( !strmFile.AtEOF());
+  while( !strmFile.AtEOF());
 
 /*
   // search for talk button
@@ -423,3 +423,25 @@ BOOL CControls::UsesJoystick(void)
   return FALSE;
 }
 
+// [Cecil] Check if these controls use any mouse
+BOOL CControls::UsesMouse(void) {
+  // Buttons
+  FOREACHINLIST(CButtonAction, ba_lnNode, ctrl_lhButtonActions, itba) {
+    CButtonAction &ba = *itba;
+
+    if ((ba.ba_iFirstKey  >= KID_FIRST_MOUSE && ba.ba_iFirstKey  <= KID_LAST_MOUSE)
+     || (ba.ba_iSecondKey >= KID_FIRST_MOUSE && ba.ba_iSecondKey <= KID_LAST_MOUSE)) {
+      return TRUE;
+    }
+  }
+
+  // Axes
+  for (INDEX iAxis = 0; iAxis < AXIS_ACTIONS_CT; iAxis++) {
+    if (ctrl_aaAxisActions[iAxis].aa_iAxisAction > EIA_NONE
+     && ctrl_aaAxisActions[iAxis].aa_iAxisAction < EIA_MAX_MOUSE) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+};

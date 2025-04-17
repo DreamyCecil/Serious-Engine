@@ -157,11 +157,6 @@ enum EInputKeyID {
   KID_MOUSEWHEELUP    = 0xC5,
   KID_MOUSEWHEELDOWN  = 0xC6,
 
-  // 2nd mouse buttons
-  KID_2MOUSE1         = 0xD0,
-  KID_2MOUSE2         = 0xD1,
-  KID_2MOUSE3         = 0xD2,
-
   // [Cecil] Number of reserved key IDs
   KID_MAX = 0x100,
 

@@ -127,6 +127,10 @@ public:
   virtual FLOAT GetAxisValue(INDEX iAxis);
   // check if these controls use any joystick
   virtual BOOL UsesJoystick(void);
+
+  // [Cecil] Check if these controls use any mouse
+  virtual BOOL UsesMouse(void);
+
   // switches button and axis action mounters to defaults
   virtual void SwitchAxesToDefaults(void);
   virtual void SwitchToDefaults(void);
