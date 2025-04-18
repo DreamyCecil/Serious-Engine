@@ -291,7 +291,7 @@ BOOL CDlgPlayerControls::OnInitDialog()
   FillAxisList();
   
   // for all possible axis mounting controlers
-  for( INDEX iAxis=0; iAxis<_pInput->GetAvailableAxisCount(); iAxis++)
+  for( INDEX iAxis=0; iAxis<_pInput->GetMaxInputAxes(); iAxis++)
   {
     m_comboControlerAxis.AddString(CString(_pInput->GetAxisName(iAxis).ConstData()));
   }
@@ -357,7 +357,7 @@ void CDlgPlayerControls::ActivatePressKey(const char *strFirstOrSecond)
   while( _pInput->IsInputEnabled())
   {
     // for all possible buttons
-    for( INDEX iButton=0; iButton<_pInput->GetAvailableButtonsCount(); iButton++)
+    for( INDEX iButton=0; iButton<_pInput->GetMaxInputButtons(); iButton++)
     {
       // if pressed
       if( _pInput->GetButtonState( iButton)

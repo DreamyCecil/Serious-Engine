@@ -61,11 +61,8 @@ HWND OS::Window::GetNativeHandle(void) {
 #endif
 
 // Setup controller events from button & axis actions
-static BOOL SetupControllerEvent(SDL_JoystickID iDevice, OS::SE1Event &event)
+static BOOL SetupControllerEvent(CInput::GameController_t *pCtrl, INDEX iCtrl, OS::SE1Event &event)
 {
-  INDEX iCtrl;
-  CInput::GameController_t *pCtrl = _pInput->GetControllerByID(iDevice, &iCtrl);
-
   if (pCtrl == NULL || !pCtrl->IsConnected()) return FALSE;
 
   static BOOL _abButtonStates[_ctMaxInputDevices * SDL_GAMEPAD_BUTTON_COUNT] = { 0 };
@@ -218,7 +215,10 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
       case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
       case SDL_EVENT_GAMEPAD_BUTTON_UP:
       case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
-        if (SetupControllerEvent(sdlevent.gdevice.which, event)) {
+        INDEX iCtrl;
+        CInput::GameController_t *pCtrl = _pInput->GetControllerByID(sdlevent.gdevice.which, &iCtrl);
+
+        if (SetupControllerEvent(pCtrl, iCtrl, event)) {
           return TRUE;
         }
       } break;
@@ -240,10 +240,12 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
   _pInput->UpdateJoysticks();
 
   // Process event for the first controller that sends it
-  const INDEX ctControllers = _pInput->inp_aControllers.Count();
+  const INDEX ctControllers = _pInput->GetControllerCount();
 
   for (INDEX iCtrl = 0; iCtrl < ctControllers; iCtrl++) {
-    if (SetupControllerEvent(iCtrl, event)) {
+    CInput::GameController_t *pCtrl = _pInput->GetControllerFromSlot(iCtrl);
+
+    if (SetupControllerEvent(pCtrl, iCtrl, event)) {
       return TRUE;
     }
   }

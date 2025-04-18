@@ -185,6 +185,11 @@ public:
   // [Cecil] Close a mouse under some device index
   void CloseMouse(SDL_MouseID iDevice);
 
+  // [Cecil] Retrieve amount of mouse slots
+  inline INDEX GetMouseCount(void) const {
+    return inp_aMice.Count();
+  };
+
   // [Cecil] Retrieve a mouse device by its device index and optionally return its slot index
   MouseDevice_t *GetMouseByID(SDL_MouseID iDevice, INDEX *piSlot = NULL);
 
@@ -214,6 +219,11 @@ public:
 
   // [Cecil] Close a game controller under some device index
   void CloseGameController(SDL_JoystickID iDevice);
+
+  // [Cecil] Retrieve amount of game controller slots
+  inline INDEX GetControllerCount(void) const {
+    return inp_aControllers.Count();
+  };
 
   // [Cecil] Retrieve a game controller by its device index and optionally return its slot index
   GameController_t *GetControllerByID(SDL_JoystickID iDevice, INDEX *piSlot = NULL);
