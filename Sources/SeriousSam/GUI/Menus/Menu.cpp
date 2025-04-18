@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <time.h>
 #include "MainWindow.h"
 #include <Engine/Templates/Stock_CSoundData.h>
+#include <Engine/Templates/Stock_CTextureData.h>
 #include <GameMP/LCDDrawing.h>
 #include "MenuPrinting.h"
 #include "LevelInfo.h"
@@ -86,9 +87,65 @@ CSoundData *_psdSelect = NULL;
 CSoundData *_psdPress = NULL;
 CSoundObject *_psoMenuSound = NULL;
 
-static CTextureObject _toPointer;
 static CTextureObject _toLogoMenuA;
 static CTextureObject _toLogoMenuB;
+
+#if SE1_PREFER_SDL
+
+// [Cecil] Custom game cursor
+static CTextureData *_ptdCursorData = NULL;
+static SDL_Surface *_pCursorTexture = NULL;
+static SDL_Cursor *_pCursor = NULL;
+
+// [Cecil] SDL: Clear custom cursor
+static void DestroyGameCursor(void) {
+  if (_pCursor != NULL) {
+    SDL_DestroyCursor(_pCursor);
+    _pCursor = NULL;
+  }
+
+  if (_pCursorTexture != NULL) {
+    SDL_DestroySurface(_pCursorTexture);
+    _pCursorTexture = NULL;
+  }
+
+  if (_ptdCursorData != NULL) {
+    _pTextureStock->Release(_ptdCursorData);
+    _ptdCursorData = NULL;
+  }
+};
+
+// [Cecil] SDL: Set custom cursor
+static void SetGameCursor(void) {
+  try {
+    // Load cursor texture
+    _ptdCursorData = _pTextureStock->Obtain_t(CTFILENAME("TexturesMP\\General\\Pointer.tex"));
+
+    // Needed to actually load pixel data into td_pulFrames and never free/reallocate it
+    _ptdCursorData->Force(TEX_STATIC | TEX_CONSTANT);
+
+    if (_ptdCursorData->td_pulFrames == NULL) ThrowF_t(TRANS("Texture has no frames!"));
+
+    // Create SDL texture from its data
+    _pCursorTexture = SDL_CreateSurfaceFrom(_ptdCursorData->GetPixWidth(), _ptdCursorData->GetPixHeight(),
+      SDL_PIXELFORMAT_ABGR8888, _ptdCursorData->td_pulFrames, _ptdCursorData->GetPixWidth() * 4);
+
+    if (_pCursorTexture == NULL) ThrowF_t(TRANS("Cannot create surface from texture! SDL Error: %s"), SDL_GetError());
+
+    // Create SDL cursor from the SDL texture
+    _pCursor = SDL_CreateColorCursor(_pCursorTexture, 1, 1);
+    if (_pCursor == NULL) ThrowF_t(TRANS("Cannot create color cursor! SDL Error: %s"), SDL_GetError());
+
+    // Finally, set the cursor
+    if (!SDL_SetCursor(_pCursor)) ThrowF_t(TRANS("Cannot set SDL cursor! SDL Error: %s"), SDL_GetError());
+
+  } catch (char *strError) {
+    CPrintF(TRANS("Couldn't set SDL cursor:\n  %s\n"), strError);
+    DestroyGameCursor();
+  }
+};
+
+#endif // SE1_PREFER_SDL
 
 // -------------- All possible menu entities
 #define BIG_BUTTONS_CT 6
@@ -263,7 +320,6 @@ void InitializeMenus(void)
     _psoMenuSound = new CSoundObject;
 
     // initialize and load menu textures
-    _toPointer.SetData_t( CTFILENAME( "Textures\\General\\Pointer.tex"));
     _toLogoMenuA.SetData_t(  CTFILENAME( "Textures\\Logo\\sam_menulogo256a.tex"));
     _toLogoMenuB.SetData_t(  CTFILENAME( "Textures\\Logo\\sam_menulogo256b.tex"));
   }
@@ -443,10 +499,20 @@ void InitializeMenus(void)
   {
     FatalError( strError);
   }
+
+#if SE1_PREFER_SDL
+  // [Cecil] SDL: Set custom cursor
+  SetGameCursor();
+#endif
 }
 
 void DestroyMenus( void)
 {
+#if SE1_PREFER_SDL
+  // [Cecil] SDL: Clear custom cursor
+  DestroyGameCursor();
+#endif
+
   _pGUIM->gmMainMenu.Destroy();
   pgmCurrentMenu = NULL;
   _pSoundStock->Release(_psdSelect);
@@ -639,7 +705,11 @@ void RenderMouseCursor(CDrawPort *pdp)
     return;
   }
   _pGame->LCDSetDrawport(pdp);
+
+  // [Cecil] Render the in-game cursor the old-fashioned way under Win32
+#if !SE1_PREFER_SDL
   _pGame->LCDDrawPointer(_fCursorPosI, _fCursorPosJ);
+#endif
 }
 
 

@@ -1335,6 +1335,8 @@ void CGame::ComputerRender(CDrawPort *pdp)
     }
   }
 
+  // [Cecil] Render the in-game cursor the old-fashioned way under Win32
+#if !SE1_PREFER_SDL
   // render mouse pointer on top of everything else
   if (_pGame->gm_csComputerState != CS_ONINBACKGROUND) {
     if (dpComp.Lock()) {
@@ -1343,6 +1345,7 @@ void CGame::ComputerRender(CDrawPort *pdp)
       dpComp.Unlock();
     }
   }
+#endif
 
   _pTimer->SetCurrentTick(tmOld);
   _pTimer->SetLerp(fLerpOld);
