@@ -37,10 +37,7 @@ public:
   CMGTrigger gm_mgObserver;
   CMGTrigger gm_mgSplitScreenCfg;
 
-  CMGChangePlayer gm_mgPlayer0Change;
-  CMGChangePlayer gm_mgPlayer1Change;
-  CMGChangePlayer gm_mgPlayer2Change;
-  CMGChangePlayer gm_mgPlayer3Change;
+  CMGChangePlayer gm_amgChangePlayer[NET_MAXLOCALPLAYERS];
 
   CMGButton gm_mgNotes;
 

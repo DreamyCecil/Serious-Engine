@@ -42,7 +42,7 @@ extern CTString astrCrosshair[8];
 extern CTString astrMaxPlayersRadioTexts[15];
 extern CTString astrGameTypeRadioTexts[20];
 extern CTString astrDifficultyRadioTexts[6];
-extern CTString astrSplitScreenRadioTexts[4];
+extern CTString *astrSplitScreenRadioTexts; // [Cecil] Dynamically created array
 extern CTString astrDisplayPrefsRadioTexts[4];
 extern CTString *astrDisplayAPIRadioTexts; // [Cecil] Dynamically created array
 extern CTString astrBitsPerPixelRadioTexts[3];

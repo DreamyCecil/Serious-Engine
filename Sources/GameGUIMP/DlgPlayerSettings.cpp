@@ -118,7 +118,7 @@ void CDlgPlayerSettings::InitPlayersAndControlsLists(void)
   m_listAvailableControls.ResetContent();
 
   // fill players and controls lists
-  for( INDEX iPC=0; iPC<8; iPC++)
+  for (INDEX iPC = 0; iPC < MAX_PLAYER_PROFILES; iPC++)
   {
     CTString strPlayer = _pGame->gm_apcPlayers[ iPC].pc_strName;
     m_listAvailablePlayers.AddString(CString(strPlayer.ConstData()));

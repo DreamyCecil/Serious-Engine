@@ -394,12 +394,13 @@ void InitActionsForSinglePlayerMenu()
 // ------------------------ CSinglePlayerNewMenu implementation
 void StartSinglePlayerGame(void)
 {
-  _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
+  _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY;
 
   _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_iSinglePlayer;
-  _pGame->gm_aiStartLocalPlayers[1] = -1;
-  _pGame->gm_aiStartLocalPlayers[2] = -1;
-  _pGame->gm_aiStartLocalPlayers[3] = -1;
+
+  for (INDEX iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+  }
 
   _pGame->gm_strNetworkProvider = "Local";
   CUniversalSessionProperties sp;
@@ -1092,9 +1093,9 @@ static INDEX FindUnusedPlayer(void)
 {
   INDEX *ai = _pGame->gm_aiMenuLocalPlayers;
   INDEX iPlayer = 0;
-  for (; iPlayer<8; iPlayer++) {
+  for (; iPlayer < MAX_PLAYER_PROFILES; iPlayer++) {
     BOOL bUsed = FALSE;
-    for (INDEX iLocal = 0; iLocal<4; iLocal++) {
+    for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
       if (ai[iLocal] == iPlayer) {
         bUsed = TRUE;
         break;
@@ -1112,12 +1113,12 @@ extern void SelectPlayersFillMenu(void)
 {
   CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
 
+  INDEX iLocal;
   INDEX *ai = _pGame->gm_aiMenuLocalPlayers;
 
-  gmCurrent.gm_mgPlayer0Change.mg_iLocalPlayer = 0;
-  gmCurrent.gm_mgPlayer1Change.mg_iLocalPlayer = 1;
-  gmCurrent.gm_mgPlayer2Change.mg_iLocalPlayer = 2;
-  gmCurrent.gm_mgPlayer3Change.mg_iLocalPlayer = 3;
+  for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    gmCurrent.gm_amgChangePlayer[iLocal].mg_iLocalPlayer = iLocal;
+  }
 
   if (gmCurrent.gm_bAllowDedicated && _pGame->gm_MenuSplitScreenCfg == CGame::SSC_DEDICATED) {
     gmCurrent.gm_mgDedicated.mg_iSelected = 1;
@@ -1135,7 +1136,7 @@ extern void SelectPlayersFillMenu(void)
 
   gmCurrent.gm_mgObserver.ApplyCurrentSelection();
 
-  if (_pGame->gm_MenuSplitScreenCfg >= CGame::SSC_PLAY1) {
+  if (_pGame->gm_MenuSplitScreenCfg >= CGame::SSC_PLAY) {
     gmCurrent.gm_mgSplitScreenCfg.mg_iSelected = _pGame->gm_MenuSplitScreenCfg;
     gmCurrent.gm_mgSplitScreenCfg.ApplyCurrentSelection();
   }
@@ -1153,7 +1154,9 @@ extern void SelectPlayersFillMenu(void)
     bHasPlayers = FALSE;
   }
 
-  CMenuGadget *apmg[8];
+  const INDEX ctButtons = 4 + NET_MAXLOCALPLAYERS;
+
+  CMenuGadget *apmg[ctButtons];
   memset(apmg, 0, sizeof(apmg));
   INDEX i = 0;
 
@@ -1171,8 +1174,8 @@ extern void SelectPlayersFillMenu(void)
     gmCurrent.gm_mgObserver.Disappear();
   }
 
-  for (INDEX iLocal = 0; iLocal<4; iLocal++) {
-    if (ai[iLocal]<0 || ai[iLocal]>7) {
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    if (ai[iLocal] < 0 || ai[iLocal] >= MAX_PLAYER_PROFILES) {
       ai[iLocal] = 0;
     }
     for (INDEX iCopy = 0; iCopy<iLocal; iCopy++) {
@@ -1182,46 +1185,42 @@ extern void SelectPlayersFillMenu(void)
     }
   }
 
-  gmCurrent.gm_mgPlayer0Change.Disappear();
-  gmCurrent.gm_mgPlayer1Change.Disappear();
-  gmCurrent.gm_mgPlayer2Change.Disappear();
-  gmCurrent.gm_mgPlayer3Change.Disappear();
+  for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    gmCurrent.gm_amgChangePlayer[iLocal].Disappear();
+  }
 
   if (bHasPlayers) {
     gmCurrent.gm_mgSplitScreenCfg.Appear();
+
     apmg[i++] = &gmCurrent.gm_mgSplitScreenCfg;
-    gmCurrent.gm_mgPlayer0Change.Appear();
-    apmg[i++] = &gmCurrent.gm_mgPlayer0Change;
-    if (gmCurrent.gm_mgSplitScreenCfg.mg_iSelected >= 1) {
-      gmCurrent.gm_mgPlayer1Change.Appear();
-      apmg[i++] = &gmCurrent.gm_mgPlayer1Change;
+    gmCurrent.gm_amgChangePlayer[0].Appear();
+    apmg[i++] = &gmCurrent.gm_amgChangePlayer[0];
+
+    for (iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+      if (gmCurrent.gm_mgSplitScreenCfg.mg_iSelected >= iLocal) {
+        gmCurrent.gm_amgChangePlayer[iLocal].Appear();
+        apmg[i++] = &gmCurrent.gm_amgChangePlayer[iLocal];
+      }
     }
-    if (gmCurrent.gm_mgSplitScreenCfg.mg_iSelected >= 2) {
-      gmCurrent.gm_mgPlayer2Change.Appear();
-      apmg[i++] = &gmCurrent.gm_mgPlayer2Change;
-    }
-    if (gmCurrent.gm_mgSplitScreenCfg.mg_iSelected >= 3) {
-      gmCurrent.gm_mgPlayer3Change.Appear();
-      apmg[i++] = &gmCurrent.gm_mgPlayer3Change;
-    }
+
   } else {
     gmCurrent.gm_mgSplitScreenCfg.Disappear();
   }
   apmg[i++] = &gmCurrent.gm_mgStart;
 
   // relink
-  for (INDEX img = 0; img<8; img++) {
+  for (INDEX img = 0; img < ctButtons; img++) {
     if (apmg[img] == NULL) {
       continue;
     }
-    INDEX imgPred = (img + 8 - 1) % 8;
-    for (; imgPred != img; imgPred = (imgPred + 8 - 1) % 8) {
+    INDEX imgPred = (img + ctButtons - 1) % ctButtons;
+    for (; imgPred != img; imgPred = (imgPred + ctButtons - 1) % ctButtons) {
       if (apmg[imgPred] != NULL) {
         break;
       }
     }
-    INDEX imgSucc = (img + 1) % 8;
-    for (; imgSucc != img; imgSucc = (imgSucc + 1) % 8) {
+    INDEX imgSucc = (img + 1) % ctButtons;
+    for (; imgSucc != img; imgSucc = (imgSucc + 1) % ctButtons) {
       if (apmg[imgSucc] != NULL) {
         break;
       }
@@ -1230,10 +1229,9 @@ extern void SelectPlayersFillMenu(void)
     apmg[img]->mg_pmgDown = apmg[imgSucc];
   }
 
-  gmCurrent.gm_mgPlayer0Change.SetPlayerText();
-  gmCurrent.gm_mgPlayer1Change.SetPlayerText();
-  gmCurrent.gm_mgPlayer2Change.SetPlayerText();
-  gmCurrent.gm_mgPlayer3Change.SetPlayerText();
+  for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    gmCurrent.gm_amgChangePlayer[iLocal].SetPlayerText();
+  }
 
   if (bHasPlayers && gmCurrent.gm_mgSplitScreenCfg.mg_iSelected >= 1) {
     gmCurrent.gm_mgNotes.mg_strText = TRANS("Make sure you set different controls for each player!");

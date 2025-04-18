@@ -766,7 +766,7 @@ void CGame::GameHandleTimer(void)
     INDEX iLocal;
     INDEX ctLocalPlayers = 0;
 
-    for (iLocal = 0; iLocal < 4; iLocal++) {
+    for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
       if (gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource != NULL) {
         ctLocalPlayers++;
       }
@@ -844,7 +844,7 @@ void CGame::GameHandleTimer(void)
   else if (gm_bGameOn)
   {
     // for all possible local players
-    for( INDEX iPlayer=0; iPlayer<4; iPlayer++)
+    for (INDEX iPlayer = 0; iPlayer < NET_MAXLOCALPLAYERS; iPlayer++)
     { // if this player exist
       if( gm_lpLocalPlayers[iPlayer].lp_pplsPlayerSource != NULL)
       { 
@@ -874,9 +874,9 @@ void CGame::InitInternal( void)
   gam_strSessionName = TRANS("Unnamed session"); // name of multiplayer network session
   gam_strJoinAddress = TRANS("serveraddress");   // join address
 
-  gm_MenuSplitScreenCfg    = SSC_PLAY1;
-  gm_StartSplitScreenCfg   = SSC_PLAY1;
-  gm_CurrentSplitScreenCfg = SSC_PLAY1;
+  gm_MenuSplitScreenCfg    = SSC_PLAY;
+  gm_StartSplitScreenCfg   = SSC_PLAY;
+  gm_CurrentSplitScreenCfg = SSC_PLAY;
   gm_iLastSetHighScore = 0;
   gm_iSinglePlayer = 0;
   gm_iWEDSinglePlayer = 0;
@@ -916,12 +916,14 @@ void CGame::InitInternal( void)
   gm_bGameOn = FALSE;
   gm_bMenuOn = FALSE;
   gm_bFirstLoading = FALSE;
-  gm_aiMenuLocalPlayers[0] =  0;
-  gm_aiMenuLocalPlayers[1] = -1;
-  gm_aiMenuLocalPlayers[2] = -1;
-  gm_aiMenuLocalPlayers[3] = -1;
 
-  gm_MenuSplitScreenCfg = SSC_PLAY1;
+  gm_aiMenuLocalPlayers[0] =  0;
+
+  for (INDEX iMenuLocal = 1; iMenuLocal < NET_MAXLOCALPLAYERS; iMenuLocal++) {
+    gm_aiMenuLocalPlayers[iMenuLocal] = -1;
+  }
+
+  gm_MenuSplitScreenCfg = SSC_PLAY;
 
   LoadPlayersAndControls();
 
@@ -1192,8 +1194,8 @@ BOOL CGame::JoinGame(const CNetworkSession &session)
   // start the new session
   try {
     INDEX ctLocalPlayers = 0;
-    if (gm_StartSplitScreenCfg>=SSC_PLAY1 && gm_StartSplitScreenCfg<=SSC_PLAY4) {
-      ctLocalPlayers = (gm_StartSplitScreenCfg-SSC_PLAY1)+1;
+    if (gm_StartSplitScreenCfg >= SSC_PLAY && gm_StartSplitScreenCfg < SSC_PLAY + NET_MAXLOCALPLAYERS) {
+      ctLocalPlayers = (gm_StartSplitScreenCfg - SSC_PLAY) + 1;
     }
     _pNetwork->JoinSession_t(session, ctLocalPlayers);
   } catch (char *strError) {
@@ -1394,7 +1396,7 @@ void CGame::StopGame(void)
   // stop the provider
   _pNetwork->StopProvider();
   // for all four local players
-  for( INDEX iPlayer=0; iPlayer<4; iPlayer++)
+  for (INDEX iPlayer = 0; iPlayer < NET_MAXLOCALPLAYERS; iPlayer++)
   {
     // mark that current player does not exist any more
     gm_lpLocalPlayers[ iPlayer].lp_bActive = FALSE;
@@ -1552,12 +1554,30 @@ void CGame::Load_t( void)
   strmFile>>gm_strNetworkProvider;
   strmFile>>gm_iWEDSinglePlayer;
   strmFile>>gm_iSinglePlayer;
-  strmFile>>gm_aiMenuLocalPlayers[0];
-  strmFile>>gm_aiMenuLocalPlayers[1];
-  strmFile>>gm_aiMenuLocalPlayers[2];
-  strmFile>>gm_aiMenuLocalPlayers[3];
+
+  // [Cecil] Variable amount of local players
+  INDEX ctLocals;
+  strmFile >> ctLocals;
+
+  for (INDEX iLocal = 0; iLocal < ctLocals; iLocal++) {
+    INDEX iMenuLocal;
+    strmFile >> iMenuLocal;
+
+    // Reset value if it exceeds the limit
+    if (iMenuLocal >= MAX_PLAYER_PROFILES) iMenuLocal = -1;
+
+    // Only set it into the array if it has space for it
+    if (iLocal < NET_MAXLOCALPLAYERS) {
+      gm_aiMenuLocalPlayers[iLocal] = iMenuLocal;
+    }
+  }
 
   strmFile.Read_t( &gm_MenuSplitScreenCfg, sizeof( enum SplitScreenCfg));
+
+  // [Cecil] Make sure none of the values exceed their limits
+  gm_iWEDSinglePlayer   = ClampUp(gm_iWEDSinglePlayer,   MAX_PLAYER_PROFILES);
+  gm_iSinglePlayer      = ClampUp(gm_iSinglePlayer,      MAX_PLAYER_PROFILES);
+  gm_MenuSplitScreenCfg = ClampUp(gm_MenuSplitScreenCfg, SSC_PLAY + NET_MAXLOCALPLAYERS - 1);
 
   // read high-score table
   SLONG slHSSize;
@@ -1584,10 +1604,13 @@ void CGame::Save_t( void)
   strmFile<<gm_strNetworkProvider;
   strmFile<<gm_iWEDSinglePlayer;
   strmFile<<gm_iSinglePlayer;
-  strmFile<<gm_aiMenuLocalPlayers[0];
-  strmFile<<gm_aiMenuLocalPlayers[1];
-  strmFile<<gm_aiMenuLocalPlayers[2];
-  strmFile<<gm_aiMenuLocalPlayers[3];
+
+  // [Cecil] Variable amount of local players
+  strmFile << (INDEX)NET_MAXLOCALPLAYERS;
+
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    strmFile << (INDEX)gm_aiMenuLocalPlayers[iLocal];
+  }
 
   strmFile.Write_t( &gm_MenuSplitScreenCfg, sizeof( enum SplitScreenCfg));
 
@@ -1634,48 +1657,28 @@ void LoadPlayer(CPlayerCharacter &pc, INDEX i)
 }
 
 
-/*
- * Loads 8 players and 8 controls
- */
+// Loads all player profiles
 void CGame::LoadPlayersAndControls( void)
 {
-  for (INDEX iControls=0; iControls<8; iControls++) {
-    LoadControls(gm_actrlControls[iControls], iControls);
-  }
-
-  for (INDEX iPlayer=0; iPlayer<8; iPlayer++) {
-    LoadPlayer(gm_apcPlayers[iPlayer], iPlayer);
+  for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
+    LoadControls(gm_actrlControls[i], i);
+    LoadPlayer(gm_apcPlayers[i], i);
   }
 
   SavePlayersAndControls();
 }
 
-/*
- * Saves 8 players and 8 controls
- */
+// Saves all player profiles
 void CGame::SavePlayersAndControls( void)
 {
-  try
-  {
-    // [Cecil] Save player to user data
-    gm_apcPlayers[0].Save_t(ExpandPath::ToUser("Players\\Player0.plr"));
-    gm_apcPlayers[1].Save_t(ExpandPath::ToUser("Players\\Player1.plr"));
-    gm_apcPlayers[2].Save_t(ExpandPath::ToUser("Players\\Player2.plr"));
-    gm_apcPlayers[3].Save_t(ExpandPath::ToUser("Players\\Player3.plr"));
-    gm_apcPlayers[4].Save_t(ExpandPath::ToUser("Players\\Player4.plr"));
-    gm_apcPlayers[5].Save_t(ExpandPath::ToUser("Players\\Player5.plr"));
-    gm_apcPlayers[6].Save_t(ExpandPath::ToUser("Players\\Player6.plr"));
-    gm_apcPlayers[7].Save_t(ExpandPath::ToUser("Players\\Player7.plr"));
+  try {
+    // [Cecil] Save player profiles to user data
+    for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
+      const CTString strIndex(0, "%d", i);
 
-    // [Cecil] Save controls to user data
-    gm_actrlControls[0].Save_t(ExpandPath::ToUser("Controls\\Controls0.ctl"));
-    gm_actrlControls[1].Save_t(ExpandPath::ToUser("Controls\\Controls1.ctl"));
-    gm_actrlControls[2].Save_t(ExpandPath::ToUser("Controls\\Controls2.ctl"));
-    gm_actrlControls[3].Save_t(ExpandPath::ToUser("Controls\\Controls3.ctl"));
-    gm_actrlControls[4].Save_t(ExpandPath::ToUser("Controls\\Controls4.ctl"));
-    gm_actrlControls[5].Save_t(ExpandPath::ToUser("Controls\\Controls5.ctl"));
-    gm_actrlControls[6].Save_t(ExpandPath::ToUser("Controls\\Controls6.ctl"));
-    gm_actrlControls[7].Save_t(ExpandPath::ToUser("Controls\\Controls7.ctl"));
+      gm_apcPlayers   [i].Save_t(ExpandPath::ToUser("Players\\Player"    + strIndex + ".plr"));
+      gm_actrlControls[i].Save_t(ExpandPath::ToUser("Controls\\Controls" + strIndex + ".ctl"));
+    }
   }
   // catch throwed error
   catch (char *strError)
@@ -1687,10 +1690,10 @@ void CGame::SavePlayersAndControls( void)
   if( !gm_bGameOn) return;
 
   // for each local player
-  for( INDEX i=0; i<4; i++) {
+  for (INDEX i = 0; i < NET_MAXLOCALPLAYERS; i++) {
     CLocalPlayer &lp = gm_lpLocalPlayers[i];
     // if active
-    if( lp.lp_bActive && lp.lp_pplsPlayerSource!=NULL && lp.lp_iPlayer>=0 && lp.lp_iPlayer<8) {
+    if (lp.lp_bActive && lp.lp_pplsPlayerSource != NULL && lp.lp_iPlayer >= 0 && lp.lp_iPlayer < MAX_PLAYER_PROFILES) {
       // if its character in game is different than the one in config
       CPlayerCharacter &pcInGame = lp.lp_pplsPlayerSource->pls_pcCharacter;
       CPlayerCharacter &pcConfig = gm_apcPlayers[lp.lp_iPlayer];
@@ -1708,21 +1711,12 @@ void CGame::SavePlayersAndControls( void)
 void CGame::SetupLocalPlayers( void)
 {
   // setup local players and their controls
-  gm_lpLocalPlayers[0].lp_iPlayer = gm_aiStartLocalPlayers[0];
-  gm_lpLocalPlayers[1].lp_iPlayer = gm_aiStartLocalPlayers[1];
-  gm_lpLocalPlayers[2].lp_iPlayer = gm_aiStartLocalPlayers[2];
-  gm_lpLocalPlayers[3].lp_iPlayer = gm_aiStartLocalPlayers[3];
-  if (gm_StartSplitScreenCfg < CGame::SSC_PLAY1) {
-    gm_lpLocalPlayers[0].lp_iPlayer = -1;
-  }
-  if (gm_StartSplitScreenCfg < CGame::SSC_PLAY2) {
-    gm_lpLocalPlayers[1].lp_iPlayer = -1;
-  }
-  if (gm_StartSplitScreenCfg < CGame::SSC_PLAY3) {
-    gm_lpLocalPlayers[2].lp_iPlayer = -1;
-  }
-  if (gm_StartSplitScreenCfg < CGame::SSC_PLAY4) {
-    gm_lpLocalPlayers[3].lp_iPlayer = -1;
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    if (gm_StartSplitScreenCfg < CGame::SSC_PLAY + iLocal) {
+      gm_lpLocalPlayers[iLocal].lp_iPlayer = -1;
+    } else {
+      gm_lpLocalPlayers[iLocal].lp_iPlayer = gm_aiStartLocalPlayers[iLocal];
+    }
   }
 }
 
@@ -1730,11 +1724,11 @@ BOOL CGame::AddPlayers(void)
 {
   // add local player(s) into game
   try {
-    for(INDEX i=0; i<4; i++) {
+    for (INDEX i = 0; i < NET_MAXLOCALPLAYERS; i++) {
       CLocalPlayer &lp = gm_lpLocalPlayers[i];
       INDEX iPlayer = lp.lp_iPlayer;
-      if (iPlayer>=0) {
-        ASSERT(iPlayer>=0 && iPlayer<8);
+      if (iPlayer >= 0) {
+        ASSERT(iPlayer < MAX_PLAYER_PROFILES);
         lp.lp_pplsPlayerSource = _pNetwork->AddPlayer_t(gm_apcPlayers[iPlayer]);
         lp.lp_bActive = TRUE;
       }
@@ -1921,6 +1915,7 @@ CDrawPort *apdpDrawPorts[7];
 
 INDEX iFirstObserver = 0;
 
+// [Cecil] TODO: Make this function work properly when NET_MAXLOCALPLAYERS > 4
 static void MakeSplitDrawports(enum CGame::SplitScreenCfg ssc, INDEX iCount, CDrawPort *pdp)
 {
   apdpDrawPorts[0] = NULL;
@@ -1940,12 +1935,12 @@ static void MakeSplitDrawports(enum CGame::SplitScreenCfg ssc, INDEX iCount, CDr
   }
 
   // if one player or observer with one screen
-  if (ssc==CGame::SSC_PLAY1 || ssc==CGame::SSC_OBSERVER && iCount==1) {
+  if (ssc == CGame::SSC_PLAY + 0 || ssc == CGame::SSC_OBSERVER && iCount == 1) {
     // the only drawport covers entire screen
     adpDrawPorts[0] = CDrawPort( pdp, 0.0, 0.0, 1.0, 1.0);
     apdpDrawPorts[0] = &adpDrawPorts[0];
   // if two players or observer with two screens
-  } else if (ssc==CGame::SSC_PLAY2 || ssc==CGame::SSC_OBSERVER && iCount==2) {
+  } else if (ssc == CGame::SSC_PLAY + 1 || ssc == CGame::SSC_OBSERVER && iCount == 2) {
     // if the drawport is not dualhead
     if (!pdp->IsDualHead()) {
       // need two drawports for filling the empty spaces left and right
@@ -1969,7 +1964,7 @@ static void MakeSplitDrawports(enum CGame::SplitScreenCfg ssc, INDEX iCount, CDr
       apdpDrawPorts[1] = &adpDrawPorts[1];
     }
   // if three players or observer with three screens
-  } else if (ssc==CGame::SSC_PLAY3 || ssc==CGame::SSC_OBSERVER && iCount==3) {
+  } else if (ssc == CGame::SSC_PLAY + 2 || ssc == CGame::SSC_OBSERVER && iCount == 3) {
     // if the drawport is not dualhead
     if (!pdp->IsDualHead()) {
       // need two drawports for filling the empty spaces left and right
@@ -2006,7 +2001,7 @@ static void MakeSplitDrawports(enum CGame::SplitScreenCfg ssc, INDEX iCount, CDr
       apdpDrawPorts[2] = &adpDrawPorts[2];
     }
   // if four players or observer with four screens
-  } else if (ssc==CGame::SSC_PLAY4 || ssc==CGame::SSC_OBSERVER && iCount==4) {
+  } else if (ssc == CGame::SSC_PLAY + 3 || ssc == CGame::SSC_OBSERVER && iCount == 4) {
     // if the drawport is not dualhead
     if (!pdp->IsDualHead()) {
       // first of four draw ports covers upper-left part of the screen
@@ -2156,7 +2151,7 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
     INDEX iLocal;
     INDEX ctLocalPlayers = 0;
 
-    for (iLocal = 0; iLocal < 4; iLocal++) {
+    for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
       if (gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource != NULL) {
         ctLocalPlayers++;
       }

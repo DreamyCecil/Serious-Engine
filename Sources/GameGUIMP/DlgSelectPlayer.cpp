@@ -81,7 +81,7 @@ BOOL CDlgSelectPlayer::OnInitDialog()
 	CDialog::OnInitDialog();
 	
   // fill players and controls combo boxes
-  for( INDEX iPC=0; iPC<8; iPC++)
+  for (INDEX iPC = 0; iPC < MAX_PLAYER_PROFILES; iPC++)
   {
     CTString strPlayer = _pGame->gm_apcPlayers[ iPC].pc_strName;
     m_comboAvailablePlayers.AddString(CString(strPlayer.ConstData()));

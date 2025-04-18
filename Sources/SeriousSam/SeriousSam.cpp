@@ -293,11 +293,13 @@ void StartNextDemo(void)
     // start intro
     _gmRunningGameMode = GM_NONE;
     _pGame->gm_aiStartLocalPlayers[0] = 0;
-    _pGame->gm_aiStartLocalPlayers[1] = -1;
-    _pGame->gm_aiStartLocalPlayers[2] = -1;
-    _pGame->gm_aiStartLocalPlayers[3] = -1;
+
+    for (INDEX iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+      _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+    }
+
     _pGame->gm_strNetworkProvider = "Local";
-    _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
+    _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY;
 
     _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
     _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_FLYOVER);
@@ -314,10 +316,10 @@ void StartNextDemo(void)
   } else {
     // start the demo
     _pGame->gm_StartSplitScreenCfg = CGame::SSC_OBSERVER;
-    _pGame->gm_aiStartLocalPlayers[0] = -1;
-    _pGame->gm_aiStartLocalPlayers[1] = -1;
-    _pGame->gm_aiStartLocalPlayers[2] = -1;
-    _pGame->gm_aiStartLocalPlayers[3] = -1;
+
+    for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+      _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+    }
     // play the demo
     _pGame->gm_strNetworkProvider = "Local";
     _gmRunningGameMode = GM_NONE;

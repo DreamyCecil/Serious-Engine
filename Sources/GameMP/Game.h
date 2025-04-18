@@ -32,7 +32,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <GameMP/PlayerSettings.h>
 #include <GameMP/SessionProperties.h>
 
-#define GAME_SHELL_VER "V012"
+// [Cecil] V012 -> V013 because of variable amounts of local players per client
+#define GAME_SHELL_VER "V013"
 
 #define AXIS_ACTIONS_CT 9
 #define SENSITIVITY_SLIDER_POSITIONS 25
@@ -142,6 +143,9 @@ public:
   virtual void Save_t( CTFileName fnFile); // throw char *
 };
 
+// [Cecil] TEMP: Maximum amount of player profiles per game
+#define MAX_PLAYER_PROFILES 8
+
 class CLocalPlayer
 {
 public:
@@ -192,8 +196,8 @@ public:
   CHighScoreEntry gm_ahseHighScores[HIGHSCORE_COUNT];
   INDEX gm_iLastSetHighScore;
 
-  CPlayerCharacter gm_apcPlayers[8];
-  CControls gm_actrlControls[8];
+  CPlayerCharacter gm_apcPlayers[MAX_PLAYER_PROFILES];
+  CControls gm_actrlControls[MAX_PLAYER_PROFILES];
   CControls gm_ctrlControlsExtra;
   INDEX gm_iSinglePlayer;
   INDEX gm_iWEDSinglePlayer;
@@ -201,10 +205,10 @@ public:
   enum SplitScreenCfg {
     SSC_DEDICATED = -2,
     SSC_OBSERVER = -1,
-    SSC_PLAY1 = 0,
-    SSC_PLAY2 = 1,
-    SSC_PLAY3 = 2,
-    SSC_PLAY4 = 3,
+
+    // [Cecil] Removed 1-4 types because local player amount can now be variable
+    // This value should now be used purely as offset
+    SSC_PLAY = 0,
   };
   enum SplitScreenCfg gm_MenuSplitScreenCfg;
   enum SplitScreenCfg gm_StartSplitScreenCfg;
@@ -227,10 +231,10 @@ public:
   void *gm_pvGlobalPlayerControls;
   // index of local player
   // (-1) if not active
-  INDEX gm_aiMenuLocalPlayers[ 4];
-  INDEX gm_aiStartLocalPlayers[ 4];
-  // players that are currently playing on local machine (up to 4)
-  CLocalPlayer gm_lpLocalPlayers[ 4];
+  INDEX gm_aiMenuLocalPlayers[NET_MAXLOCALPLAYERS];
+  INDEX gm_aiStartLocalPlayers[NET_MAXLOCALPLAYERS];
+  // players that are currently playing on local machine
+  CLocalPlayer gm_lpLocalPlayers[NET_MAXLOCALPLAYERS];
 
   // Operations
   void InitInternal(void);

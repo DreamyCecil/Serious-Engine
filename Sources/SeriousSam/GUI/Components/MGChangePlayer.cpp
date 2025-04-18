@@ -44,7 +44,7 @@ void CMGChangePlayer::SetPlayerText(void)
   INDEX iPlayer = _pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer];
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[iPlayer];
 
-  if (iPlayer<0 || iPlayer>7) {
+  if (iPlayer < 0 || iPlayer >= MAX_PLAYER_PROFILES) {
     mg_strText = "????";
   } else {
     mg_strText.PrintF(TRANS("Player %d: %s\n"), mg_iLocalPlayer + 1, pc.GetNameForPrinting().ConstData());

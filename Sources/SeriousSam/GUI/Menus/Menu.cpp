@@ -289,7 +289,7 @@ void InitializeMenus(void)
     TRANSLATERADIOARRAY(astrDifficultyRadioTexts);
     TRANSLATERADIOARRAY(astrMaxPlayersRadioTexts);
     TRANSLATERADIOARRAY(astrWeapon);
-    TRANSLATERADIOARRAY(astrSplitScreenRadioTexts);
+    //TRANSLATERADIOARRAY(astrSplitScreenRadioTexts);
 
     // initialize game type strings table
     InitGameTypes();

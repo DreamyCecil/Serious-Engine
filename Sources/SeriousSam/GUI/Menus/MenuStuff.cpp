@@ -84,12 +84,8 @@ CTString astrDifficultyRadioTexts[] = {
   RADIOTRANS("Mental"),
 };
 
-CTString astrSplitScreenRadioTexts[] = {
-  RADIOTRANS("1"),
-  RADIOTRANS("2 - split screen"),
-  RADIOTRANS("3 - split screen"),
-  RADIOTRANS("4 - split screen"),
-};
+// [Cecil] Dynamically created array
+CTString *astrSplitScreenRadioTexts = NULL;
 
 CTString astrDisplayPrefsRadioTexts[] = {
   RADIOTRANS("Speed"),

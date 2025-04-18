@@ -220,7 +220,7 @@ BOOL CLoadSaveMenu::ParseFile(const CTFileName &fnm, CTString &strName)
     if (fnm.FileExt() == ".ctl") {
       INDEX iCtl = -1;
       strName.ScanF("Controls%d", &iCtl);
-      if (iCtl >= 0 && iCtl <= 7) {
+      if (iCtl >= 0 && iCtl < MAX_PLAYER_PROFILES) {
         strName.PrintF(TRANS("From player: %s"), _pGame->gm_apcPlayers[iCtl].GetNameForPrinting().ConstData());
       }
     }

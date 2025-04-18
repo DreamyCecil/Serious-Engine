@@ -34,12 +34,14 @@ extern CTString _strModServerSelected;
 
 BOOL LSLoadSinglePlayer(const CTFileName &fnm)
 {
-  _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY1;
+  _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY;
 
   _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_iSinglePlayer;
-  _pGame->gm_aiStartLocalPlayers[1] = -1;
-  _pGame->gm_aiStartLocalPlayers[2] = -1;
-  _pGame->gm_aiStartLocalPlayers[3] = -1;
+
+  for (INDEX iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+  }
+
   _pGame->gm_strNetworkProvider = "Local";
   if (_pGame->LoadGame(fnm)) {
     StopMenus();
@@ -200,10 +202,9 @@ void StartNetworkLoadGame(void)
   //  _pGame->gm_MenuSplitScreenCfg = (enum CGame::SplitScreenCfg) mgSplitScreenCfg.mg_iSelected;
   _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
 
-  _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_aiMenuLocalPlayers[0];
-  _pGame->gm_aiStartLocalPlayers[1] = _pGame->gm_aiMenuLocalPlayers[1];
-  _pGame->gm_aiStartLocalPlayers[2] = _pGame->gm_aiMenuLocalPlayers[2];
-  _pGame->gm_aiStartLocalPlayers[3] = _pGame->gm_aiMenuLocalPlayers[3];
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
 
   _pGame->gm_strNetworkProvider = "TCP/IP Server";
   if (_pGame->LoadGame(_fnGameToLoad))
@@ -221,10 +222,9 @@ void StartSplitScreenGameLoad(void)
   //  _pGame->gm_MenuSplitScreenCfg = (enum CGame::SplitScreenCfg) mgSplitScreenCfg.mg_iSelected;
   _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
 
-  _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_aiMenuLocalPlayers[0];
-  _pGame->gm_aiStartLocalPlayers[1] = _pGame->gm_aiMenuLocalPlayers[1];
-  _pGame->gm_aiStartLocalPlayers[2] = _pGame->gm_aiMenuLocalPlayers[2];
-  _pGame->gm_aiStartLocalPlayers[3] = _pGame->gm_aiMenuLocalPlayers[3];
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
 
   _pGame->gm_strNetworkProvider = "Local";
   if (_pGame->LoadGame(_fnGameToLoad)) {

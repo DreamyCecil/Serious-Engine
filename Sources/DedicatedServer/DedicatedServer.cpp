@@ -148,10 +148,9 @@ void DisableLoadingHook(void)
 
 BOOL StartGame(CTString &strLevel)
 {
-  _pGame->gm_aiStartLocalPlayers[0] = -1;
-  _pGame->gm_aiStartLocalPlayers[1] = -1;
-  _pGame->gm_aiStartLocalPlayers[2] = -1;
-  _pGame->gm_aiStartLocalPlayers[3] = -1;
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+  }
 
   _pGame->gam_strCustomLevel = strLevel;
 

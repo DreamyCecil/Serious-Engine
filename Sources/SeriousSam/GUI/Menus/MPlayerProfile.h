@@ -33,7 +33,7 @@ public:
 
   CMGTitle gm_mgProfileTitle;
   CMGButton gm_mgNoLabel;
-  CMGButton gm_mgNumber[8];
+  CMGButton gm_mgNumber[MAX_PLAYER_PROFILES];
   CMGButton gm_mgNameLabel;
   CMGEdit gm_mgNameField;
   CMGButton gm_mgTeamLabel;

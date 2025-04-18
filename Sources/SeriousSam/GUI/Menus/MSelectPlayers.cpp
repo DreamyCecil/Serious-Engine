@@ -29,12 +29,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   gm_lhGadgets.AddTail(gd.mg_lnNode);
 
 extern CTString astrNoYes[2];
-extern CTString astrSplitScreenRadioTexts[4];
+extern CTString *astrSplitScreenRadioTexts;
 extern void SelectPlayersFillMenu(void);
 extern void SelectPlayersApplyMenu(void);
 
 void CSelectPlayersMenu::Initialize_t(void)
 {
+  // [Cecil] Create array of split screen values
+  const INDEX ctSplitScreen = NET_MAXLOCALPLAYERS;
+
+  if (astrSplitScreenRadioTexts == NULL) {
+    astrSplitScreenRadioTexts = new CTString[ctSplitScreen];
+    astrSplitScreenRadioTexts[0] = "1";
+
+    for (INDEX i = 1; i < ctSplitScreen; i++) {
+      astrSplitScreenRadioTexts[i].PrintF("%d - split screen", i + 1);
+    }
+  }
+
   // intialize split screen menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.mg_strText = TRANS("SELECT PLAYERS");
@@ -49,26 +61,18 @@ void CSelectPlayersMenu::Initialize_t(void)
   gm_mgObserver.mg_pOnTriggerChange = NULL;
 
   // split screen config trigger
-  TRIGGER_MG(gm_mgSplitScreenCfg, 2, gm_mgObserver, gm_mgPlayer0Change, TRANS("Number of players:"), astrSplitScreenRadioTexts);
+  TRIGGER_MG(gm_mgSplitScreenCfg, 2, gm_mgObserver, gm_amgChangePlayer[0], TRANS("Number of players:"), astrSplitScreenRadioTexts);
+  gm_mgSplitScreenCfg.mg_ctTexts = ctSplitScreen; // [Cecil] Amount of split screen values
+
   gm_mgSplitScreenCfg.mg_strTip = TRANS("choose more than one player to play in split screen");
   gm_mgSplitScreenCfg.mg_pOnTriggerChange = NULL;
 
-  gm_mgPlayer0Change.mg_iCenterI = -1;
-  gm_mgPlayer1Change.mg_iCenterI = -1;
-  gm_mgPlayer2Change.mg_iCenterI = -1;
-  gm_mgPlayer3Change.mg_iCenterI = -1;
-  gm_mgPlayer0Change.mg_boxOnScreen = BoxMediumMiddle(4);
-  gm_mgPlayer1Change.mg_boxOnScreen = BoxMediumMiddle(5);
-  gm_mgPlayer2Change.mg_boxOnScreen = BoxMediumMiddle(6);
-  gm_mgPlayer3Change.mg_boxOnScreen = BoxMediumMiddle(7);
-  gm_mgPlayer0Change.mg_strTip =
-    gm_mgPlayer1Change.mg_strTip =
-    gm_mgPlayer2Change.mg_strTip =
-    gm_mgPlayer3Change.mg_strTip = TRANS("select profile for this player");
-  gm_lhGadgets.AddTail(gm_mgPlayer0Change.mg_lnNode);
-  gm_lhGadgets.AddTail(gm_mgPlayer1Change.mg_lnNode);
-  gm_lhGadgets.AddTail(gm_mgPlayer2Change.mg_lnNode);
-  gm_lhGadgets.AddTail(gm_mgPlayer3Change.mg_lnNode);
+  for (INDEX iButton = 0; iButton < NET_MAXLOCALPLAYERS; iButton++) {
+    gm_amgChangePlayer[iButton].mg_iCenterI = -1;
+    gm_amgChangePlayer[iButton].mg_boxOnScreen = BoxMediumMiddle(4 + iButton);
+    gm_amgChangePlayer[iButton].mg_strTip = TRANS("select profile for this player");
+    gm_lhGadgets.AddTail(gm_amgChangePlayer[iButton].mg_lnNode);
+  }
 
   gm_mgNotes.mg_boxOnScreen = BoxMediumRow(9.0);
   gm_mgNotes.mg_bfsFontSize = BFS_MEDIUM;
@@ -99,7 +103,7 @@ void CSelectPlayersMenu::Initialize_t(void)
   mgSplitStartStart.mg_pActivatedFunction = &StartSelectPlayersMenuFromSplit;
   */
 
-  ADD_GADGET(gm_mgStart, BoxMediumRow(11), &gm_mgSplitScreenCfg, &gm_mgPlayer0Change, NULL, NULL, TRANS("START"));
+  ADD_GADGET(gm_mgStart, BoxMediumRow(11), &gm_mgSplitScreenCfg, &gm_amgChangePlayer[0], NULL, NULL, TRANS("START"));
   gm_mgStart.mg_bfsFontSize = BFS_LARGE;
   gm_mgStart.mg_iCenterI = 0;
 }

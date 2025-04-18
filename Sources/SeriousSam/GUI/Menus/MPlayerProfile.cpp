@@ -30,7 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   mg.mg_pmgUp = &gm_mgCustomizeControls; \
   mg.mg_pmgDown = &gm_mgNameField; \
   mg.mg_pActivatedFunction = &PPOnPlayerSelect; \
-  mg.mg_strText = #index; \
+  mg.mg_strText.PrintF("%d", index); \
   mg.mg_strTip = TRANS("select new currently active player"); \
   gm_lhGadgets.AddTail(mg.mg_lnNode);
 
@@ -52,15 +52,13 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgNoLabel.mg_iCenterI = -1;
   gm_lhGadgets.AddTail(gm_mgNoLabel.mg_lnNode);
 
-  ADD_SELECT_PLAYER_MG(0, gm_mgNumber[0], gm_mgNumber[7], gm_mgNumber[1], gm_mgNumber[0]);
-  ADD_SELECT_PLAYER_MG(1, gm_mgNumber[1], gm_mgNumber[0], gm_mgNumber[2], gm_mgNumber[1]);
-  ADD_SELECT_PLAYER_MG(2, gm_mgNumber[2], gm_mgNumber[1], gm_mgNumber[3], gm_mgNumber[2]);
-  ADD_SELECT_PLAYER_MG(3, gm_mgNumber[3], gm_mgNumber[2], gm_mgNumber[4], gm_mgNumber[3]);
-  ADD_SELECT_PLAYER_MG(4, gm_mgNumber[4], gm_mgNumber[3], gm_mgNumber[5], gm_mgNumber[4]);
-  ADD_SELECT_PLAYER_MG(5, gm_mgNumber[5], gm_mgNumber[4], gm_mgNumber[6], gm_mgNumber[5]);
-  ADD_SELECT_PLAYER_MG(6, gm_mgNumber[6], gm_mgNumber[5], gm_mgNumber[7], gm_mgNumber[6]);
-  ADD_SELECT_PLAYER_MG(7, gm_mgNumber[7], gm_mgNumber[6], gm_mgNumber[0], gm_mgNumber[7]);
-  gm_mgNumber[7].mg_pmgRight = &gm_mgModel;
+  for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
+    INDEX iPrev = (i + MAX_PLAYER_PROFILES - 1) % MAX_PLAYER_PROFILES;
+    INDEX iNext = (i                       + 1) % MAX_PLAYER_PROFILES;
+
+    ADD_SELECT_PLAYER_MG(i, gm_mgNumber[i], gm_mgNumber[iPrev], gm_mgNumber[iNext], gm_mgNumber[i]);
+  }
+  gm_mgNumber[MAX_PLAYER_PROFILES - 1].mg_pmgRight = &gm_mgModel;
 
   gm_mgNameLabel.mg_strText = TRANS("NAME:");
   gm_mgNameLabel.mg_boxOnScreen = BoxMediumLeft(1.25f);
@@ -180,16 +178,16 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
 {
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[iPlayer];
 
-  for (INDEX iPl = 0; iPl<8; iPl++)
+  for (INDEX iPl = 0; iPl < MAX_PLAYER_PROFILES; iPl++)
   {
     gm_mgNumber[iPl].mg_bHighlighted = FALSE;
   }
 
   gm_mgNumber[iPlayer].mg_bHighlighted = TRUE;
 
-  iPlayer = Clamp(iPlayer, INDEX(0), INDEX(7));
+  iPlayer = Clamp(iPlayer, INDEX(0), INDEX(MAX_PLAYER_PROFILES));
 
-  if (_iLocalPlayer >= 0 && _iLocalPlayer<4) {
+  if (_iLocalPlayer >= 0 && _iLocalPlayer < NET_MAXLOCALPLAYERS) {
     _pGame->gm_aiMenuLocalPlayers[_iLocalPlayer] = iPlayer;
   } else {
     _pGame->gm_iSinglePlayer = iPlayer;
@@ -274,15 +272,17 @@ void CPlayerProfileMenu::StartMenu(void)
   _pGUIM->gmPlayerProfile.gm_pmgSelectedByDefault = &gm_mgNameField;
 
   if (_gmRunningGameMode == GM_NONE || _gmRunningGameMode == GM_DEMO) {
-    for (INDEX i = 0; i<8; i++) {
+    for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
       gm_mgNumber[i].mg_bEnabled = TRUE;
     }
   } else {
-    for (INDEX i = 0; i<8; i++) {
+    for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
       gm_mgNumber[i].mg_bEnabled = FALSE;
     }
+
     INDEX iFirstEnabled = 0;
-    {for (INDEX ilp = 0; ilp<4; ilp++) {
+
+    for (INDEX ilp = 0; ilp < NET_MAXLOCALPLAYERS; ilp++) {
       CLocalPlayer &lp = _pGame->gm_lpLocalPlayers[ilp];
       if (lp.lp_bActive) {
         gm_mgNumber[lp.lp_iPlayer].mg_bEnabled = TRUE;
@@ -290,7 +290,8 @@ void CPlayerProfileMenu::StartMenu(void)
           iFirstEnabled = lp.lp_iPlayer;
         }
       }
-    }}
+    }
+
     // backup to first player in case current player is disabled
     if (!gm_mgNumber[*gm_piCurrentPlayer].mg_bEnabled) *gm_piCurrentPlayer = iFirstEnabled;
   }

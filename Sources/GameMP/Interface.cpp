@@ -179,10 +179,12 @@ void CGame::QuickTest(const CTFileName &fnMapName,
   // quick start game with the world
   gm_strNetworkProvider = "Local";
   gm_aiStartLocalPlayers[0] = gm_iWEDSinglePlayer;
-  gm_aiStartLocalPlayers[1] = -1;
-  gm_aiStartLocalPlayers[2] = -1;
-  gm_aiStartLocalPlayers[3] = -1;
-  gm_CurrentSplitScreenCfg = CGame::SSC_PLAY1;
+
+  for (INDEX iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    gm_aiStartLocalPlayers[iLocal] = -1;
+  }
+
+  gm_CurrentSplitScreenCfg = CGame::SSC_PLAY;
 
   // set properties for a quick start session
   CSessionProperties sp;
