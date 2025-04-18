@@ -173,8 +173,8 @@ void CMGKeyDefinition::Think(void)
 
       if (!bActivationKey) {
         // [Cecil] See if any controller buttons for binding activation are being held
-        if (_pInput->GetButtonState(FIRST_JOYBUTTON + SDL_GAMEPAD_BUTTON_SOUTH)
-         || _pInput->GetButtonState(FIRST_JOYBUTTON + SDL_GAMEPAD_BUTTON_START)) {
+        if (_pInput->GetButtonState(KID_FIRST_GAMEPAD + SDL_GAMEPAD_BUTTON_SOUTH)
+         || _pInput->GetButtonState(KID_FIRST_GAMEPAD + SDL_GAMEPAD_BUTTON_START)) {
           bActivationKey = TRUE;
         }
       }
@@ -190,7 +190,7 @@ void CMGKeyDefinition::Think(void)
     _pInput->GetInput(FALSE, INPUTDEVICES_ALL);
 
     // [Cecil] Include axes with buttons
-    for (INDEX iDik = 0; iDik < MAX_INPUT_ACTIONS; iDik++)
+    for (INDEX iDik = 0; iDik < _pInput->GetMaxInputActions(); iDik++)
     {
       if (_pInput->GetButtonState(iDik))
       {

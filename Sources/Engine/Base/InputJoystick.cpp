@@ -142,7 +142,7 @@ void CInput::OpenGameController(SDL_JoystickID iDevice)
   CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), ctAxes, SDL_GetNumJoystickButtons(pJoystick), SDL_GetNumJoystickHats(pJoystick));
 
   // Check whether all axes exist
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET + iArraySlot * SDL_GAMEPAD_AXIS_COUNT;
+  const INDEX iFirstAxis = KID_FIRST_AXIS + EIA_CONTROLLER_OFFSET + iArraySlot * SDL_GAMEPAD_AXIS_COUNT;
 
   for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
     InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
@@ -264,7 +264,7 @@ void CInput::ShutdownJoysticks(void) {
 // Adds axis and buttons for joysticks
 void CInput::AddJoystickAbbilities(void) {
   // Set proper names for axes
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET;
+  const INDEX iFirstAxis = KID_FIRST_AXIS + EIA_CONTROLLER_OFFSET;
 
   #define SET_AXIS_NAMES(_Axis, _Name, _Translated) \
     inp_aInputActions[iFirstAxis + _Axis].ida_strNameInt = _Name; \
@@ -283,11 +283,9 @@ void CInput::AddJoystickAbbilities(void) {
   SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_LEFT_TRIGGER,  "[L2]",              "[L2]");
   SET_AXIS_NAMES(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, "[R2]",              "[R2]");
 
-  const INDEX iFirstButton = FIRST_JOYBUTTON;
-
   #define SET_BUTTON_NAMES(_Button, _Name, _Translated) \
-    inp_aInputActions[iFirstButton + _Button].ida_strNameInt = _Name; \
-    inp_aInputActions[iFirstButton + _Button].ida_strNameTra = _Translated;
+    inp_aInputActions[KID_FIRST_GAMEPAD + _Button].ida_strNameInt = _Name; \
+    inp_aInputActions[KID_FIRST_GAMEPAD + _Button].ida_strNameTra = _Translated;
 
   // Set default names for all buttons
   for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
@@ -326,7 +324,7 @@ void CInput::AddJoystickAbbilities(void) {
 void CInput::ScanJoystick(INDEX iJoy) {
   SDL_Gamepad *pController = inp_aControllers[iJoy].handle;
 
-  const INDEX iFirstAxis = FIRST_AXIS_ACTION + EIA_CONTROLLER_OFFSET;
+  const INDEX iFirstAxis = KID_FIRST_AXIS + EIA_CONTROLLER_OFFSET;
 
   // For each available axis
   for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
@@ -352,17 +350,15 @@ void CInput::ScanJoystick(INDEX iJoy) {
     ida.ida_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
   }
 
-  const INDEX iFirstButton = FIRST_JOYBUTTON;
-
   // For each available button
   for (INDEX iButton = 0; iButton < SDL_GAMEPAD_BUTTON_COUNT; iButton++) {
     // Test if the button is pressed
     const BOOL bJoyButtonPressed = SDL_GetGamepadButton(pController, (SDL_GamepadButton)iButton);
 
     if (bJoyButtonPressed) {
-      inp_aInputActions[iFirstButton + iButton].ida_fReading = 1;
+      inp_aInputActions[KID_FIRST_GAMEPAD + iButton].ida_fReading = 1;
     } else {
-      inp_aInputActions[iFirstButton + iButton].ida_fReading = 0;
+      inp_aInputActions[KID_FIRST_GAMEPAD + iButton].ida_fReading = 0;
     }
   }
 };

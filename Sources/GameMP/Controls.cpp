@@ -145,19 +145,6 @@ void CControls::CalculateInfluencesForAllAxis(void)
   }
 }
 
-INDEX DIKForName( CTString strKeyName)
-{
-  if( strKeyName == "None") return KID_NONE;
-
-  // [Cecil] Include axes with buttons
-  for (INDEX i = 0; i < MAX_INPUT_ACTIONS; i++)
-  {
-    if (_pInput->GetButtonName(i) == strKeyName) return i;
-  }
-
-  return KID_NONE;
-}
-
 CTString ReadTextLine(CTStream &strm, const CTString &strKeyword, BOOL bTranslate)
 {
   CTString strLine;
@@ -209,9 +196,9 @@ void CControls::Load_t( CTFileName fnFile)
       CButtonAction &baNew = AddButtonAction();
       baNew.ba_strName = ReadTextLine(strmFile, "Name:", TRUE);
 
-      baNew.ba_iFirstKey = DIKForName( ReadTextLine(strmFile, "Key1:", FALSE));
-      baNew.ba_iSecondKey = DIKForName( ReadTextLine(strmFile, "Key2:", FALSE));
-      
+      baNew.ba_iFirstKey = _pInput->FindActionByName(ReadTextLine(strmFile, "Key1:", FALSE));
+      baNew.ba_iSecondKey = _pInput->FindActionByName(ReadTextLine(strmFile, "Key2:", FALSE));
+
       baNew.ba_strCommandLineWhenPressed = ReadTextLine(strmFile, "Pressed:", FALSE);
       baNew.ba_strCommandLineWhenReleased = ReadTextLine(strmFile, "Released:", FALSE);
 
@@ -228,28 +215,24 @@ void CControls::Load_t( CTFileName fnFile)
       FLOAT fDeadZone = 0;
       sscanf( achrLine, "%*[^\"]\"%1024[^\"]\"%*[^\"]\"%1024[^\"]\" %g %g %1024s %1024s",
               achrActionName, achrAxis, &fSensitivity, &fDeadZone, achrIfInverted, achrIfRelative);
+
       // find action axis
       INDEX iActionAxisNo = -1;
-      {for( INDEX iAxis=0; iAxis<AXIS_ACTIONS_CT; iAxis++){
-        if( CTString(_pGame->gm_astrAxisNames[iAxis]) == achrActionName)
-        {
+
+      for (INDEX iAxis = 0; iAxis < AXIS_ACTIONS_CT; iAxis++) {
+        if (_pGame->gm_astrAxisNames[iAxis] == achrActionName) {
           iActionAxisNo = iAxis;
           break;
         }
-      }}
+      }
+
       // find controller axis
-      INDEX iCtrlAxisNo = -1;
-      {for( INDEX iAxis=0; iAxis < EIA_MAX_ALL; iAxis++) {
-        if( _pInput->GetAxisName( iAxis) == achrAxis)
-        {
-          iCtrlAxisNo = iAxis;
-          break;
-        }
-      }}
+      EInputAxis eCtrlAxis = _pInput->FindAxisByName(achrAxis);
+
       // if valid axis found
-      if( iActionAxisNo!=-1 && iCtrlAxisNo!=-1) {
+      if (iActionAxisNo != -1) {
         // set it
-        ctrl_aaAxisActions[ iActionAxisNo].aa_iAxisAction = iCtrlAxisNo;
+        ctrl_aaAxisActions[ iActionAxisNo].aa_iAxisAction = eCtrlAxis;
         ctrl_aaAxisActions[ iActionAxisNo].aa_fSensitivity = fSensitivity;
         ctrl_aaAxisActions[ iActionAxisNo].aa_fDeadZone = fDeadZone;
         ctrl_aaAxisActions[ iActionAxisNo].aa_bInvert = ( CTString( "Inverted") == achrIfInverted);
@@ -402,20 +385,21 @@ void CControls::Save_t( CTFileName fnFile)
 }
 
 // check if these controls use any joystick
-BOOL CControls::UsesJoystick(void)
-{
-  // for each button
-  FOREACHINLIST( CButtonAction, ba_lnNode, ctrl_lhButtonActions, itba) {
+BOOL CControls::UsesJoystick(void) {
+  // Buttons
+  FOREACHINLIST(CButtonAction, ba_lnNode, ctrl_lhButtonActions, itba) {
     CButtonAction &ba = *itba;
-    if (ba.ba_iFirstKey>=FIRST_JOYBUTTON || ba.ba_iSecondKey>=FIRST_JOYBUTTON) {
+
+    if ((ba.ba_iFirstKey  >= KID_FIRST_GAMEPAD && ba.ba_iFirstKey  <= KID_LAST_GAMEPAD)
+     || (ba.ba_iSecondKey >= KID_FIRST_GAMEPAD && ba.ba_iSecondKey <= KID_LAST_GAMEPAD)) {
       return TRUE;
     }
   }
 
-    // write axis actions
-  for( INDEX iAxis=0; iAxis<AXIS_ACTIONS_CT; iAxis++)
-  {
-    if (ctrl_aaAxisActions[iAxis].aa_iAxisAction >= EIA_CONTROLLER_OFFSET) {
+  // Axes
+  for (INDEX iAxis = 0; iAxis < AXIS_ACTIONS_CT; iAxis++) {
+    if (ctrl_aaAxisActions[iAxis].aa_iAxisAction > EIA_CONTROLLER_OFFSET
+     && ctrl_aaAxisActions[iAxis].aa_iAxisAction < EIA_MAX_ALL) {
       return TRUE;
     }
   }

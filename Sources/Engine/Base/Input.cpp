@@ -477,9 +477,9 @@ CInput::CInput(void)
   inp_bPollJoysticks = FALSE;
 
   // [Cecil] Clear all actions
-  for (INDEX iAction = 0; iAction < MAX_INPUT_ACTIONS; iAction++) {
+  for (INDEX iAction = 0; iAction < GetMaxInputActions(); iAction++) {
     inp_aInputActions[iAction].ida_fReading = 0;
-    inp_aInputActions[iAction].ida_bExists = (iAction < FIRST_AXIS_ACTION); // Axes are disabled by default
+    inp_aInputActions[iAction].ida_bExists = (iAction < KID_FIRST_AXIS); // Axes are disabled by default
   }
 
 #if SE1_PREFER_SDL
@@ -502,7 +502,7 @@ CInput::~CInput() {
 void CInput::SetKeyNames( void)
 {
   // [Cecil] Reset names of all actions
-  for (INDEX iResetAction = 0; iResetAction < MAX_INPUT_ACTIONS; iResetAction++) {
+  for (INDEX iResetAction = 0; iResetAction < GetMaxInputActions(); iResetAction++) {
     inp_aInputActions[iResetAction].ida_strNameInt = "None";
     inp_aInputActions[iResetAction].ida_strNameTra = TRANS("None");
   }
@@ -524,8 +524,8 @@ void CInput::SetKeyNames( void)
 
   // Set names of mouse axes
   #define SET_AXIS_NAME(_Axis, _Name) \
-    inp_aInputActions[FIRST_AXIS_ACTION + _Axis].ida_strNameInt = _Name; \
-    inp_aInputActions[FIRST_AXIS_ACTION + _Axis].ida_strNameTra = TRANS(_Name);
+    inp_aInputActions[KID_FIRST_AXIS + _Axis].ida_strNameInt = _Name; \
+    inp_aInputActions[KID_FIRST_AXIS + _Axis].ida_strNameTra = TRANS(_Name);
 
   SET_AXIS_NAME(EIA_MOUSE_X, "mouse X");
   SET_AXIS_NAME(EIA_MOUSE_Y, "mouse Y");
@@ -793,14 +793,14 @@ void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
 
 // [Cecil] Clear states of all keys (as if they are all released)
 void CInput::ClearKeyInput(void) {
-  for (INDEX i = 0; i < MAX_OVERALL_BUTTONS; i++) {
+  for (INDEX i = 0; i < GetMaxInputButtons(); i++) {
     inp_aInputActions[i].ida_fReading = 0;
   }
 };
 
 // [Cecil] Clear movements of all axes (as if they are still)
 void CInput::ClearAxisInput(void) {
-  for (INDEX i = FIRST_AXIS_ACTION; i < MAX_INPUT_ACTIONS; i++) {
+  for (INDEX i = KID_FIRST_AXIS; i < GetMaxInputActions(); i++) {
     inp_aInputActions[i].ida_fReading = 0;
   }
 };
@@ -810,7 +810,7 @@ BOOL CInput::GetButtonState(INDEX iButtonNo) const {
   const InputDeviceAction &ida = inp_aInputActions[iButtonNo];
 
   // [Cecil] When using mouse axes as "buttons", check if they've been moved further than some amount of pixels
-  if (iButtonNo >= FIRST_AXIS_ACTION && iButtonNo < FIRST_AXIS_ACTION + EIA_MAX_MOUSE) {
+  if (iButtonNo >= KID_FIRST_AXIS && iButtonNo < KID_FIRST_AXIS + EIA_MAX_MOUSE) {
     extern INDEX inp_iMouseMovePressThreshold;
     return Abs(ida.ida_fReading) >= ClampDn(inp_iMouseMovePressThreshold, 1);
   }
@@ -818,10 +818,32 @@ BOOL CInput::GetButtonState(INDEX iButtonNo) const {
   // [Cecil] Set custom threshold for axes
   FLOAT fThreshold = 0.5f;
 
-  if (iButtonNo >= FIRST_AXIS_ACTION && iButtonNo < FIRST_AXIS_ACTION + EIA_MAX_ALL) {
+  if (iButtonNo >= KID_FIRST_AXIS && iButtonNo < KID_FIRST_AXIS + GetMaxInputAxes()) {
     extern FLOAT inp_fAxisPressThreshold;
     fThreshold = inp_fAxisPressThreshold;
   }
 
   return ida.IsActive(fThreshold);
+};
+
+// [Cecil] Find axis action index by its name
+EInputAxis CInput::FindAxisByName(const CTString &strName) {
+  if (strName == "None") return EIA_NONE;
+
+  for (INDEX i = EIA_NONE; i < GetMaxInputAxes(); i++) {
+    if (GetAxisName(i) == strName) return (EInputAxis)i;
+  }
+
+  return EIA_NONE;
+};
+
+// [Cecil] Find input action index by its name
+INDEX CInput::FindActionByName(const CTString &strName) {
+  if (strName == "None") return KID_NONE;
+
+  for (INDEX i = 0; i < GetMaxInputActions(); i++) {
+    if (GetButtonName(i) == strName) return i;
+  }
+
+  return KID_NONE;
 };

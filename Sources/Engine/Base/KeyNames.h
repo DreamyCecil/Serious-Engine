@@ -157,14 +157,22 @@ enum EInputKeyID {
   KID_MOUSEWHEELUP    = 0xC5,
   KID_MOUSEWHEELDOWN  = 0xC6,
 
-  // [Cecil] Number of reserved key IDs
-  KID_MAX = 0x100,
+  // [Cecil] Number of reserved key IDs for the keyboard & mouse
+  KID_MAX_KEYS = 0x100,
 
   // [Cecil] Special helper types
   KID_FIRST_KEYBOARD = KID_NONE + 1,
   KID_FIRST_MOUSE    = KID_MOUSE1,
   KID_LAST_KEYBOARD  = KID_FIRST_MOUSE - 1,
-  KID_LAST_MOUSE     = KID_MAX - 1,
+  KID_LAST_MOUSE     = KID_MAX_KEYS - 1,
+
+  // [Cecil] Types after the keyboard & mouse
+  KID_FIRST_GAMEPAD  = KID_MAX_KEYS,
+  KID_MAX_ALL        = KID_FIRST_GAMEPAD + SDL_GAMEPAD_BUTTON_COUNT,
+  KID_LAST_GAMEPAD   = KID_MAX_ALL - 1,
+
+  // [Cecil] The rest are defined by EInputAxis, which are always added to this value
+  KID_FIRST_AXIS     = KID_MAX_ALL,
 };
 
 // [Cecil] NOTE: These values are unused

@@ -44,7 +44,7 @@ void CCustomizeAxisMenu::Initialize_t(void)
   }
   gm_mgActionTrigger.mg_iSelected = 3;
 
-  INDEX ctAxis = _pInput->GetAvailableAxisCount();
+  INDEX ctAxis = _pInput->GetMaxInputAxes();
   gm_mgMountedTrigger.mg_astrTexts = new CTString[ctAxis];
   gm_mgMountedTrigger.mg_ctTexts = ctAxis;
   // for all axis actions that can be mounted

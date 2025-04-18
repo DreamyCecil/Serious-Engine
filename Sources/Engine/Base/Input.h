@@ -28,10 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // [Cecil] Maximum amount of supported devices of a specific type (mice, gamepads etc.)
 const INDEX _ctMaxInputDevices = 8;
 
-#define FIRST_JOYBUTTON     (KID_MAX)
-#define MAX_OVERALL_BUTTONS (FIRST_JOYBUTTON + SDL_GAMEPAD_BUTTON_COUNT)
-#define FIRST_AXIS_ACTION   (MAX_OVERALL_BUTTONS)
-
+// [Cecil] Axis actions that continue the input action list after all the keys
 enum EInputAxis {
   EIA_NONE = 0, // Invalid/no axis
   EIA_MOUSE_X,  // Mouse movement
@@ -46,8 +43,8 @@ enum EInputAxis {
   EIA_MAX_ALL = (EIA_MAX_MOUSE + SDL_GAMEPAD_AXIS_COUNT),
 };
 
-// All possible input actions
-#define MAX_INPUT_ACTIONS (FIRST_AXIS_ACTION + EIA_MAX_ALL)
+// [Cecil] All possible input actions
+#define MAX_INPUT_ACTIONS (KID_FIRST_AXIS + EIA_MAX_ALL)
 
 // [Cecil] Mask of connected devices of a specific type, such as different mice (up to 8)
 #define INPUTDEVICES_NONE        UBYTE(0)           // No devices
@@ -252,31 +249,35 @@ private:
 
 public:
 
-  // Get count of available axis
-  inline const INDEX GetAvailableAxisCount(void) const {
+  // Get amount of available axes
+  __forceinline const INDEX GetMaxInputAxes(void) const {
     return EIA_MAX_ALL;
   };
 
-  // Get count of available buttons
-  inline const INDEX GetAvailableButtonsCount(void) const {
-    // [Cecil] Include axes with buttons
+  // Get amount of available buttons
+  __forceinline const INDEX GetMaxInputButtons(void) const {
+    return KID_MAX_ALL;
+  };
+
+  // [Cecil] Get amount of available actions (buttons + axes)
+  __forceinline const INDEX GetMaxInputActions(void) const {
     return MAX_INPUT_ACTIONS;
   };
 
   // Get name of given axis
   inline const CTString &GetAxisName(INDEX iAxisNo) const {
     // [Cecil] Start past the button actions for compatibility
-    return inp_aInputActions[FIRST_AXIS_ACTION + iAxisNo].ida_strNameInt;
+    return inp_aInputActions[KID_FIRST_AXIS + iAxisNo].ida_strNameInt;
   };
 
   // Get translated name of given axis
   inline const CTString &GetAxisTransName(INDEX iAxisNo) const {
-    return inp_aInputActions[FIRST_AXIS_ACTION + iAxisNo].ida_strNameTra;
+    return inp_aInputActions[KID_FIRST_AXIS + iAxisNo].ida_strNameTra;
   };
 
   // Get current position of given axis
   inline FLOAT GetAxisValue(INDEX iAxisNo) const {
-    return inp_aInputActions[FIRST_AXIS_ACTION + iAxisNo].ida_fReading;
+    return inp_aInputActions[KID_FIRST_AXIS + iAxisNo].ida_fReading;
   };
 
   // Get given button's name
@@ -291,6 +292,12 @@ public:
 
   // Get given button's current state
   BOOL GetButtonState(INDEX iButtonNo) const;
+
+  // [Cecil] Find axis action index by its name
+  EInputAxis FindAxisByName(const CTString &strName);
+
+  // [Cecil] Find input action index by its name
+  INDEX FindActionByName(const CTString &strName);
 };
 
 // pointer to global input object

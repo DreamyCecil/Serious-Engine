@@ -314,9 +314,9 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   }
 
   // Just interpret values as normal
-  inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_X].ida_fReading = fMouseRelX;
-  inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Y].ida_fReading = fMouseRelY;
-  inp_aInputActions[FIRST_AXIS_ACTION + EIA_MOUSE_Z].ida_fReading = fDZ * MOUSEWHEEL_SCROLL_INTERVAL;
+  inp_aInputActions[KID_FIRST_AXIS + EIA_MOUSE_X].ida_fReading = fMouseRelX;
+  inp_aInputActions[KID_FIRST_AXIS + EIA_MOUSE_Y].ida_fReading = fMouseRelY;
+  inp_aInputActions[KID_FIRST_AXIS + EIA_MOUSE_Z].ida_fReading = fDZ * MOUSEWHEEL_SCROLL_INTERVAL;
 
 #if !SE1_PREFER_SDL
   // Set cursor position to the screen center
