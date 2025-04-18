@@ -61,16 +61,18 @@ HWND OS::Window::GetNativeHandle(void) {
 #endif
 
 // Setup controller events from button & axis actions
-static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
+static BOOL SetupControllerEvent(SDL_JoystickID iDevice, OS::SE1Event &event)
 {
-  GameController_t &ctrl = _pInput->inp_aControllers[iCtrl];
-  if (!ctrl.IsConnected()) return FALSE;
+  INDEX iCtrl;
+  CInput::GameController_t *pCtrl = _pInput->GetControllerByID(iDevice, &iCtrl);
+
+  if (pCtrl == NULL || !pCtrl->IsConnected()) return FALSE;
 
   static BOOL _abButtonStates[_ctMaxInputDevices * SDL_GAMEPAD_BUTTON_COUNT] = { 0 };
   const INDEX iFirstButton = iCtrl * SDL_GAMEPAD_BUTTON_COUNT;
 
   for (ULONG eButton = 0; eButton < SDL_GAMEPAD_BUTTON_COUNT; eButton++) {
-    const BOOL bHolding = SDL_GetGamepadButton(ctrl.handle, (SDL_GamepadButton)eButton);
+    const BOOL bHolding = SDL_GetGamepadButton(pCtrl->handle, (SDL_GamepadButton)eButton);
 
     const BOOL bJustPressed  = (bHolding && !_abButtonStates[iFirstButton + eButton]);
     const BOOL bJustReleased = (!bHolding && _abButtonStates[iFirstButton + eButton]);
@@ -100,7 +102,7 @@ static BOOL SetupControllerEvent(INDEX iCtrl, OS::SE1Event &event)
   // [Cecil] NOTE: This code only checks whether some axis has been moved past 50% in either direction
   // in order to determine when it has been significantly moved and reset
   for (ULONG eAxis = 0; eAxis < SDL_GAMEPAD_AXIS_COUNT; eAxis++) {
-    const SLONG slMotion = SDL_GetGamepadAxis(ctrl.handle, (SDL_GamepadAxis)eAxis);
+    const SLONG slMotion = SDL_GetGamepadAxis(pCtrl->handle, (SDL_GamepadAxis)eAxis);
 
     // Holding the axis past the half of the max value in either direction
     const BOOL bHolding = Abs(slMotion) > SDL_JOYSTICK_AXIS_MAX / 2;
@@ -216,9 +218,7 @@ BOOL OS::PollEvent(OS::SE1Event &event) {
       case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
       case SDL_EVENT_GAMEPAD_BUTTON_UP:
       case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
-        INDEX iSlot = _pInput->GetControllerSlotForDevice(sdlevent.gdevice.which);
-
-        if (iSlot != -1 && SetupControllerEvent(iSlot, event)) {
+        if (SetupControllerEvent(sdlevent.gdevice.which, event)) {
           return TRUE;
         }
       } break;

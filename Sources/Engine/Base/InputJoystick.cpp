@@ -21,16 +21,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 INDEX inp_bForceJoystickPolling = 0;
 INDEX inp_ctJoysticksAllowed = _ctMaxInputDevices;
 
-GameController_t::GameController_t() : handle(NULL), iInfoSlot(-1)
+CInput::GameController_t::GameController_t() : handle(NULL), iInfoSlot(-1)
 {
 };
 
-GameController_t::~GameController_t() {
+CInput::GameController_t::~GameController_t() {
   Disconnect();
 };
 
 // Open a game controller under some slot
-void GameController_t::Connect(SDL_JoystickID iDevice, INDEX iArraySlot) {
+void CInput::GameController_t::Connect(SDL_JoystickID iDevice, INDEX iArraySlot) {
   ASSERT(!IsConnected() && iInfoSlot == -1);
 
   handle = SDL_OpenGamepad(iDevice);
@@ -38,7 +38,7 @@ void GameController_t::Connect(SDL_JoystickID iDevice, INDEX iArraySlot) {
 };
 
 // Close an open game controller
-void GameController_t::Disconnect(void) {
+void CInput::GameController_t::Disconnect(void) {
   if (IsConnected()) {
     SDL_Joystick *pJoystick = SDL_GetGamepadJoystick(handle);
     const char *strName = SDL_GetJoystickName(pJoystick);
@@ -57,7 +57,7 @@ void GameController_t::Disconnect(void) {
 };
 
 // Check if the controller is connected
-BOOL GameController_t::IsConnected(void) {
+BOOL CInput::GameController_t::IsConnected(void) const {
   return (handle != NULL);
 };
 
@@ -160,12 +160,26 @@ void CInput::CloseGameController(SDL_JoystickID iDevice)
   }
 };
 
+// [Cecil] Retrieve a game controller by its device index
+CInput::GameController_t *CInput::GetControllerByID(SDL_JoystickID iDevice, INDEX *piSlot) {
+  INDEX i = GetControllerSlotForDevice(iDevice);
+  if (piSlot != NULL) *piSlot = i;
+
+  return GetControllerFromSlot(i);
+};
+
+// [Cecil] Retrieve a game controller by its array index
+CInput::GameController_t *CInput::GetControllerFromSlot(INDEX iSlot) {
+  if (iSlot < 0 || iSlot >= inp_aControllers.Count()) return NULL;
+  return &inp_aControllers[iSlot];
+};
+
 // [Cecil] Find controller slot from its device index
-INDEX CInput::GetControllerSlotForDevice(SDL_JoystickID iDevice) {
+INDEX CInput::GetControllerSlotForDevice(SDL_JoystickID iDevice) const {
   INDEX i = inp_aControllers.Count();
 
   while (--i >= 0) {
-    GameController_t &gctrl = inp_aControllers[i];
+    const GameController_t &gctrl = inp_aControllers[i];
 
     // No open controller
     if (!gctrl.IsConnected()) continue;

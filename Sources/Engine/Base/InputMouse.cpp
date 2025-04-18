@@ -46,18 +46,18 @@ static MouseInputData_t _midGlobal;
 
 #if SE1_PREFER_SDL
 
-MouseDevice_t::MouseDevice_t() : iID(0), iInfoSlot(-1), pmid(new MouseInputData_t)
+CInput::MouseDevice_t::MouseDevice_t() : iID(0), iInfoSlot(-1), pmid(new MouseInputData_t)
 {
   ResetMotion();
 };
 
-MouseDevice_t::~MouseDevice_t() {
+CInput::MouseDevice_t::~MouseDevice_t() {
   Disconnect();
   delete pmid;
 };
 
 // Open a mouse under some slot
-void MouseDevice_t::Connect(SDL_MouseID iDevice, INDEX iArraySlot) {
+void CInput::MouseDevice_t::Connect(SDL_MouseID iDevice, INDEX iArraySlot) {
   ASSERT(!IsConnected() && iInfoSlot == -1);
 
   iID = iDevice;
@@ -74,7 +74,7 @@ void MouseDevice_t::Connect(SDL_MouseID iDevice, INDEX iArraySlot) {
 };
 
 // Close an open mouse
-void MouseDevice_t::Disconnect(void) {
+void CInput::MouseDevice_t::Disconnect(void) {
   if (IsConnected()) {
     // [Cecil] FIXME: Doesn't work during SDL_EVENT_MOUSE_REMOVED
     /*const char *strName = SDL_GetMouseNameForID(iID);
@@ -91,7 +91,7 @@ void MouseDevice_t::Disconnect(void) {
 };
 
 // Check if the mouse is connected
-BOOL MouseDevice_t::IsConnected(void) {
+BOOL CInput::MouseDevice_t::IsConnected(void) const {
   return (iID != 0);
 };
 
@@ -162,12 +162,26 @@ void CInput::CloseMouse(SDL_MouseID iDevice) {
   }
 };
 
+// [Cecil] Retrieve a mouse device by its device index
+CInput::MouseDevice_t *CInput::GetMouseByID(SDL_JoystickID iDevice, INDEX *piSlot) {
+  INDEX i = GetMouseSlotForDevice(iDevice);
+  if (piSlot != NULL) *piSlot = i;
+
+  return GetMouseFromSlot(i);
+};
+
+// Retrieve a mouse device by its array index
+CInput::MouseDevice_t *CInput::GetMouseFromSlot(INDEX iSlot) {
+  if (iSlot < 0 || iSlot >= inp_aMice.Count()) return NULL;
+  return &inp_aMice[iSlot];
+};
+
 // Find mouse slot from its device index
-INDEX CInput::GetMouseSlotForDevice(SDL_MouseID iDevice) {
+INDEX CInput::GetMouseSlotForDevice(SDL_MouseID iDevice) const {
   INDEX i = inp_aMice.Count();
 
   while (--i >= 0) {
-    MouseDevice_t &mouse = inp_aMice[i];
+    const MouseDevice_t &mouse = inp_aMice[i];
 
     // No open mouse
     if (!mouse.IsConnected()) continue;

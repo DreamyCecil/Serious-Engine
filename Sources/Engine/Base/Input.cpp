@@ -281,12 +281,12 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
     } break;
 
     case SDL_EVENT_MOUSE_MOTION: {
-      INDEX iMouse = _pInput->GetMouseSlotForDevice(pEvent->motion.which);
-      if (iMouse == -1) break;
+      CInput::MouseDevice_t *pMouse = _pInput->GetMouseByID(pEvent->motion.which);
 
-      MouseDevice_t &mouse = _pInput->inp_aMice[iMouse];
-      mouse.vMotion[0] += pEvent->motion.xrel;
-      mouse.vMotion[1] += pEvent->motion.yrel;
+      if (pMouse != NULL) {
+        pMouse->vMotion[0] += pEvent->motion.xrel;
+        pMouse->vMotion[1] += pEvent->motion.yrel;
+      }
     } break;
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -326,11 +326,11 @@ int SE_PollEventForInput(SDL_Event *pEvent) {
       _fGlobalMouseScroll += fMotion;
 
       // Then do the same for a specific mouse device
-      INDEX iMouse = _pInput->GetMouseSlotForDevice(pEvent->motion.which);
-      if (iMouse == -1) break;
+      INDEX iMouse;
+      CInput::MouseDevice_t *pMouse = _pInput->GetMouseByID(pEvent->motion.which, &iMouse);
+      if (pMouse == NULL) break;
 
-      MouseDevice_t &mouse = _pInput->inp_aMice[iMouse];
-      FLOAT &fScroll = mouse.fScroll;
+      FLOAT &fScroll = pMouse->fScroll;
 
       // Reset wheel scroll if it's suddenly in the opposite direction
       if (Sgn(fScroll) != Sgn(fMotion)) {
@@ -465,7 +465,7 @@ LRESULT CALLBACK SendMsgProc(int nCode, WPARAM wParam, LPARAM lParam) {
 CInput *_pInput = NULL;
 
 // [Cecil]
-bool InputDeviceAction::IsActive(DOUBLE fThreshold) const {
+bool CInput::InputDeviceAction::IsActive(DOUBLE fThreshold) const {
   return Abs(ida_fReading) >= Clamp(fThreshold, 0.01, 1.0);
 };
 
