@@ -11641,7 +11641,7 @@ void CWorldEditorView::ApplyFreeModeControls( CPlacement3D &pl, ANGLE3D &aAbs, F
   FLOAT fRLR = 0.0f; // rotate left/right
   FLOAT fRUD = 0.0f; // rotate up/down
 
-  _pInput->GetInput(bPrescan, INPUTDEVICES_ALL);
+  _pInput->GetInput(bPrescan);
 
   if (!bPrescan) {
     // additional key indentifiers are not on

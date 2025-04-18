@@ -787,6 +787,9 @@ void CGame::GameHandleTimer(void)
 
     _pInput->SetJoyPolling(bAnyJoy);
 
+    // [Cecil] Get input from global devices
+    _pInput->GetGlobalInput(FALSE);
+
     // if game is currently active, and not paused
     if (gm_bGameOn && !_pNetwork->IsPaused() && !_pNetwork->GetLocalPause())
     {
@@ -799,11 +802,11 @@ void CGame::GameHandleTimer(void)
 
           // [Cecil] Get input from all devices if there's only one local player
           if (ctLocalPlayers <= 1) {
-            _pInput->GetInput(FALSE, INPUTDEVICES_ALL);
+            _pInput->GetInputFromDevices(FALSE, INPUTDEVICES_ALL);
 
           // Or from specific ones for this player
           } else {
-            _pInput->GetInput(FALSE, INPUTDEVICES_NUM(iLocal));
+            _pInput->GetInputFromDevices(FALSE, INPUTDEVICES_NUM(iLocal));
           }
 
           // copy its local controls to current controls
@@ -2172,6 +2175,11 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
     // check if input is enabled
     const BOOL bDoPrescan = _pInput->IsInputEnabled() && !_pNetwork->IsPaused() && !_pNetwork->GetLocalPause();
 
+    // [Cecil] Get pre-scanned input from global devices
+    if (bDoPrescan) {
+      _pInput->GetGlobalInput(TRUE);
+    }
+
     {
       // timer must not occur during prescanning
       CTSingleLock csTimer(&_pTimer->tm_csHooks, TRUE);
@@ -2187,11 +2195,11 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
         if (bDoPrescan) {
           // [Cecil] Get pre-scanned input from any mouse if there's only one local player
           if (ctLocalPlayers <= 1) {
-            _pInput->GetInput(TRUE, INPUTDEVICES_ALL);
+            _pInput->GetInputFromDevices(TRUE, INPUTDEVICES_ALL);
 
           // Or from a specific mouse for this player
           } else {
-            _pInput->GetInput(TRUE, INPUTDEVICES_NUM(iLocal));
+            _pInput->GetInputFromDevices(TRUE, INPUTDEVICES_NUM(iLocal));
           }
 
           // copy its local controls to current controls

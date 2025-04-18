@@ -153,23 +153,32 @@ public:
   // Test input activity
   BOOL IsInputEnabled( void) const { return inp_bInputEnabled; };
 
-  // Scan states of all available input sources
-  // [Cecil] And from specific devices
-  void GetInput(BOOL bPreScan, ULONG ulDevices = INPUTDEVICES_ALL);
+  // [Cecil] Scan states of global input sources without distinguishing them between specific devices
+  void GetGlobalInput(BOOL bPreScan);
+
+  // [Cecil] Scan states of all input sources that are distinguished between specific devices
+  // Even if all devices are included, it does not include "global" devices from GetGlobalInput()
+  void GetInputFromDevices(BOOL bPreScan, ULONG ulDevices);
+
+  // [Cecil] Scan states of all possible input sources from all devices (compatibility)
+  __forceinline void GetInput(BOOL bPreScan) {
+    GetGlobalInput(bPreScan);
+    GetInputFromDevices(bPreScan, INPUTDEVICES_ALL);
+  };
 
   // [Cecil] Get input from a specific mouse (-1 for any)
   void GetMouseInput(BOOL bPreScan, INDEX iMouse);
 
-  // [Cecil] Clear states of all keys (as if they are all released)
-  void ClearKeyInput(void);
+  // [Cecil] Clear states of all buttons (as if they are all released)
+  void ClearButtonInput(BOOL bKeyboards, BOOL bMice, BOOL bJoysticks);
 
   // [Cecil] Clear movements of all axes (as if they are still)
-  void ClearAxisInput(void);
+  void ClearAxisInput(BOOL bMice, BOOL bJoysticks);
 
   // [Cecil] Old method for compatibility
   __forceinline void ClearInput(void) {
-    ClearKeyInput();
-    ClearAxisInput();
+    ClearButtonInput(TRUE, TRUE, TRUE);
+    ClearAxisInput(TRUE, TRUE);
   };
 
 // [Cecil] Mouse interface

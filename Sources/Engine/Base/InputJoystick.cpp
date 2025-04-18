@@ -368,6 +368,10 @@ void CInput::PollJoysticks(ULONG ulDevices) {
   // Only if joystick polling is enabled or forced
   if (!inp_bPollJoysticks && !inp_bForceJoystickPolling) return;
 
+  // Reset previous states
+  ClearButtonInput(FALSE, FALSE, TRUE);
+  ClearAxisInput(FALSE, TRUE);
+
   // Scan states of all available joysticks
   const INDEX ct = inp_aControllers.Count();
 

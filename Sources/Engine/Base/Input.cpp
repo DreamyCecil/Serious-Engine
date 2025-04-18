@@ -688,23 +688,34 @@ void CInput::DisableInput(OS::Window hwnd)
   inp_bPollJoysticks = FALSE;
 }
 
-// Scan states of all available input sources
-// [Cecil] And from specific devices
-void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
-{
+// [Cecil] Scan states of global input sources without distinguishing them between specific devices
+void CInput::GetGlobalInput(BOOL bPreScan) {
   // Game input is disabled
   if (!inp_bInputEnabled) return;
 
   // Cannot pre-scan input every possible frame
   if (bPreScan && !inp_bAllowPrescan) return;
 
-  // [Cecil] Reset axis readings
-  ClearAxisInput();
+#if !SE1_PREFER_SDL
+  // Read mouse axes
+  ClearAxisInput(TRUE, FALSE);
+  GetMouseInput(bPreScan, -1);
+#endif
+};
+
+// [Cecil] Scan states of all input sources that are distinguished between specific devices
+// Even if all devices are included, it does not include "global" devices from GetGlobalInput()
+void CInput::GetInputFromDevices(BOOL bPreScan, ULONG ulDevices) {
+  // Game input is disabled
+  if (!inp_bInputEnabled) return;
+
+  // Cannot pre-scan input every possible frame
+  if (bPreScan && !inp_bAllowPrescan) return;
 
   // if not pre-scanning
   if (!bPreScan) {
     // [Cecil] Reset key readings
-    ClearKeyInput();
+    ClearButtonInput(TRUE, TRUE, FALSE);
 
     #if SE1_PREFER_SDL
       // [Cecil] SDL: Get current keyboard and mouse states just once
@@ -724,7 +735,7 @@ void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
 
       InputDeviceAction &idaKey = inp_aInputActions[eKID];
 
-      // [Cecil] FIXME: Asynchronous reading does not distinguish mouse buttons between different mice
+      // [Cecil] FIXME: Asynchronous reading does not distinguish buttons between different keyboards and mice
       // if reading async keystate
       if (inp_iKeyboardReadingMethod == 0) {
         // if there is a valid virtkey
@@ -774,8 +785,9 @@ void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
     PollJoysticks(ulDevices);
   }
 
-  // [Cecil] Read axes of specific mice
 #if SE1_PREFER_SDL
+  // [Cecil] Read axes of specific mice
+  ClearAxisInput(TRUE, FALSE);
   const INDEX ct = inp_aMice.Count();
 
   for (INDEX i = 0; i < ct; i++) {
@@ -783,25 +795,42 @@ void CInput::GetInput(BOOL bPreScan, ULONG ulDevices)
       GetMouseInput(bPreScan, i);
     }
   }
-
-#else
-  if (ulDevices & INPUTDEVICES_ALL) {
-    GetMouseInput(bPreScan, -1);
-  }
 #endif
 };
 
-// [Cecil] Clear states of all keys (as if they are all released)
-void CInput::ClearKeyInput(void) {
-  for (INDEX i = 0; i < GetMaxInputButtons(); i++) {
-    inp_aInputActions[i].ida_fReading = 0;
+// [Cecil] Clear states of all buttons (as if they are all released)
+void CInput::ClearButtonInput(BOOL bKeyboards, BOOL bMice, BOOL bJoysticks) {
+  if (bKeyboards) {
+    for (INDEX i = KID_FIRST_KEYBOARD; i <= KID_LAST_KEYBOARD; i++) {
+      inp_aInputActions[i].ida_fReading = 0;
+    }
+  }
+
+  if (bMice) {
+    for (INDEX i = KID_FIRST_MOUSE; i <= KID_LAST_MOUSE; i++) {
+      inp_aInputActions[i].ida_fReading = 0;
+    }
+  }
+
+  if (bJoysticks) {
+    for (INDEX i = KID_FIRST_GAMEPAD; i <= KID_LAST_GAMEPAD; i++) {
+      inp_aInputActions[i].ida_fReading = 0;
+    }
   }
 };
 
 // [Cecil] Clear movements of all axes (as if they are still)
-void CInput::ClearAxisInput(void) {
-  for (INDEX i = KID_FIRST_AXIS; i < GetMaxInputActions(); i++) {
-    inp_aInputActions[i].ida_fReading = 0;
+void CInput::ClearAxisInput(BOOL bMice, BOOL bJoysticks) {
+  if (bMice) {
+    for (INDEX i = 0; i < EIA_MAX_MOUSE; i++) {
+      inp_aInputActions[KID_FIRST_AXIS + i].ida_fReading = 0;
+    }
+  }
+
+  if (bJoysticks) {
+    for (INDEX i = EIA_CONTROLLER_OFFSET; i < EIA_MAX_ALL; i++) {
+      inp_aInputActions[KID_FIRST_AXIS + i].ida_fReading = 0;
+    }
   }
 };
 
