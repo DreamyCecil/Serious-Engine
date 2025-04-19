@@ -60,7 +60,8 @@ public:
     CTString ida_strNameTra; // Translated display name
 
     DOUBLE ida_fReading; // Current reading of the action (from -1 to +1)
-    BOOL ida_bExists; // Whether this action (controller axis) can be used
+
+    inline InputDeviceAction() : ida_fReading(0) {};
 
     // Whether the action is active (button is held / controller stick is fully to the side)
     bool IsActive(DOUBLE fThreshold = 0.5) const;
@@ -175,11 +176,8 @@ public:
   // [Cecil] Clear movements of all axes (as if they are still)
   void ClearAxisInput(BOOL bMice, BOOL bJoysticks);
 
-  // [Cecil] Old method for compatibility
-  __forceinline void ClearInput(void) {
-    ClearButtonInput(TRUE, TRUE, TRUE);
-    ClearAxisInput(TRUE, TRUE);
-  };
+  // [Cecil] Clear all available input actions at once
+  void ClearInput(void);
 
 // [Cecil] Mouse interface
 public:
@@ -264,7 +262,7 @@ private:
   void ScanJoystick(INDEX iJoy);
 
   // [Cecil] Get input from joysticks
-  void PollJoysticks(ULONG ulDevices);
+  void PollJoysticks(BOOL bPreScan, ULONG ulDevices);
 
 public:
 

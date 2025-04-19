@@ -476,12 +476,6 @@ CInput::CInput(void)
   inp_bInputEnabled = FALSE;
   inp_bPollJoysticks = FALSE;
 
-  // [Cecil] Clear all actions
-  for (INDEX iAction = 0; iAction < GetMaxInputActions(); iAction++) {
-    inp_aInputActions[iAction].ida_fReading = 0;
-    inp_aInputActions[iAction].ida_bExists = (iAction < KID_FIRST_AXIS); // Axes are disabled by default
-  }
-
 #if SE1_PREFER_SDL
   inp_csSDLInput.cs_eIndex = EThreadMutexType::E_MTX_INPUT; // [Cecil]
 #endif
@@ -780,10 +774,11 @@ void CInput::GetInputFromDevices(BOOL bPreScan, ULONG ulDevices) {
         if (eKID == KID_MOUSEWHEELDOWN) _abKeysPressed[KID_MOUSEWHEELDOWN] &= ~ubKeyPressedMask;
       }
     }
-
-    // [Cecil] Polling gamepads during pre-scanning does nothing anyway
-    PollJoysticks(ulDevices);
   }
+
+  // [Cecil] NOTE: Turns out you still need to poll gamepads during pre-scanning but only for resetting everything
+  // to 0 because non-pre-scanned values are still there and are being reused during pre-scanning, which is bad
+  PollJoysticks(bPreScan, ulDevices);
 
 #if SE1_PREFER_SDL
   // [Cecil] Read axes of specific mice
@@ -831,6 +826,13 @@ void CInput::ClearAxisInput(BOOL bMice, BOOL bJoysticks) {
     for (INDEX i = EIA_CONTROLLER_OFFSET; i < EIA_MAX_ALL; i++) {
       inp_aInputActions[KID_FIRST_AXIS + i].ida_fReading = 0;
     }
+  }
+};
+
+// [Cecil] Clear all available input actions at once
+void CInput::ClearInput(void) {
+  for (INDEX i = 0; i < GetMaxInputActions(); i++) {
+    inp_aInputActions[i].ida_fReading = 0;
   }
 };
 

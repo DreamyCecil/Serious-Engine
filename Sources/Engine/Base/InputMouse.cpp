@@ -245,6 +245,9 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   if (iMouse >= 0 && iMouse < inp_aMice.Count()) {
     MouseDevice_t &mouse = inp_aMice[iMouse];
 
+    // Ignore input from disconnected mice
+    if (!mouse.IsConnected()) return;
+
     // Get accumulated mouse motion and reset it
     fDX = mouse.vMotion[0];
     fDY = mouse.vMotion[1];

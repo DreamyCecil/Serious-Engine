@@ -775,8 +775,11 @@ void CGame::GameHandleTimer(void)
     // check if any active control uses joystick
     BOOL bAnyJoy = _ctrlCommonControls.UsesJoystick();
 
-    for (iLocal = 0; iLocal < ctLocalPlayers; iLocal++) {
-      INDEX iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_iPlayer;
+    for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+      CLocalPlayer &lp = gm_lpLocalPlayers[iLocal];
+      if (lp.lp_pplsPlayerSource == NULL) continue;
+
+      INDEX iCurrentPlayer = lp.lp_iPlayer;
       CControls &ctrls = gm_actrlControls[iCurrentPlayer];
 
       if (ctrls.UsesJoystick()) {
@@ -794,11 +797,13 @@ void CGame::GameHandleTimer(void)
     if (gm_bGameOn && !_pNetwork->IsPaused() && !_pNetwork->GetLocalPause())
     {
       // for all possible local players
-      for (iLocal = 0; iLocal < ctLocalPlayers; iLocal++) {
-        {
+      for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+        CLocalPlayer &lp = gm_lpLocalPlayers[iLocal];
+
+        if (lp.lp_pplsPlayerSource != NULL) {
           // publish player index to console
           ctl_iCurrentPlayerLocal = iLocal;
-          ctl_iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource->pls_Index;
+          ctl_iCurrentPlayer = lp.lp_pplsPlayerSource->pls_Index;
 
           // [Cecil] Get input from all devices if there's only one local player
           if (ctLocalPlayers <= 1) {
@@ -810,24 +815,18 @@ void CGame::GameHandleTimer(void)
           }
 
           // copy its local controls to current controls
-          memcpy(
-            ctl_pvPlayerControls,
-            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
-            ctl_slPlayerControlsSize);
+          memcpy(ctl_pvPlayerControls, lp.lp_ubPlayerControlsState, ctl_slPlayerControlsSize);
 
           // create action for it for this tick
           CPlayerAction paAction;
-          INDEX iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_iPlayer;
+          INDEX iCurrentPlayer = lp.lp_iPlayer;
           CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
           ctrls.CreateAction(gm_apcPlayers[iCurrentPlayer], paAction, FALSE);
           // set the action in the client source object
-          gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource->SetAction(paAction);
+          lp.lp_pplsPlayerSource->SetAction(paAction);
 
           // copy the local controls back
-          memcpy(
-            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
-            ctl_pvPlayerControls,
-            ctl_slPlayerControlsSize);
+          memcpy(lp.lp_ubPlayerControlsState, ctl_pvPlayerControls, ctl_slPlayerControlsSize);
         }
       }
 
@@ -2180,8 +2179,11 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
       CTSingleLock csTimer(&_pTimer->tm_csHooks, TRUE);
 
       // for each local player
-      for (iLocal = 0; iLocal < ctLocalPlayers; iLocal++) {
-        CPlayerSource *ppls = gm_lpLocalPlayers[iLocal].lp_pplsPlayerSource;
+      for (iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+        CLocalPlayer &lp = gm_lpLocalPlayers[iLocal];
+        CPlayerSource *ppls = lp.lp_pplsPlayerSource;
+
+        if (ppls == NULL) continue;
 
         // get local player entity
         apenViewers[ctViewers++] = _pNetwork->GetLocalPlayerEntity(ppls);
@@ -2198,22 +2200,16 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
           }
 
           // copy its local controls to current controls
-          memcpy(
-            ctl_pvPlayerControls,
-            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
-            ctl_slPlayerControlsSize);
+          memcpy(ctl_pvPlayerControls, lp.lp_ubPlayerControlsState, ctl_slPlayerControlsSize);
 
           // do prescanning
           CPlayerAction paPreAction;
-          INDEX iCurrentPlayer = gm_lpLocalPlayers[iLocal].lp_iPlayer;
+          INDEX iCurrentPlayer = lp.lp_iPlayer;
           CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
           ctrls.CreateAction(gm_apcPlayers[iCurrentPlayer], paPreAction, TRUE);
 
           // copy the local controls back
-          memcpy(
-            gm_lpLocalPlayers[iLocal].lp_ubPlayerControlsState,
-            ctl_pvPlayerControls,
-            ctl_slPlayerControlsSize);
+          memcpy(lp.lp_ubPlayerControlsState, ctl_pvPlayerControls, ctl_slPlayerControlsSize);
         }
       }
     }

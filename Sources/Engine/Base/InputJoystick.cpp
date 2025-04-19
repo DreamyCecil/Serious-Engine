@@ -140,14 +140,6 @@ void CInput::OpenGameController(SDL_JoystickID iDevice)
 
   int ctAxes = SDL_GetNumJoystickAxes(pJoystick);
   CPrintF(TRANS(" %d axes, %d buttons, %d hats\n"), ctAxes, SDL_GetNumJoystickButtons(pJoystick), SDL_GetNumJoystickHats(pJoystick));
-
-  // Check whether all axes exist
-  const INDEX iFirstAxis = KID_FIRST_AXIS + EIA_CONTROLLER_OFFSET + iArraySlot * SDL_GAMEPAD_AXIS_COUNT;
-
-  for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
-    InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
-    ida.ida_bExists = (iAxis < ctAxes);
-  }
 };
 
 // [Cecil] Close a game controller under some device index
@@ -324,21 +316,9 @@ void CInput::AddJoystickAbbilities(void) {
 void CInput::ScanJoystick(INDEX iJoy) {
   SDL_Gamepad *pController = inp_aControllers[iJoy].handle;
 
-  const INDEX iFirstAxis = KID_FIRST_AXIS + EIA_CONTROLLER_OFFSET;
-
   // For each available axis
   for (INDEX iAxis = 0; iAxis < SDL_GAMEPAD_AXIS_COUNT; iAxis++) {
-    InputDeviceAction &ida = inp_aInputActions[iFirstAxis + iAxis];
-
-    // If the axis is not present
-    if (!ida.ida_bExists) {
-      // Read as zero and skip to the next one
-      ida.ida_fReading = 0.0;
-      continue;
-    }
-
-    // [Cecil] FIXME: This code cannot be called during pre-scanning right now because it sets inconsistent rotation speed
-    // via gamepad axes. It should be multiplied the same way the mouse axes are handled during pre-scanning and outside of it
+    InputDeviceAction &ida = inp_aInputActions[KID_FIRST_AXIS + EIA_CONTROLLER_OFFSET + iAxis];
 
     // Read its state
     SLONG slAxisReading = SDL_GetGamepadAxis(pController, (SDL_GamepadAxis)iAxis);
@@ -357,27 +337,29 @@ void CInput::ScanJoystick(INDEX iJoy) {
 
     if (bJoyButtonPressed) {
       inp_aInputActions[KID_FIRST_GAMEPAD + iButton].ida_fReading = 1;
-    } else {
-      inp_aInputActions[KID_FIRST_GAMEPAD + iButton].ida_fReading = 0;
     }
   }
 };
 
 // [Cecil] Get input from joysticks
-void CInput::PollJoysticks(ULONG ulDevices) {
-  // Only if joystick polling is enabled or forced
-  if (!inp_bPollJoysticks && !inp_bForceJoystickPolling) return;
-
+void CInput::PollJoysticks(BOOL bPreScan, ULONG ulDevices) {
   // Reset previous states
   ClearButtonInput(FALSE, FALSE, TRUE);
   ClearAxisInput(FALSE, TRUE);
 
+  // [Cecil] FIXME: Gamepads cannot be polled during pre-scanning right now because it sets inconsistent rotation speed
+  // via gamepad axes. It probably needs to be handled the same way as the mouse axes in order to work properly
+  if (bPreScan) return;
+
+  // Only if joystick polling is enabled or forced
+  if (!inp_bPollJoysticks && !inp_bForceJoystickPolling) return;
+
   // Scan states of all available joysticks
-  const INDEX ct = inp_aControllers.Count();
+  const INDEX ct = ClampUp(inp_aControllers.Count(), inp_ctJoysticksAllowed);
 
   for (INDEX i = 0; i < ct; i++) {
     if (ulDevices & INPUTDEVICES_NUM(i)) {
-      if (!inp_aControllers[i].IsConnected() || i >= inp_ctJoysticksAllowed) continue;
+      if (!inp_aControllers[i].IsConnected()) continue;
 
       ScanJoystick(i);
     }
