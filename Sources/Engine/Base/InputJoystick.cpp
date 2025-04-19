@@ -327,7 +327,9 @@ void CInput::ScanJoystick(INDEX iJoy) {
     const DOUBLE fCurrentValue = DOUBLE(slAxisReading - SDL_JOYSTICK_AXIS_MIN);
     const DOUBLE fMaxValue = DOUBLE(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN);
 
-    ida.ida_fReading = fCurrentValue / fMaxValue * 2.0 - 1.0;
+    // [Cecil] Since it can read from multiple gamepads at once, add all their values together
+    const DOUBLE fReading = (fCurrentValue / fMaxValue * 2.0 - 1.0);
+    ida.ida_fReading = Clamp(ida.ida_fReading + fReading, -1.0, +1.0);
   }
 
   // For each available button

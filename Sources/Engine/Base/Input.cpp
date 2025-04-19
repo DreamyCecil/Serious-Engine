@@ -783,6 +783,13 @@ void CInput::GetInputFromDevices(BOOL bPreScan, ULONG ulDevices) {
 #if SE1_PREFER_SDL
   // [Cecil] Read axes of specific mice
   ClearAxisInput(TRUE, FALSE);
+
+  // Any of the mice
+  if (ulDevices == INPUTDEVICES_ALL) {
+    GetMouseInput(bPreScan, -1);
+    return;
+  }
+
   const INDEX ct = inp_aMice.Count();
 
   for (INDEX i = 0; i < ct; i++) {
