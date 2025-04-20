@@ -836,6 +836,8 @@ void CGame::GameHandleTimer(void)
     }
     // execute all button-action shell commands for common controls
     if (gm_bGameOn) {
+      // [Cecil] Poll input from any device for the common controls as well
+      _pInput->GetInputFromDevices(FALSE, INPUTDEVICES_ALL);
       _ctrlCommonControls.DoButtonActions();
     }
   }
