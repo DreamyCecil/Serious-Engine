@@ -163,6 +163,8 @@ public:
   void WriteBits(const void *pvBuffer, INDEX ctBits);
 
   /* Read an object from message. */
+  inline CNetworkMessage &operator>>(UQUAD &ull) { Read(&ull, sizeof(ull)); return *this; } // [Cecil]
+  inline CNetworkMessage &operator>>(SQUAD &sll) { Read(&sll, sizeof(sll)); return *this; } // [Cecil]
   inline CNetworkMessage &operator>>(float  &f) { Read( &f, sizeof( f)); return *this; }
   inline CNetworkMessage &operator>>(double &d) { Read( &d, sizeof( d)); return *this; } // [Cecil]
   inline CNetworkMessage &operator>>(ULONG &ul) { Read(&ul, sizeof(ul)); return *this; }
@@ -174,6 +176,8 @@ public:
   inline CNetworkMessage &operator>>(MESSAGETYPE &mt) { Read(&mt, sizeof(mt)); return *this; }
   CNetworkMessage &operator>>(CTString &str);
   /* Write an object into message. */
+  inline CNetworkMessage &operator<<(const UQUAD &ull) { Write(&ull, sizeof(ull)); return *this; } // [Cecil]
+  inline CNetworkMessage &operator<<(const SQUAD &sll) { Write(&sll, sizeof(sll)); return *this; } // [Cecil]
   inline CNetworkMessage &operator<<(const float  &f) { Write( &f, sizeof( f)); return *this; }
   inline CNetworkMessage &operator<<(const double &d) { Write( &d, sizeof( d)); return *this; }
   inline CNetworkMessage &operator<<(const ULONG &ul) { Write(&ul, sizeof(ul)); return *this; }

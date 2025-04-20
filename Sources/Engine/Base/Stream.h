@@ -165,6 +165,8 @@ public:
   inline CTString &GetDescription(void) { return strm_strStreamDescription; };
 
   /* Read an object from stream. */
+  inline CTStream &operator>>(UQUAD &ull) { Read_t(&ull, sizeof(ull)); return *this; } // [Cecil]
+  inline CTStream &operator>>(SQUAD &sll) { Read_t(&sll, sizeof(sll)); return *this; } // [Cecil]
   inline CTStream &operator>>(float  &f) { Read_t( &f, sizeof( f)); return *this; } // throw char *
   inline CTStream &operator>>(double &d) { Read_t( &d, sizeof( d)); return *this; } // throw char *
   inline CTStream &operator>>(ULONG &ul) { Read_t(&ul, sizeof(ul)); return *this; } // throw char *
@@ -177,6 +179,8 @@ public:
   inline CTStream &operator>>(BOOL   &b) { Read_t( &b, sizeof( b)); return *this; } // throw char *
 #endif
   /* Write an object into stream. */
+  inline CTStream &operator<<(const UQUAD &ull) { Write_t(&ull, sizeof(ull)); return *this; } // [Cecil]
+  inline CTStream &operator<<(const SQUAD &sll) { Write_t(&sll, sizeof(sll)); return *this; } // [Cecil]
   inline CTStream &operator<<(const float  &f) { Write_t( &f, sizeof( f)); return *this; } // throw char *
   inline CTStream &operator<<(const double &d) { Write_t( &d, sizeof( d)); return *this; } // throw char *
   inline CTStream &operator<<(const ULONG &ul) { Write_t(&ul, sizeof(ul)); return *this; } // throw char *
