@@ -296,7 +296,7 @@ void CProfileTimer::Report(char *&strBuffer,
       pt_tvElapsed.GetSeconds()/tvAppElapsed.GetSeconds()*100,
       pt_tvElapsed.GetSeconds()/tvModElapsed.GetSeconds()*100,
       pt_tvElapsed.GetSeconds()/ctAveragingCount*1000,
-      pt_tvElapsed.GetSeconds()/ctLocalAveraging*_pTimer->tm_llCPUSpeedHZ,
+      pt_tvElapsed.GetSeconds()/ctLocalAveraging*_pTimer->GetCPUSpeedHz(),
       pt_strAveragingName.ConstData(),
       pt_ctAveraging/ctAveragingCount
       );

@@ -74,8 +74,7 @@ public:
 // class for an object that maintains global timer(s)
 class ENGINE_API CTimer {
 // implementation:
-public:
-
+private:
   SQUAD tm_llCPUSpeedHZ;  // CPU speed in HZ
 
   CTimerValue tm_tvLastTimeOnTime;  // last time when timer was on time
@@ -96,12 +95,13 @@ public:
   ULONG tm_TimerID;       // windows timer ID
 #endif
 
-  CTCriticalSection tm_csHooks;   // access to timer hooks
   CListHead         tm_lhHooks;   // a list head for timer hooks
   BOOL tm_bInterrupt;       // set if interrupt is added
 
 // interface:
 public:
+  CTCriticalSection tm_csHooks;   // access to timer hooks
+
   // interval defining frequency of the game ticker
   static const TIME TickQuantum;     // 20 ticks per second
 
@@ -115,6 +115,11 @@ public:
   void RemHandler(CTimerHandler *pthOld);
   /* Handle timer handlers manually. */
   void HandleTimerHandlers(void);
+
+  // [Cecil] Retrieve calculated CPU speed in Hz
+  inline SQUAD GetCPUSpeedHz(void) const {
+    return tm_llCPUSpeedHZ;
+  };
 
   /* Set the real time tick value. */
   void SetRealTimeTick(TIME tNewRealTimeTick);
@@ -147,6 +152,9 @@ public:
 
   // [Cecil] Suspend current thread execution for some time (cross-platform replacement for Sleep() from Windows API)
   void Suspend(ULONG ulMilliseconds);
+
+  // [Cecil] Used to be CTimer_TimerFunc_internal() in global scope
+  static void TimerFunc_internal(void);
 };
 
 // pointer to global timer object

@@ -33,7 +33,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #include <x86intrin.h>
 #endif
 
-// [Cecil] TODO: Get rid of __rdtsc(), which is only used in a fallback scenario in GetCPUSpeedHz() in the entire codebase
+// [Cecil] TODO: Get rid of __rdtsc(), which is only used in a fallback scenario in DetermineCPUSpeedHz() in the entire codebase
 // Read the Pentium TimeStampCounter
 static inline SQUAD ReadTSC(void)
 {
@@ -95,7 +95,7 @@ const TIME CTimer::TickQuantum = TIME(1/20.0);    // 20 ticks per second
   Had to disable that, because it didn't work well (caused jerking) on 
   Win95 osr2 with no patches installed!
 */
-void CTimer_TimerFunc_internal(void)
+void CTimer::TimerFunc_internal(void)
 {
 // Access to stream operations might be invoked in timer handlers, but
 // this is disabled for now. Should also synchronize access to list of
@@ -159,7 +159,7 @@ Uint32 CTimer_TimerFunc(void *pUserData, SDL_TimerID iTimerID, Uint32 interval) 
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
   // handle all timers
-  CTimer_TimerFunc_internal();
+  CTimer::TimerFunc_internal();
 
   return interval;
 };
@@ -171,14 +171,14 @@ void __stdcall CTimer_TimerFunc(UINT uID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
   // handle all timers
-  CTimer_TimerFunc_internal();
+  CTimer::TimerFunc_internal();
 }
 
 #endif // SE1_PREFER_SDL
 #endif // !SE1_SINGLE_THREAD
 
 // [Cecil] Get CPU speed using platform-specific methods
-static BOOL GetCPUSpeedFromOS(SQUAD &llSpeedHz) {
+static BOOL DetermineCPUSpeedFromOS(SQUAD &llSpeedHz) {
 #if SE1_WIN
   // Get CPU speed from the Windows registry
   ULONG ulSpeedReg = 0;
@@ -235,13 +235,13 @@ static BOOL GetCPUSpeedFromOS(SQUAD &llSpeedHz) {
 #pragma inline_depth()
 
 // Get processor speed in Hertz
-static SQUAD GetCPUSpeedHz(void)
+static SQUAD DetermineCPUSpeedHz(void)
 {
   // [Cecil] NOTE: When measuring CPU speed manually with the code below, the value is always
   // going to be ever-so-slightly different compared to any other time, which is inconsistent.
   // So, I decided to just rely on the OS first and do manual measurements second as a fallback.
   SQUAD llPlatformHz;
-  if (GetCPUSpeedFromOS(llPlatformHz)) return llPlatformHz;
+  if (DetermineCPUSpeedFromOS(llPlatformHz)) return llPlatformHz;
 
   // [Cecil] Proceed with a manual measurement of the CPU speed if it couldn't be read from the OS
   CPrintF(TRANS("  CPU speed not found in registry, using calculated value\n\n"));
@@ -336,7 +336,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
     CSetPriority sp(REALTIME_PRIORITY_CLASS, THREAD_PRIORITY_TIME_CRITICAL);
   #endif // SE1_WIN
 
-    tm_llCPUSpeedHZ = GetCPUSpeedHz();
+    tm_llCPUSpeedHZ = DetermineCPUSpeedHz();
 
     // measure profiling errors and set epsilon corrections
     CProfileForm::CalibrateProfilingTimers();
@@ -444,7 +444,7 @@ void CTimer::HandleTimerHandlers(void)
   // access to the list of handlers must be locked
   CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
   // handle all timers
-  CTimer_TimerFunc_internal();
+  CTimer::TimerFunc_internal();
 }
 
 

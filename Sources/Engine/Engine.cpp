@@ -182,7 +182,7 @@ static void DetectCPU(void)
 
   CPrintF(TRANS("  MMX : %s\n"), bMMX ?strYes:strNo);
   CPrintF(TRANS("  CMOV: %s\n"), bCMOV?strYes:strNo);
-  CPrintF(TRANS("  Clock: %.0fMHz\n"), _pTimer->tm_llCPUSpeedHZ/1E6);
+  CPrintF(TRANS("  Clock: %.0fMHz\n"), _pTimer->GetCPUSpeedHz() / 1E6);
 
   sys_strCPUVendor = strVendor;
   sys_iCPUType = iType;
@@ -191,7 +191,7 @@ static void DetectCPU(void)
   sys_iCPUStepping = iStepping;
   sys_bCPUHasMMX = bMMX!=0;
   sys_bCPUHasCMOV = bCMOV!=0;
-  sys_iCPUMHz = INDEX(_pTimer->tm_llCPUSpeedHZ/1E6);
+  sys_iCPUMHz = INDEX(_pTimer->GetCPUSpeedHz() / 1E6);
 
   if( !bMMX) FatalError( TRANS("MMX support required but not present!"));
 }
@@ -452,7 +452,7 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
 
     while (fgets(strMemBuffer, sizeof(strMemBuffer), fMemInfo) != NULL)
     {
-      if (sscanf(strMemBuffer, "%*s %lld kB", &llMemory) != 1) continue;
+      if (sscanf(strMemBuffer, "%*s %" SDL_PRIs64 " kB", &llMemory) != 1) continue;
 
       #define KEY_MEMTOTAL  "MemTotal:"
       #define KEY_SWAPTOTAL "SwapTotal:"
