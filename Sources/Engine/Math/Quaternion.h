@@ -229,11 +229,13 @@ inline Quaternion<Type> Log(const Quaternion<Type> &q)
   return Quaternion<Type>(Type(0), q.q_x, q.q_y, q.q_z);
 }
 
+// [Cecil] Accept different types
 // spherical linear interpolation
-template<class Type>
-inline Quaternion<Type> Slerp(Type tT, 
+template<class TypeFactor, class Type>
+inline Quaternion<Type> Slerp(TypeFactor tT, 
   const Quaternion<Type> &q1, const Quaternion<Type> &q2)
 {
+  TypeFactor tFactor = Type(tT);
   Type tCos = q1%q2;
 
   Quaternion<Type> qTemp;
@@ -250,18 +252,20 @@ inline Quaternion<Type> Slerp(Type tT,
     // standard case (slerp)
     Type tAngle = acos(tCos);
     Type tSin   = sin(tAngle);
-    tF1 = sin((Type(1)-tT)*tAngle)/tSin;
-    tF2 = sin(tT*tAngle)/tSin;
+    tF1 = sin((Type(1) - tFactor) * tAngle) / tSin;
+    tF2 = sin(tFactor * tAngle) / tSin;
   } else {        
     // linear interpolation
-    tF1 = Type(1)-tT;
-    tF2 = tT;
+    tF1 = Type(1) - tFactor;
+    tF2 = tFactor;
   }
   return q1*tF1 + qTemp*tF2;
 }
+
+// [Cecil] Accept different types
 // spherical quadratic interpolation
-template<class Type>
-inline Quaternion<Type> Squad(Type tT, 
+template<class TypeFactor, class Type>
+inline Quaternion<Type> Squad(TypeFactor tT, 
   const Quaternion<Type> &q1, const Quaternion<Type> &q2,
   const Quaternion<Type> &qa, const Quaternion<Type> &qb)
 {

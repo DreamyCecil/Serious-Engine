@@ -1384,7 +1384,7 @@ CPlacement3D LerpPlacementsPrecise(const CPlacement3D &pl0, const CPlacement3D &
   FLOAT3D v0 = pl0.pl_PositionVector;
   FLOAT3D v1 = pl1.pl_PositionVector;
 
-  FLOATquat3D q = Slerp<FLOAT>(fRatio, q0, q1);
+  FLOATquat3D q = Slerp(fRatio, q0, q1);
   FLOAT3D v = Lerp(v0, v1, fRatio);
 
   pl.pl_PositionVector = v;
