@@ -57,7 +57,7 @@ static inline SQUAD ReadTSC(void)
 #pragma comment(lib, "winmm.lib")
 
 // current game time always valid for the currently active task
-static SE1_THREADLOCAL TIME _CurrentTickTimer = 0.0f;
+static SE1_THREADLOCAL TICK _tckCurrentTickTimer = 0; // [Cecil] Ticks instead of seconds
 
 // CTimer implementation
 
@@ -113,21 +113,21 @@ void CTimer_TimerFunc_internal(void)
 
     while (tmDiff >= _pTimer->TickQuantum) {
       _pTimer->tm_tvInitialUpkeep += tvTickQuantum;
-      _pTimer->tm_RealTimeTimer += _pTimer->TickQuantum;
+      _pTimer->tm_tckRealTimeTimer++;
       tmDiff -= _pTimer->TickQuantum;
     }
 
   #else
     // increment the 'real time' timer
-    _pTimer->tm_RealTimeTimer += _pTimer->TickQuantum;
+    _pTimer->tm_tckRealTimeTimer++;
   #endif // SE1_SINGLE_THREAD
 
     // get the current time for real and in ticks
     CTimerValue tvTimeNow = _pTimer->GetHighPrecisionTimer();
-    TIME        tmTickNow = _pTimer->tm_RealTimeTimer;
+    TICK tckTickNow = _pTimer->tm_tckRealTimeTimer;
     // calculate how long has passed since we have last been on time
     TIME tmTimeDelay = (TIME)(tvTimeNow - _pTimer->tm_tvLastTimeOnTime).GetSeconds();
-    TIME tmTickDelay =       (tmTickNow - _pTimer->tm_tmLastTickOnTime);
+    TICK tckTickDelay = (tckTickNow - _pTimer->tm_tckLastTickOnTime);
 
     _sfStats.StartTimer(CStatForm::STI_TIMER);
     // if we are keeping up to time (more or less)
@@ -143,7 +143,7 @@ void CTimer_TimerFunc_internal(void)
 
     // remember that we have been on time now
     _pTimer->tm_tvLastTimeOnTime = tvTimeNow;
-    _pTimer->tm_tmLastTickOnTime = tmTickNow;
+    _pTimer->tm_tckLastTickOnTime = tckTickDelay;
 
 //  } CTSTREAM_END;
 }
@@ -343,10 +343,10 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   }
 
   // clear counters
-  _CurrentTickTimer = TIME(0);
-  tm_RealTimeTimer = TIME(0);
+  _tckCurrentTickTimer = 0;
+  tm_tckRealTimeTimer = 0;
 
-  tm_tmLastTickOnTime = TIME(0);
+  tm_tckLastTickOnTime = 0;
   tm_tvLastTimeOnTime = GetHighPrecisionTimer();
   // disable lerping by default
   tm_fLerpFactor = 1.0f;
@@ -453,7 +453,7 @@ void CTimer::HandleTimerHandlers(void)
  */
 void CTimer::SetRealTimeTick(TIME tNewRealTimeTick)
 {
-  tm_RealTimeTimer = tNewRealTimeTick;
+  tm_tckRealTimeTimer = SecToTicks(tNewRealTimeTick);
 }
 
 /*
@@ -461,24 +461,24 @@ void CTimer::SetRealTimeTick(TIME tNewRealTimeTick)
  */
 TIME CTimer::GetRealTimeTick(void) const
 {
-  return tm_RealTimeTimer;
+  return TicksToSec(tm_tckRealTimeTimer);
 }
 
 /*
  * Set the current game tick used for time dependent tasks (animations etc.).
  */
 void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
-  _CurrentTickTimer = tNewCurrentTick;
+  _tckCurrentTickTimer = SecToTicks(tNewCurrentTick);
 }
 
 /*
  * Get current game time, always valid for the currently active task.
  */
 const TIME CTimer::CurrentTick(void) const {
-  return _CurrentTickTimer;
+  return TicksToSec(_tckCurrentTickTimer);
 }
 const TIME CTimer::GetLerpedCurrentTick(void) const {
-  return _CurrentTickTimer+tm_fLerpFactor*TickQuantum;
+  return TicksToSec(_tckCurrentTickTimer) + tm_fLerpFactor * TickQuantum;
 }
 // Set factor for lerping between ticks.
 void CTimer::SetLerp(FLOAT fFactor) // sets both primary and secondary

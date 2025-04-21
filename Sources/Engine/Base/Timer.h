@@ -79,9 +79,9 @@ public:
   SQUAD tm_llCPUSpeedHZ;  // CPU speed in HZ
 
   CTimerValue tm_tvLastTimeOnTime;  // last time when timer was on time
-  TIME        tm_tmLastTickOnTime;  // last tick when timer was on time
+  TICK tm_tckLastTickOnTime; // [Cecil] Last tick when timer was on time (seconds -> ticks)
 
-  TIME tm_RealTimeTimer;  // this really ticks at 1/TickQuantum frequency
+  TICK tm_tckRealTimeTimer; // [Cecil] This really ticks at 1/TickQuantum frequency (seconds -> ticks)
   FLOAT tm_fLerpFactor;   // factor used for lerping between frames
   FLOAT tm_fLerpFactor2;  // secondary lerp-factor used for unpredicted movement
 
@@ -151,6 +151,19 @@ public:
 
 // pointer to global timer object
 ENGINE_API extern CTimer *_pTimer;
+
+// [Cecil] Convert seconds to in-game ticks, rounded to the nearest integer
+inline TICK SecToTicks(TIME tm) {
+  const TIME fAddToRound = (tm < 0.0 ? -0.5 : 0.5);
+  return static_cast<TICK>(floor(tm / CTimer::TickQuantum + fAddToRound));
+};
+
+// [Cecil] Convert in-game ticks to seconds
+// The resulting time may not be the most correct due to the float value imprecision with larger numbers
+// but it's still better than rounding to the nearest second if the ticks are divided before the conversion
+inline TIME TicksToSec(TICK tck) {
+  return static_cast<TIME>(tck) * CTimer::TickQuantum;
+};
 
 // convert a time value to a printable string (hh:mm:ss)
 ENGINE_API CTString TimeToString(FLOAT fTime);
