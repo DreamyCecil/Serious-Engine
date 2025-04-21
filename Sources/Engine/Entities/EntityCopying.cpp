@@ -342,6 +342,11 @@ void CEntity::CopyOneProperty( CEntityProperty &epPropertySrc, CEntityProperty &
     // copy CPlacement3D
     COPYPROPERTY(CPlacement3D);
     break;
+
+  // [Cecil] New property types
+  case CEntityProperty::EPT_UQUAD:  COPYPROPERTY(UQUAD);  break;
+  case CEntityProperty::EPT_DOUBLE: COPYPROPERTY(DOUBLE); break;
+
   default:
     ASSERTALWAYS("Unknown property type");
   }

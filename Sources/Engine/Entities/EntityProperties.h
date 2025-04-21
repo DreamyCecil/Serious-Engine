@@ -95,7 +95,11 @@ public:
     EPT_FLOATMATRIX3D = 24,     // FLOATmatrix3D
     EPT_FLAGS = 25,             // flags - ULONG bitfield with names for each field
     EPT_MODELINSTANCE = 26,
-    // next free number: 27
+    // [Cecil] New property types
+    EPT_RESERVED1 = 27,         // DON'T USE
+    EPT_UQUAD = 28,             // 64-bit integer (identical to SSR)
+    EPT_DOUBLE = 29,            // 64-bit float value (identical to SSR)
+    // next free number: 30
   } ep_eptType;               // type of property
   CEntityPropertyEnumType *ep_pepetEnumType;   // if the type is EPT_ENUM or EPT_FLAGS
 

@@ -251,6 +251,18 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
         // skip CSoundObject
         SkipSoundObject_t(istrm);
         break;
+
+      // [Cecil] New property types
+      case CEntityProperty::EPT_UQUAD: {
+        UQUAD ullDummy;
+        istrm >> ullDummy;
+      } break;
+
+      case CEntityProperty::EPT_DOUBLE: {
+        DOUBLE dDummy;
+        istrm >> dDummy;
+      } break;
+
       default:
         ASSERTALWAYS("Unknown property type");
       }
@@ -398,6 +410,16 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
         // read CPlacement3D
         istrm.Read_t(&PROPERTY(pepProperty->ep_slOffset, CPlacement3D), sizeof(CPlacement3D));
         break;
+
+      // [Cecil] New property types
+      case CEntityProperty::EPT_UQUAD: {
+        istrm >> PROPERTY(pepProperty->ep_slOffset, UQUAD);
+      } break;
+
+      case CEntityProperty::EPT_DOUBLE: {
+        istrm >> PROPERTY(pepProperty->ep_slOffset, DOUBLE);
+      } break;
+
       default:
         ASSERTALWAYS("Unknown property type");
       }
@@ -543,6 +565,16 @@ void CEntity::WriteProperties_t(CTStream &ostrm) // throw char *
         // write CPlacement3D
         ostrm.Write_t(&PROPERTY(epProperty.ep_slOffset, CPlacement3D), sizeof(CPlacement3D));
         break;
+
+      // [Cecil] New property types
+      case CEntityProperty::EPT_UQUAD: {
+        ostrm << PROPERTY(epProperty.ep_slOffset, UQUAD);
+      } break;
+
+      case CEntityProperty::EPT_DOUBLE: {
+        ostrm << PROPERTY(epProperty.ep_slOffset, DOUBLE);
+      } break;
+
       default:
         ASSERTALWAYS("Unknown property type");
       }
