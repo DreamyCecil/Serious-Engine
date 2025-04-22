@@ -75,7 +75,7 @@ void CSessionSocket::Clear(void)
   sso_bVIP = FALSE;
   sso_bSendStream = FALSE;
   sso_tvMessageReceived.Clear();
-  sso_tmLastSyncReceived = -1.0f;
+  sso_tckLastSyncReceived = -1;
   sso_iLastSentSequence  = -1;
   sso_tvLastMessageSent.Clear();
   sso_tvLastPingSent.Clear();
@@ -96,7 +96,7 @@ void CSessionSocket::Activate(void)
   sso_bVIP = FALSE;
   sso_bSendStream = FALSE;
   sso_tvMessageReceived.Clear();
-  sso_tmLastSyncReceived = -1.0f;
+  sso_tckLastSyncReceived = -1;
   sso_iLastSentSequence  = -1;
   sso_tvLastMessageSent.Clear();
   sso_tvLastPingSent.Clear();
@@ -269,7 +269,7 @@ void CServer::Start_t(void)
   srv_ascChecks.Clear();
 
   // set up structures
-  srv_tmLastProcessedTick = 0.0f;
+  srv_tckLastProcessedTick = 0;
   srv_iLastProcessedSequence = -1; // -1 so that next one will be 0
   srv_bActive = TRUE;
   srv_bPause = FALSE;
@@ -333,7 +333,7 @@ void CServer::AddSyncCheck(const CSyncCheck &sc)
   // find the oldest one
   INDEX iOldest = 0;
   for (INDEX i=1; i<srv_ascChecks.Count(); i++) {
-    if (srv_ascChecks[i].sc_tmTick<srv_ascChecks[iOldest].sc_tmTick) {
+    if (srv_ascChecks[i].sc_tckTick < srv_ascChecks[iOldest].sc_tckTick) {
       iOldest=i;
     }
   }
@@ -343,18 +343,19 @@ void CServer::AddSyncCheck(const CSyncCheck &sc)
 }
 
 // try to find a sync check for given time in the buffer (-1==too old, 0==found, 1==toonew)
-INDEX CServer::FindSyncCheck(TIME tmTick, CSyncCheck &sc)
+INDEX CServer::FindSyncCheck(TICK tckTick, CSyncCheck &sc)
 {
   BOOL bHasEarlier = FALSE;
   BOOL bHasLater = FALSE;
   for (INDEX i=0; i<srv_ascChecks.Count(); i++) {
-    TIME tmInTable = srv_ascChecks[i].sc_tmTick;
-    if (tmInTable==tmTick) {
+    TICK tckInTable = srv_ascChecks[i].sc_tckTick;
+
+    if (tckInTable == tckTick) {
       sc = srv_ascChecks[i];
       return 0;
-    } else if (tmInTable<tmTick) {
+    } else if (tckInTable < tckTick) {
       bHasEarlier = TRUE;
-    } else if (tmInTable>tmTick) {
+    } else if (tckInTable > tckTick) {
       bHasLater = TRUE;
     }
   }
@@ -772,7 +773,7 @@ void CServer::ServerLoop(void)
 void CServer::MakeAllActions(void)
 {
   // increment tick counter and processed sequence
-  srv_tmLastProcessedTick += _pTimer->TickQuantum;
+  srv_tckLastProcessedTick++;
   srv_iLastProcessedSequence++;
 
   // for each active session
@@ -785,7 +786,7 @@ void CServer::MakeAllActions(void)
     // create all-actions message
     CNetworkStreamBlock nsbAllActions(MSG_SEQ_ALLACTIONS, srv_iLastProcessedSequence);
     // write time there
-    nsbAllActions<<srv_tmLastProcessedTick;
+    nsbAllActions << srv_tckLastProcessedTick;
 
     // for all players in game
     INDEX iPlayer = 0;
@@ -839,8 +840,8 @@ void CServer::ConnectLocalSessionState(INDEX iClient, CNetworkMessage &nm)
   sso.Activate();
   // prepare his initialization message
   CNetworkMessage nmInitMainServer(MSG_REP_CONNECTLOCALSESSIONSTATE);
-  nmInitMainServer<<srv_tmLastProcessedTick;
-  nmInitMainServer<<srv_iLastProcessedSequence;
+  nmInitMainServer << srv_tckLastProcessedTick;
+  nmInitMainServer << srv_iLastProcessedSequence;
   sso.sso_ctLocalPlayers = -1;
   nm>>sso.sso_sspParams;
 
@@ -1127,9 +1128,9 @@ void CServer::HandleAllForAClient(INDEX iClient)
   // if hasn't received sync check for too long
   extern INDEX ser_bKickOnSyncLate;
   if (ser_bKickOnSyncLate &&sso.sso_bActive &&
-      sso.sso_tmLastSyncReceived>0 && 
-      sso.sso_tmLastSyncReceived<_pNetwork->ga_sesSessionState.ses_tmLastSyncCheck -
-      (2*ser_iSyncCheckBuffer*_pNetwork->ga_sesSessionState.ses_tmSyncCheckFrequency)) {
+      sso.sso_tckLastSyncReceived > 0 && 
+      sso.sso_tckLastSyncReceived < _pNetwork->ga_sesSessionState.ses_tckLastSyncCheck -
+      SecToTicks(2 * ser_iSyncCheckBuffer * _pNetwork->ga_sesSessionState.ses_tmSyncCheckFrequency)) {
     SendDisconnectMessage(iClient, TRANS("No valid SYNCCHECK received for too long!"));
   }
 
@@ -1398,7 +1399,7 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
     
       // try to find it in buffer
       CSyncCheck scLocal;
-      INDEX iFound = FindSyncCheck(scRemote.sc_tmTick, scLocal);
+      INDEX iFound = FindSyncCheck(scRemote.sc_tckTick, scLocal);
       // if found
       if (iFound==0) {
         // flush the clients stream buffer up to that sequence 
@@ -1414,8 +1415,8 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
         } else if (scLocal.sc_ulCRC!=scRemote.sc_ulCRC) {
           sso.sso_ctBadSyncs++;
           if( ser_bReportSyncBad) {
-            CPrintF( TRANS("SYNCBAD: Client '%s', Sequence %d Tick %.2f - bad %d\n"), 
-              _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_iSequence , scRemote.sc_tmTick, sso.sso_ctBadSyncs);
+            CPrintF(TRANS("SYNCBAD: Client '%s', Sequence %d Tick %" SDL_PRIs64 " (%.2fs) - bad %d\n"), 
+              _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_iSequence, scRemote.sc_tckTick, TicksToSec(scRemote.sc_tckTick), sso.sso_ctBadSyncs);
           }
 
           // [Cecil] Request client to dump their local synchronization data
@@ -1436,33 +1437,33 @@ void CServer::Handle(INDEX iClient, CNetworkMessage &nmMessage)
         } else {
           sso.sso_ctBadSyncs = 0;
           if (ser_bReportSyncOK) {
-            CPrintF( TRANS("SYNCOK: Client '%s', Tick %.2f\n"), 
-              _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_tmTick);
+            CPrintF( TRANS("SYNCOK: Client '%s', Tick %" SDL_PRIs64 " (%.2fs)\n"),
+              _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_tckTick, TicksToSec(scRemote.sc_tckTick));
           }
         }
         
         // remember that this client has sent sync for that tick
-        if (srv_assoSessions[iClient].sso_tmLastSyncReceived<scRemote.sc_tmTick) {
-          srv_assoSessions[iClient].sso_tmLastSyncReceived = scRemote.sc_tmTick;
+        if (srv_assoSessions[iClient].sso_tckLastSyncReceived < scRemote.sc_tckTick) {
+          srv_assoSessions[iClient].sso_tckLastSyncReceived = scRemote.sc_tckTick;
         }
 
       // if too old
       } else if (iFound<0) {
         // report only if syncs are ok now (so that we don't report a bunch of late syncs on level change
-        if( ser_bReportSyncLate && srv_assoSessions[iClient].sso_tmLastSyncReceived>0) {
-          CPrintF( TRANS("SYNCLATE: Client '%s', Tick %.2f\n"), 
-            _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_tmTick);
+        if (ser_bReportSyncLate && srv_assoSessions[iClient].sso_tckLastSyncReceived > 0) {
+          CPrintF(TRANS("SYNCLATE: Client '%s', Tick %" SDL_PRIs64 " (%.2fs)\n"),
+            _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_tckTick, TicksToSec(scRemote.sc_tckTick));
         }
       // if too new
       } else {
         if( ser_bReportSyncEarly) {
-          CPrintF( TRANS("SYNCEARLY: Client '%s', Tick %.2f\n"), 
-            _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_tmTick);
+          CPrintF(TRANS("SYNCEARLY: Client '%s', Tick %" SDL_PRIs64 " (%.2fs)\n"),
+            _cmiComm.Server_GetClientName(iClient).ConstData(), scRemote.sc_tckTick, TicksToSec(scRemote.sc_tckTick));
         }
         // remember that this client has sent sync for that tick
         // (even though we cannot really check that it is valid)
-        if (srv_assoSessions[iClient].sso_tmLastSyncReceived<scRemote.sc_tmTick) {
-          srv_assoSessions[iClient].sso_tmLastSyncReceived = scRemote.sc_tmTick;
+        if (srv_assoSessions[iClient].sso_tckLastSyncReceived < scRemote.sc_tckTick) {
+          srv_assoSessions[iClient].sso_tckLastSyncReceived = scRemote.sc_tckTick;
         }
       }
 

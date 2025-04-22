@@ -306,7 +306,7 @@ static void NetworkInfo(void)
   CPrintF("Predictor entities existing: %d\n", _ctPredictorEntities);
   CPrintF("Server:\n");
   if (_pNetwork->ga_srvServer.srv_bActive) {
-    CPrintF("  last processed tick: %g\n", _pNetwork->ga_srvServer.srv_tmLastProcessedTick);
+    CPrintF("  last processed tick: %" SDL_PRIs64 "\n", _pNetwork->ga_srvServer.srv_tckLastProcessedTick);
     CPrintF("  last processed sequence: %d\n", _pNetwork->ga_srvServer.srv_iLastProcessedSequence);
     CPrintF("  players:\n");
     for(INDEX iplb=0; iplb<_pNetwork->ga_srvServer.srv_aplbPlayers.Count(); iplb++) {
@@ -343,7 +343,7 @@ static void NetworkInfo(void)
   CPrintF("  buffer: (%dblk)%dk\n",
     _pNetwork->ga_sesSessionState.ses_nsGameStream.GetUsedBlocks(),
     _pNetwork->ga_sesSessionState.ses_nsGameStream.GetUsedMemory()/1024);
-  CPrintF("  last processed tick: %g\n", _pNetwork->ga_sesSessionState.ses_tmLastProcessedTick);
+  CPrintF("  last processed tick: %" SDL_PRIs64 "\n", _pNetwork->ga_sesSessionState.ses_tckLastProcessedTick);
   CPrintF("  last processed sequence: %d\n", _pNetwork->ga_sesSessionState.ses_iLastProcessedSequence);
   CPrintF("  level change: %d\n", _pNetwork->ga_sesSessionState.ses_iLevel);
   for(INDEX iplt=0; iplt<_pNetwork->ga_sesSessionState.ses_apltPlayers.Count(); iplt++) {
@@ -1037,7 +1037,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   ga_fnmNextLevel = CTString("");
   try {
     // load the world
-    _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
+    _pTimer->SetGameTick(0); // must have timer at 0 while loading
     ga_pWorld->Load_t(fnmWorld);
     // delete all entities that don't fit given spawn flags
     ga_pWorld->FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
@@ -1188,11 +1188,11 @@ void CNetworkLibrary::Load_t(const CTFileName &fnmGame) // throw char *
 
   // set time and pause for server from the saved game
   ga_sesSessionState.ses_iLevel+=1;
-  ga_srvServer.srv_tmLastProcessedTick = ga_sesSessionState.ses_tmLastProcessedTick;
+  ga_srvServer.srv_tckLastProcessedTick = ga_sesSessionState.ses_tckLastProcessedTick;
   ga_srvServer.srv_iLastProcessedSequence = ga_sesSessionState.ses_iLastProcessedSequence;
   ga_srvServer.srv_bPause = ga_sesSessionState.ses_bPause;
   ga_srvServer.srv_bGameFinished = ga_sesSessionState.ses_bGameFinished;
-  ga_sesSessionState.ses_tmPredictionHeadTick = ga_sesSessionState.ses_tmLastProcessedTick;
+  ga_sesSessionState.ses_tckPredictionHeadTick = ga_sesSessionState.ses_tckLastProcessedTick;
   // start sending stream to local state
   ga_srvServer.srv_assoSessions[0].sso_bSendStream = TRUE;
   ga_srvServer.srv_assoSessions[0].sso_iLastSentSequence = ga_srvServer.srv_iLastProcessedSequence;
@@ -1364,7 +1364,7 @@ void CNetworkLibrary::StartDemoPlay_t(const CTFileName &fnDemo)  // throw char *
   ga_tvDemoTimerLastTime = _pTimer->GetHighPrecisionTimer();
 
   // demo sync seuqence must be initialized first time in ProcessGameStream()
-  ga_sesSessionState.ses_tmLastDemoSequence = -1.0f;
+  ga_sesSessionState.ses_tckLastDemoSequence = -1;
 
   // run main loop to let server process messages from host
   MainLoop();
@@ -1569,7 +1569,7 @@ void CNetworkLibrary::StopGame(void)
   _pwoCurrentWorld = NULL;
 
   // rewind the timer
-  _pTimer->SetCurrentTick(0.0f);
+  _pTimer->SetGameTick(0);
 }
 
 // initiate level change
@@ -1663,7 +1663,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
     // try to
     try {
       // load the new world
-      _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
+      _pTimer->SetGameTick(0); // must have timer at 0 while loading
       ga_pWorld->Load_t(ga_fnmNextLevel);
       // delete all entities that don't fit given spawn flags
       ga_pWorld->FilterEntitiesBySpawnFlags(ga_sesSessionState.ses_ulSpawnFlags);
@@ -1698,7 +1698,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
   }
 
   // set overdue timers in just loaded world to be due in current time
-  ga_pWorld->AdjustLateTimers(ga_sesSessionState.ses_tmLastProcessedTick);
+  ga_pWorld->AdjustLateTimers(ga_sesSessionState.ses_tckLastProcessedTick);
 
   // copy entities from temporary world into new one
   CEntitySelection senCrossed;
@@ -1739,7 +1739,7 @@ void CNetworkLibrary::ChangeLevel_internal(void)
       // reset message timer
       sso.sso_tvMessageReceived = SQUAD(-1);
       // reset sync timer
-      sso.sso_tmLastSyncReceived = -1.0f;
+      sso.sso_tckLastSyncReceived = -1;
     }}
     // for each player
     {for( INDEX iPlayer=0; iPlayer<NET_MAXGAMEPLAYERS; iPlayer++) {
@@ -2207,7 +2207,7 @@ CPlayerSource *CNetworkLibrary::GetPlayerSource(CEntity *pen)
 // get game time in currently running game
 TIME CNetworkLibrary::GetGameTime(void)
 {
-  return ga_sesSessionState.ses_tmLastProcessedTick;
+  return TicksToSec(ga_sesSessionState.ses_tckLastProcessedTick);
 }
 
 /*
@@ -2384,7 +2384,7 @@ extern void NET_MakeDefaultState_t(
 
     try {
       // load the world
-      _pTimer->SetCurrentTick(0.0f);  // must have timer at 0 while loading
+      _pTimer->SetGameTick(0); // must have timer at 0 while loading
       _pNetwork->ga_pWorld->Load_t(fnmWorld);
       // delete all entities that don't fit given spawn flags
       _pNetwork->ga_pWorld->FilterEntitiesBySpawnFlags(_pNetwork->ga_sesSessionState.ses_ulSpawnFlags);

@@ -42,12 +42,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // checksum of world snapshot at given point in time - used for sync-checking
 class CSyncCheck {
 public:
-  TIME sc_tmTick;       // time of snapshot
+  TICK sc_tckTick;      // [Cecil] Time of snapshot (seconds -> ticks)
   INDEX sc_iSequence;   // sequence number last processed before this checksum
   ULONG sc_ulCRC;       // checksum
   INDEX sc_iLevel;  // checksum of level filename
-  CSyncCheck(void) { sc_tmTick = -1.0f; sc_iSequence = -1; sc_ulCRC = 0; sc_iLevel = 0; }
-  void Clear(void) { sc_tmTick = -1.0f; sc_iSequence = -1; sc_ulCRC = 0; sc_iLevel = 0; }
+
+  CSyncCheck() {
+    Clear();
+  };
+
+  inline void Clear(void) {
+    sc_tckTick = -1;
+    sc_iSequence = -1;
+    sc_ulCRC = 0;
+    sc_iLevel = 0;
+  };
 };
 
 // info about an event that was predicted to happen
@@ -75,24 +84,26 @@ public:
   INDEX ses_iLastProcessedSequence;   // sequence of last processed stream block
   CNetworkStream ses_nsGameStream;    // stream of blocks from server
 
+  // [Cecil] Most fields have been changed from seconds (TIME) to ticks (TICK)
+
   // lerp params
   CTimerValue ses_tvInitialization;  // exact moment when the session state was started
-  TIME ses_tmInitializationTick;     // tick when the session state was started
+  TICK ses_tckInitializationTick;    // tick when the session state was started
   // secondary lerp params for non-predicted movement
   CTimerValue ses_tvInitialization2;  // exact moment when the session state was started
-  TIME ses_tmInitializationTick2;     // tick when the session state was started
+  TICK ses_tckInitializationTick2;    // tick when the session state was started
 
-  TIME ses_tmLastProcessedTick;      // last tick when all actions were processed
-  TIME ses_tmPredictionHeadTick;     // newest tick that was ever predicted
-  TIME ses_tmLastSyncCheck;          // last time sync-check was generated
-  TIME ses_tmLastPredictionProcessed;  // for determining when to do a new prediction cycle
+  TICK ses_tckLastProcessedTick;       // last tick when all actions were processed
+  TICK ses_tckPredictionHeadTick;      // newest tick that was ever predicted
+  TICK ses_tckLastSyncCheck;           // last time sync-check was generated
+  TICK ses_tckLastPredictionProcessed; // for determining when to do a new prediction cycle
 
   INDEX ses_iMissingSequence;       // first missing sequence
   CTimerValue ses_tvResendTime;     // timer for missing sequence retransmission
   TIME ses_tmResendTimeout;         // timeout value for increasing the request interval
   CTimerValue ses_tvMessageReceived;  // exact moment when the session state was started
 
-  TIME ses_tmLastDemoSequence;    // synchronization timer for demo playing
+  TICK ses_tckLastDemoSequence;   // synchronization timer for demo playing
   ULONG ses_ulRandomSeed;         // seed for pseudo-random number generation
   ULONG ses_ulSpawnFlags;         // spawn flags for current game
   TIME ses_tmSyncCheckFrequency;  // frequency of sync-checking
@@ -148,15 +159,15 @@ public:
   // do physics for a game tick
   void HandleMovers(void);
   // do thinking for a game tick
-  void HandleTimers(TIME tmCurrentTick);
+  void HandleTimers(TICK tckCurrentTick);
   // do a warm-up run of the world for a few ticks
   void WarmUpWorld(void);
   // reset random number generator (always randomizes to same sequence!)
   void ResetRND(void);
   /* Process a game tick. */
-  void ProcessGameTick(CNetworkMessage &nmMessage, TIME tmCurrentTick);
+  void ProcessGameTick(CNetworkMessage &nmMessage, TICK tckCurrentTick);
   /* Process a predicted game tick. */
-  void ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFactor, TIME tmCurrentTick);
+  void ProcessPredictedGameTick(INDEX iPredictionStep, FLOAT fFactor, TICK tckCurrentTick);
   /* Process a gamestream block. */
   void ProcessGameStreamBlock(CNetworkMessage &nmMessage);
   /* Process all eventual avaliable gamestream blocks. */

@@ -35,7 +35,7 @@ public:
   CStaticArray<CPlayerBuffer> srv_aplbPlayers;  // player buffers for all clients in game
   CStaticArray<CSyncCheck> srv_ascChecks;       // remembered sync checks
 
-  TIME srv_tmLastProcessedTick;            // last tick when all actions have been resent
+  TICK srv_tckLastProcessedTick;           // [Cecil] Last tick when all actions have been resent (seconds -> ticks)
   INDEX srv_iLastProcessedSequence;        // sequence of last sent game stream block
 
   BOOL srv_bPause;      // set while game is paused
@@ -76,7 +76,7 @@ public:
   // add a new sync check to buffer
   void AddSyncCheck(const CSyncCheck &sc);
   // try to find a sync check for given time in the buffer (-1==too old, 0==found, 1==toonew)
-  INDEX FindSyncCheck(TIME tmTick, CSyncCheck &sc);
+  INDEX FindSyncCheck(TICK tckTick, CSyncCheck &sc);
 
   // make allaction messages for one tick
   void MakeAllActions(void);

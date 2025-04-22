@@ -544,7 +544,7 @@ void CDlgCreateReflectionTexture::OnDestroy()
   }
 
   KillTimer( m_iTimerID);
-  _pTimer->SetCurrentTick( 0.0f);
+  _pTimer->SetGameTick(0);
 	CDialog::OnDestroy();
 }
 

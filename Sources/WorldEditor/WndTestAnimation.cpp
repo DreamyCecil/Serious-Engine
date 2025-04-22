@@ -124,7 +124,7 @@ void CWndTestAnimation::OnTimer(UINT_PTR nIDEvent)
 void CWndTestAnimation::OnDestroy() 
 {
   KillTimer( m_iTimerID);
-  _pTimer->SetCurrentTick( 0.0f);
+  _pTimer->SetGameTick(0);
 	CWnd::OnDestroy();
 
   if( m_pViewPort != NULL)

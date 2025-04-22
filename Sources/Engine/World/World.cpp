@@ -380,16 +380,18 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
 }
 
 // set overdue timers to be due in current time
-void CWorld::AdjustLateTimers(TIME tmCurrentTime)
+void CWorld::AdjustLateTimers(TICK tckCurrentTime)
 {
   // must be in 24bit mode when managing entities
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
+
+  const TIME tmCurrentTime = TicksToSec(tckCurrentTime); // [Cecil] TEMP
 
   // for each entity in the thinker list
   FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
     CRationalEntity &en = *iten;
     // if the entity in list is overdue
-    if (en.en_timeTimer<tmCurrentTime) {
+    if (en.en_timeTimer < tmCurrentTime) {
       // set it to current time
       en.en_timeTimer = tmCurrentTime;
     }
@@ -984,7 +986,7 @@ void CWorld::MarkForPrediction(void)
     }
   }
 
-  TIME tmNow = _pNetwork->ga_sesSessionState.ses_tmPredictionHeadTick;
+  const TICK tckNow = _pNetwork->ga_sesSessionState.ses_tckPredictionHeadTick;
 
   // for each predictable entity
   {FOREACHINDYNAMICCONTAINER(wo_cenPredictable, CEntity, iten){
@@ -993,9 +995,10 @@ void CWorld::MarkForPrediction(void)
     ASSERT(en.GetRenderType()!=CEntity::RT_VOID);
 
     // get its upper time limit for prediction
-    TIME tmLimit = en.GetPredictionTime();
+    const TICK tckLimit = SecToTicks(en.GetPredictionTime());
+
     // if now inside time prediction interval
-    if (tmNow<tmLimit) {
+    if (tckNow < tckLimit) {
       // add it to prediction
       iten->AddToPrediction();
       continue;

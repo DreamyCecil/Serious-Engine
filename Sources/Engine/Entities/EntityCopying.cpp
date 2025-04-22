@@ -646,8 +646,8 @@ void CWorld::CopyEntitiesToPredictors(CDynamicContainer<CEntity> &cenToCopy)
   }
 
   // clear current tick to prevent timer setting from assertions
-  TIME tmCurrentTickOld = _pTimer->CurrentTick();
-  _pTimer->SetCurrentTick(0.0f);
+  const TICK tckCurrentTickOld = _pTimer->GetGameTick();
+  _pTimer->SetGameTick(0);
 
   ULONG ulCopyFlags = COPY_REMAP|COPY_PREDICTOR;
 
@@ -748,5 +748,5 @@ void CWorld::CopyEntitiesToPredictors(CDynamicContainer<CEntity> &cenToCopy)
   _bRemapPointersToNULLs = TRUE;
 
   // return current tick
-  _pTimer->SetCurrentTick(tmCurrentTickOld);
+  _pTimer->SetGameTick(tckCurrentTickOld);
 }

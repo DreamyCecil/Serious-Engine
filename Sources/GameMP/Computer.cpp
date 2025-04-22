@@ -1227,13 +1227,14 @@ void CGame::ComputerRender(CDrawPort *pdp)
     }
   }
 
-  TIME tmOld = _pTimer->CurrentTick();
-  TIME fLerpOld = _pTimer->GetLerpFactor();
+  const TICK tckOld = _pTimer->GetGameTick();
+  const TIME fLerpOld = _pTimer->GetLerpFactor();
 
-  TIME fSec = (TIME)tvNow.GetSeconds();
-  TIME tmTick = floor(fSec / _pTimer->TickQuantum) * _pTimer->TickQuantum;
-  TIME fLerp = (fSec - tmTick) / _pTimer->TickQuantum;
-  _pTimer->SetCurrentTick(tmTick);
+  const TIME fSec = (TIME)tvNow.GetSeconds();
+  const TICK tckTicks = SecToTicksDn(fSec);
+  const TIME tmExactTick = TicksToSec(tckTicks);
+  const TIME fLerp = (fSec - tmExactTick) / _pTimer->TickQuantum;
+  _pTimer->SetGameTick(tckTicks);
   _pTimer->SetLerp(fLerp);
 
   LCDPrepare(1.0f);//ClampUp(fComputerFadeValue*10,1.0f));
@@ -1347,7 +1348,7 @@ void CGame::ComputerRender(CDrawPort *pdp)
   }
 #endif
 
-  _pTimer->SetCurrentTick(tmOld);
+  _pTimer->SetGameTick(tckOld);
   _pTimer->SetLerp(fLerpOld);
 }
 

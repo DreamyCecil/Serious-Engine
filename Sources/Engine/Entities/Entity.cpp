@@ -630,7 +630,7 @@ BOOL CEntity::IsPredictionHead(void)
   
   // if predictor, but not currently in the last step of prediction
   if ((en_ulFlags&ENF_PREDICTOR) && 
-    _pTimer->CurrentTick()<=_pNetwork->ga_sesSessionState.ses_tmPredictionHeadTick) {
+    _pTimer->GetGameTick() <= _pNetwork->ga_sesSessionState.ses_tckPredictionHeadTick) {
     // it cannot be head of the chain
     return FALSE;
   }
