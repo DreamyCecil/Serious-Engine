@@ -441,9 +441,11 @@ public:
   // print stack to debug output
   virtual const char *PrintStackDebug(void);
 
-  void SetTimerAt(TIME timeAbsolute) {};
-  void SetTimerAfter(TIME timeDelta) {};
-  void UnsetTimer(void) {};
+  // [Cecil] TEMP: Commented for now because it makes no difference for vanilla entities and
+  // they should never be called for entities that aren't derived from CRationalEntity anyway
+  //void SetTimerAt(TIME timeAbsolute) {};
+  //void SetTimerAfter(TIME timeDelta) {};
+  //void UnsetTimer(void) {};
 
   // return opacity of the entity (1 is default)
   virtual FLOAT GetOpacity(void) { return 1.0f; };
@@ -780,7 +782,7 @@ public:
 };
 
 // flag for entities that are not waiting for thinking
-#define THINKTIME_NEVER (-1.f)
+#define THINKTIME_NEVER TICK(-1)
 
 /*
  * Entity that can percept things and make decisions (one that has its own AI).
@@ -789,7 +791,7 @@ class ENGINE_API CRationalEntity : public CLiveEntity {
 public:
   CListNode en_lnInTimers;    // node in list of waiting timers - sorted by wait time
 public:
-  TIME en_timeTimer;          // moment in time this entity waits for timer
+  TICK en_tckTimer; // [Cecil] Moment in time this entity waits for timer (now in ticks instead of seconds)
 
   CStaticStackArray<SLONG> en_stslStateStack; // stack of states for entity AI
 
@@ -824,12 +826,27 @@ public:
   // print stack to debug output
   const char *PrintStackDebug(void);
 
-  /* Set next timer event to occur at given moment time. */
-  void SetTimerAt(TIME timeAbsolute);
-  /* Set next timer event to occur after given time has elapsed. */
-  void SetTimerAfter(TIME timeDelta);
+  // [Cecil] Set next timer event to occur at a given tick
+  void SetTickAt(TICK tckAbsolute);
+
+  // [Cecil] Set next timer event to occur after a given time in ticks has elapsed
+  void SetTickAfter(TICK tckDelta);
+
   /* Cancel eventual pending timer. */
   void UnsetTimer(void);
+
+  // [Cecil] Deprecated wrappers for new tick functions
+  __forceinline void SetTimerAt(TIME tm) {
+    if (tm == THINKTIME_NEVER) {
+      SetTickAt(THINKTIME_NEVER);
+    } else {
+      SetTickAt(SecToTicks(tm));
+    }
+  };
+
+  __forceinline void SetTimerAfter(TIME tm) {
+    SetTickAfter(SecToTicks(tm));
+  };
 
   /* Called after creating and setting its properties. */
   virtual void OnInitialize(const CEntityEvent &eeInput);

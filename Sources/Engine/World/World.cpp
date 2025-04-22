@@ -359,7 +359,7 @@ CPlayerEntity *CWorld::FindEntityWithCharacter(CPlayerCharacter &pcCharacter)
  */
 void CWorld::AddTimer(CRationalEntity *penThinker)
 {
-  ASSERT(penThinker->en_timeTimer>_pTimer->CurrentTick());
+  ASSERT(penThinker->en_tckTimer > _pTimer->GetGameTick());
   ASSERT(GetFPUPrecision()==FPT_24BIT);
 
   // if the entity is already in the list
@@ -370,7 +370,7 @@ void CWorld::AddTimer(CRationalEntity *penThinker)
   // for each entity in the thinker list
   FOREACHINLISTKEEP(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
     // if the entity in list has greater or same think time than the one to add
-    if (iten->en_timeTimer>=penThinker->en_timeTimer) {
+    if (iten->en_tckTimer >= penThinker->en_tckTimer) {
       // stop searching
       break;
     }
@@ -385,15 +385,13 @@ void CWorld::AdjustLateTimers(TICK tckCurrentTime)
   // must be in 24bit mode when managing entities
   CSetFPUPrecision FPUPrecision(FPT_24BIT);
 
-  const TIME tmCurrentTime = TicksToSec(tckCurrentTime); // [Cecil] TEMP
-
   // for each entity in the thinker list
   FOREACHINLIST(CRationalEntity, en_lnInTimers, wo_lhTimers, iten) {
     CRationalEntity &en = *iten;
     // if the entity in list is overdue
-    if (en.en_timeTimer < tmCurrentTime) {
+    if (en.en_tckTimer < tckCurrentTime) {
       // set it to current time
-      en.en_timeTimer = tmCurrentTime;
+      en.en_tckTimer = tckCurrentTime;
     }
   }
 }

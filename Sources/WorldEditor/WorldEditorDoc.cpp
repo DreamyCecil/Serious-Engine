@@ -2848,7 +2848,7 @@ void CWorldEditorDoc::DeselectAll(void)
   else
   {
     TICK tckCurrentTime = _pTimer->GetRealTime();
-    if ((tckCurrentTime - _tckLastTimeDeselectAllUsed) < SecToTicks(1.0))
+    if ((tckCurrentTime - _tckLastTimeDeselectAllUsed) < SecToTicks(1))
     {
       ClearSelections();
       _tckLastTimeDeselectAllUsed = tckCurrentTime;

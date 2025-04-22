@@ -32,8 +32,8 @@ static char THIS_FILE[] = __FILE__;
 extern COLOR acol_ColorizePallete[];
 static TICK _tckLastNumKeyDownTime = -1;
 static TICK _tckLastTimePressureApplied = -1;
-#define BRUSH_PRESSURE_DELAY SecToTicks(0.25f)
-#define BRUSH_PRESSURE_SUB_DELAY SecToTicks(0.5f)
+#define BRUSH_PRESSURE_DELAY SecToTicks(0.25)
+#define BRUSH_PRESSURE_SUB_DELAY SecToTicks(0.5)
 
 #define GET_COLOR_FROM_INI(iColor, strColorIndex) \
   {char chrColor[ 16];\

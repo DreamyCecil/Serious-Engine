@@ -692,11 +692,7 @@ void CSessionState::HandleMovers(void)
 // do thinking for a game tick
 void CSessionState::HandleTimers(TICK tckCurrentTick)
 {
-  const TIME tmCurrentTick = TicksToSec(tckCurrentTick); // [Cecil] TEMP
-
-// [Cecil] TEMP: Use higher epsilon value to prevent float imprecision between ticks (0.0001 -> 0.01 == 1/5 of a tick at 20 tps)
-#define TIME_EPSILON 0.01f
-  IFDEBUG(TIME tmLast = 0.0f);
+  IFDEBUG(TICK tckLast = 0);
 
   _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_HANDLETIMERS);
   // repeat
@@ -707,7 +703,7 @@ void CSessionState::HandleTimers(TICK tckCurrentTick)
     // for each entity in list of timers
     FOREACHINLIST(CRationalEntity, en_lnInTimers, lhTimers, iten) {
       // if due after current time
-      if(iten->en_timeTimer>tmCurrentTick+TIME_EPSILON) {
+      if(iten->en_tckTimer > tckCurrentTick) {
         // stop searching
         break;
       }
@@ -728,12 +724,12 @@ void CSessionState::HandleTimers(TICK tckCurrentTick)
     }
 
     // check that timers are propertly handled
-    ASSERT(penTimer->en_timeTimer>tmCurrentTick-_pTimer->TickQuantum-TIME_EPSILON);
-    //ASSERT(penTimer->en_timeTimer>=tmLast);
-    IFDEBUG(tmLast=penTimer->en_timeTimer);
+    ASSERT(penTimer->en_tckTimer > tckCurrentTick - 1);
+    //ASSERT(penTimer->en_tckTimer >= tckLast);
+    IFDEBUG(tckLast = penTimer->en_tckTimer);
 
     // remove the timer from the list
-    penTimer->en_timeTimer = THINKTIME_NEVER;
+    penTimer->en_tckTimer = THINKTIME_NEVER;
     penTimer->en_lnInTimers.Remove();
     // send timer event to the entity
     penTimer->SendEvent(ETimer());

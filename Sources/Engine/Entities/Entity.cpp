@@ -3758,7 +3758,7 @@ void CRationalEntity::ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
   CEntity::ChecksumForSync(ulCRC, iExtensiveSyncCheck);
 
   if (iExtensiveSyncCheck>0) {
-    CRC_AddFLOAT(ulCRC, en_timeTimer);
+    CRC_AddLONGLONG(ulCRC, en_tckTimer);
     CRC_AddLONG(ulCRC, en_stslStateStack.Count());
   }
   if (iExtensiveSyncCheck>0) {
@@ -3770,7 +3770,7 @@ void CRationalEntity::DumpSync_t(CTStream &strm, INDEX iExtensiveSyncCheck)  // 
 {
   CEntity::DumpSync_t(strm, iExtensiveSyncCheck);
   if (iExtensiveSyncCheck>0) {
-    strm.FPrintF_t("en_timeTimer:  %g(%08x)\n", en_timeTimer, (ULONG&)en_timeTimer);
+    strm.FPrintF_t("en_tckTimer: 0x%" SDL_PRIX64 " (%gs)\n", en_tckTimer, TicksToSec(en_tckTimer));
     strm.FPrintF_t("en_stslStateStack.Count(): %d\n", en_stslStateStack.Count());
   }
   strm.FPrintF_t("en_fHealth:    %g(%08x)\n", en_fHealth, (ULONG&)en_fHealth);
@@ -3782,24 +3782,40 @@ void CRationalEntity::Copy(CEntity &enOther, ULONG ulFlags)
   CLiveEntity::Copy(enOther, ulFlags);
   if (!(ulFlags&COPY_REINIT)) {
     CRationalEntity *prenOther = (CRationalEntity *)(&enOther);
-    en_timeTimer = prenOther->en_timeTimer;
+    en_tckTimer = prenOther->en_tckTimer;
     en_stslStateStack = prenOther->en_stslStateStack;
     if (prenOther->en_lnInTimers.IsLinked()) {
       en_pwoWorld->AddTimer(this);
     }
   }
 }
+
+// [Cecil] TEMP: Ticks chunk
+static const CChunkID _cidTicks("TCKS");
+
 /* Read from stream. */
 void CRationalEntity::Read_t( CTStream *istr) // throw char *
 {
   CLiveEntity::Read_t(istr);
 
-  FLOAT fDummy;
-  *istr >> fDummy;
-  en_timeTimer = (TIME)fDummy;
+  // [Cecil] TEMP: Read new time in ticks
+  if (istr->PeekID_t() == _cidTicks) {
+    istr->ExpectID_t(_cidTicks);
+    *istr >> en_tckTimer;
+
+  } else {
+    FLOAT fTime;
+    *istr >> fTime;
+
+    if (fTime == -1.f) {
+      en_tckTimer = THINKTIME_NEVER;
+    } else {
+      en_tckTimer = SecToTicks(fTime);
+    }
+  }
 
   // if waiting for thinking
-  if (en_timeTimer!=THINKTIME_NEVER) {
+  if (en_tckTimer != THINKTIME_NEVER) {
     // add to list of thinkers
     en_pwoWorld->AddTimer(this);
   }
@@ -3820,10 +3836,12 @@ void CRationalEntity::Write_t( CTStream *ostr) // throw char *
   // if not currently waiting for thinking
   if (!en_lnInTimers.IsLinked()) {
     // set dummy thinking time as a flag for later loading
-    en_timeTimer = THINKTIME_NEVER;
+    en_tckTimer = THINKTIME_NEVER;
   }
 
-  *ostr << (FLOAT)en_timeTimer;
+  // [Cecil] TEMP: Write new time in ticks
+  ostr->WriteID_t(_cidTicks);
+  *ostr << en_tckTimer;
 
   // write the state stack
   (*ostr)<<en_stslStateStack.Count();
@@ -3832,40 +3850,35 @@ void CRationalEntity::Write_t( CTStream *ostr) // throw char *
   }
 }
 
-/*
- * Set next timer event to occur at given moment time.
- */
-void CRationalEntity::SetTimerAt(TIME timeAbsolute)
+// [Cecil] Set next timer event to occur at a given tick
+void CRationalEntity::SetTickAt(TICK tckAbsolute)
 {
-  // must never set think back in time, except for special 'never' time
-  ASSERTMSG(timeAbsolute>_pTimer->CurrentTick() ||
-    timeAbsolute==THINKTIME_NEVER, "Do not SetThink() back in time!");
-  // set the timer
-  en_timeTimer = timeAbsolute;
+  // Must never set back in time, except for the special 'never' time
+  ASSERTMSG(tckAbsolute > _pTimer->GetGameTick() ||
+    tckAbsolute == THINKTIME_NEVER, "Do not SetTickAt() back in time!");
 
-  // add to world's list of timers if neccessary
-  if (en_timeTimer != THINKTIME_NEVER) {
+  // Set the timer
+  en_tckTimer = tckAbsolute;
+
+  // Add to the world's list of timers if neccessary
+  if (en_tckTimer != THINKTIME_NEVER) {
     en_pwoWorld->AddTimer(this);
-  } else {
-    if (en_lnInTimers.IsLinked()) {
-      en_lnInTimers.Remove();
-    }
-  }
-}
 
-/*
- * Set next timer event to occur after given time has elapsed.
- */
-void CRationalEntity::SetTimerAfter(TIME timeDelta)
-{
-  // set the execution for the moment that is that much ahead of the current tick
-  SetTimerAt(_pTimer->CurrentTick()+timeDelta);
-}
+  } else if (en_lnInTimers.IsLinked()) {
+    en_lnInTimers.Remove();
+  }
+};
+
+// [Cecil] Set next timer event to occur after a given time in ticks has elapsed
+void CRationalEntity::SetTickAfter(TICK tckDelta) {
+  // The moment of execution should always be ahead of the current tick
+  SetTickAt(_pTimer->GetGameTick() + tckDelta);
+};
 
 /* Cancel eventual pending timer. */
 void CRationalEntity::UnsetTimer(void)
 {
-  en_timeTimer = THINKTIME_NEVER;
+  en_tckTimer = THINKTIME_NEVER;
   if (en_lnInTimers.IsLinked()) {
     en_lnInTimers.Remove();
   }
@@ -3982,7 +3995,7 @@ void CRationalEntity::OnInitialize(const CEntityEvent &eeInput)
   CEntityPointer penThis = this;
 
   // do not think
-  en_timeTimer = THINKTIME_NEVER;
+  en_tckTimer = THINKTIME_NEVER;
   if (en_lnInTimers.IsLinked()) {
     en_lnInTimers.Remove();
   }
