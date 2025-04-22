@@ -63,7 +63,7 @@ macro(entity _LIST _NAME)
       DEPENDS ${ECC}
       WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
       COMMAND ${ECC}
-      ARGS "${_NAME}.es"
+      ARGS "${_NAME}.es" "-cfg" "ecc-common.inl"
     )
   endif()
 

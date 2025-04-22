@@ -8,7 +8,7 @@ REM Entity source file argument missing
 if [%2]==[] goto usage
 
 pushd "%~dp1"
-ecc "%~2"
+ecc "%~2" -cfg "ecc-common.inl"
 popd
 goto :end
 
