@@ -1860,18 +1860,20 @@ void CModelerView::OnUpdateAnimPrevframe(CCmdUI* pCmdUI)
 
 void CModelerView::OnIdle(void)
 {
+  const TICK tckNow = _pTimer->GetRealTime();
+
   if( m_AutoRotating)
   {
-    TIME timeNow = _pTimer->GetRealTimeTick();
-    TIME tmDelta = timeNow-m_timeLastTick;
+    const TIME tmDelta = TicksToSec(tckNow - m_tckLastTick);
     m_plModelPlacement.pl_OrientationAngle( 1) -= AngleDeg(160.0f*tmDelta);
     theApp.m_chPlacement.MarkChanged();
-    m_timeLastTick = timeNow;
+    m_tckLastTick = tckNow;
   }
 
-  FLOAT fTimeVar1 = ((FLOAT)_pTimer->GetRealTimeTick()) / 1.5f;
-  FLOAT fTimeVar2 = ((FLOAT)_pTimer->GetRealTimeTick()) * 0.8f;
-  FLOAT fTimeVar3 = ((FLOAT)_pTimer->GetRealTimeTick()) * 1.8f;
+  const FLOAT tmRealTime = TicksToSec(tckNow);
+  FLOAT fTimeVar1 = tmRealTime / 1.5f;
+  FLOAT fTimeVar2 = tmRealTime * 0.8f;
+  FLOAT fTimeVar3 = tmRealTime * 1.8f;
 
   if( m_bDollyViewer)
   {
@@ -1992,7 +1994,7 @@ void CModelerView::OnUpdateOptAutoMipModeling(CCmdUI* pCmdUI)
 
 void CModelerView::OnAnimRotation() 
 {
-  m_timeLastTick = _pTimer->GetRealTimeTick();
+  m_tckLastTick = _pTimer->GetRealTime();
   m_AutoRotating = !m_AutoRotating;
 }
 

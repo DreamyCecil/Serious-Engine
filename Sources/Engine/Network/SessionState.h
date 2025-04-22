@@ -99,7 +99,7 @@ public:
   BOOL ses_iExtensiveSyncCheck;   // set if syncheck should be extensive - for debugging purposes
 
   BOOL ses_bKeepingUpWithTime;     // set if the session state is keeping up with the time
-  TIME ses_tmLastUpdated;
+  TICK ses_tckLastUpdated;         // [Cecil] Seconds -> ticks
   CListHead ses_lhRememberedLevels;   // list of remembered levels
   BOOL ses_bAllowRandom;            // set while random number generation is valid
   BOOL ses_bPredicting;             // set if the game is currently doing prediction

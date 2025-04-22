@@ -102,17 +102,18 @@ void CWndTestAnimation::OnPaint()
   }
 }
 
-static TIME timeLastTick=TIME(0);
+static TICK _tckLastTick = 0;
+
 void CWndTestAnimation::OnTimer(UINT_PTR nIDEvent) 
 {
 	// on our timer discard test animation window
   if( nIDEvent == 1)
   {
-    TIME timeCurrentTick = _pTimer->GetRealTimeTick();
-    if( timeCurrentTick > timeLastTick )
+    TICK tckCurrentTick = _pTimer->GetRealTime();
+    if (tckCurrentTick > _tckLastTick)
     {
-      _pTimer->SetCurrentTick( timeCurrentTick);
-      timeLastTick = timeCurrentTick;
+      _pTimer->SetGameTick(tckCurrentTick);
+      _tckLastTick = tckCurrentTick;
     }
     Invalidate(FALSE);	
   }

@@ -29,7 +29,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CWndDisplayTexture
 
-TIME timeLastTick;
+static TICK _tckLastTick = 0;
 
 CWndDisplayTexture::CWndDisplayTexture()
 {
@@ -185,11 +185,11 @@ void CWndDisplayTexture::OnTimer(UINT_PTR nIDEvent)
 	// on our timer discard test animation window
   if( nIDEvent == 1)
   {
-    TIME timeCurrentTick = _pTimer->GetRealTimeTick();
-    if( timeCurrentTick > timeLastTick )
+    const TICK tckCurrentTick = _pTimer->GetRealTime();
+    if (tckCurrentTick > _tckLastTick)
     {
-      _pTimer->SetCurrentTick( timeCurrentTick);
-      timeLastTick = timeCurrentTick;
+      _pTimer->SetGameTick(tckCurrentTick);
+      _tckLastTick = tckCurrentTick;
     }
     Invalidate(FALSE);	
   }

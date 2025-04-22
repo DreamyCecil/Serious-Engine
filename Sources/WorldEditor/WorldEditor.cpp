@@ -41,7 +41,7 @@ UINT _uiMessengerMsg=-1;
 UINT _uiMessengerForcePopup=-1;
 
 extern FLOAT _fFlyModeSpeedMultiplier = 1.0f;
-FLOAT _fLastMipBrushingOptionUsed = -10000.0f;
+TICK _tckLastMipBrushingOptionUsed = -10000;
 extern INDEX wed_iMaxFPSActive = 500;
 extern FLOAT wed_fFrontClipDistance = 0.5f;
 

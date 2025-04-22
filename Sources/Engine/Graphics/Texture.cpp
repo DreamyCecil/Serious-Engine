@@ -1233,7 +1233,7 @@ void CTextureData::SetAsCurrent( INDEX iFrameNo/*=0*/, BOOL bForceUpload/*=FALSE
     }
 
     // if not calculated for this tick (must be != to test for time rewinding)
-    if( td_ptegEffect->teg_updTexture.LastUpdateTime() != _pTimer->CurrentTick()) {
+    if (td_ptegEffect->teg_updTexture.LastUpdateTick() != _pTimer->GetGameTick()) {
       // discard eventual cached frame and calculate new frame
       MarkChanged();
       td_ptegEffect->Animate();

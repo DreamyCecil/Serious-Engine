@@ -2834,8 +2834,8 @@ void CWorldEditorDoc::PasteTextureOverSelection_t( CTFileName fnTexName)
   UpdateAllViews( NULL);
 }
 
+static TICK _tckLastTimeDeselectAllUsed = -10000;
 
-FLOAT _fLastTimeDeselectAllUsed = -10000.0f;
 // delete all selected members in current selection mode
 void CWorldEditorDoc::DeselectAll(void)
 {
@@ -2847,14 +2847,14 @@ void CWorldEditorDoc::DeselectAll(void)
   }
   else
   {
-    FLOAT fCurrentTime = _pTimer->GetRealTimeTick();
-    if( (fCurrentTime-_fLastTimeDeselectAllUsed)<1.0f)
+    TICK tckCurrentTime = _pTimer->GetRealTime();
+    if ((tckCurrentTime - _tckLastTimeDeselectAllUsed) < SecToTicks(1.0))
     {
       ClearSelections();
-      _fLastTimeDeselectAllUsed = fCurrentTime;
+      _tckLastTimeDeselectAllUsed = tckCurrentTime;
       return;
     }
-    _fLastTimeDeselectAllUsed = fCurrentTime;
+    _tckLastTimeDeselectAllUsed = tckCurrentTime;
 
     // according to current selection mode clear selected members
     switch( GetEditingMode())

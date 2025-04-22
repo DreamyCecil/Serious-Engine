@@ -735,9 +735,9 @@ void CServer::ServerLoop(void)
   BOOL bPaused = srv_bPause || _pNetwork->ga_bLocalPause || _pNetwork->IsWaitingForPlayers() || 
     srv_bGameFinished || ser_bWaitFirstPlayer;
   if (_pNetwork->ga_sesSessionState.ses_bKeepingUpWithTime
-    &&(_pTimer->GetRealTimeTick()-_pNetwork->ga_sesSessionState.ses_tmLastUpdated<=_pTimer->TickQuantum*2.01f)
-    && !bPaused ) {
-
+   && (_pTimer->GetRealTime() - _pNetwork->ga_sesSessionState.ses_tckLastUpdated <= 2)
+   && !bPaused)
+  {
     // advance time
     srv_fServerStep += _pNetwork->ga_fGameRealTimeFactor*_pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
     // if stepped to next tick

@@ -24,13 +24,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 template<bool bRealTime>
 class TUpdateable {
   private:
-    TIME ud_LastUpdateTime; // last time this object has been updated
+    TICK ud_tckLastUpdateTime; // last time this object has been updated
 
   public:
     // Constructor
     TUpdateable(void);
     // Get time when last updated
-    TIME LastUpdateTime(void) const;
+    TICK LastUpdateTick(void) const;
     // Mark that the object has been updated
     void MarkUpdated(void);
     // Mark that the object has become invalid in spite of its time stamp

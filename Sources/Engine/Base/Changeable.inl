@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 template<bool bRealTime> inline
 TChangeable<bRealTime>::TChangeable(void)
 {
-  ch_LastChangeTime = TIME(-1);
+  ch_tckLastChangeTime = -1;
 };
 
 // Mark that something has changed in this object
@@ -29,9 +29,9 @@ void TChangeable<bRealTime>::MarkChanged(void)
 {
   // [Cecil] Unified logic
   if (bRealTime) {
-    ch_LastChangeTime = _pTimer->GetRealTimeTick();
+    ch_tckLastChangeTime = _pTimer->GetRealTime();
   } else {
-    ch_LastChangeTime = _pTimer->CurrentTick();
+    ch_tckLastChangeTime = _pTimer->GetGameTick();
   }
 };
 
@@ -39,5 +39,5 @@ void TChangeable<bRealTime>::MarkChanged(void)
 template<bool bRealTime> inline
 BOOL TChangeable<bRealTime>::IsUpToDate(const TUpdateable<bRealTime> &ud) const
 {
-  return ch_LastChangeTime < ud.LastUpdateTime();
+  return ch_tckLastChangeTime < ud.LastUpdateTick();
 };

@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Network/CommunicationInterface.h>
 
 // When the last heartbeat has been sent
-static TIME _tmLastHeartbeat = -1.0f;
+static TICK _tckLastHeartbeat = -1;
 
 extern INDEX ms_iProtocol;
 extern INDEX net_iPort;
@@ -122,7 +122,7 @@ void OnServerUpdate(void) {
   }
 
   // Send a heartbeat every 150 seconds
-  if (_pTimer->GetRealTimeTick() - _tmLastHeartbeat >= 150.0f) {
+  if (_pTimer->GetRealTime() - _tckLastHeartbeat >= SecToTicks(150)) {
     SendHeartbeat(0);
   }
 };
@@ -172,7 +172,7 @@ void SendHeartbeat(INDEX iChallenge) {
 
   // Send heartbeat to the master server
   IQuery::SendPacket(strPacket);
-  _tmLastHeartbeat = _pTimer->GetRealTimeTick();
+  _tckLastHeartbeat = _pTimer->GetRealTime();
 };
 
 // Request server list enumeration

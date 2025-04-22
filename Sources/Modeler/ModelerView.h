@@ -73,7 +73,7 @@ public:
   BOOL m_bViewMeasureVertex;
   FLOAT3D m_vViewMeasureVertex;
   AxisType m_atAxisType;
-  TIME m_timeLastTick;
+  TICK m_tckLastTick;
   FLOAT m_fFOW;
   BOOL m_bTileMappingBCG;
   BOOL m_bAnyKeyPressed;

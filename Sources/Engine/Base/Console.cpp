@@ -38,7 +38,7 @@ CConsole::CConsole(void)
 {
   con_strBuffer  = NULL;
   con_strLineBuffer = NULL;
-  con_atmLines = NULL;
+  con_atckLines = NULL;
   con_fLog = NULL;
 }
 // Destructor.
@@ -54,8 +54,8 @@ CConsole::~CConsole(void)
   if (con_strLineBuffer!=NULL) {
     FreeMemory(con_strLineBuffer);
   }
-  if (con_atmLines!=NULL) {
-    FreeMemory(con_atmLines);
+  if (con_atckLines!=NULL) {
+    FreeMemory(con_atckLines);
   }
 }
 
@@ -73,7 +73,7 @@ void CConsole::Initialize(const CTFileName &fnmLog, INDEX ctCharsPerLine, INDEX 
   // note: we add +1 for '\n' perline and +1 '\0' at the end of buffer
   con_strBuffer = (char *)AllocMemory((ctCharsPerLine+1)*ctLines+1);
   con_strLineBuffer = (char *)AllocMemory(ctCharsPerLine+2); // includes '\n' and '\0'
-  con_atmLines = (TIME*)AllocMemory((ctLines+1)*sizeof(TIME));
+  con_atckLines = (TICK *)AllocMemory((ctLines + 1) * sizeof(TICK));
   // make it empty
   for(INDEX iLine=0; iLine<ctLines; iLine++) {
     ClearLine(iLine);
@@ -114,18 +114,20 @@ INDEX CConsole::GetBufferSize(void)
 void CConsole::DiscardLastLineTimes(void)
 {
   for(INDEX i=0; i<con_ctLines; i++) {
-    con_atmLines[i] = -10000.0f;
+    con_atckLines[i] = -10000;
   }
 }
 
 // Get number of lines newer than given time
 INDEX CConsole::NumberOfLinesAfter(TIME tmLast)
 {
+  const TICK tckLast = SecToTicks(tmLast);
+
   // clamp console variable
   con_iLastLines = Clamp( con_iLastLines, 0L, (INDEX)CONSOLE_MAXLASTLINES);
   // find number of last console lines to be displayed on screen
   for(INDEX i=0; i<con_iLastLines; i++) {
-    if (con_atmLines[con_ctLines-1-i]<tmLast) {
+    if (con_atckLines[con_ctLines - 1 - i] < tckLast) {
       return i;
     }
   }
@@ -160,7 +162,7 @@ void CConsole::ClearLine(INDEX iLine)
   memset(pchLine, ' ', con_ctCharsPerLine);
   // add return at the end of line
   pchLine[con_ctCharsPerLine] = '\n';
-  con_atmLines[iLine] = _pTimer!=NULL?_pTimer->GetRealTimeTick():0.0f;
+  con_atckLines[iLine] = (_pTimer != NULL ? _pTimer->GetRealTime() : 0);
 }
 
 // scroll buffer up, discarding lines at the start
@@ -174,9 +176,9 @@ void CConsole::ScrollBufferUp(INDEX ctLines)
     (con_ctLines-ctLines)*(con_ctCharsPerLine+1));
   // move buffer up
   memmove(
-    con_atmLines, 
-    con_atmLines+ctLines,
-    (con_ctLines-ctLines)*sizeof(TIME));
+    con_atckLines, 
+    con_atckLines + ctLines,
+    (con_ctLines - ctLines) * sizeof(TICK));
   con_ctLinesPrinted = ClampUp(con_ctLinesPrinted+1L, con_ctLines);
   // clear lines at the end
   for(INDEX iLine=con_ctLines-ctLines; iLine<con_ctLines; iLine++) {

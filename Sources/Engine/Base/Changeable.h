@@ -24,7 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 template<bool bRealTime>
 class TChangeable {
   private:
-    TIME ch_LastChangeTime; // last time this object has been changed
+    TICK ch_tckLastChangeTime; // last time this object has been changed
 
   public:
     // Constructor

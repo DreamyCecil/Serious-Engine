@@ -33,7 +33,7 @@ public:
   char *con_strLineBuffer;    // one-line-sized buffer for temp usage
   INDEX con_ctCharsPerLine;   // number of characters per line
   INDEX con_ctLines;          // number of total lines
-  TIME *con_atmLines;         // time stamp for each line
+  TICK *con_atckLines;        // [Cecil] Time stamp for each line (seconds -> ticks)
   INDEX con_ctLinesPrinted;   // number of lines printed
   FILE *con_fLog;   // log file for streaming the console to
 

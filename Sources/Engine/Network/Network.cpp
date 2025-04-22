@@ -1888,7 +1888,7 @@ void CNetworkLibrary::MainLoop(void)
   }
 
   // let server process game stream
-  TIME tmBefore = _pTimer->GetRealTimeTick();
+  const TICK tckBefore = _pTimer->GetRealTime();
   _pTimer->SetLerp(0.0);
 
 
@@ -1921,10 +1921,10 @@ void CNetworkLibrary::MainLoop(void)
     ga_pWorld->UnmarkForPrediction();
   }
 
-  ga_sesSessionState.ses_tmLastUpdated = _pTimer->GetRealTimeTick();
+  ga_sesSessionState.ses_tckLastUpdated = _pTimer->GetRealTime();
 
-  TIME tmAfter = _pTimer->GetRealTimeTick();
-  ga_sesSessionState.ses_bKeepingUpWithTime = (tmAfter-tmBefore)<=_pTimer->TickQuantum*2.01f;
+  const TIME tckAfter = _pTimer->GetRealTime();
+  ga_sesSessionState.ses_bKeepingUpWithTime = (tckAfter - tckBefore) <= 2;
 
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
   // set the lerping factor for current frame

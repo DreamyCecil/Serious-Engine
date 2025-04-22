@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 template<bool bRealTime> inline
 TUpdateable<bRealTime>::TUpdateable(void)
 {
-  ud_LastUpdateTime = TIME(-1);
+  ud_tckLastUpdateTime = -1;
 };
 
 // Mark that the object has been updated
@@ -28,22 +28,22 @@ void TUpdateable<bRealTime>::MarkUpdated(void)
 {
   // [Cecil] Unified logic
   if (bRealTime) {
-    ud_LastUpdateTime = _pTimer->GetRealTimeTick();
+    ud_tckLastUpdateTime = _pTimer->GetRealTime();
   } else {
-    ud_LastUpdateTime = _pTimer->CurrentTick();
+    ud_tckLastUpdateTime = _pTimer->GetGameTick();
   }
 };
 
 // Get time when last updated
 template<bool bRealTime> inline
-TIME TUpdateable<bRealTime>::LastUpdateTime(void) const
+TICK TUpdateable<bRealTime>::LastUpdateTick(void) const
 {
-  return ud_LastUpdateTime;
+  return ud_tckLastUpdateTime;
 };
 
 // Mark that the object has become invalid in spite of its time stamp
 template<bool bRealTime> inline
 void TUpdateable<bRealTime>::Invalidate(void)
 {
-  ud_LastUpdateTime = TIME(-1);
+  ud_tckLastUpdateTime = -1;
 };

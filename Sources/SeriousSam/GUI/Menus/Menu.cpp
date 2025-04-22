@@ -50,7 +50,7 @@ CListHead _lhServers;
 void OnPlayerSelect(void);
 
 // last tick done
-TIME _tmMenuLastTickDone = -1;
+static TICK _tckMenuLastTickDone = -1;
 // all possible menu entities
 CListHead lhMenuEntities;
 
@@ -210,7 +210,7 @@ void ClearThumbnail(void)
 
 void StartMenus(const CTString &str)
 {
-  _tmMenuLastTickDone=_pTimer->GetRealTimeTick();
+  _tckMenuLastTickDone = _pTimer->GetRealTime();
   // disable printing of last lines
   CON_DiscardLastLineTimes();
 
@@ -655,23 +655,22 @@ void MenuUpdateMouseFocus(void)
 }
 
 static CTimerValue _tvInitialization;
-static TIME _tmInitializationTick = -1;
-extern TIME _tmMenuLastTickDone;
+static TICK _tckInitializationTick = -1;
 
 void SetMenuLerping(void)
 {
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
   
   // if lerping was never set before
-  if (_tmInitializationTick<0) {
+  if (_tckInitializationTick < 0) {
     // initialize it
     _tvInitialization = tvNow;
-    _tmInitializationTick = _tmMenuLastTickDone;
+    _tckInitializationTick = _tckMenuLastTickDone;
   }
 
   // get passed time from session state starting in precise time and in ticks
   TIME tmRealDelta = TIME((tvNow - _tvInitialization).GetSeconds());
-  TIME tmTickDelta = _tmMenuLastTickDone-_tmInitializationTick;
+  TIME tmTickDelta = TicksToSec(_tckMenuLastTickDone - _tckInitializationTick);
   // calculate factor
   TIME fFactor = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
 
@@ -681,17 +680,17 @@ void SetMenuLerping(void)
     fFactor = 0.0;
     // readjust timers so that it gets better
     _tvInitialization = tvNow;
-    _tmInitializationTick = _tmMenuLastTickDone-_pTimer->TickQuantum;
+    _tckInitializationTick = _tckMenuLastTickDone - 1;
   }
   if (fFactor>1) {
     // clamp it
     fFactor = 1.0;
     // readjust timers so that it gets better
     _tvInitialization = tvNow;
-    _tmInitializationTick = _tmMenuLastTickDone;
+    _tckInitializationTick = _tckMenuLastTickDone;
   }
   // set lerping factor and timer
-  _pTimer->SetCurrentTick(_tmMenuLastTickDone);
+  _pTimer->SetGameTick(_tckMenuLastTickDone);
   _pTimer->SetLerp(fFactor);
 }
 
@@ -737,16 +736,16 @@ BOOL DoMenu( CDrawPort *pdp)
 
   pgmCurrentMenu->Think();
 
-  TIME tmTickNow = _pTimer->GetRealTimeTick();
+  const TICK tckTickNow = _pTimer->GetRealTime();
 
-  while( _tmMenuLastTickDone<tmTickNow)
+  while (_tckMenuLastTickDone < tckTickNow)
   {
-    _pTimer->SetCurrentTick(_tmMenuLastTickDone);
+    _pTimer->SetGameTick(_tckMenuLastTickDone);
     // call think for all gadgets in menu
     FOREACHINLIST( CMenuGadget, mg_lnNode, pgmCurrentMenu->gm_lhGadgets, itmg) {
       itmg->Think();
     }
-    _tmMenuLastTickDone+=_pTimer->TickQuantum;
+    _tckMenuLastTickDone++;
   }
 
   SetMenuLerping();

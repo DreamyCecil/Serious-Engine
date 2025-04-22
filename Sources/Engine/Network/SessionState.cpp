@@ -95,7 +95,7 @@ void CSessionState::ResetRND(void)
 CSessionState::CSessionState(void)
 {
   ses_bKeepingUpWithTime = TRUE;
-  ses_tmLastUpdated = -100;
+  ses_tckLastUpdated = -100;
   ses_bAllowRandom = TRUE;  // random allowed when not in game
   ses_bPredicting = FALSE;
   ses_tmPredictionHeadTick = -2.0f;
@@ -138,7 +138,7 @@ void CSessionState::Stop(void)
 #endif
 
   ses_bKeepingUpWithTime = TRUE;
-  ses_tmLastUpdated = -100;
+  ses_tckLastUpdated = -100;
   ses_bAllowRandom = TRUE;  // random allowed when not in game
   ses_bPredicting = FALSE;
   ses_tmPredictionHeadTick = -2.0f;
@@ -192,7 +192,7 @@ void CSessionState::Stop(void)
 void CSessionState::Start_t(INDEX ctLocalPlayers) 
 {
   ses_bKeepingUpWithTime = TRUE;
-  ses_tmLastUpdated = -100;
+  ses_tckLastUpdated = -100;
   // clear message stream
   ses_nsGameStream.Clear();
   ses_bAllowRandom = FALSE;  // random not allowed in game
