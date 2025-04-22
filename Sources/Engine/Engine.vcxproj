@@ -1451,10 +1451,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
     </CustomBuild>
     <CustomBuild Include="Classes\BaseEvents.es">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1463,10 +1463,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1478,10 +1478,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
     </CustomBuild>
     <CustomBuild Include="Classes\MovableBrushEntity.es">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1490,10 +1490,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1505,10 +1505,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
     </CustomBuild>
     <CustomBuild Include="Classes\MovableEntity.es">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1517,10 +1517,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1532,10 +1532,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
     </CustomBuild>
     <CustomBuild Include="Classes\MovableModelEntity.es">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1544,10 +1544,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1559,10 +1559,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
     </CustomBuild>
     <CustomBuild Include="Classes\PlayerEntity.es">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
@@ -1571,10 +1571,10 @@ del %(RootDir)%(Directory)\smcPars.c /q</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|Win32'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dynamic-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Static-Debug|x64'">%(RelativeDir)%(Filename).cpp;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">cd "$(SolutionDir)" &amp;&amp; ecc "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Static-Release|x64'">call ecc-common.bat "$(SolutionDir)" "$(ProjectName)/%(RelativeDir)%(Filename).es"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Static-Release|Win32'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dynamic-Release|x64'">$(ProjectName)/%(RelativeDir)%(Filename).es</Message>
