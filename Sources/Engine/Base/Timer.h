@@ -123,21 +123,28 @@ public:
     return tm_llCPUSpeedHZ;
   };
 
-  /* Set the real time tick value. */
-  void SetRealTimeTick(TIME tNewRealTimeTick);
-  /* Get the real time tick value. */
-  TIME GetRealTimeTick(void) const;
+  // [Cecil] Get real time in ticks
+  inline TICK GetRealTime(void) const {
+    return tm_tckRealTimeTimer;
+  };
 
   /* NOTE: CurrentTick is local to each thread, and every thread must take
      care to increment the current tick or copy it from real time tick if
      it wants to make animations and similar to work. */
 
-  /* Set the current game tick used for time dependent tasks (animations etc.). */
-  void SetCurrentTick(TIME tNewCurrentTick);
-  /* Get current game time, always valid for the currently active task. */
-  const TIME CurrentTick(void) const;
+  // [Cecil] Set the current game tick used for time dependent tasks (animations etc.) in ticks
+  void SetGameTick(TICK tckNewCurrentTick);
+
+  // [Cecil] Get the current game time that is always valid for the currently active task in ticks
+  const TICK GetGameTick(void) const;
+
   /* Get lerped game time. */
   const TIME GetLerpedCurrentTick(void) const;
+
+  // [Cecil] Deprecated wrapper methods for compatibility
+  TIME GetRealTimeTick(void) const;
+  void SetCurrentTick(TIME tNewCurrentTick);
+  const TIME CurrentTick(void) const;
 
   // [Cecil] Replaced FLOAT with TIME everywhere for lerp factors
   // Set factor for lerping between ticks.
@@ -167,6 +174,20 @@ ENGINE_API extern CTimer *_pTimer;
 inline TICK SecToTicks(TIME tm) {
   const TIME fAddToRound = (tm < 0.0 ? -0.5 : 0.5);
   return static_cast<TICK>(floor(tm / CTimer::TickQuantum + fAddToRound));
+};
+
+// [Cecil] Convert seconds to in-game ticks, rounded down to the nearest integer
+// It cuts off any remaining fraction after multiplying seconds by the tickrate if the time didn't match any tick
+// Use SecToTicks() to eliminate any potential float imprecision that would result in one less tick than intended
+inline TICK SecToTicksDn(TIME tm) {
+  return static_cast<TICK>(floor(tm / CTimer::TickQuantum));
+};
+
+// [Cecil] Convert seconds to in-game ticks, rounded up to the nearest integer
+// It is rounded up in order to preserve the smallest possible amount of extra delay that there may be,
+// otherwise the time might end up being the same and cause inconsistencies during specific comparisons
+inline TICK SecToTicksUp(TIME tm) {
+  return static_cast<TIME>(ceil(tm / CTimer::TickQuantum));
 };
 
 // [Cecil] Convert in-game ticks to seconds

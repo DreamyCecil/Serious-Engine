@@ -446,39 +446,36 @@ void CTimer::HandleTimerHandlers(void)
   CTimer::TimerFunc_internal();
 }
 
+// [Cecil] Set the current game tick used for time dependent tasks (animations etc.) in ticks
+void CTimer::SetGameTick(TICK tckNewCurrentTick) {
+  _tckCurrentTickTimer = tckNewCurrentTick;
+};
 
-/*
- * Set the real time tick value.
- */
-void CTimer::SetRealTimeTick(TIME tNewRealTimeTick)
-{
-  tm_tckRealTimeTimer = SecToTicks(tNewRealTimeTick);
-}
-
-/*
- * Get the real time tick value.
- */
-TIME CTimer::GetRealTimeTick(void) const
-{
-  return TicksToSec(tm_tckRealTimeTimer);
-}
-
-/*
- * Set the current game tick used for time dependent tasks (animations etc.).
- */
-void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
-  _tckCurrentTickTimer = SecToTicks(tNewCurrentTick);
-}
+// [Cecil] Get the current game time that is always valid for the currently active task in ticks
+const TICK CTimer::GetGameTick(void) const {
+  return _tckCurrentTickTimer;
+};
 
 /*
  * Get current game time, always valid for the currently active task.
  */
-const TIME CTimer::CurrentTick(void) const {
-  return TicksToSec(_tckCurrentTickTimer);
-}
 const TIME CTimer::GetLerpedCurrentTick(void) const {
   return TicksToSec(_tckCurrentTickTimer) + tm_tmLerpFactor * TickQuantum;
 }
+
+// [Cecil] Deprecated wrapper methods for compatibility
+TIME CTimer::GetRealTimeTick(void) const {
+  return TicksToSec(tm_tckRealTimeTimer);
+};
+
+void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
+  _tckCurrentTickTimer = SecToTicks(tNewCurrentTick);
+};
+
+const TIME CTimer::CurrentTick(void) const {
+  return TicksToSec(_tckCurrentTickTimer);
+};
+
 // Set factor for lerping between ticks.
 void CTimer::SetLerp(TIME fFactor) // sets both primary and secondary
 {
