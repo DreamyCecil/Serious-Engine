@@ -1889,7 +1889,7 @@ void CNetworkLibrary::MainLoop(void)
 
   // let server process game stream
   TIME tmBefore = _pTimer->GetRealTimeTick();
-  _pTimer->SetLerp(0.0f);
+  _pTimer->SetLerp(0.0);
 
 
 /*

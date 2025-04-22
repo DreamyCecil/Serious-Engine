@@ -511,6 +511,7 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   // MOD info
   _pShell->DeclareSymbol("user const CTString sys_strModName;", &sys_strModName);
 
+  // [Cecil] FIXME: Forcing DOUBLE to become FLOAT when SE1_DOUBLE_TIMER == 1
   // Timer tick quantum
   _pShell->DeclareSymbol("user const FLOAT fTickQuantum;", (FLOAT*)&_pTimer->TickQuantum);
 

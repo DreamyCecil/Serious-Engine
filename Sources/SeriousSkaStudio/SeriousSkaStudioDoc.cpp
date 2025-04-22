@@ -116,7 +116,7 @@ void CSeriousSkaStudioDoc::SetTimerForDocument()
     double dSecs = tvDelta.GetSeconds();
     INDEX ctTicks = floor(dSecs/_pTimer->TickQuantum);
     TIME tmTick = ctTicks*_pTimer->TickQuantum;
-    FLOAT fFactor = (dSecs-tmTick)/_pTimer->TickQuantum;
+    TIME fFactor = (dSecs - tmTick) / _pTimer->TickQuantum;
     _pTimer->SetCurrentTick( tmTick );
     _pTimer->SetLerp( fFactor );
   }

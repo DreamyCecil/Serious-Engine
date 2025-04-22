@@ -349,8 +349,7 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
   tm_tckLastTickOnTime = 0;
   tm_tvLastTimeOnTime = GetHighPrecisionTimer();
   // disable lerping by default
-  tm_fLerpFactor = 1.0f;
-  tm_fLerpFactor2 = 1.0f;
+  DisableLerp();
 
 #if SE1_SINGLE_THREAD
   tm_tvInitialUpkeep = GetHighPrecisionTimer();
@@ -478,23 +477,23 @@ const TIME CTimer::CurrentTick(void) const {
   return TicksToSec(_tckCurrentTickTimer);
 }
 const TIME CTimer::GetLerpedCurrentTick(void) const {
-  return TicksToSec(_tckCurrentTickTimer) + tm_fLerpFactor * TickQuantum;
+  return TicksToSec(_tckCurrentTickTimer) + tm_tmLerpFactor * TickQuantum;
 }
 // Set factor for lerping between ticks.
-void CTimer::SetLerp(FLOAT fFactor) // sets both primary and secondary
+void CTimer::SetLerp(TIME fFactor) // sets both primary and secondary
 {
-  tm_fLerpFactor = fFactor;
-  tm_fLerpFactor2 = fFactor;
+  tm_tmLerpFactor  = fFactor;
+  tm_tmLerpFactor2 = fFactor;
 }
-void CTimer::SetLerp2(FLOAT fFactor)  // sets only secondary
+void CTimer::SetLerp2(TIME fFactor)  // sets only secondary
 {
-  tm_fLerpFactor2 = fFactor;
+  tm_tmLerpFactor2 = fFactor;
 }
 // Disable lerping factor (set both factors to 1)
 void CTimer::DisableLerp(void)
 {
-  tm_fLerpFactor =1.0f;
-  tm_fLerpFactor2=1.0f;
+  tm_tmLerpFactor  = 1.0;
+  tm_tmLerpFactor2 = 1.0;
 }
 
 // [Cecil] Get current timer value since the engine start in nanoseconds

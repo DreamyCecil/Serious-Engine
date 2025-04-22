@@ -1046,7 +1046,7 @@ void CAnimObject::GetFrame( INDEX &iFrame0, INDEX &iFrame1, FLOAT &fRatio) const
   }
 	ASSERT( ao_AnimData != NULL);
 	ASSERT( (ao_iCurrentAnim >= 0) && (ao_iCurrentAnim < ao_AnimData->ad_NumberOfAnims) );
-  TIME tmNow = _pTimer->CurrentTick() + _pTimer->GetLerpFactor()*_pTimer->TickQuantum;
+  TIME tmNow = _pTimer->GetLerpedCurrentTick();
 
   if( ao_ulFlags&AOF_PAUSED)
   {

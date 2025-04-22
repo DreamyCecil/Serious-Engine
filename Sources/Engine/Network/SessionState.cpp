@@ -1474,13 +1474,13 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
   // if no lerping
   if (!net_bLerping) {
     // set lerping factor without lerping
-    _pTimer->SetLerp(1.0f);
+    _pTimer->SetLerp(1.0);
     _pTimer->SetCurrentTick(ses_tmPredictionHeadTick);
     return;
   }
   
-  FLOAT fFactor  = 0.0f;
-  FLOAT fFactor2 = 0.0f;
+  TIME fFactor  = 0.0;
+  TIME fFactor2 = 0.0;
   
   // ---- primary factor - used for prediction
   {
@@ -1494,17 +1494,17 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     }
 
     // get passed time from session state starting in precise time and in ticks
-    FLOAT tmRealDelta = FLOAT((tvNow-ses_tvInitialization).GetSeconds())
-      *_pNetwork->ga_fGameRealTimeFactor*_pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
-    FLOAT tmTickDelta = tmLastTick-ses_tmInitializationTick;
+    TIME tmRealDelta = TIME((tvNow - ses_tvInitialization).GetSeconds())
+      * _pNetwork->ga_fGameRealTimeFactor * _pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
+    TIME tmTickDelta = tmLastTick - ses_tmInitializationTick;
     // calculate factor
-    fFactor = 1.0f-(tmTickDelta-tmRealDelta)/_pTimer->TickQuantum;
+    fFactor = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
 
     // if the factor starts getting below zero
     if (fFactor<0) {
       //CPrintF("Lerp=%.2f <0 @ %.2fs\n", fFactor, tmLastTick);
       // clamp it
-      fFactor = 0.0f;
+      fFactor = 0.0;
       // readjust timers so that it gets better
       ses_tvInitialization = tvNow;
       ses_tmInitializationTick = tmLastTick-_pTimer->TickQuantum;
@@ -1512,7 +1512,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     if (fFactor>1) {
       //CPrintF("Lerp=%.2f >1 @ %.2fs\n", fFactor, tmLastTick);
       // clamp it
-      fFactor = 1.0f;
+      fFactor = 1.0;
       // readjust timers so that it gets better
       ses_tvInitialization = tvNow;
       ses_tmInitializationTick = tmLastTick;
@@ -1520,10 +1520,10 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
 
     #if DEBUG_LERPING
 
-      avfStats[ctCounter][0] = tmRealDelta/_pTimer->TickQuantum;
-      avfStats[ctCounter][1] = tmTickDelta/_pTimer->TickQuantum;
+      avfStats[ctCounter][0] = tmRealDelta / _pTimer->TickQuantum;
+      avfStats[ctCounter][1] = tmTickDelta / _pTimer->TickQuantum;
       avfStats[ctCounter][2] = fFactor;
-      avfStats[ctCounter][3] = (tmLastTick/_pTimer->TickQuantum-1.0f)+fFactor;
+      avfStats[ctCounter][3] = (tmLastTick / _pTimer->TickQuantum - 1.0) + fFactor;
       ctCounter++;
       if (ctCounter>=ctMax) {
         ctCounter = 0;
@@ -1542,17 +1542,17 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     }
 
     // get passed time from session state starting in precise time and in ticks
-    FLOAT tmRealDelta = FLOAT((tvNow-ses_tvInitialization2).GetSeconds())
-      *_pNetwork->ga_fGameRealTimeFactor*_pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
-    FLOAT tmTickDelta = tmLastTick-ses_tmInitializationTick2;
+    TIME tmRealDelta = TIME((tvNow - ses_tvInitialization2).GetSeconds())
+      * _pNetwork->ga_fGameRealTimeFactor * _pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
+    TIME tmTickDelta = tmLastTick - ses_tmInitializationTick2;
     // calculate factor
-    fFactor2 = 1.0f-(tmTickDelta-tmRealDelta)/_pTimer->TickQuantum;
+    fFactor2 = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
 
     // if the factor starts getting below zero
     if (fFactor2<0) {
       //CPrintF("Lerp2=%.2f <0 @ %.2fs\n", fFactor2, tmLastTick);
       // clamp it
-      fFactor2 = 0.0f;
+      fFactor2 = 0.0;
       // readjust timers so that it gets better
       ses_tvInitialization2 = tvNow;
       ses_tmInitializationTick2 = tmLastTick-_pTimer->TickQuantum;
@@ -1560,7 +1560,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     if (fFactor2>1) {
       //CPrintF("Lerp2=%.2f >1 @ %.2fs\n", fFactor2, tmLastTick);
       // clamp it
-      fFactor2 = 1.0f;
+      fFactor2 = 1.0;
       // readjust timers so that it gets better
       ses_tvInitialization2 = tvNow;
       ses_tmInitializationTick2 = tmLastTick;

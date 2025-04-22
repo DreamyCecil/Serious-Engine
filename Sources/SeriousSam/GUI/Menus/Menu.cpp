@@ -670,22 +670,22 @@ void SetMenuLerping(void)
   }
 
   // get passed time from session state starting in precise time and in ticks
-  FLOAT tmRealDelta = FLOAT((tvNow-_tvInitialization).GetSeconds());
-  FLOAT tmTickDelta = _tmMenuLastTickDone-_tmInitializationTick;
+  TIME tmRealDelta = TIME((tvNow - _tvInitialization).GetSeconds());
+  TIME tmTickDelta = _tmMenuLastTickDone-_tmInitializationTick;
   // calculate factor
-  FLOAT fFactor = 1.0f-(tmTickDelta-tmRealDelta)/_pTimer->TickQuantum;
+  TIME fFactor = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
 
   // if the factor starts getting below zero
   if (fFactor<0) {
     // clamp it
-    fFactor = 0.0f;
+    fFactor = 0.0;
     // readjust timers so that it gets better
     _tvInitialization = tvNow;
     _tmInitializationTick = _tmMenuLastTickDone-_pTimer->TickQuantum;
   }
   if (fFactor>1) {
     // clamp it
-    fFactor = 1.0f;
+    fFactor = 1.0;
     // readjust timers so that it gets better
     _tvInitialization = tvNow;
     _tmInitializationTick = _tmMenuLastTickDone;
