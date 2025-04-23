@@ -74,17 +74,11 @@ void ParseSmcFile_t(CModelInstance &mi, const CTString &fnSmcFile)
   // Clear given model instance before parsing
   mi.Clear();
 
-  CTFileName fnFileName = fnSmcFile;
-  try {
-    fnFileName.RemoveApplicationPath_t();
-  } catch (char *) {
-  }
-
   CTString strIncludeFile;
-  strIncludeFile.Load_t(fnFileName);
+  strIncludeFile.Load_t(fnSmcFile);
 
   _yy_mi = &mi;
-  SMCPushBuffer(fnFileName.ConstData(), strIncludeFile.ConstData(), TRUE);
+  SMCPushBuffer(fnSmcFile.ConstData(), strIncludeFile.ConstData(), TRUE);
   syyparse();
 }
 
