@@ -459,12 +459,15 @@ const TICK CTimer::GetGameTick(void) const {
   return _tckCurrentTickTimer;
 };
 
-/*
- * Get current game time, always valid for the currently active task.
- */
-const TIME CTimer::GetLerpedCurrentTick(void) const {
-  return TicksToSec(_tckCurrentTickTimer) + GetLerpedSecond();
-}
+// [Cecil] Get the current game time in seconds
+const SECOND CTimer::GetCurrentSec(void) const {
+  // Get amount of ticks before the last second and amount of full seconds
+  const TICK tckRemainder = (_tckCurrentTickTimer % TickRate);
+  const SECOND tmSeconds = SECOND((_tckCurrentTickTimer - tckRemainder) / TickRate);
+
+  // Return full seconds + remaining ticks as a fraction of a second
+  return tmSeconds + ((SECOND)tckRemainder * TickQuantum);
+};
 
 // [Cecil] Deprecated wrapper methods for compatibility
 TIME CTimer::GetRealTimeTick(void) const {
@@ -477,6 +480,10 @@ void CTimer::SetCurrentTick(TIME tNewCurrentTick) {
 
 const TIME CTimer::CurrentTick(void) const {
   return TicksToSec(_tckCurrentTickTimer);
+};
+
+const TIME CTimer::GetLerpedCurrentTick(void) const {
+  return TicksToSec(_tckCurrentTickTimer) + GetLerpedFraction();
 };
 
 // Set factor for lerping between ticks.

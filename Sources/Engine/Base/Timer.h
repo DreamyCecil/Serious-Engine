@@ -124,7 +124,7 @@ public:
     return tm_llCPUSpeedHZ;
   };
 
-  // [Cecil] Get real time in ticks
+  // [Cecil] Get real time outside of the world simulation in ticks
   inline TICK GetRealTime(void) const {
     return tm_tckRealTimeTimer;
   };
@@ -145,13 +145,19 @@ public:
     return tm_fLerpFactor * (SECOND)TickQuantum;
   };
 
-  /* Get lerped game time. */
-  const TIME GetLerpedCurrentTick(void) const;
+  // [Cecil] Get the current game time in seconds
+  const SECOND GetCurrentSec(void) const;
+
+  // [Cecil] Get the current frame time in seconds
+  inline const SECOND GetLerpedCurrentSec(void) const {
+    return GetCurrentSec() + GetLerpedFraction();
+  };
 
   // [Cecil] Deprecated wrapper methods for compatibility
-  TIME GetRealTimeTick(void) const;
-  void SetCurrentTick(TIME tNewCurrentTick);
-  const TIME CurrentTick(void) const;
+  TIME GetRealTimeTick(void) const;            // Use GetRealTime() instead!
+  void SetCurrentTick(TIME tNewCurrentTick);   // Use SetGameTick() instead!
+  const TIME CurrentTick(void) const;          // Use GetGameTick() or GetCurrentSec() instead!
+  const TIME GetLerpedCurrentTick(void) const; // Use GetLerpedCurrentSec() instead!
 
   // [Cecil] Replaced FLOAT with SECOND everywhere for lerp factors
   // Set factor for lerping between ticks.
