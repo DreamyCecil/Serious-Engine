@@ -2174,10 +2174,15 @@ static void PrepareMeshForRendering(RenMesh &rmsh, INDEX iSkeletonlod)
   _aFinalNormals.PopAll();
   _pavFinalVertices = NULL;
   _panFinalNormals  = NULL;
-  // Reset light direction
-  _vLightDirInView = _vLightDir;
 
-  
+  FLOATmatrix3D mAbsToLight;
+  FLOAT3D vDummy;
+  Matrix12ToMatrixVector(mAbsToLight, vDummy, _mObjectToAbs);
+
+  // Reset light direction
+  // [Cecil] And orient it relative to the object rotation
+  _vLightDirInView = _vLightDir * !mAbsToLight;
+
   // Get vertices count
   INDEX ctVertices = mlod.mlod_aVertices.Count();
   // Allocate memory for vertices
