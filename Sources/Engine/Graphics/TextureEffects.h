@@ -66,7 +66,7 @@ public:
   // get effect type (true if water type effect, false if plasma or fire effect)
   BOOL IsWater(void);
   // returns number of second it took to render effect texture
-  ENGINE_API DOUBLE GetRenderingTime(void);
+  ENGINE_API SECOND GetRenderingTime(void);
 };
 
 struct TextureEffectSourceType {

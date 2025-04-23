@@ -66,7 +66,7 @@ CTimer *_pTimer = NULL;
 
 // [Cecil] Explicit tickrate number, i.e. amount of logic steps in one game second
 const TICK CTimer::TickRate = 20;
-const TIME CTimer::TickQuantum = TIME(1.0 / (DOUBLE)CTimer::TickRate);
+const TIME CTimer::TickQuantum = TIME(1.0 / (SECOND)CTimer::TickRate);
 
 /*
  * Timer interrupt callback function.
@@ -105,18 +105,19 @@ void CTimer::TimerFunc_internal(void)
 //  CTSTREAM_BEGIN {
 
   #if SE1_SINGLE_THREAD
-    static CTimerValue tvTickQuantum((double)_pTimer->TickQuantum);
+    static const SECOND tmQuantum = _pTimer->TickQuantum;
+    static CTimerValue tvTickQuantum(tmQuantum);
 
     CTimerValue tvUpkeepDiff = _pTimer->GetHighPrecisionTimer() - _pTimer->tm_tvInitialUpkeep;
-    TIME tmDiff = tvUpkeepDiff.GetSeconds();
+    const SECOND tmDiff = tvUpkeepDiff.GetSeconds();
 
     // No need to update timers yet
-    if (tmDiff < _pTimer->TickQuantum) return;
+    if (tmDiff < tmQuantum) return;
 
-    while (tmDiff >= _pTimer->TickQuantum) {
+    while (tmDiff >= tmQuantum) {
       _pTimer->tm_tvInitialUpkeep += tvTickQuantum;
       _pTimer->tm_tckRealTimeTimer++;
-      tmDiff -= _pTimer->TickQuantum;
+      tmDiff -= tmQuantum;
     }
 
   #else
@@ -379,10 +380,10 @@ CTimer::CTimer(BOOL bInterrupt /*=TRUE*/)
     // make sure that timer interrupt is ticking
     INDEX iTry=1;
     for( ; iTry<=3; iTry++) {
-      const TIME tmTickBefore = GetRealTimeTick();
+      const TICK tckTickBefore = GetRealTime();
       Suspend(1000 * iTry * 3 * TickQuantum);
-      const TIME tmTickAfter = GetRealTimeTick();
-      if( tmTickBefore!=tmTickAfter) break;
+      const TICK tckTickAfter = GetRealTime();
+      if (tckTickBefore != tckTickAfter) break;
       Suspend(1000 * iTry);
     }
     // report fatal

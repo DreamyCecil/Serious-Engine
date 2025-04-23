@@ -209,12 +209,12 @@ INDEX CProfileForm::GetAveragingCounter(void)
 }
 
 /* Get current value of a timer in seconds or in percentage of module time. */
-double CProfileForm::GetTimerAverageTime(INDEX iTimer) {
+SECOND CProfileForm::GetTimerAverageTime(INDEX iTimer) {
   // must not report while some timers are active!
   ASSERT(pf_ctRunningTimers==0);
   return pf_aptTimers[iTimer].pt_tvElapsed.GetSeconds()/GetAveragingCounter();
 }
-double CProfileForm::GetTimerPercentageOfModule(INDEX iTimer) {
+DOUBLE CProfileForm::GetTimerPercentageOfModule(INDEX iTimer) {
   // must not report while some timers are active!
   ASSERT(pf_ctRunningTimers==0);
   return pf_aptTimers[iTimer].pt_tvElapsed.GetSeconds()
@@ -222,7 +222,7 @@ double CProfileForm::GetTimerPercentageOfModule(INDEX iTimer) {
 }
 
 /* Get percentage of module time in application time. */
-double CProfileForm::GetModulePercentage(void) {
+DOUBLE CProfileForm::GetModulePercentage(void) {
   // must not report while some timers are active!
   ASSERT(pf_ctRunningTimers==0);
   // calculate total application time since profile form was reset
@@ -267,7 +267,7 @@ void CProfileCounter::Report(char *&strBuffer, INDEX ctAveragingCount)
     ctAveragingCount = 1;
   }
   strBuffer += sprintf(strBuffer, "%-45s: %7d %7.2f\n",
-    pc_strName.ConstData(), pc_ctCount, (double)pc_ctCount / ctAveragingCount);
+    pc_strName.ConstData(), pc_ctCount, (DOUBLE)pc_ctCount / ctAveragingCount);
 }
 
 /* Print one timer in report. */

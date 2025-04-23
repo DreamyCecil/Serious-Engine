@@ -110,6 +110,9 @@ typedef ULONG   COLOR;  // color is always in 32 bit true-color format
 // [Cecil] In-game tick value
 typedef SQUAD TICK;
 
+// [Cecil] Helper type for distinguishing between regular doubles and time in seconds
+typedef double SECOND;
+
 // macros for windows/croteam true color conversion
 #define CLRF_CLR(clr) ( ((clr & 0xff000000) >> 24) | \
                         ((clr & 0x00ff0000) >>  8) | \

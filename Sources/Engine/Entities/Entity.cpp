@@ -2969,7 +2969,7 @@ void CEntity::PlaySound(CSoundObject &so, SLONG idSoundComponent, SLONG slPlayTy
   so.Play(pecSound->ec_psdSound, slPlayType);
 }
 
-double CEntity::GetSoundLength(SLONG idSoundComponent)
+SECOND CEntity::GetSoundLength(SLONG idSoundComponent)
 {
   CEntityComponent *pecSound = en_pecClass->ec_pdecDLLClass->ComponentForID(idSoundComponent);
   ASSERT(pecSound != NULL && pecSound->ec_ectType == ECT_SOUND);

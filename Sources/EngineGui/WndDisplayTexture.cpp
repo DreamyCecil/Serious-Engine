@@ -165,7 +165,7 @@ void CWndDisplayTexture::OnPaint()
   // if this is effect texture
   if( pTD!=NULL && pTD->td_ptegEffect!=NULL)
   { // display rendering speed
-    DOUBLE dMS = pTD->td_ptegEffect->GetRenderingTime() * 1000.0;
+    SECOND dMS = pTD->td_ptegEffect->GetRenderingTime() * 1000.0;
     // only if valid
     if( dMS>0) {
       char achrSpeed[256];

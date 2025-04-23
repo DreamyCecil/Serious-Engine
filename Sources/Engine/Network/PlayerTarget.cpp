@@ -146,7 +146,7 @@ void CPlayerTarget::ApplyActionPacket(const CPlayerAction &paDelta)
     // calculate latency
     SQUAD llmsNow = _pTimer->GetHighPrecisionTimer().GetMilliseconds();
     SQUAD llmsCreated = plt_paLastAction.pa_llCreated;
-    fLatency = FLOAT(DOUBLE(llmsNow-llmsCreated)/1000.0f);
+    fLatency = FLOAT(SECOND(llmsNow - llmsCreated) / 1000.0f);
     if (plt_paLastAction.pa_llCreated==plt_paPreLastAction.pa_llCreated) {
       _pNetwork->AddNetGraphValue(NGET_REPLICATEDACTION, fLatency);
     } else {

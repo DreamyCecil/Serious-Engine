@@ -153,15 +153,15 @@ public:
 #endif // !SE1_EXF_TIMER_PROFILING
 
   /* Get current value of a timer in seconds or in percentage of module time. */
-  double GetTimerPercentageOfModule(INDEX iTimer);
-  double GetTimerAverageTime(INDEX iTimer);
+  DOUBLE GetTimerPercentageOfModule(INDEX iTimer);
+  SECOND GetTimerAverageTime(INDEX iTimer);
   /* Get name of a counter. */
   const CTString &GetCounterName(INDEX iCounter);
   /* Get name of a timer. */
   const CTString &GetTimerName(INDEX iTimer);
 
   /* Get percentage of module time in application time. */
-  double GetModulePercentage(void);
+  DOUBLE GetModulePercentage(void);
 
 #endif // ENGINE_INTERNAL
 

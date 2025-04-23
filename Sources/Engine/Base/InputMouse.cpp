@@ -34,7 +34,7 @@ struct MouseInputData_t {
   FLOAT tmTime;
   FLOAT fDXOld;
   FLOAT fDYOld;
-  TIME tmOldDelta;
+  SECOND tmOldDelta;
   CTimerValue tvBefore;
 
   MouseInputData_t() : tmTime(0.0f), fDXOld(0.0f), fDYOld(0.0f), tmOldDelta(0.0) {
@@ -293,7 +293,7 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   }
 
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
-  TIME tmNowDelta = ClampDn((tvNow - mid.tvBefore).GetSeconds(), 0.001);
+  SECOND tmNowDelta = ClampDn((tvNow - mid.tvBefore).GetSeconds(), 0.001);
 
   mid.tvBefore = tvNow;
 

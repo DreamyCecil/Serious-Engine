@@ -42,7 +42,7 @@ public:
   /* Constructor. */
   inline CTimerValue(void) {};
   /* Constructor from seconds. */
-  inline CTimerValue(double dSeconds);
+  inline CTimerValue(SECOND dSeconds);
   /* Clear timer value (set it to zero). */
   inline void Clear(void);
   /* Addition. */
@@ -57,7 +57,7 @@ public:
   inline BOOL operator<=(const CTimerValue &tvOther) const;
   inline BOOL operator>=(const CTimerValue &tvOther) const;
   /* Get the timer value in seconds. - use for time spans only! */
-  inline DOUBLE GetSeconds(void);
+  inline SECOND GetSeconds(void);
   /* Get the timer value in milliseconds as integral value. */
   inline SQUAD GetMilliseconds(void);
 };
@@ -194,7 +194,7 @@ inline TICK SecToTicksDn(TIME tm) {
 // It is rounded up in order to preserve the smallest possible amount of extra delay that there may be,
 // otherwise the time might end up being the same and cause inconsistencies during specific comparisons
 inline TICK SecToTicksUp(TIME tm) {
-  return static_cast<TIME>(ceil(tm * (TIME)CTimer::TickRate));
+  return static_cast<TICK>(ceil(tm * (TIME)CTimer::TickRate));
 };
 
 // [Cecil] Convert in-game ticks to seconds

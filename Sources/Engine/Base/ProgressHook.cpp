@@ -66,7 +66,7 @@ void CallProgressHook_t(FLOAT fCompleted)
   extern FLOAT net_fSendRetryWait;
 
   CTimerValue tvDiff = (_pTimer->GetHighPrecisionTimer() - tvLastUpdate);
-  CTimerValue tvRetryDelay((DOUBLE)net_fSendRetryWait * 1.1);
+  CTimerValue tvRetryDelay((SECOND)net_fSendRetryWait * 1.1);
 
   if (tvDiff > tvRetryDelay) {
     // Handle server messages

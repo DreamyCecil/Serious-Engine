@@ -107,7 +107,7 @@ void CSoundData::ClearBuffer(void)
 
 
 // Get Sound Length in seconds
-double CSoundData::GetSecondsLength(void)
+SECOND CSoundData::GetSecondsLength(void)
 {
   // if not encoded
   if (!(sd_ulFlags&SDF_ENCODED) ) {

@@ -46,7 +46,7 @@ public:
   WAVEFORMATEX sd_wfeFormat;     // primary sound buffer format
   SWORD *sd_pswBuffer;           // pointer on buffer
   SLONG  sd_slBufferSampleSize;  // buffer sample size
-  double sd_dSecondsLength;      // sound length in seconds
+  SECOND sd_dSecondsLength;      // sound length in seconds
 
   // free Buffer (and all linked Objects)
   void ClearBuffer(void);
@@ -63,7 +63,7 @@ public:
   // Destructor
   ~CSoundData();
   // get sound length in seconds
-  double GetSecondsLength(void);
+  SECOND GetSecondsLength(void);
   // read sound from file and convert it to the current sound format
   void  Read_t(CTStream *inFile);        // throw char *
   // write sound to file (not implemented)

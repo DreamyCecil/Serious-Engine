@@ -2667,7 +2667,7 @@ void CTextureEffectGlobal::Render( INDEX iWantedMipLevel, PIX pixTexWidth, PIX p
 #pragma warning(default: 4731)
 
 // returns number of second it took to render effect texture
-DOUBLE CTextureEffectGlobal::GetRenderingTime(void)
+SECOND CTextureEffectGlobal::GetRenderingTime(void)
 {
   return( _sfStats.sf_astTimers[CStatForm::STI_EFFECTRENDER].st_tvElapsed.GetSeconds());
 }
