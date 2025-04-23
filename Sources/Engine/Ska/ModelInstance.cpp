@@ -1021,6 +1021,9 @@ void CModelInstance::Copy(CModelInstance &miOther)
   mi_fnSourceFile = miOther.mi_fnSourceFile;
   mi_vStretch = miOther.mi_vStretch;
 
+  // [Cecil] Copy bounding box for all frames
+  mi_cbAllFramesBBox.Copy(miOther.mi_cbAllFramesBBox);
+
   // [Cecil] Reference the same model config
   if (miOther.mi_pInStock != NULL) {
     mi_pInStock = miOther.mi_pInStock;

@@ -47,21 +47,40 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 struct ColisionBox
 {
   ColisionBox() {};
-  ColisionBox(FLOAT3D vMin,FLOAT3D vMax) {
+
+  ColisionBox(const FLOAT3D &vMin, const FLOAT3D &vMax) {
     SetMin(vMin);
     SetMax(vMax);
-//    SetName("Default");
+    //SetName("Default");
   };
-  inline FLOAT3D &Min() {return cb_vMin;}
-  inline FLOAT3D &Max() {return cb_vMax;}
-  inline void SetMin(FLOAT3D vMin) {cb_vMin = vMin;}
-  inline void SetMax(FLOAT3D vMax) {cb_vMax = vMax;}
-  inline void SetName(CTString strName) {
+
+  inline FLOAT3D &Min(void) { return cb_vMin; };
+  inline FLOAT3D &Max(void) { return cb_vMax; };
+  inline const FLOAT3D &Min(void) const { return cb_vMin; };
+  inline const FLOAT3D &Max(void) const { return cb_vMax; };
+  inline void SetMin(const FLOAT3D &vMin) { cb_vMin = vMin; };
+  inline void SetMax(const FLOAT3D &vMax) { cb_vMax = vMax; };
+
+  inline void SetName(const CTString &strName) {
     cb_strName = strName;
-    cb_iBoxID  = ska_GetIDFromStringTable(cb_strName);
-  }
-  inline const CTString &GetName() {return cb_strName;}
-  inline const INDEX GetID() {return cb_iBoxID;}
+    cb_iBoxID = ska_GetIDFromStringTable(cb_strName);
+  };
+
+  inline const CTString &GetName(void) const {
+    return cb_strName;
+  };
+
+  inline const INDEX GetID(void) const {
+    return cb_iBoxID;
+  };
+
+  // [Cecil] Copy from another box
+  inline void Copy(const ColisionBox &other) {
+    cb_vMin = other.cb_vMin;
+    cb_vMax = other.cb_vMax;
+    SetName(other.GetName());
+  };
+
 private:
   FLOAT3D  cb_vMin;
   FLOAT3D  cb_vMax;
