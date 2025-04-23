@@ -253,12 +253,12 @@ properties:
   7 FLOAT3D en_vReferencePlane = FLOAT3D(0.0f,0.0f,0.0f),   // reference plane (only for standing on)
   8 INDEX en_iReferenceSurface = 0,     // surface on reference entity
   9 CEntityPointer en_penLastValidReference,  // last valid reference entity (for impact damage)
- 14 FLOAT en_tmLastSignificantVerticalMovement = 0.0f,   // last time entity moved significantly up/down
+ 14 TICK en_tckLastSignificantVerticalMovement = 0,   // last time entity moved significantly up/down
   // swimming parameters
- 10 FLOAT en_tmLastBreathed = 0,        // last time when entity took some air
+ 10 TICK en_tckLastBreathed = 0,        // last time when entity took some air
  11 FLOAT en_tmMaxHoldBreath = 5.0f,    // how long can entity be without air (adjustable)
  12 FLOAT en_fDensity = 5000.0f,        // density of the body [kg/m3] - defines buoyancy (adjustable)
- 13 FLOAT en_tmLastSwimDamage = 0,      // last time when entity was damaged by swimming
+ 13 TICK en_tckLastSwimDamage = 0,      // last time when entity was damaged by swimming
  // content immersion parameters
  20 INDEX en_iUpContent = 0,
  21 INDEX en_iDnContent = 0,
@@ -271,7 +271,7 @@ properties:
  67 FLOAT en_fForceA = 0.0f,
  68 FLOAT en_fForceV = 0.0f,
  // jumping parameters
- 30 FLOAT en_tmJumped = 0,            // time when entity jumped
+ 30 TICK en_tckJumped = 0, // time when entity jumped
  31 FLOAT en_tmMaxJumpControl = 0.5f,  // how long after jump can have control in the air [s] (adjustable)
  32 FLOAT en_fJumpControlMultiplier = 0.5f,  // how good is control when jumping (adjustable)
  // movement parameters
@@ -692,7 +692,7 @@ functions:
     FLOAT fParallelMultiplier, FLOAT fNormalMultiplier, FLOAT fMaxExitSpeed, TIME tmControl)
   {
     // fixup jump time for right control
-    en_tmJumped = _pTimer->CurrentTick()-en_tmMaxJumpControl+tmControl;
+    en_tckJumped = _pTimer->GetGameTick() + SecToTicks(tmControl - en_tmMaxJumpControl);
 
     // apply parallel and normal component multipliers
     FLOAT3D vCurrentNormal;
@@ -1012,28 +1012,32 @@ functions:
     BOOL bCanBreathe = 
       (ctUp.ct_ulFlags&CTF_BREATHABLE_LUNGS) && (en_ulPhysicsFlags&EPF_HASLUNGS) ||
       (ctUp.ct_ulFlags&CTF_BREATHABLE_GILLS) && (en_ulPhysicsFlags&EPF_HASGILLS);
-    TIME tmNow = _pTimer->CurrentTick();
-    TIME tmBreathDelay = tmNow-en_tmLastBreathed;
+
+    const TICK tckNow = _pTimer->GetGameTick();
+    const TICK tckBreathDelay = tckNow - en_tckLastBreathed;
+
     // if entity can breathe now
     if (bCanBreathe) {
       // update breathing time
-      en_tmLastBreathed = tmNow;
+      en_tckLastBreathed = tckNow;
+
       // if it was without air for some time
-      if (tmBreathDelay>_pTimer->TickQuantum*2) {
+      if (tckBreathDelay > 2) {
         // notify entity that it has take air now
         ETakingBreath eTakingBreath;
-        eTakingBreath.fBreathDelay = tmBreathDelay/en_tmMaxHoldBreath;
+        eTakingBreath.fBreathDelay = TicksToSec(tckBreathDelay) / en_tmMaxHoldBreath;
         SendEvent(eTakingBreath);
       }
+
     // if entity can not breathe now
     } else {
       // if it was without air for too long
-      if (tmBreathDelay>en_tmMaxHoldBreath) {
+      if (tckBreathDelay > SecToTicks(en_tmMaxHoldBreath)) {
         // inflict drowning damage 
         InflictDirectDamage(this, MiscDamageInflictor(), DMT_DROWNING, ctUp.ct_fDrowningDamageAmount, 
           en_plPlacement.pl_PositionVector, -en_vGravityDir);
         // prolongue breathing a bit, so not to come here every frame
-        en_tmLastBreathed = tmNow-en_tmMaxHoldBreath+ctUp.ct_tmDrowningDamageDelay;
+        en_tckLastBreathed = tckNow + SecToTicks(ctUp.ct_tmDrowningDamageDelay - en_tmMaxHoldBreath);
       }
     }
   }
@@ -1041,23 +1045,25 @@ functions:
   {
     // if the content can damage by swimming
     if (ctDn.ct_fSwimDamageAmount>0) {
-      TIME tmNow = _pTimer->CurrentTick();
+      const TICK tckNow = _pTimer->GetGameTick();
+      const TICK tckDelay = SecToTicks(ctDn.ct_tmSwimDamageDelay);
+
       // if there is a delay
-      if (ctDn.ct_tmSwimDamageDelay>0) {
+      if (tckDelay > 0) {
         // if not yet delayed
-        if (tmNow-en_tmLastSwimDamage>ctDn.ct_tmSwimDamageDelay+_pTimer->TickQuantum) {
+        if (tckNow - en_tckLastSwimDamage > tckDelay + 1) {
           // delay
-          en_tmLastSwimDamage = tmNow+ctDn.ct_tmSwimDamageDelay;
+          en_tckLastSwimDamage = tckNow + tckDelay;
           return;
         }
       }
 
-      if (tmNow-en_tmLastSwimDamage>ctDn.ct_tmSwimDamageFrequency) {
+      if (tckNow - en_tckLastSwimDamage > SecToTicks(ctDn.ct_tmSwimDamageFrequency)) {
         // inflict drowning damage 
         InflictDirectDamage(this, MiscDamageInflictor(),
           (DamageType)ctDn.ct_iSwimDamageType, ctDn.ct_fSwimDamageAmount*fImmersion, 
           en_plPlacement.pl_PositionVector, -en_vGravityDir);
-        en_tmLastSwimDamage = tmNow;
+        en_tckLastSwimDamage = tckNow;
       }
     }
     // if the content kills
@@ -1074,23 +1080,25 @@ functions:
   {
     // if the surface can damage by walking
     if (stDn.st_fWalkDamageAmount>0) {
-      TIME tmNow = _pTimer->CurrentTick();
+      const TICK tckNow = _pTimer->GetGameTick();
+      const TICK tckDelay = SecToTicks(stDn.st_tmWalkDamageDelay);
+
       // if there is a delay
-      if (stDn.st_tmWalkDamageDelay>0) {
+      if (tckDelay > 0) {
         // if not yet delayed
-        if (tmNow-en_tmLastSwimDamage>stDn.st_tmWalkDamageDelay+_pTimer->TickQuantum) {
+        if (tckNow - en_tckLastSwimDamage > tckDelay + 1) {
           // delay
-          en_tmLastSwimDamage = tmNow+stDn.st_tmWalkDamageDelay;
+          en_tckLastSwimDamage = tckNow + tckDelay;
           return;
         }
       }
 
-      if (tmNow-en_tmLastSwimDamage>stDn.st_tmWalkDamageFrequency) {
+      if (tckNow - en_tckLastSwimDamage > SecToTicks(stDn.st_tmWalkDamageFrequency)) {
         // inflict walking damage 
         InflictDirectDamage(this, MiscDamageInflictor(),
           (DamageType)stDn.st_iWalkDamageType, stDn.st_fWalkDamageAmount, 
           en_plPlacement.pl_PositionVector, -en_vGravityDir);
-        en_tmLastSwimDamage = tmNow;
+        en_tckLastSwimDamage = tckNow;
       }
     }
   }
@@ -2329,12 +2337,14 @@ out:;
             DEC*fPlaneYAbs*fPlaneYAbs*fFriction*fControlMultiplier,
             en_vReferencePlane);
         }
+
         // if wants to jump and can jump
         if (fJump<-0.01f && (fPlaneY<-stReference.st_fJumpSlopeCos
-          || _pTimer->CurrentTick()>en_tmLastSignificantVerticalMovement+0.25f) ) {
+         || _pTimer->GetGameTick() > en_tckLastSignificantVerticalMovement + SecToTicks(0.25)))
+        {
           // jump
           vTranslationAbsolute += en_vGravityDir*fJump;
-          en_tmJumped = _pTimer->CurrentTick();
+          en_tckJumped = _pTimer->GetGameTick();
           en_pbpoStandOn = NULL;
 
           OnJump(); // [Cecil] Just jumped
@@ -2343,7 +2353,7 @@ out:;
       // if it doesn't have a reference entity
       } else {//if (en_penReference==NULL) 
         // if can control after jump
-        if (_pTimer->CurrentTick()-en_tmJumped<en_tmMaxJumpControl) {
+        if (_pTimer->GetGameTick() - en_tckJumped < SecToTicks(en_tmMaxJumpControl)) {
           // accellerate horizontaly, but slower
           AddAccelerationOnPlane(
             vTranslationAbsolute, 
@@ -2354,11 +2364,11 @@ out:;
         }
 
         // if wants to jump and can jump
-        if (fJump<-0.01f && 
-          _pTimer->CurrentTick()>en_tmLastSignificantVerticalMovement+0.25f) {
+        if (fJump < -0.01f && _pTimer->GetGameTick() > en_tckLastSignificantVerticalMovement + SecToTicks(0.25))
+        {
           // jump
           vTranslationAbsolute += en_vGravityDir*fJump;
-          en_tmJumped = _pTimer->CurrentTick();
+          en_tckJumped = _pTimer->GetGameTick();
           en_pbpoStandOn = NULL;
 
           OnJump(); // [Cecil] Just jumped
@@ -2534,7 +2544,7 @@ out:;
 
     // remember significant movements
     if (Abs(en_vCurrentTranslationAbsolute%en_vGravityDir)>0.1f) {
-      en_tmLastSignificantVerticalMovement = _pTimer->CurrentTick();
+      en_tckLastSignificantVerticalMovement = _pTimer->GetGameTick();
     }
 
     ClearNextPosition();
@@ -2674,7 +2684,7 @@ out:;
     cm.CacheNearPolygons();
   }
 
-  // [Cecil] Called when entity performs a jump (after setting new en_tmJumped time)
+  // [Cecil] Called when entity performs a jump (after setting new en_tckJumped time)
   virtual void OnJump(void) {};
 
   // returns bytes of memory used by this object

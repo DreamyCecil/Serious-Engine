@@ -138,6 +138,12 @@ public:
   // [Cecil] Get the current game time that is always valid for the currently active task in ticks
   const TICK GetGameTick(void) const;
 
+  // [Cecil] Get current time between game ticks, which is essentially
+  // "GetLerpedCurrentTick() - CurrentTick()" but without precision loss
+  inline const TIME GetLerpedSecond(void) const {
+    return tm_tmLerpFactor * TickQuantum;
+  };
+
   /* Get lerped game time. */
   const TIME GetLerpedCurrentTick(void) const;
 

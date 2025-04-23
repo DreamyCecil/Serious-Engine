@@ -4409,10 +4409,11 @@ functions:
           }
         }
       }
-    
+
       // if player is almost out of air
-      TIME tmBreathDelay = tmNow-en_tmLastBreathed;
-      if (en_tmMaxHoldBreath-tmBreathDelay<20.0f) {
+      const TICK tckBreathDelay = _pTimer->GetGameTick() - en_tckLastBreathed;
+
+      if (SecToTicks(en_tmMaxHoldBreath) - tckBreathDelay < SecToTicks(20.0)) {
         // play drowning sound once in a while
         if (m_tmMouthSoundLast+2.0f<tmNow) {
           m_tmMouthSoundLast = tmNow;
@@ -5366,7 +5367,7 @@ functions:
     SwitchToModel();
     m_tmSpawned = _pTimer->CurrentTick();
 
-    en_tmLastBreathed = _pTimer->CurrentTick()+0.1f;  // do not take breath when spawned in air
+    en_tckLastBreathed = _pTimer->GetGameTick() + SecToTicks(0.1); // do not take breath when spawned in air
   };
 
   // note: set estimated time in advance

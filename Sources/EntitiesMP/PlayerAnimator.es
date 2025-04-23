@@ -921,7 +921,7 @@ functions:
                   FLOAT3D(pl.en_mRotation(1, 2), pl.en_mRotation(2, 2), pl.en_mRotation(3, 2));
 
     // if just jumped
-    if (pl.en_tmJumped>_pTimer->CurrentTick()-0.5f) {
+    if (pl.en_tckJumped > _pTimer->GetGameTick() - SecToTicks(0.5)) {
       fRelY = ClampUp(fRelY, 0.0f);
     }
     m_fEyesYOffset -= fRelY;

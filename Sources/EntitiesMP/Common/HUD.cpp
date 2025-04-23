@@ -1068,7 +1068,7 @@ extern void DrawHUD( const CPlayer *penPlayerCurrent, CDrawPort *pdpCurrent, BOO
 
   // draw oxygen info if needed
   BOOL bOxygenOnScreen = FALSE;
-  fValue = _penPlayer->en_tmMaxHoldBreath - (_pTimer->CurrentTick() - _penPlayer->en_tmLastBreathed);
+  fValue = _penPlayer->en_tmMaxHoldBreath - TicksToSec(_pTimer->GetGameTick() - _penPlayer->en_tckLastBreathed);
   if( _penPlayer->IsConnected() && (_penPlayer->GetFlags()&ENF_ALIVE) && fValue<30.0f) { 
     // prepare and draw oxygen info
     fRow = pixTopBound + fOneUnit + fNextUnit;

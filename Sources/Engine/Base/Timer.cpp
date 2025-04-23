@@ -460,7 +460,7 @@ const TICK CTimer::GetGameTick(void) const {
  * Get current game time, always valid for the currently active task.
  */
 const TIME CTimer::GetLerpedCurrentTick(void) const {
-  return TicksToSec(_tckCurrentTickTimer) + tm_tmLerpFactor * TickQuantum;
+  return TicksToSec(_tckCurrentTickTimer) + GetLerpedSecond();
 }
 
 // [Cecil] Deprecated wrapper methods for compatibility
