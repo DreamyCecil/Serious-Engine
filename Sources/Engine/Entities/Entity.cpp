@@ -2440,7 +2440,7 @@ BOOL CEntity::SetSkaModel(const CTString &fnmModel)
   // If failed
   } catch (char *strError) {
     WarningMessage("%s\n\rLoading default model.\n", strError);
-    DECLARE_CTFILENAME(fnmDefault, "Models\\Editor\\Ska\\Axis.smc");
+    DECLARE_CTFILENAME(fnmDefault, "Models\\SkaStudio\\Axis\\Axis.smc");
 
     // [Cecil] Try loading the default model from a file
     try {

@@ -514,7 +514,7 @@ functions:
 
     // must not crash when model is removed
     if (m_fnModel=="") {
-      m_fnModel=CTFILENAME("Models\\Editor\\Ska\\Axis.smc");
+      m_fnModel=CTFILENAME("Models\\SkaStudio\\Axis\\Axis.smc");
     }
 
     if (m_bActive) {
@@ -535,7 +535,7 @@ functions:
       //SetSkaColisionInfo();
     }
     if (!bLoadOK) {
-      SetSkaModel(CTFILENAME("Models\\Editor\\Ska\\Axis.smc"));
+      SetSkaModel(CTFILENAME("Models\\SkaStudio\\Axis\\Axis.smc"));
     }
     
     /*try
