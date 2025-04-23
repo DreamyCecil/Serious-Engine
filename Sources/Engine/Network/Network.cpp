@@ -966,7 +966,7 @@ void CNetworkLibrary::AutoAdjustSettings(void)
     return;
   }
 
-  static TIME _tmLastTimeNoPredictionSteps = -1;
+  static TICK _tckLastTimeNoPredictionSteps = -1;
   // get network lag in terms of ticks
   INDEX ctLagTicks = ga_sesSessionState.GetPredictionStepsCount()-(cli_iBufferActions-1);
 
@@ -974,9 +974,9 @@ void CNetworkLibrary::AutoAdjustSettings(void)
   if (ctLagTicks<=1) {
     // set settings to prediction-off
     AdjustPredictionOff();
-    _tmLastTimeNoPredictionSteps = _pTimer->CurrentTick();
+    _tckLastTimeNoPredictionSteps = _pTimer->GetGameTick();
   // if there is lag now for some time
-  } else if (_pTimer->CurrentTick()-_tmLastTimeNoPredictionSteps>=cli_tmAutoAdjustThreshold) {
+  } else if (_pTimer->GetGameTick() - _tckLastTimeNoPredictionSteps >= SecToTicks(cli_tmAutoAdjustThreshold)) {
     // set settings to prediction-on
     AdjustPredictionOn();
   }
@@ -1027,7 +1027,7 @@ void CNetworkLibrary::StartPeerToPeer_t(const CTString &strSessionName,
   ga_bLocalPause = FALSE;
   ga_sesSessionState.ses_iLevel+=1;
   ga_sesSessionState.ses_ulSpawnFlags = ulSpawnFlags;
-  ga_sesSessionState.ses_tmSyncCheckFrequency = ser_tmSyncCheckFrequency;
+  ga_sesSessionState.ses_tckSyncCheckFrequency = SecToTicks(ser_tmSyncCheckFrequency);
   ga_sesSessionState.ses_iExtensiveSyncCheck = ser_iExtensiveSyncCheck;
 
   memcpy(ga_aubProperties, pvSessionProperties, NET_MAXSESSIONPROPERTIES);
@@ -2376,7 +2376,7 @@ extern void NET_MakeDefaultState_t(
 
     // remember settings
     _pNetwork->ga_sesSessionState.ses_ulSpawnFlags = ulSpawnFlags;
-    _pNetwork->ga_sesSessionState.ses_tmSyncCheckFrequency = 10.0f;
+    _pNetwork->ga_sesSessionState.ses_tckSyncCheckFrequency = SecToTicks(10);
     _pNetwork->ga_sesSessionState.ses_iExtensiveSyncCheck = 0;
     memcpy(_pNetwork->ga_aubProperties, pvSessionProperties, NET_MAXSESSIONPROPERTIES);
     _pNetwork->ga_fnmWorld = fnmWorld;

@@ -1592,7 +1592,7 @@ void CSessionState::Read_t(CTStream *pstr)  // throw char *
   (*pstr)>>ses_iLevel;
   (*pstr)>>ses_ulRandomSeed;
   (*pstr)>>ses_ulSpawnFlags;
-  (*pstr)>>ses_tmSyncCheckFrequency;
+  (*pstr)>>ses_tckSyncCheckFrequency;
   (*pstr)>>ses_iExtensiveSyncCheck;
   (*pstr)>>ses_tckLastSyncCheck;
   (*pstr)>>ses_ctMaxPlayers;
@@ -1750,7 +1750,7 @@ void CSessionState::Write_t(CTStream *pstr)  // throw char *
   (*pstr)<<ses_iLevel;
   (*pstr)<<ses_ulRandomSeed;
   (*pstr)<<ses_ulSpawnFlags;
-  (*pstr)<<ses_tmSyncCheckFrequency;
+  (*pstr)<<ses_tckSyncCheckFrequency;
   (*pstr)<<ses_iExtensiveSyncCheck;
   (*pstr)<<ses_tckLastSyncCheck;
   (*pstr)<<ses_ctMaxPlayers;
@@ -1878,7 +1878,7 @@ void CSessionState::MakeSynchronisationCheck(void)
 {
   if (!_cmiComm.cci_bClientInitialized) return;
   // not yet time
-  if (ses_tckLastSyncCheck + SecToTicks(ses_tmSyncCheckFrequency) > ses_tckLastProcessedTick) {
+  if (ses_tckLastSyncCheck + ses_tckSyncCheckFrequency > ses_tckLastProcessedTick) {
     // don't check yet
     return;
   }
@@ -2205,7 +2205,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
 
   // gather all event relevant data
   ULONG ulEntityID = pen->en_ulID;
-  TIME tmNow = _pTimer->CurrentTick();
+  const TICK tckNow = _pTimer->GetGameTick();
 
   BOOL bPredicted = FALSE;
   // for each active event
@@ -2213,7 +2213,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
   {for(INDEX ipe=0; ipe<ctpe; ipe++) {
     CPredictedEvent &pe = ses_apeEvents[ipe];
     // if the event is too old
-    if (pe.pe_tmTick<tmNow-5.0f) {
+    if (pe.pe_tckTick < tckNow - SecToTicks(5)) {
       // delete it from list
       pe = ses_apeEvents[ctpe-1];
       ctpe--;
@@ -2221,10 +2221,10 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
       continue;
     }
     // if the event is same as the new one
-    if (pe.pe_tmTick==tmNow &&
-        pe.pe_ulEntityID==ulEntityID && 
-        pe.pe_ulTypeID==ulTypeID && 
-        pe.pe_ulEventID==ulEventID) {
+    if (pe.pe_tckTick == tckNow
+     && pe.pe_ulEntityID == ulEntityID
+     && pe.pe_ulTypeID == ulTypeID
+     && pe.pe_ulEventID == ulEventID) {
       // it was already predicted
       bPredicted = TRUE;
       break;
@@ -2242,7 +2242,7 @@ BOOL CSessionState::CheckEventPrediction(CEntity *pen, ULONG ulTypeID, ULONG ulE
   if (!bPredicted) {
     // add the new one
     CPredictedEvent &pe = ses_apeEvents.Push();
-    pe.pe_tmTick     = tmNow;
+    pe.pe_tckTick    = tckNow;
     pe.pe_ulEntityID = ulEntityID;
     pe.pe_ulTypeID   = ulTypeID;
     pe.pe_ulEventID  = ulEventID;

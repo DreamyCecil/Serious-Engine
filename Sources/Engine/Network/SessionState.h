@@ -62,7 +62,7 @@ public:
 // info about an event that was predicted to happen
 class CPredictedEvent {
 public:
-  TIME pe_tmTick;
+  TICK pe_tckTick;
   ULONG pe_ulEntityID;
   ULONG pe_ulTypeID;
   ULONG pe_ulEventID;
@@ -106,7 +106,7 @@ public:
   TICK ses_tckLastDemoSequence;   // synchronization timer for demo playing
   ULONG ses_ulRandomSeed;         // seed for pseudo-random number generation
   ULONG ses_ulSpawnFlags;         // spawn flags for current game
-  TIME ses_tmSyncCheckFrequency;  // frequency of sync-checking
+  TICK ses_tckSyncCheckFrequency; // frequency of sync-checking
   BOOL ses_iExtensiveSyncCheck;   // set if syncheck should be extensive - for debugging purposes
 
   BOOL ses_bKeepingUpWithTime;     // set if the session state is keeping up with the time

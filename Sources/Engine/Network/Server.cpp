@@ -1130,7 +1130,7 @@ void CServer::HandleAllForAClient(INDEX iClient)
   if (ser_bKickOnSyncLate &&sso.sso_bActive &&
       sso.sso_tckLastSyncReceived > 0 && 
       sso.sso_tckLastSyncReceived < _pNetwork->ga_sesSessionState.ses_tckLastSyncCheck -
-      SecToTicks(2 * ser_iSyncCheckBuffer * _pNetwork->ga_sesSessionState.ses_tmSyncCheckFrequency)) {
+      (2 * ser_iSyncCheckBuffer * _pNetwork->ga_sesSessionState.ses_tckSyncCheckFrequency)) {
     SendDisconnectMessage(iClient, TRANS("No valid SYNCCHECK received for too long!"));
   }
 

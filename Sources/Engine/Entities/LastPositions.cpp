@@ -22,10 +22,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CLastPositions::CLastPositions(const CLastPositions &lpOrg)
 {
-  lp_avPositions = lpOrg.lp_avPositions ;
-  lp_iLast       = lpOrg.lp_iLast       ;
-  lp_ctUsed      = lpOrg.lp_ctUsed      ;
-  lp_tmLastAdded = lpOrg.lp_tmLastAdded ;
+  lp_avPositions = lpOrg.lp_avPositions;
+  lp_iLast = lpOrg.lp_iLast;
+  lp_ctUsed = lpOrg.lp_ctUsed;
+  lp_tckLastAdded = lpOrg.lp_tckLastAdded;
 }
 
 // add a new position
@@ -37,7 +37,7 @@ void CLastPositions::AddPosition(const FLOAT3D &vPos)
   }
   lp_ctUsed = Min(INDEX(lp_ctUsed+1), lp_avPositions.Count());
   lp_avPositions[lp_iLast] = vPos;
-  lp_tmLastAdded = _pTimer->CurrentTick();
+  lp_tckLastAdded = _pTimer->GetGameTick();
 }
 
 // get a position

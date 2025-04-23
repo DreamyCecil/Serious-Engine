@@ -303,7 +303,7 @@ properties:
   // used for caching near polygons of zoning brushes for fast collision detection
   CStaticStackArray<CBrushPolygon *> en_apbpoNearPolygons;  // cached polygons
 
-  FLOAT en_tmLastPredictionHead;
+  TICK en_tckLastPredictionHead;
   FLOAT3D en_vLastHead;
   FLOAT3D en_vPredError;
   FLOAT3D en_vPredErrorLast;
@@ -330,7 +330,7 @@ functions:
 
   void ResetPredictionFilter(void)
   {
-    en_tmLastPredictionHead = -2;
+    en_tckLastPredictionHead = -2;
     en_vLastHead = en_plPlacement.pl_PositionVector;
     en_vPredError = en_vPredErrorLast = FLOAT3D(0,0,0);
   }
@@ -2615,9 +2615,9 @@ out:;
     extern BOOL _bPredictionActive;
     if (_bPredictionActive && (IsPredictable() || IsPredictor())) {
       CMovableEntity *penTail = (CMovableEntity *)GetPredictedSafe(this);
-      TIME tmNow = _pTimer->CurrentTick();
+      const TICK tckNow = _pTimer->GetGameTick();
  
-      if (penTail->en_tmLastPredictionHead<-1) {
+      if (penTail->en_tckLastPredictionHead < -1) {
         penTail->en_vLastHead = en_plPlacement.pl_PositionVector;
         penTail->en_vPredError = FLOAT3D(0,0,0);
         penTail->en_vPredErrorLast = FLOAT3D(0,0,0);
@@ -2626,7 +2626,7 @@ out:;
       // if this is a predictor
       if (IsPredictor()) {
         // if a new prediction of old prediction head, or just started prediction
-        if (penTail->en_tmLastPredictionHead==tmNow || penTail->en_tmLastPredictionHead<0) {
+        if (penTail->en_tckLastPredictionHead == tckNow || penTail->en_tckLastPredictionHead < 0) {
           // remember error
           penTail->en_vPredErrorLast = penTail->en_vPredError;
           penTail->en_vPredError += 
@@ -2636,20 +2636,20 @@ out:;
           // if this is really head of prediction chain
           if (IsPredictionHead()) {
             // remember the time
-            penTail->en_tmLastPredictionHead = tmNow;
+            penTail->en_tckLastPredictionHead = tckNow;
           }
 
         // if newer than last prediction head
-        } else if (tmNow>penTail->en_tmLastPredictionHead) {
+        } else if (tckNow > penTail->en_tckLastPredictionHead) {
           // just remember head and time
           penTail->en_vLastHead = en_plPlacement.pl_PositionVector;
-          penTail->en_tmLastPredictionHead = tmNow;
+          penTail->en_tckLastPredictionHead = tckNow;
         }
 
       // if prediction is of for this entity
       } else if (!(en_ulFlags&ENF_WILLBEPREDICTED)) {
         // if it was on before
-        if (penTail->en_tmLastPredictionHead>0) {
+        if (penTail->en_tckLastPredictionHead > 0) {
           // remember error
           penTail->en_vPredErrorLast = penTail->en_vPredError;
           penTail->en_vPredError += 
@@ -2657,7 +2657,7 @@ out:;
         }
         // remember this as head
         penTail->en_vLastHead = en_plPlacement.pl_PositionVector;
-        penTail->en_tmLastPredictionHead = -1;
+        penTail->en_tckLastPredictionHead = -1;
       }
       // if this is head of chain
       if (IsPredictionHead()) {

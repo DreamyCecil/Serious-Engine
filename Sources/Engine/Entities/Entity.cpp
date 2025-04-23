@@ -2815,20 +2815,21 @@ void CEntity::RemoveAttachment(INDEX iAttachment)
 /* Initialize last positions structure for particles. */
 CLastPositions *CEntity::GetLastPositions(INDEX ctPositions)
 {
-  TIME tmNow = _pTimer->CurrentTick();
+  const TICK tckNow = _pTimer->GetGameTick();
+
   if (en_plpLastPositions==NULL) {
     en_plpLastPositions = new CLastPositions;
     en_plpLastPositions->lp_avPositions.New(ctPositions);
     en_plpLastPositions->lp_ctUsed = 0;
     en_plpLastPositions->lp_iLast = 0;
-    en_plpLastPositions->lp_tmLastAdded = tmNow;
+    en_plpLastPositions->lp_tckLastAdded = tckNow;
     const FLOAT3D &vNow = GetPlacement().pl_PositionVector;
     for(INDEX iPos = 0; iPos<ctPositions; iPos++) {
       en_plpLastPositions->lp_avPositions[iPos] = vNow;
     }
   }
 
-  while(en_plpLastPositions->lp_tmLastAdded<tmNow) {
+  while (en_plpLastPositions->lp_tckLastAdded < tckNow) {
     en_plpLastPositions->AddPosition(en_plpLastPositions->GetPosition(0));
   }
 
