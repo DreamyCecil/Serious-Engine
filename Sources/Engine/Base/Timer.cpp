@@ -480,20 +480,20 @@ const TIME CTimer::CurrentTick(void) const {
 };
 
 // Set factor for lerping between ticks.
-void CTimer::SetLerp(TIME fFactor) // sets both primary and secondary
+void CTimer::SetLerp(SECOND fFactor) // sets both primary and secondary
 {
-  tm_tmLerpFactor  = fFactor;
-  tm_tmLerpFactor2 = fFactor;
+  tm_fLerpFactor  = fFactor;
+  tm_fLerpFactor2 = fFactor;
 }
-void CTimer::SetLerp2(TIME fFactor)  // sets only secondary
+void CTimer::SetLerp2(SECOND fFactor)  // sets only secondary
 {
-  tm_tmLerpFactor2 = fFactor;
+  tm_fLerpFactor2 = fFactor;
 }
 // Disable lerping factor (set both factors to 1)
 void CTimer::DisableLerp(void)
 {
-  tm_tmLerpFactor  = 1.0;
-  tm_tmLerpFactor2 = 1.0;
+  tm_fLerpFactor  = 1.0;
+  tm_fLerpFactor2 = 1.0;
 }
 
 // [Cecil] Get current timer value since the engine start in nanoseconds

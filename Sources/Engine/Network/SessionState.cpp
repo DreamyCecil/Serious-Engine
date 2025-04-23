@@ -1477,8 +1477,8 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     return;
   }
   
-  TIME fFactor  = 0.0;
-  TIME fFactor2 = 0.0;
+  SECOND fFactor  = 0.0;
+  SECOND fFactor2 = 0.0;
   
   // ---- primary factor - used for prediction
   {
@@ -1492,11 +1492,11 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     }
 
     // get passed time from session state starting in precise time and in ticks
-    TIME tmRealDelta = TIME((tvNow - ses_tvInitialization).GetSeconds())
+    const SECOND tmRealDelta = (tvNow - ses_tvInitialization).GetSeconds()
       * _pNetwork->ga_fGameRealTimeFactor * _pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
-    TIME tmTickDelta = TicksToSec(tckLastTick - ses_tckInitializationTick);
+    const SECOND tmTickDelta = SECOND(tckLastTick - ses_tckInitializationTick) / (SECOND)_pTimer->TickRate;
     // calculate factor
-    fFactor = 1.0 - (tmTickDelta - tmRealDelta) * (TIME)_pTimer->TickRate;
+    fFactor = 1.0 - (tmTickDelta - tmRealDelta) * (SECOND)_pTimer->TickRate;
 
     // if the factor starts getting below zero
     if (fFactor<0) {
@@ -1541,11 +1541,11 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
     }
 
     // get passed time from session state starting in precise time and in ticks
-    TIME tmRealDelta = TIME((tvNow - ses_tvInitialization2).GetSeconds())
+    const SECOND tmRealDelta = (tvNow - ses_tvInitialization2).GetSeconds()
       * _pNetwork->ga_fGameRealTimeFactor * _pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
-    TIME tmTickDelta = TicksToSec(tckLastTick - ses_tckInitializationTick2);
+    const SECOND tmTickDelta = SECOND(tckLastTick - ses_tckInitializationTick2) / (SECOND)_pTimer->TickRate;
     // calculate factor
-    fFactor2 = 1.0 - (tmTickDelta - tmRealDelta) * (TIME)_pTimer->TickRate;
+    fFactor2 = 1.0 - (tmTickDelta - tmRealDelta) * (SECOND)_pTimer->TickRate;
 
     // if the factor starts getting below zero
     if (fFactor2<0) {

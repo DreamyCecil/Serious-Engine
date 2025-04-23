@@ -113,10 +113,10 @@ void CSeriousSkaStudioDoc::SetTimerForDocument()
       tvNow -= m_tvPauseTime;
     }
     CTimerValue tvDelta = tvNow-m_tvStart;
-    double dSecs = tvDelta.GetSeconds();
+    const SECOND dSecs = tvDelta.GetSeconds();
     const TICK tckTicks = SecToTicksDn(dSecs);
-    const TIME tmExactTick = TicksToSec(tckTicks);
-    const TIME fFactor = (dSecs - tmExactTick) * _pTimer->TickRate;
+    const SECOND tmExactTick = (SECOND)tckTicks / (SECOND)_pTimer->TickRate;
+    const SECOND fFactor = (dSecs - tmExactTick) * (SECOND)_pTimer->TickRate;
     _pTimer->SetGameTick(tckTicks);
     _pTimer->SetLerp(fFactor);
   }

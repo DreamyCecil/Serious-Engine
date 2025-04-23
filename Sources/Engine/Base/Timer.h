@@ -82,9 +82,9 @@ private:
 
   TICK tm_tckRealTimeTimer; // [Cecil] This really ticks at 1/TickQuantum frequency (seconds -> ticks)
 
-  // [Cecil] FLOAT -> TIME
-  TIME tm_tmLerpFactor;  // Factor used for lerping between frames
-  TIME tm_tmLerpFactor2; // Secondary lerp-factor used for unpredicted movement
+  // [Cecil] FLOAT -> SECOND
+  SECOND tm_fLerpFactor;  // Factor used for lerping between frames
+  SECOND tm_fLerpFactor2; // Secondary lerp-factor used for unpredicted movement
 
 // [Cecil] For updating the timers in the same thread
 #if SE1_SINGLE_THREAD
@@ -94,11 +94,11 @@ private:
 #elif SE1_PREFER_SDL
   SDL_TimerID tm_TimerID; // [Cecil] SDL: Timer ID
 #else
-  ULONG tm_TimerID;       // windows timer ID
+  ULONG tm_TimerID; // windows timer ID
 #endif
 
-  CListHead         tm_lhHooks;   // a list head for timer hooks
-  BOOL tm_bInterrupt;       // set if interrupt is added
+  CListHead tm_lhHooks; // a list head for timer hooks
+  BOOL tm_bInterrupt; // set if interrupt is added
 
 // interface:
 public:
@@ -141,8 +141,8 @@ public:
 
   // [Cecil] Get current time between game ticks, which is essentially
   // "GetLerpedCurrentTick() - CurrentTick()" but without precision loss
-  inline const TIME GetLerpedSecond(void) const {
-    return tm_tmLerpFactor * TickQuantum;
+  inline const SECOND GetLerpedFraction(void) const {
+    return tm_fLerpFactor * (SECOND)TickQuantum;
   };
 
   /* Get lerped game time. */
@@ -153,16 +153,16 @@ public:
   void SetCurrentTick(TIME tNewCurrentTick);
   const TIME CurrentTick(void) const;
 
-  // [Cecil] Replaced FLOAT with TIME everywhere for lerp factors
+  // [Cecil] Replaced FLOAT with SECOND everywhere for lerp factors
   // Set factor for lerping between ticks.
-  void SetLerp(TIME fLerp);    // sets both primary and secondary
-  void SetLerp2(TIME fLerp);   // sets only secondary
+  void SetLerp(SECOND fLerp);    // sets both primary and secondary
+  void SetLerp2(SECOND fLerp);   // sets only secondary
   // Disable lerping factor (set both factors to 1)
   void DisableLerp(void);
   // Get current factor used for lerping between game ticks.
-  inline TIME GetLerpFactor(void) const { return tm_tmLerpFactor; };
+  inline SECOND GetLerpFactor(void) const { return tm_fLerpFactor; };
   // Get current factor used for lerping between game ticks.
-  inline TIME GetLerpFactor2(void) const { return tm_tmLerpFactor2; };
+  inline SECOND GetLerpFactor2(void) const { return tm_fLerpFactor2; };
 
   // [Cecil] Get current timer value since the engine start in nanoseconds
   CTimerValue GetHighPrecisionTimer(void);

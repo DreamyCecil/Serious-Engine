@@ -1228,12 +1228,12 @@ void CGame::ComputerRender(CDrawPort *pdp)
   }
 
   const TICK tckOld = _pTimer->GetGameTick();
-  const TIME fLerpOld = _pTimer->GetLerpFactor();
+  const SECOND fLerpOld = _pTimer->GetLerpFactor();
 
-  const TIME fSec = (TIME)tvNow.GetSeconds();
+  const SECOND fSec = tvNow.GetSeconds();
   const TICK tckTicks = SecToTicksDn(fSec);
-  const TIME tmExactTick = TicksToSec(tckTicks);
-  const TIME fLerp = (fSec - tmExactTick) * _pTimer->TickRate;
+  const SECOND tmExactTick = (SECOND)tckTicks / (SECOND)_pTimer->TickRate;
+  const SECOND fLerp = (fSec - tmExactTick) * (SECOND)_pTimer->TickRate;
   _pTimer->SetGameTick(tckTicks);
   _pTimer->SetLerp(fLerp);
 
