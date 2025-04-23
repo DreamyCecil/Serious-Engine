@@ -68,7 +68,7 @@ public:
     strm.Read_t(&matrix, sizeof(matrix));
     return strm;
   }
-  friend __forceinline CTStream &operator<<(CTStream &strm, Matrix<Type, iRows, iColumns> &matrix)
+  friend __forceinline CTStream &operator<<(CTStream &strm, const Matrix<Type, iRows, iColumns> &matrix)
   {
     strm.Write_t(&matrix, sizeof(matrix));
     return strm;

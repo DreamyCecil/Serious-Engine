@@ -89,7 +89,7 @@ public:
     strm.Read_t(&vector, sizeof(vector));
     return strm;
   }
-  friend __forceinline CTStream &operator<<(CTStream &strm, Vector<Type, iDimensions> &vector) {
+  friend __forceinline CTStream &operator<<(CTStream &strm, const Vector<Type, iDimensions> &vector) {
     strm.Write_t(&vector, sizeof(vector));
     return strm;
   }
