@@ -205,10 +205,10 @@ void shaCalculateLight(void)
   _acolVtxColors.PopAll();
   _acolVtxColors.Push(_ctVertices);
 
-  GFXColor colModel    = (GFXColor)_colModel;   // Model color
-  GFXColor &colAmbient = (GFXColor &)_colAmbient; // Ambient color
-  GFXColor &colLight   = (GFXColor &)_colLight;   // Light color
-  GFXColor &colSurface = (GFXColor &)_colConstant; // shader color
+  GFXColor colModel(_colModel);            // Model color
+  const GFXColor colAmbient(_colAmbient);  // Ambient color
+  const GFXColor colLight(_colLight);      // Light color
+  const GFXColor colSurface(_colConstant); // Shader color
 
   colModel.MultiplyRGBA(colModel,colSurface);
 
@@ -253,10 +253,10 @@ void shaCalculateLightForSpecular(void)
   _acolVtxColors.PopAll();
   _acolVtxColors.Push(_ctVertices);
 
-  GFXColor colModel    = (GFXColor)_colModel;   // Model color
-  GFXColor &colAmbient = (GFXColor &)_colAmbient; // Ambient color
-  GFXColor &colLight   = (GFXColor &)_colLight;   // Light color
-  GFXColor &colSurface = (GFXColor &)_colConstant; // shader color
+  GFXColor colModel(_colModel);            // Model color
+  const GFXColor colAmbient(_colAmbient);  // Ambient color
+  const GFXColor colLight(_colLight);      // Light color
+  const GFXColor colSurface(_colConstant); // Shader color
 
   // colModel = MulColors(colModel.r,colSurface.abgr);
   colModel.MultiplyRGBA(colModel,colSurface);
