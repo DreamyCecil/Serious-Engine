@@ -97,9 +97,10 @@ public:
     EPT_MODELINSTANCE = 26,
     // [Cecil] New property types
     EPT_RESERVED1 = 27,         // DON'T USE
-    EPT_UQUAD = 28,             // 64-bit integer (identical to SSR)
-    EPT_DOUBLE = 29,            // 64-bit float value (identical to SSR)
-    // next free number: 30
+    EPT_UQUAD = 28,             // UQUAD - 64-bit integer (identical to SSR)
+    EPT_DOUBLE = 29,            // DOUBLE - 64-bit float value (identical to SSR)
+    EPT_TICK = 30,              // TICK - precise timer ticks as integers instead of seconds
+    // next free number: 31
   } ep_eptType;               // type of property
   CEntityPropertyEnumType *ep_pepetEnumType;   // if the type is EPT_ENUM or EPT_FLAGS
 

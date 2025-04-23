@@ -263,6 +263,11 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
         istrm >> dDummy;
       } break;
 
+      case CEntityProperty::EPT_TICK: {
+        TICK tckDummy;
+        istrm >> tckDummy;
+      } break;
+
       default:
         ASSERTALWAYS("Unknown property type");
       }
@@ -420,6 +425,10 @@ void CEntity::ReadProperties_t(CTStream &istrm) // throw char *
         istrm >> PROPERTY(pepProperty->ep_slOffset, DOUBLE);
       } break;
 
+      case CEntityProperty::EPT_TICK: {
+        istrm >> PROPERTY(pepProperty->ep_slOffset, TICK);
+      } break;
+
       default:
         ASSERTALWAYS("Unknown property type");
       }
@@ -573,6 +582,10 @@ void CEntity::WriteProperties_t(CTStream &ostrm) // throw char *
 
       case CEntityProperty::EPT_DOUBLE: {
         ostrm << PROPERTY(epProperty.ep_slOffset, DOUBLE);
+      } break;
+
+      case CEntityProperty::EPT_TICK: {
+        ostrm << PROPERTY(epProperty.ep_slOffset, TICK);
       } break;
 
       default:

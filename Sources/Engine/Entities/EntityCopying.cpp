@@ -346,6 +346,7 @@ void CEntity::CopyOneProperty( CEntityProperty &epPropertySrc, CEntityProperty &
   // [Cecil] New property types
   case CEntityProperty::EPT_UQUAD:  COPYPROPERTY(UQUAD);  break;
   case CEntityProperty::EPT_DOUBLE: COPYPROPERTY(DOUBLE); break;
+  case CEntityProperty::EPT_TICK:   COPYPROPERTY(TICK);   break;
 
   default:
     ASSERTALWAYS("Unknown property type");
