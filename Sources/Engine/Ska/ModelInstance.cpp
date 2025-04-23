@@ -41,11 +41,11 @@ CModelInstance *_yy_mi = NULL;
 // calculate fade factor of animation list in animqueue
 FLOAT CalculateFadeFactor(AnimList &alList)
 {
-  if(alList.al_fFadeTime==0) {
+  if (alList.al_tmFadeTime == 0) {
     return 1.0f;
   }
 
-  FLOAT fFadeFactor = (_pTimer->GetLerpedCurrentTick() - alList.al_fStartTime) / alList.al_fFadeTime;
+  FLOAT fFadeFactor = FLOAT((_pTimer->GetLerpedCurrentSec() - alList.al_tmStartTime) / alList.al_tmFadeTime);
   return Clamp(fFadeFactor,0.0f,1.0f);
 }
 // create model instance
@@ -536,7 +536,7 @@ CModelInstance *CModelInstance::GetFirstNonReferencedParent(CModelInstance *pmiR
 }
 
 // add animation to ModelInstance
-void CModelInstance::AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX iGroupID, FLOAT fSpeedMul/*=1.0f*/)
+void CModelInstance::AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX iGroupID, SECOND fSpeedMul)
 {
 
 #ifdef SKADEBUG
@@ -548,7 +548,6 @@ if (!FindAnimationByID(iAnimID, &iDummy1, &iDummy2)) {
 }
 #endif
 
-  fSpeedMul = 1/fSpeedMul;
   // if no restart flag was set
   if(ulFlags&AN_NORESTART) {
     // if given animtion is allready playing
@@ -586,8 +585,8 @@ if (!FindAnimationByID(iAnimID, &iDummy1, &iDummy2)) {
     // just add new animations to end of list
     PlayedAnim &plAnim = alList.al_PlayedAnims.Push();
     plAnim.pa_iAnimID = iAnimID;
-    plAnim.pa_fSpeedMul = fSpeedMul;
-    plAnim.pa_fStartTime = _pTimer->CurrentTick();
+    plAnim.pa_tmSpeedMul = 1.0 / fSpeedMul;
+    plAnim.pa_tmStartTime = _pTimer->GetCurrentSec();
     plAnim.pa_Strength = fStrength;
     plAnim.pa_ulFlags = ulFlags;
     plAnim.pa_GroupID = iGroupID;
@@ -613,8 +612,8 @@ if (!FindAnimationByID(iAnimID, &iDummy1, &iDummy2)) {
     // set new animation as current index in anim list
     PlayedAnim &plAnim = alList.al_PlayedAnims[ipa];
     plAnim.pa_iAnimID = iAnimID;
-    plAnim.pa_fSpeedMul = fSpeedMul;
-    plAnim.pa_fStartTime = _pTimer->CurrentTick();
+    plAnim.pa_tmSpeedMul = 1.0 / fSpeedMul;
+    plAnim.pa_tmStartTime = _pTimer->GetCurrentSec();
     plAnim.pa_Strength = fStrength;
     plAnim.pa_ulFlags = ulFlags;
     plAnim.pa_GroupID = iGroupID;
@@ -717,7 +716,7 @@ void CModelInstance::RemovePassedAnimsFromQueue()
 }
 
 // create new state, copy last state in it and give it a fade time
-void CModelInstance::NewClonedState(FLOAT fFadeTime)
+void CModelInstance::NewClonedState(SECOND fFadeTime)
 {
   RemovePassedAnimsFromQueue();
   INDEX ctal = mi_aqAnims.aq_Lists.Count();
@@ -733,24 +732,24 @@ void CModelInstance::NewClonedState(FLOAT fFadeTime)
   AnimList &alList = mi_aqAnims.aq_Lists[ctal-1];
   // copy anims to new List
   alNewList.al_PlayedAnims = alList.al_PlayedAnims;
-  alNewList.al_fFadeTime = fFadeTime;
-  alNewList.al_fStartTime = _pTimer->CurrentTick();
+  alNewList.al_tmFadeTime = fFadeTime;
+  alNewList.al_tmStartTime = _pTimer->GetCurrentSec();
 }
 
 // create new cleared state and give it a fade time
-void CModelInstance::NewClearState(FLOAT fFadeTime)
+void CModelInstance::NewClearState(SECOND fFadeTime)
 {
   RemovePassedAnimsFromQueue();
   // add new empty list
   AnimList &alNewList = mi_aqAnims.aq_Lists.Push();
   alNewList.al_PlayedAnims.SetAllocationStep(1);
-  alNewList.al_fFadeTime = fFadeTime;
-  alNewList.al_fStartTime = _pTimer->CurrentTick();
+  alNewList.al_tmFadeTime = fFadeTime;
+  alNewList.al_tmStartTime = _pTimer->GetCurrentSec();
   alNewList.al_PlayedAnims.PopAll();
 }
 
 // stop all animations in this model instance and its children
-void CModelInstance::StopAllAnimations(FLOAT fFadeTime)
+void CModelInstance::StopAllAnimations(SECOND fFadeTime)
 {
   INDEX ctmi = mi_cmiChildren.Count();
   for(INDEX imi=0;imi<ctmi;imi++)
@@ -762,14 +761,14 @@ void CModelInstance::StopAllAnimations(FLOAT fFadeTime)
 }
 
 // Offset all animations in anim queue
-void CModelInstance::OffSetAnimationQueue(TIME fOffsetTime)
+void CModelInstance::OffSetAnimationQueue(SECOND fOffsetTime)
 {
   // for each anim list in anim queue
   INDEX ctal = mi_aqAnims.aq_Lists.Count();
   for(INDEX ial=0;ial<ctal;ial++) {
     AnimList &al = mi_aqAnims.aq_Lists[ial];
     // Modify anim list start time
-    al.al_fStartTime +=fOffsetTime;
+    al.al_tmStartTime += fOffsetTime;
   }
 }
 
@@ -818,13 +817,13 @@ INDEX CModelInstance::FindFirstAnimationID()
 }
 
 // get animation length
-FLOAT CModelInstance::GetAnimLength(INDEX iAnimID)
+SECOND CModelInstance::GetAnimLength(INDEX iAnimID)
 {
   INDEX iAnimSetIndex,iAnimIndex;
   FindAnimationByID(iAnimID,&iAnimSetIndex,&iAnimIndex);
   CAnimSet &as = mi_aAnimSet[iAnimSetIndex];
   Animation &an = as.as_Anims[iAnimIndex];
-  return an.an_fSecPerFrame * an.an_iFrames;
+  return (SECOND)an.an_fSecPerFrame * an.an_iFrames;
 }
 
 // Check if given animation is currently playing
@@ -873,7 +872,7 @@ BOOL CModelInstance::AddFlagsToPlayingAnim(INDEX iAnimID, ULONG ulFlags)
 }
 
 // [Cecil] Get animation frame at some point in time, if it's playing
-INDEX CModelInstance::GetFrameInTime(INDEX iAnimID, TIME tmTime) {
+INDEX CModelInstance::GetFrameInTime(INDEX iAnimID, SECOND tmTime) {
   // Check the last animation list in the queue
   INDEX ctLists = mi_aqAnims.aq_Lists.Count();
 
@@ -894,10 +893,10 @@ INDEX CModelInstance::GetFrameInTime(INDEX iAnimID, TIME tmTime) {
       Animation &an = mi_aAnimSet[iAnimSetIndex].as_Anims[iAnimIndex];
 
       // Time since the animation started
-      TIME tmOffset = tmTime - (TIME)pa.pa_fStartTime;
+      const SECOND tmOffset = tmTime - pa.pa_tmStartTime;
 
       // Calculate current frame and return it
-      INDEX iFrame = tmOffset / TIME(an.an_fSecPerFrame * pa.pa_fSpeedMul);
+      INDEX iFrame = tmOffset / ((SECOND)an.an_fSecPerFrame * pa.pa_tmSpeedMul);
       return iFrame % an.an_iFrames;
     }
   }

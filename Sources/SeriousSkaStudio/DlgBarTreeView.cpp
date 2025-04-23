@@ -825,7 +825,7 @@ void CDlgBarTreeView::SelItemChanged(HTREEITEM hSelected)
       // if alt is presed 
       } else if(bAlt) {
         // do new cloned state
-        pmiSelected->NewClonedState(0.2f);
+        pmiSelected->NewClonedState(0.2);
         // Add animation
         pmiSelected->RemAnimation(pan->an_iID);
       } else {

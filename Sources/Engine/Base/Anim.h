@@ -34,7 +34,8 @@ typedef char FILE_NAME[PATH_MAX];
 class CAnimInfo {
 public:
   NAME ai_AnimName;
-  TIME ai_SecsPerFrame;	    // speed of this animation
+  // [Cecil] TEMP: Changed from TIME to FLOAT to preserve vanilla logic even when SE1_DOUBLE_TIMER == 1
+  FLOAT ai_SecsPerFrame; // speed of this animation
   INDEX ai_NumberOfFrames;
 };
 
@@ -78,14 +79,14 @@ public:
   void RemReference(void);
 
   // creates given number of default animations (1 frame, given name and apeed)
-  ENGINE_API void CreateAnimations( INDEX ctAnimations, CTString strName="None",
-                         INDEX iDefaultFrame=0,TIME tmSpeed=0.02f);
+  ENGINE_API void CreateAnimations(INDEX ctAnimations, const CTString &strName = "None",
+    INDEX iDefaultFrame = 0, SECOND tmSecPerFrame = 0.02);
   // replaces frames array with given one
   ENGINE_API void SetFrames( INDEX iAnimation, INDEX ctFrames, INDEX *pNewFrames);
   // replaces requested animation's name with given one
   ENGINE_API void SetName( INDEX iAnimation, CTString strNewName);
   // replaces requested animation's speed with given one
-  ENGINE_API void SetSpeed( INDEX iAnimation, TIME tmSpeed);
+  ENGINE_API void SetSpeed(INDEX iAnimation, SECOND tmSecPerFrame);
   // obtains frame index for given place in array representing given animation
   ENGINE_API INDEX GetFrame( INDEX iAnimation, INDEX iFramePlace);
   // sets frame index for given place in array representing given animation
@@ -119,13 +120,13 @@ public:
 
 class CAnimObject : public TChangeable<false> {
 public:
-  TIME ao_tmAnimStart;      // time when current anim was started
-  INDEX ao_iCurrentAnim;	  // index of active animation
+  SECOND ao_tmAnimStart;    // [Cecil] Time when current anim was started (TIME -> SECOND)
+  INDEX ao_iCurrentAnim;    // index of active animation
   ULONG ao_ulFlags;         // flags
   INDEX ao_iLastAnim;       // index of last animation (for smooth transition)
 
   /* Calculate frame that coresponds to given time. */
-  INDEX FrameInTime(TIME time) const;
+  INDEX FrameInTime(SECOND tm) const;
 
 public:
   CAnimData *ao_AnimData;
@@ -160,7 +161,7 @@ public:
   /* Loop frames backward */
   ENGINE_API void PrevFrame(void);
   /* Select frame in given time offset */
-  ENGINE_API void SelectFrameInTime(TIME tmOffset);
+  ENGINE_API void SelectFrameInTime(SECOND tmOffset);
   /* Select first frame */
   ENGINE_API void FirstFrame(void);
   /* Select last frame */
@@ -181,15 +182,15 @@ public:
   /* Get current anim data ptr. */
   __forceinline CAnimData *GetData(void) const { return ao_AnimData; };
 
-  /* Get animation's length. */
-  ENGINE_API FLOAT GetCurrentAnimLength(void) const;
-  ENGINE_API FLOAT GetAnimLength(INDEX iAnim) const;
+  // [Cecil] Get animation's length in seconds (FLOAT -> SECOND)
+  ENGINE_API SECOND GetCurrentAnimLength(void) const;
+  ENGINE_API SECOND GetAnimLength(INDEX iAnim) const;
   /* Get number of animations in current anim data */
   ENGINE_API INDEX GetAnimsCt() const;
   /* If animation has finished */
   ENGINE_API BOOL IsAnimFinished(void) const;
-  /* Get passed time from start of animation */
-  ENGINE_API TIME GetPassedTime(void) const;
+  // [Cecil] Get passed time from start of animation (FLOAT -> SECOND)
+  ENGINE_API SECOND GetPassedTime(void) const;
 
   /* Start new animation -- obsolete. */
 	ENGINE_API void StartAnim(INDEX iNew);
@@ -206,7 +207,7 @@ public:
   /* Continues paused animation. */
 	ENGINE_API void ContinueAnim();
   /* Offsets the animation phase */
-	ENGINE_API void OffsetPhase(TIME tm);
+	ENGINE_API void OffsetPhase(SECOND tm);
   /* Retrieves paused flag */
   ENGINE_API BOOL IsPaused(void);
   /* Gets the number of current animation */

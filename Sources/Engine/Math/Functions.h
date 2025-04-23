@@ -165,10 +165,17 @@ inline SLONG FloatToInt( FLOAT f)
 
 #else
   // Round to the nearest by adding/subtracting 0.5
-  FLOAT addToRound = (f < 0.0f ? -0.5f : 0.5f);
-  return SLONG(f + addToRound);
+  FLOAT fAddToRound = (f < 0.0f ? -0.5f : 0.5f);
+  return SLONG(f + fAddToRound);
 #endif
 }
+
+// [Cecil] Double to integer conversion
+inline SLONG DoubleToInt(DOUBLE f) {
+  // Round to the nearest by adding/subtracting 0.5
+  DOUBLE fAddToRound = (f < 0.0 ? -0.5 : 0.5);
+  return SLONG(f + fAddToRound);
+};
 
 // log base 2 of any float numero
 inline FLOAT Log2( FLOAT f) {

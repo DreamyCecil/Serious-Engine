@@ -1805,7 +1805,7 @@ static void CalculateBoneTransforms()
 // Match animations in anim queue for bones
 static void MatchAnims(RenModel &rm)
 {
-  const FLOAT fLerpedTick = _pTimer->GetLerpedCurrentTick();
+  const SECOND tmLerpedTick = _pTimer->GetLerpedCurrentSec();
 
   // return if no animsets
   INDEX ctas = rm.rm_pmiModel->mi_aAnimSet.Count();
@@ -1838,7 +1838,7 @@ static void MatchAnims(RenModel &rm)
     INDEX ctpa = alList.al_PlayedAnims.Count();
     // for each played anim in played anim list
     for(int ipa=0;ipa<ctpa;ipa++) {
-      FLOAT fTime = fLerpedTick;
+      SECOND tmTime = tmLerpedTick;
       PlayedAnim &pa = alList.al_PlayedAnims[ipa];
       BOOL bAnimLooping = pa.pa_ulFlags & AN_LOOPING;
 
@@ -1848,25 +1848,26 @@ static void MatchAnims(RenModel &rm)
       if(rm.rm_pmiModel->FindAnimationByID(pa.pa_iAnimID,&iAnimSetIndex,&iAnimIndex)) {
         // if found, animate bones
         Animation &an = rm.rm_pmiModel->mi_aAnimSet[iAnimSetIndex].as_Anims[iAnimIndex];
-        
+
         // calculate end time for this animation list
-        FLOAT fFadeInEndTime = alList.al_fStartTime + alList.al_fFadeTime;
+        SECOND tmFadeInEndTime = alList.al_tmStartTime + alList.al_tmFadeTime;
 
         // if there is a newer anmimation list
         if(palListNext!=NULL) {
           // freeze time of this one to never overlap with the newer list
-          fTime = ClampUp(fTime, palListNext->al_fStartTime);
+          tmTime = ClampUp(tmTime, palListNext->al_tmStartTime);
         }
 
         // calculate time passed since the animation started
-        FLOAT fTimeOffset = fTime - pa.pa_fStartTime;
+        SECOND tmTimeOffset = tmTime - pa.pa_tmStartTime;
+
         // if this animation list is fading in
-        if (fLerpedTick < fFadeInEndTime) {
+        if (tmLerpedTick < tmFadeInEndTime) {
           // offset the time so that it is paused at the end of fadein interval
-          fTimeOffset += fFadeInEndTime - fLerpedTick;
+          tmTimeOffset += tmFadeInEndTime - tmLerpedTick;
         }
 
-        FLOAT f = fTimeOffset / (an.an_fSecPerFrame*pa.pa_fSpeedMul);
+        FLOAT f = FLOAT(tmTimeOffset / ((DOUBLE)an.an_fSecPerFrame * pa.pa_tmSpeedMul));
 
         INDEX iCurentFrame;
         INDEX iAnimFrame,iNextAnimFrame;

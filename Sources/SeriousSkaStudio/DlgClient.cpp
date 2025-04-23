@@ -659,7 +659,7 @@ void CDlgClient::OnBtCalcAllframesBbox()
   // AnimQueue aqOld = pmi->mi_aqAnims;
 
   ClearAnimQueue(*pmi);
-  pmi->NewClearState(0.0f);
+  pmi->NewClearState(0.0);
   bbox = AddAllVerticesToBBox(*pmi);
   // for each animset in model instance
   INDEX ctas = pmi->mi_aAnimSet.Count();
@@ -670,28 +670,28 @@ void CDlgClient::OnBtCalcAllframesBbox()
     for(INDEX ian=0;ian<ctan;ian++) {
       Animation &an = as.as_Anims[ian];
       AnimQueue &aq = pmi->mi_aqAnims;
-      FLOAT fSecPerFrame = an.an_fSecPerFrame;
+      SECOND tmSecPerFrame = (SECOND)an.an_fSecPerFrame;
       INDEX ctFrames = an.an_iFrames;
       ClearAnimQueue(*pmi);
-      pmi->NewClearState(0.0f);
+      pmi->NewClearState(0.0);
       pmi->AddAnimation(an.an_iID,AN_NOGROUP_SORT,1,0);
       ASSERT(aq.aq_Lists.Count()==1);
-      FLOAT fNow = aq.aq_Lists[0].al_fStartTime - fSecPerFrame*ctFrames;
+      SECOND tmNow = aq.aq_Lists[0].al_tmStartTime - tmSecPerFrame * ctFrames;
 
       // for each frame in animation
       for(INDEX ifr=0;ifr<ctFrames;ifr++) {
         AnimList &an = aq.aq_Lists[0];
         ASSERT(an.al_PlayedAnims.Count()==1);
         PlayedAnim &pa = an.al_PlayedAnims[0];
-        an.al_fStartTime=fNow;
-        pa.pa_fStartTime=fNow;
-        fNow+=fSecPerFrame;
+        an.al_tmStartTime = tmNow;
+        pa.pa_tmStartTime = tmNow;
+        tmNow += tmSecPerFrame;
         bbox |= AddAllVerticesToBBox(*pmi);
       }
     }
   }
   
-  pmi->NewClearState(0.0f);
+  pmi->NewClearState(0.0);
   ClearAnimQueue(*pmi);
   // pmi->mi_aqAnims = aqOld;
 

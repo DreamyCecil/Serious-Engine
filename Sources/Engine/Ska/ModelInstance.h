@@ -108,15 +108,17 @@ struct AnimQueue
 
 struct AnimList
 {
-  FLOAT al_fStartTime;  // Time when this list was created
-  FLOAT al_fFadeTime;   // Time when this list will fade in
+  // [Cecil] FLOAT -> SECOND
+  SECOND al_tmStartTime;  // Time when this list was created
+  SECOND al_tmFadeTime;   // Time when this list will fade in
   CStaticStackArray<struct PlayedAnim> al_PlayedAnims;  // Array of currently playing anims in this list
 };
 
 struct PlayedAnim
 {
-  FLOAT pa_fStartTime; // Time when this animation was started
-  FLOAT pa_fSpeedMul;  // Speed multiplier
+  // [Cecil] FLOAT -> SECOND
+  SECOND pa_tmStartTime; // Time when this animation was started
+  SECOND pa_tmSpeedMul;  // Speed multiplier
   INDEX pa_iAnimID;    // Animation id
   ULONG pa_ulFlags;    // Animation flags
   FLOAT pa_Strength;   // Animation strength
@@ -180,9 +182,9 @@ public:
   // Stretch model instance without attachments
   void StretchSingleModel(const FLOAT3D &vStretch);
   // Add new cloned anim state
-  void NewClonedState(FLOAT fFadeTime);
+  void NewClonedState(SECOND fFadeTime);
   // Add new clear anim state
-  void NewClearState(FLOAT fFadeTime);
+  void NewClearState(SECOND fFadeTime);
   // Sets name of model instance
   void SetName(CTString strName);
   // Gets name of model instance
@@ -191,7 +193,7 @@ public:
   const INDEX &GetID();
 
   // Add animation to last anim queue
-  void AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX iGroupID, FLOAT fSpeedMul = 1.0f);
+  void AddAnimation(INDEX iAnimID, ULONG ulFlags, FLOAT fStrength, INDEX iGroupID, SECOND fSpeedMul = 1.0);
   // Remove all animations before last animation that has fully faded in
   void RemovePassedAnimsFromQueue(void);
   // Remove animation from anim queue
@@ -199,22 +201,22 @@ public:
   // Remove all animations from anim queue with same ID
   void RemAnimsWithID(INDEX iGroupID);
   // Stop all animations in anim queue
-  void StopAllAnimations(FLOAT fFadeTime);
+  void StopAllAnimations(SECOND fFadeTime);
   // Offset all animations in anim queue
-  void OffSetAnimationQueue(TIME fOffsetTime);
+  void OffSetAnimationQueue(SECOND fOffsetTime);
   // Find animation by ID
   BOOL FindAnimationByID(int iAnimID, INDEX *piAnimSetIndex, INDEX *piAnimIndex);
   // Find first animation of all animations in ModelInstance (safety function)
   INDEX FindFirstAnimationID();
-  // Get animation length
-  FLOAT GetAnimLength(INDEX iAnimID);
+  // [Cecil] Get animation length (FLOAT -> SECOND)
+  SECOND GetAnimLength(INDEX iAnimID);
   // Check if given animation is currently playing
   BOOL IsAnimationPlaying(INDEX iAnimID);
   // Add flags to animation playing in anim queue
   BOOL AddFlagsToPlayingAnim(INDEX iAnimID, ULONG ulFlags);
 
   // [Cecil] Get animation frame at some point in time, if it's playing
-  INDEX GetFrameInTime(INDEX iAnimID, TIME tmTime);
+  INDEX GetFrameInTime(INDEX iAnimID, SECOND tmTime);
 
   // Model color
   COLOR &GetModelColor(void);

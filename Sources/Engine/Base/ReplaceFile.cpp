@@ -437,8 +437,8 @@ void WriteAnimQueue_t(CTStream &strm, CModelInstance &mi)
 
     strm.WriteID_t("AQAL");  // animation queue animation list
     // save anim list and get all played anims
-    strm<<al.al_fStartTime;
-    strm<<al.al_fFadeTime;
+    strm<<(FLOAT)al.al_tmStartTime;
+    strm<<(FLOAT)al.al_tmFadeTime;
     INDEX ctpa = al.al_PlayedAnims.Count();
     strm<<ctpa;
     // for each played anim
@@ -446,7 +446,7 @@ void WriteAnimQueue_t(CTStream &strm, CModelInstance &mi)
       // save played anim
       PlayedAnim &pa = al.al_PlayedAnims[ipa];
       strm.WriteID_t("ALPA");  // animation list played anim
-      strm<<pa.pa_fStartTime;
+      strm<<(FLOAT)pa.pa_tmStartTime;
       strm<<pa.pa_ulFlags;
       strm<<pa.pa_Strength;
       strm<<pa.pa_GroupID;
@@ -454,7 +454,7 @@ void WriteAnimQueue_t(CTStream &strm, CModelInstance &mi)
       strm<<strPlayedAnimID;
       // write anim speed mul
       strm.WriteID_t("PASP");  // played animation speed
-      strm<<pa.pa_fSpeedMul;
+      strm<<(FLOAT)pa.pa_tmSpeedMul;
     }
   }
 }
@@ -602,17 +602,24 @@ void ReadModelInstanceOld_t(CTStream &strm, CModelInstance &mi)
   // for each anim list
   for(INDEX ial=0;ial<ctal;ial++) {
     AnimList &al = aq.aq_Lists[ial];
+    FLOAT fDummy;
 
     // read anim list and get all played anims
-    strm>>al.al_fStartTime;
-    strm>>al.al_fFadeTime;
+    strm >> fDummy;
+    al.al_tmStartTime = (DOUBLE)fDummy;
+    strm >> fDummy;
+    al.al_tmFadeTime = (DOUBLE)fDummy;
+
     strm>>ctpa;
     if(ctpa>0) al.al_PlayedAnims.Push(ctpa);
     // for each played anim
     for(INDEX ipa=0;ipa<ctpa;ipa++) {
       // save played anim
       PlayedAnim &pa = al.al_PlayedAnims[ipa];
-      strm>>pa.pa_fStartTime;
+
+      strm >> fDummy;
+      pa.pa_tmStartTime = (DOUBLE)fDummy;
+
       strm>>pa.pa_ulFlags;
       strm>>pa.pa_Strength;
       strm>>pa.pa_GroupID;
@@ -723,18 +730,28 @@ void ReadAnimQueue_t(CTStream &strm, CModelInstance &mi)
   // for each anim list
   for(INDEX ial=0;ial<ctal;ial++) {
     AnimList &al = aq.aq_Lists[ial];
+    FLOAT fDummy;
+
     strm.ExpectID_t("AQAL");  // animation queue animation list
+
     // read anim list and get all played anims
-    strm>>al.al_fStartTime;
-    strm>>al.al_fFadeTime;
+    strm >> fDummy;
+    al.al_tmStartTime = (DOUBLE)fDummy;
+    strm >> fDummy;
+    al.al_tmFadeTime = (DOUBLE)fDummy;
+
     strm>>ctpa;
     if(ctpa>0) al.al_PlayedAnims.Push(ctpa);
+
     // for each played anim
     for(INDEX ipa=0;ipa<ctpa;ipa++) {
       // read played anim
       PlayedAnim &pa = al.al_PlayedAnims[ipa];
       strm.ExpectID_t("ALPA");  // animation list played anim
-      strm>>pa.pa_fStartTime;
+
+      strm >> fDummy;
+      pa.pa_tmStartTime = (DOUBLE)fDummy;
+
       strm>>pa.pa_ulFlags;
       strm>>pa.pa_Strength;
       strm>>pa.pa_GroupID;
@@ -743,7 +760,9 @@ void ReadAnimQueue_t(CTStream &strm, CModelInstance &mi)
       pa.pa_iAnimID = ska_GetIDFromStringTable(strPlayedAnimID);
       if(strm.PeekID_t()==CChunkID("PASP")) {
         strm.ExpectID_t("PASP");  // played animation speed
-        strm>>pa.pa_fSpeedMul;
+
+        strm >> fDummy;
+        pa.pa_tmSpeedMul = (DOUBLE)fDummy;
       }
     }
   }

@@ -32,8 +32,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define AN_CLONE                (1UL<<4) // do new cloned state before adding animation
 #define AN_NOGROUP_SORT         (1UL<<5) // dont sort animations by groups
 
-#define CLEAR_STATE_LENGTH  0.2f
-#define CLONED_STATE_LENGTH  0.2f
+#define CLEAR_STATE_LENGTH  SECOND(0.2)
+#define CLONED_STATE_LENGTH SECOND(0.2)
 
 struct AnimPos
 {

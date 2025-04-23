@@ -218,7 +218,7 @@ void CreateCurrentAnimationList(CModelInstance *pmi,CTString &strAnimations)
     INDEX ctpa = alList.al_PlayedAnims.Count();
     // for each played anim in played anim list
     for(int ipa=0;ipa<ctpa;ipa++) {
-      FLOAT fTime = _pTimer->GetLerpedCurrentTick();
+      SECOND tmTime = _pTimer->GetLerpedCurrentSec();
       PlayedAnim &pa = alList.al_PlayedAnims[ipa];
 
       strText.PrintF(MAKESPACE(ctChildLevel+1));
@@ -234,14 +234,14 @@ void CreateCurrentAnimationList(CModelInstance *pmi,CTString &strAnimations)
         Animation &an = pmi->mi_aAnimSet[iAnimSetIndex].as_Anims[iAnimIndex];
         
         // calculate end time for this animation list
-        FLOAT fEndTime = alList.al_fStartTime + alList.al_fFadeTime;
+        const SECOND tmEndTime = alList.al_tmStartTime + alList.al_tmFadeTime;
         // calculate curent and next frame in animation
         if(palListNext!=NULL) {
-          if(fTime > palListNext->al_fStartTime) fTime = palListNext->al_fStartTime;
+          if (tmTime > palListNext->al_tmStartTime) tmTime = palListNext->al_tmStartTime;
         }
 
-        if(fTime < fEndTime) fTime = fEndTime;
-        FLOAT f = (fTime - fEndTime) / (TIME)an.an_fSecPerFrame;
+        if (tmTime < tmEndTime) tmTime = tmEndTime;
+        FLOAT f = FLOAT((tmTime - tmEndTime) / (DOUBLE)an.an_fSecPerFrame);
 
         INDEX iCurentFrame;
         INDEX iAnimFrame,iNextAnimFrame;
@@ -1915,7 +1915,7 @@ void CSeriousSkaStudioView::OnActivateView(BOOL bActivate, CView* pActivateView,
 	CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
 
-void SyncModelInstance(CModelInstance *pmi,FLOAT fTime)
+void SyncModelInstance(CModelInstance *pmi, SECOND fTime)
 {
   CSeriousSkaStudioDoc *pDoc = theApp.GetDocument();
 
@@ -1925,14 +1925,14 @@ void SyncModelInstance(CModelInstance *pmi,FLOAT fTime)
   for(INDEX ial=0;ial<ctal;ial++)
   {
     AnimList &al = anq.aq_Lists[ial];
-    al.al_fStartTime = fTime;
+    al.al_tmStartTime = fTime;
     
     // for each played anim
     INDEX ctpa=al.al_PlayedAnims.Count();
     for(INDEX ipa=0;ipa<ctpa;ipa++)
     {
       PlayedAnim &pa = al.al_PlayedAnims[ipa];
-      pa.pa_fStartTime = fTime;
+      pa.pa_tmStartTime = fTime;
 
       if(pDoc->bAnimLoop) {
         pa.pa_ulFlags |= AN_LOOPING;
@@ -1953,14 +1953,14 @@ void SyncModelInstance(CModelInstance *pmi,FLOAT fTime)
 
 void CSeriousSkaStudioView::OnAnimSync() 
 {
-  SyncModelInstance(theApp.GetDocument()->m_ModelInstance,_pTimer->CurrentTick());
+  SyncModelInstance(theApp.GetDocument()->m_ModelInstance, _pTimer->GetCurrentSec());
 }
 
 void CSeriousSkaStudioView::OnAnimLoop() 
 {
   CSeriousSkaStudioDoc *pDoc = theApp.GetDocument();
   pDoc->bAnimLoop=!pDoc->bAnimLoop;
-  SyncModelInstance(theApp.GetDocument()->m_ModelInstance,_pTimer->CurrentTick());
+  SyncModelInstance(theApp.GetDocument()->m_ModelInstance, _pTimer->GetCurrentSec());
 }
 
 void CSeriousSkaStudioView::OnUpdateAnimLoop(CCmdUI* pCmdUI) 
