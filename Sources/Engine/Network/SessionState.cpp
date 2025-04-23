@@ -1496,7 +1496,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
       * _pNetwork->ga_fGameRealTimeFactor * _pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
     TIME tmTickDelta = TicksToSec(tckLastTick - ses_tckInitializationTick);
     // calculate factor
-    fFactor = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
+    fFactor = 1.0 - (tmTickDelta - tmRealDelta) * (TIME)_pTimer->TickRate;
 
     // if the factor starts getting below zero
     if (fFactor<0) {
@@ -1518,10 +1518,10 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
 
     #if DEBUG_LERPING
 
-      avfStats[ctCounter][0] = tmRealDelta / _pTimer->TickQuantum;
-      avfStats[ctCounter][1] = tmTickDelta / _pTimer->TickQuantum;
+      avfStats[ctCounter][0] = tmRealDelta * (TIME)_pTimer->TickRate;
+      avfStats[ctCounter][1] = tmTickDelta * (TIME)_pTimer->TickRate;
       avfStats[ctCounter][2] = fFactor;
-      avfStats[ctCounter][3] = (tmLastTick / _pTimer->TickQuantum - 1.0) + fFactor;
+      avfStats[ctCounter][3] = (tmLastTick * (TIME)_pTimer->TickRate - 1.0) + fFactor;
       ctCounter++;
       if (ctCounter>=ctMax) {
         ctCounter = 0;
@@ -1545,7 +1545,7 @@ void CSessionState::SetLerpFactor(CTimerValue tvNow)
       * _pNetwork->ga_fGameRealTimeFactor * _pNetwork->ga_sesSessionState.ses_fRealTimeFactor;
     TIME tmTickDelta = TicksToSec(tckLastTick - ses_tckInitializationTick2);
     // calculate factor
-    fFactor2 = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
+    fFactor2 = 1.0 - (tmTickDelta - tmRealDelta) * (TIME)_pTimer->TickRate;
 
     // if the factor starts getting below zero
     if (fFactor2<0) {

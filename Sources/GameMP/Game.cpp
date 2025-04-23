@@ -1786,16 +1786,20 @@ static void PrintStats( CDrawPort *pdpDrawPort)
     pdpDrawPort->SetTextScaling( fTextScale);
     pdpDrawPort->SetTextAspect( 1.0f);
     // calculate elapsed time
-    CTimerValue tvNow = _pTimer->CurrentTick();
-    ULONG ulTime = (ULONG)tvNow.GetSeconds();
+    const TICK tckSeconds = _pTimer->GetGameTick() / _pTimer->TickRate;
     // printout elapsed time
     CTString strTime;
-    if( ulTime >= (60*60)) {
+
+    const TICK tckOneHour = (60 * 60);
+    const TICK tckSecs = (tckSeconds % 60);
+    const TICK tckMins = (tckSeconds / 60) % 60;
+
+    if (tckSeconds >= tckOneHour) {
       // print hours
-      strTime.PrintF( "%02d:%02d:%02d", ulTime/(60*60), (ulTime/60)%60, ulTime%60);
+      strTime.PrintF("%02d:%02d:%02d", tckSeconds / tckOneHour, tckMins, tckSecs);
     } else {
       // skip hours
-      strTime.PrintF( "%2d:%02d", ulTime/60, ulTime%60);
+      strTime.PrintF("%2d:%02d", tckMins, tckSecs);
     }
     pdpDrawPort->PutTextC( strTime, slDPWidth*0.5f, slDPHeight*0.06f, C_WHITE|CT_OPAQUE);
   }

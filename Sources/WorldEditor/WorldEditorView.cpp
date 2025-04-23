@@ -11957,7 +11957,7 @@ void CWorldEditorView::OnAlternativeMovingMode()
 
     CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
     FLOAT fPassed = (tvNow-tvStart).GetSeconds();
-    INDEX iNowTick = INDEX(fPassed/_pTimer->TickQuantum);
+    INDEX iNowTick = INDEX(fPassed * _pTimer->TickRate);
     // apply controls for frame rates below tick quantum
     while(iLastTick<iNowTick-1)
     {
@@ -11968,7 +11968,7 @@ void CWorldEditorView::OnAlternativeMovingMode()
     ApplyFreeModeControls( _plNew, _aAbs, _fFlyModeSpeedMultiplier, TRUE);
 
     // set new viewer position
-    FLOAT fLerpFactor = (fPassed-iNowTick*_pTimer->TickQuantum)/_pTimer->TickQuantum;
+    FLOAT fLerpFactor = (fPassed - iNowTick / _pTimer->TickRate) * _pTimer->TickRate;
     ASSERT(fLerpFactor>0 && fLerpFactor<1.0f);
     pcf->m_mvViewer.mv_plViewer.Lerp( _plOld, _plNew, Clamp(fLerpFactor, 0.0f, 1.0f));
     pcf->m_mvViewer.mv_plViewer.pl_OrientationAngle = _aAbs;

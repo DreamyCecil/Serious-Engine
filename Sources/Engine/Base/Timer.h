@@ -105,7 +105,8 @@ public:
   CTCriticalSection tm_csHooks;   // access to timer hooks
 
   // interval defining frequency of the game ticker
-  static const TIME TickQuantum;     // 20 ticks per second
+  static const TICK TickRate; // [Cecil] Explicit tickrate number, i.e. amount of logic steps in one game second
+  static const TIME TickQuantum;
 
   /* Constructor. */
   CTimer(BOOL bInterrupt=TRUE);
@@ -179,21 +180,21 @@ ENGINE_API extern CTimer *_pTimer;
 // [Cecil] Convert seconds to in-game ticks, rounded to the nearest integer
 inline TICK SecToTicks(TIME tm) {
   const TIME fAddToRound = (tm < 0.0 ? -0.5 : 0.5);
-  return static_cast<TICK>(floor(tm / CTimer::TickQuantum + fAddToRound));
+  return static_cast<TICK>(floor(tm * (TIME)CTimer::TickRate + fAddToRound));
 };
 
 // [Cecil] Convert seconds to in-game ticks, rounded down to the nearest integer
 // It cuts off any remaining fraction after multiplying seconds by the tickrate if the time didn't match any tick
 // Use SecToTicks() to eliminate any potential float imprecision that would result in one less tick than intended
 inline TICK SecToTicksDn(TIME tm) {
-  return static_cast<TICK>(floor(tm / CTimer::TickQuantum));
+  return static_cast<TICK>(floor(tm * (TIME)CTimer::TickRate));
 };
 
 // [Cecil] Convert seconds to in-game ticks, rounded up to the nearest integer
 // It is rounded up in order to preserve the smallest possible amount of extra delay that there may be,
 // otherwise the time might end up being the same and cause inconsistencies during specific comparisons
 inline TICK SecToTicksUp(TIME tm) {
-  return static_cast<TIME>(ceil(tm / CTimer::TickQuantum));
+  return static_cast<TIME>(ceil(tm * (TIME)CTimer::TickRate));
 };
 
 // [Cecil] Convert in-game ticks to seconds

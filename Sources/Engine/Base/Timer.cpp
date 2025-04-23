@@ -64,7 +64,9 @@ static SE1_THREADLOCAL TICK _tckCurrentTickTimer = 0; // [Cecil] Ticks instead o
 // pointer to global timer object
 CTimer *_pTimer = NULL;
 
-const TIME CTimer::TickQuantum = TIME(1/20.0);    // 20 ticks per second
+// [Cecil] Explicit tickrate number, i.e. amount of logic steps in one game second
+const TICK CTimer::TickRate = 20;
+const TIME CTimer::TickQuantum = TIME(1.0 / (DOUBLE)CTimer::TickRate);
 
 /*
  * Timer interrupt callback function.

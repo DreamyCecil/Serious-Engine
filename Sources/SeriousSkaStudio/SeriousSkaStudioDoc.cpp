@@ -116,7 +116,7 @@ void CSeriousSkaStudioDoc::SetTimerForDocument()
     double dSecs = tvDelta.GetSeconds();
     const TICK tckTicks = SecToTicksDn(dSecs);
     const TIME tmExactTick = TicksToSec(tckTicks);
-    const TIME fFactor = (dSecs - tmExactTick) / _pTimer->TickQuantum;
+    const TIME fFactor = (dSecs - tmExactTick) * _pTimer->TickRate;
     _pTimer->SetGameTick(tckTicks);
     _pTimer->SetLerp(fFactor);
   }

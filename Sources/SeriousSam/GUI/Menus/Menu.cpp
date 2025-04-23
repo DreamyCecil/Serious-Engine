@@ -669,10 +669,10 @@ void SetMenuLerping(void)
   }
 
   // get passed time from session state starting in precise time and in ticks
-  TIME tmRealDelta = TIME((tvNow - _tvInitialization).GetSeconds());
-  TIME tmTickDelta = TicksToSec(_tckMenuLastTickDone - _tckInitializationTick);
+  const TIME tmRealDelta = TIME((tvNow - _tvInitialization).GetSeconds());
+  const TIME tmTickDelta = TicksToSec(_tckMenuLastTickDone - _tckInitializationTick);
   // calculate factor
-  TIME fFactor = 1.0 - (tmTickDelta - tmRealDelta) / _pTimer->TickQuantum;
+  TIME fFactor = 1.0 - (tmTickDelta - tmRealDelta) * (TIME)_pTimer->TickRate;
 
   // if the factor starts getting below zero
   if (fFactor<0) {
