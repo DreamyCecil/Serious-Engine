@@ -172,10 +172,10 @@ CWorldEditorDoc::CWorldEditorDoc()
   // initialize create box vertices
   TCHAR strIni[ 128];
   _tcscpy(strIni, theApp.GetProfileString(_T("World editor"), _T("Volume box min"), _T("0.0 0.0 0.0")));
-  _tscanf(strIni, _T("%f %f %f"),
+  _stscanf(strIni, _T("%f %f %f"),
     &m_vCreateBoxVertice0(1), &m_vCreateBoxVertice0(2), &m_vCreateBoxVertice0(3));
   _tcscpy(strIni, theApp.GetProfileString(_T("World editor"), _T("Volume box max"), _T("1.0 1.0 1.0")));
-  _tscanf(strIni, _T("%f %f %f"),
+  _stscanf(strIni, _T("%f %f %f"),
     &m_vCreateBoxVertice1(1), &m_vCreateBoxVertice1(2), &m_vCreateBoxVertice1(3));
 
   // set default editing mode - polygon mode

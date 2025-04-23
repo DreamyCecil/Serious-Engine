@@ -77,7 +77,7 @@ INDEX GetIndexFromProfile( CTString strVarName, INDEX iDefault)
   strDefault.PrintF("%d", iDefault);
   CString strTemp = theApp.GetProfileString(_T("Modeler prefs"), CString(strVarName), CString(strDefault));
   INDEX iValue;
-  _tscanf(strTemp, _T("%d"), &iValue);
+  _stscanf(strTemp, _T("%d"), &iValue);
   return iValue;
 };
 
@@ -94,7 +94,7 @@ COLOR GetColorFromProfile( CTString strVarName, COLOR colDefault)
   strDefault.PrintF("0x%08x", colDefault);
   CString strTemp = theApp.GetProfileString(_T("Modeler prefs"), CString(strVarName), CString(strDefault));
   COLOR colValue;
-  _tscanf(strTemp, _T("0x%08x"), &colValue);
+  _stscanf(strTemp, _T("0x%08x"), &colValue);
   return colValue;
 };
 

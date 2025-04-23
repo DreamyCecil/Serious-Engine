@@ -48,16 +48,16 @@ BOOL FloatFromString(HWND hWnd, float &fNumber, BOOL &bValid)
 {
 	TCHAR szWindowText[20];
 	::GetWindowText(hWnd, szWindowText, 19);
-  if (MfcStringToCT(szWindowText) == "")
+  if (_tcscmp(szWindowText, _T("")) == 0)
   {
     bValid = FALSE;
     return TRUE;
   }
-  
+
   bValid = TRUE;  
   float fTmpNumber = fNumber;
   size_t iNumLen = _tcslen(szWindowText);
-  int iRetLen = _tscanf(szWindowText, _T("%f"), &fTmpNumber);
+  int iRetLen = _stscanf(szWindowText, _T("%f"), &fTmpNumber);
   if( (iRetLen == 1)  || ((iNumLen == 1) && (szWindowText[0] == '-') || (iNumLen == 0)) )
   {
     fNumber = fTmpNumber;

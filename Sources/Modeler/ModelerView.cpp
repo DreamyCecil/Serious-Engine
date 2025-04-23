@@ -748,13 +748,13 @@ void CModelerView::RenderView( CDrawPort *pDrawPort)
     CString csSpeed;
     pmf->m_ctrlZSpeed.GetWindowText( csSpeed);
     FLOAT fSpeed;
-    BOOL bSpeedValid = _tscanf(csSpeed, _T("%g"), &fSpeed);
+    BOOL bSpeedValid = _stscanf(csSpeed, _T("%g"), &fSpeed);
     
     // obtain loop value
     CString csLoop;
     pmf->m_ctrlZLoop.GetWindowText( csLoop);
     INDEX iLoop;
-    BOOL bLoopValid = _tscanf(csLoop, _T("%d"), &iLoop);
+    BOOL bLoopValid = _stscanf(csLoop, _T("%d"), &iLoop);
     
     // simulate translation along z-axis
     CPlacement3D plTranslated = m_plModelPlacement;

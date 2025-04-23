@@ -2587,7 +2587,7 @@ void CWorldEditorApp::OnFileNew()
   // obtain background color form INI file
   _tcscpy(chrColor, theApp.GetProfileString(_T("World editor prefs"),
                                             _T("Default background color"), _T("0XFF000000")));
-  _tscanf(chrColor, _T("0X%08x"), &colBackground);
+  _stscanf(chrColor, _T("0X%08x"), &colBackground);
   // set background color to color button
   pDoc->m_woWorld.SetBackgroundColor( colBackground);
   pDoc->m_woWorld.SetDescription( "No mission description");

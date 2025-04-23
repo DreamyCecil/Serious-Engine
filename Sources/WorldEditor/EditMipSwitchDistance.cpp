@@ -95,7 +95,7 @@ BOOL CEditMipSwitchDistance::PreTranslateMessage(MSG* pMsg)
       FLOAT fValue = 100.0f;
       CBrushMip *pbrm = GetMipBrush();
       // if value is valid and brush exists
-      if( (_tscanf(strWindowText, _T("%g"), &fValue) == 1) && (pbrm != NULL) )
+      if( (_stscanf(strWindowText, _T("%g"), &fValue) == 1) && (pbrm != NULL) )
       {
         pbrm->SetMipDistance( fValue);
         m_fLastValue = fValue;
