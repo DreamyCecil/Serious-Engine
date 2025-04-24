@@ -22,7 +22,6 @@ This is a fork of Croteam's Serious Engine 1.10 with personal adjustments aimed 
 
 ### Engine components
 - `DedicatedServer` - Dedicated server application for hosting multiplayer games
-- `Ecc` - Entity Class Compiler for compiling entity source files (`*.es`)
 - `Engine` - Serious Engine 1.10
 - `EngineGUI` - Common GUI components for game tools
 - `EntitiesMP` - All the entity logic
@@ -41,9 +40,11 @@ This is a fork of Croteam's Serious Engine 1.10 with personal adjustments aimed 
 - `WorldEditor` - Serious Editor application for creating in-game levels
 
 ### Other projects
-- `LWSkaExporter` - Exporter of SKA models in ASCII format for use in LightWave
+- `ECC` - Separate fork of Entity Class Compiler from Serious Engine 1 that is engine-agnostic
 - `GameAgent` - Custom master server emulator written in Python
 - `libogg`, `libvorbis` - Third party libraries for playing OGG-encoded in-game music
+- `LWSkaExporter` - Exporter of SKA models in ASCII format for use in LightWave
+- `SDL3` - Third party library that helps with porting the engine to other platforms
 - `zlib` - Third party static library for working with ZIP archives
 
 These have been modified to run correctly under the recent versions of Windows. (Tested: Win7 x64, Win8 x64, Win8.1 x64, Win10 x64)
@@ -178,6 +179,6 @@ Some of the code included with the engine sources under `Sources/ThirdParty/` is
 - **GLEW** (`glew/`) from https://glew.sourceforge.net/
 - **libogg** & **libvorbis** (`libogg/`, `libvorbis/`) by Xiph.Org Foundation ( https://xiph.org/vorbis/ )
 - **LightWave SDK** (`LWSkaExporter/SDK/`) by NewTek Inc.
-- **OpenAL Soft** (`OpenAL-Soft`) by kcat ( https://github.com/kcat/openal-soft )
+- **OpenAL Soft** (`OpenAL-Soft/`) by kcat ( https://github.com/kcat/openal-soft )
 - **SDL** (`SDL/`) from https://libsdl.org/
 - **zlib** (`zlib/`) by Jean-loup Gailly and Mark Adler ( https://zlib.net/ )
