@@ -790,17 +790,17 @@ void CRenderer::RenderLensFlares(void)
 
   // get count of currently existing flares and time
   INDEX ctFlares   = re_alfiLensFlares.Count();
-  const TIME tmNow = _pTimer->GetRealTimeTick();
+  const TICK tckNow = _pTimer->GetRealTime();
 
   // for each lens flare
   INDEX iFlare=0;
   while(iFlare<ctFlares) {
     CLensFlareInfo &lfi = re_alfiLensFlares[iFlare];
     // if the flare is not active any more, or its drawport was not refreshed long
-    if( lfi.lfi_plsLightSource==NULL || // marked when entity is deleted
-       (lfi.lfi_ulDrawPortID==ulDrawPortID && 
-     (!(lfi.lfi_ulFlags&LFF_ACTIVE) || lfi.lfi_plsLightSource->ls_plftLensFlare==NULL)) ||
-       (lfi.lfi_ulDrawPortID!=ulDrawPortID && lfi.lfi_tmLastFrame<tmNow-5.0f)) {
+    if (lfi.lfi_plsLightSource == NULL || // marked when entity is deleted
+       (lfi.lfi_ulDrawPortID == ulDrawPortID &&
+     (!(lfi.lfi_ulFlags & LFF_ACTIVE) || lfi.lfi_plsLightSource->ls_plftLensFlare == NULL)) ||
+       (lfi.lfi_ulDrawPortID != ulDrawPortID && lfi.lfi_tckLastFrame < tckNow - SecToTicks(5))) {
       // delete it by moving the last one on its place
       lfi = re_alfiLensFlares[ctFlares-1];
       re_alfiLensFlares[ctFlares-1].Clear();
@@ -826,17 +826,17 @@ void CRenderer::RenderLensFlares(void)
     lfi.lfi_ulFlags &= ~LFF_ACTIVE;
 
     // fade the flare in/out
-    #define FLAREINSPEED  (0.2f)
-    #define FLAREOUTSPEED (0.1f)
+    #define FLAREINSPEED  (SECOND)SecToTicks(0.2)
+    #define FLAREOUTSPEED (SECOND)SecToTicks(0.1)
     if( lfi.lfi_ulFlags&LFF_VISIBLE) {
-      lfi.lfi_fFadeFactor += (tmNow-lfi.lfi_tmLastFrame) / FLAREINSPEED;
+      lfi.lfi_fFadeFactor += SECOND(tckNow - lfi.lfi_tckLastFrame) / FLAREINSPEED;
     } else {
-      lfi.lfi_fFadeFactor -= (tmNow-lfi.lfi_tmLastFrame) / FLAREOUTSPEED;
+      lfi.lfi_fFadeFactor -= SECOND(tckNow - lfi.lfi_tckLastFrame) / FLAREOUTSPEED;
     }
     lfi.lfi_fFadeFactor = Max( Min(lfi.lfi_fFadeFactor, 1.0f), 0.0f);
 
     // reset timer of flare
-    lfi.lfi_tmLastFrame = tmNow;
+    lfi.lfi_tckLastFrame = tckNow;
     // skip if the flare is invisible
     if( lfi.lfi_fFadeFactor<0.01f) continue;
 

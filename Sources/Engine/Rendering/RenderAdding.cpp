@@ -361,7 +361,7 @@ void CRenderer::AddLensFlare( CEntity *penLight, CLightSource *pls, CProjection3
     // create a new one
     plfi = &re_alfiLensFlares.Push();
     plfi->lfi_iID = _iNextLensFlareID++;
-    plfi->lfi_tmLastFrame  = _pTimer->GetRealTimeTick()-0.05f;
+    plfi->lfi_tckLastFrame = _pTimer->GetRealTime() - 1;
     plfi->lfi_iMirrorLevel = iMirrorLevel;
     plfi->lfi_fFadeFactor  = 0.0f;
     plfi->lfi_ulFlags = NONE;
