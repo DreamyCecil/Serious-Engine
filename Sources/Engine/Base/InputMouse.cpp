@@ -34,10 +34,11 @@ struct MouseInputData_t {
   FLOAT tmTime;
   FLOAT fDXOld;
   FLOAT fDYOld;
+  FLOAT fDZOld;
   SECOND tmOldDelta;
   CTimerValue tvBefore;
 
-  MouseInputData_t() : tmTime(0.0f), fDXOld(0.0f), fDYOld(0.0f), tmOldDelta(0.0) {
+  MouseInputData_t() : tmTime(0.0f), fDXOld(0.0f), fDYOld(0.0f), fDZOld(0.0f), tmOldDelta(0.0) {
     tvBefore.Clear();
   };
 };
@@ -277,6 +278,18 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   MouseInputData_t &mid = _midGlobal;
 #endif
 
+  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
+  SECOND tmNowDelta = (tvNow - mid.tvBefore).GetSeconds();
+  const SECOND tmReuseThreshold = 0.001;
+
+  // Reuse last values if the mouse is being polled again on the exact same moment in time
+  // (e.g. when using the same mouse for multiple players)
+  if (tmNowDelta < tmReuseThreshold) {
+    fDX = mid.fDXOld;
+    fDY = mid.fDYOld;
+    fDZ = mid.fDZOld;
+  }
+
   FLOAT fSensitivity = inp_fMouseSensitivity;
   if (inp_bAllowMouseAcceleration) fSensitivity *= 0.25f;
 
@@ -292,15 +305,14 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
     if (mid.tmTime > inp_fMousePrecisionTimeout) fSensitivity /= inp_fMousePrecisionFactor;
   }
 
-  CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
-  SECOND tmNowDelta = ClampDn((tvNow - mid.tvBefore).GetSeconds(), 0.001);
-
+  tmNowDelta = ClampDn(tmNowDelta, tmReuseThreshold);
   mid.tvBefore = tvNow;
 
   FLOAT fDXSmooth = (mid.fDXOld * mid.tmOldDelta + fDX * tmNowDelta) / (mid.tmOldDelta + tmNowDelta);
   FLOAT fDYSmooth = (mid.fDYOld * mid.tmOldDelta + fDY * tmNowDelta) / (mid.tmOldDelta + tmNowDelta);
   mid.fDXOld = fDX;
   mid.fDYOld = fDY;
+  mid.fDZOld = fDZ; // Simply remember the last value
   mid.tmOldDelta = tmNowDelta;
 
   if (inp_bFilterMouse) {
@@ -320,11 +332,4 @@ void CInput::GetMouseInput(BOOL bPreScan, INDEX iMouse) {
   inp_aInputActions[KID_FIRST_AXIS + EIA_MOUSE_X].ida_fReading += fMouseRelX;
   inp_aInputActions[KID_FIRST_AXIS + EIA_MOUSE_Y].ida_fReading += fMouseRelY;
   inp_aInputActions[KID_FIRST_AXIS + EIA_MOUSE_Z].ida_fReading += fDZ * MOUSEWHEEL_SCROLL_INTERVAL;
-
-#if !SE1_PREFER_SDL
-  // Set cursor position to the screen center
-  if (FloatToInt(fMouseX) != inp_slScreenCenterX || FloatToInt(fMouseY) != inp_slScreenCenterY) {
-    SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
-  }
-#endif
 };

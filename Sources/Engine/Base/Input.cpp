@@ -694,6 +694,14 @@ void CInput::GetGlobalInput(BOOL bPreScan) {
   // Read mouse axes
   ClearAxisInput(TRUE, FALSE);
   GetMouseInput(bPreScan, -1);
+
+  // Set cursor position to the screen center
+  FLOAT fMouseX, fMouseY;
+  OS::GetMouseState(&fMouseX, &fMouseY, FALSE);
+
+  if (FloatToInt(fMouseX) != inp_slScreenCenterX || FloatToInt(fMouseY) != inp_slScreenCenterY) {
+    SetCursorPos(inp_slScreenCenterX, inp_slScreenCenterY);
+  }
 #endif
 };
 
@@ -770,6 +778,7 @@ void CInput::GetInputFromDevices(BOOL bPreScan, ULONG ulDevices) {
         idaKey.ida_fReading = 1;
 
         // [Cecil] Release mouse wheel after "pressing" it because wheel scrolling is always momentary
+        // [Cecil] FIXME: If the same mouse device is used for multiple players in split screen, only the first one can use the scroll wheel
         if (eKID == KID_MOUSEWHEELUP)   _abKeysPressed[KID_MOUSEWHEELUP]   &= ~ubKeyPressedMask;
         if (eKID == KID_MOUSEWHEELDOWN) _abKeysPressed[KID_MOUSEWHEELDOWN] &= ~ubKeyPressedMask;
       }
