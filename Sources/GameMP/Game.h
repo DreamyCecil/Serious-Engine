@@ -114,6 +114,7 @@ public:
   FLOAT ctrl_fSensitivity;    // global sensitivity for all axes
   BOOL ctrl_bInvertLook;      // inverts up/down looking
   BOOL ctrl_bSmoothAxes;      // smooths axes movements
+  INDEX ctrl_iDeviceSlot;     // [Cecil] Which slot to use for polling input devices
 
 // operations
   CControls(void);   // default constructor

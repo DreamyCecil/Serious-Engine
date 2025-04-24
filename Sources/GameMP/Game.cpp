@@ -805,13 +805,17 @@ void CGame::GameHandleTimer(void)
           ctl_iCurrentPlayerLocal = iLocal;
           ctl_iCurrentPlayer = lp.lp_pplsPlayerSource->pls_Index;
 
-          // [Cecil] Get input from all devices if there's only one local player
-          if (ctLocalPlayers <= 1) {
+          const INDEX iCurrentPlayer = lp.lp_iPlayer;
+          CControls &ctrls = gm_actrlControls[iCurrentPlayer];
+
+          // [Cecil] Get input from all devices, if needed or there's only one local player
+          if (ctrls.ctrl_iDeviceSlot < 0 || ctLocalPlayers <= 1) {
             _pInput->GetInputFromDevices(FALSE, INPUTDEVICES_ALL);
 
           // Or from specific ones for this player
           } else {
-            _pInput->GetInputFromDevices(FALSE, INPUTDEVICES_NUM(iLocal));
+            INDEX iSlot = Clamp(ctrls.ctrl_iDeviceSlot, 0, _ctMaxInputDevices - 1);
+            _pInput->GetInputFromDevices(FALSE, INPUTDEVICES_NUM(iSlot));
           }
 
           // copy its local controls to current controls
@@ -819,8 +823,6 @@ void CGame::GameHandleTimer(void)
 
           // create action for it for this tick
           CPlayerAction paAction;
-          INDEX iCurrentPlayer = lp.lp_iPlayer;
-          CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
           ctrls.CreateAction(gm_apcPlayers[iCurrentPlayer], paAction, FALSE);
           // set the action in the client source object
           lp.lp_pplsPlayerSource->SetAction(paAction);
@@ -2196,13 +2198,17 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
 
         // precreate action for it for this tick
         if (bDoPrescan) {
-          // [Cecil] Get pre-scanned input from any mouse if there's only one local player
-          if (ctLocalPlayers <= 1) {
+          const INDEX iCurrentPlayer = lp.lp_iPlayer;
+          CControls &ctrls = gm_actrlControls[iCurrentPlayer];
+
+          // [Cecil] Get pre-scanned input from all devices, if needed or there's only one local player
+          if (ctrls.ctrl_iDeviceSlot < 0 || ctLocalPlayers <= 1) {
             _pInput->GetInputFromDevices(TRUE, INPUTDEVICES_ALL);
 
-          // Or from a specific mouse for this player
+          // Or from specific ones for this player
           } else {
-            _pInput->GetInputFromDevices(TRUE, INPUTDEVICES_NUM(iLocal));
+            INDEX iSlot = Clamp(ctrls.ctrl_iDeviceSlot, 0, _ctMaxInputDevices - 1);
+            _pInput->GetInputFromDevices(TRUE, INPUTDEVICES_NUM(iSlot));
           }
 
           // copy its local controls to current controls
@@ -2210,8 +2216,6 @@ void CGame::GameRedrawView( CDrawPort *pdpDrawPort, ULONG ulFlags)
 
           // do prescanning
           CPlayerAction paPreAction;
-          INDEX iCurrentPlayer = lp.lp_iPlayer;
-          CControls &ctrls = gm_actrlControls[ iCurrentPlayer];
           ctrls.CreateAction(gm_apcPlayers[iCurrentPlayer], paPreAction, TRUE);
 
           // copy the local controls back

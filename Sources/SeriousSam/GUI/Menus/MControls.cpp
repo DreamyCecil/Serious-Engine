@@ -23,6 +23,18 @@ extern CTFileName _fnmControlsToCustomize;
 
 void CControlsMenu::Initialize_t(void)
 {
+  // [Cecil] Create array of device slots
+  const INDEX ctDeviceValues = _ctMaxInputDevices + 1;
+
+  if (astrDeviceSlots == NULL) {
+    astrDeviceSlots = new CTString[ctDeviceValues];
+    astrDeviceSlots[0] = TRANS("Any slot");
+
+    for (INDEX i = 1; i < ctDeviceValues; i++) {
+      astrDeviceSlots[i].PrintF(TRANS("Slot %d"), i);
+    }
+  }
+
   // intialize player and controls menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.mg_strText = TRANS("CONTROLS");
@@ -52,33 +64,38 @@ void CControlsMenu::Initialize_t(void)
   gm_mgAdvanced.mg_bfsFontSize = BFS_MEDIUM;
   gm_lhGadgets.AddTail(gm_mgAdvanced.mg_lnNode);
   gm_mgAdvanced.mg_pmgUp = &gm_mgButtons;
-  gm_mgAdvanced.mg_pmgDown = &gm_mgSensitivity;
+  gm_mgAdvanced.mg_pmgDown = &gm_mgDeviceSlot;
   gm_mgAdvanced.mg_pActivatedFunction = NULL;
   gm_mgAdvanced.mg_strTip = TRANS("adjust advanced settings for joystick axis");
 
-  gm_mgSensitivity.mg_boxOnScreen = BoxMediumRow(4.5);
+  // [Cecil] Device slot selection
+  TRIGGER_MG(gm_mgDeviceSlot, 4.5, gm_mgAdvanced, gm_mgSensitivity, TRANS("DEVICE SLOT"), astrDeviceSlots);
+  gm_mgDeviceSlot.mg_ctTexts = ctDeviceValues; // [Cecil] Amount of device slot values
+  gm_mgDeviceSlot.mg_strTip = TRANS("which slot to use when polling input from specific devices (for split screen)");
+
+  gm_mgSensitivity.mg_boxOnScreen = BoxMediumRow(5.5);
   gm_mgSensitivity.mg_strText = TRANS("SENSITIVITY");
-  gm_mgSensitivity.mg_pmgUp = &gm_mgAdvanced;
+  gm_mgSensitivity.mg_pmgUp = &gm_mgDeviceSlot;
   gm_mgSensitivity.mg_pmgDown = &gm_mgInvertTrigger;
   gm_mgSensitivity.mg_strTip = TRANS("sensitivity for all axis in this control set");
   gm_lhGadgets.AddTail(gm_mgSensitivity.mg_lnNode);
 
-  TRIGGER_MG(gm_mgInvertTrigger, 5.5, gm_mgSensitivity, gm_mgSmoothTrigger,
+  TRIGGER_MG(gm_mgInvertTrigger, 6.5, gm_mgSensitivity, gm_mgSmoothTrigger,
     TRANS("INVERT LOOK"), astrNoYes);
   gm_mgInvertTrigger.mg_strTip = TRANS("invert up/down looking");
-  TRIGGER_MG(gm_mgSmoothTrigger, 6.5, gm_mgInvertTrigger, gm_mgAccelTrigger,
+  TRIGGER_MG(gm_mgSmoothTrigger, 7.5, gm_mgInvertTrigger, gm_mgAccelTrigger,
     TRANS("SMOOTH AXIS"), astrNoYes);
   gm_mgSmoothTrigger.mg_strTip = TRANS("smooth mouse/joystick movements");
-  TRIGGER_MG(gm_mgAccelTrigger, 7.5, gm_mgSmoothTrigger, gm_mgIFeelTrigger,
+  TRIGGER_MG(gm_mgAccelTrigger, 8.5, gm_mgSmoothTrigger, gm_mgIFeelTrigger,
     TRANS("MOUSE ACCELERATION"), astrNoYes);
   gm_mgAccelTrigger.mg_strTip = TRANS("allow mouse acceleration");
-  TRIGGER_MG(gm_mgIFeelTrigger, 8.5, gm_mgAccelTrigger, gm_mgPredefined,
+  TRIGGER_MG(gm_mgIFeelTrigger, 9.5, gm_mgAccelTrigger, gm_mgPredefined,
     TRANS("ENABLE IFEEL"), astrNoYes);
   gm_mgIFeelTrigger.mg_strTip = TRANS("enable support for iFeel tactile feedback mouse");
 
   gm_mgPredefined.mg_strText = TRANS("LOAD PREDEFINED SETTINGS");
   gm_mgPredefined.mg_iCenterI = 0;
-  gm_mgPredefined.mg_boxOnScreen = BoxMediumRow(10);
+  gm_mgPredefined.mg_boxOnScreen = BoxMediumRow(11);
   gm_mgPredefined.mg_bfsFontSize = BFS_MEDIUM;
   gm_lhGadgets.AddTail(gm_mgPredefined.mg_lnNode);
   gm_mgPredefined.mg_pmgUp = &gm_mgIFeelTrigger;
@@ -129,6 +146,10 @@ void CControlsMenu::ObtainActionSettings(void)
   gm_mgIFeelTrigger.mg_bEnabled = _pShell->GetINDEX("sys_bIFeelEnabled") ? 1 : 0;
   gm_mgIFeelTrigger.mg_iSelected = _pShell->GetFLOAT("inp_fIFeelGain")>0 ? 1 : 0;
 
+  // [Cecil] Get device slot from the controls ("any" slot is -1 and the regular slots start from 0)
+  gm_mgDeviceSlot.mg_iSelected = ctrls.ctrl_iDeviceSlot + 1;
+  gm_mgDeviceSlot.ApplyCurrentSelection();
+
   gm_mgInvertTrigger.ApplyCurrentSelection();
   gm_mgSmoothTrigger.ApplyCurrentSelection();
   gm_mgAccelTrigger.ApplyCurrentSelection();
@@ -138,6 +159,9 @@ void CControlsMenu::ObtainActionSettings(void)
 void CControlsMenu::ApplyActionSettings(void)
 {
   CControls &ctrls = _pGame->gm_ctrlControlsExtra;
+
+  // [Cecil] Set device slot for the controls ("any" slot is -1 and the regular slots start from 0)
+  ctrls.ctrl_iDeviceSlot = gm_mgDeviceSlot.mg_iSelected - 1;
 
   FLOAT fSensitivity =
     FLOAT(gm_mgSensitivity.mg_iCurPos - gm_mgSensitivity.mg_iMinPos) /

@@ -47,6 +47,8 @@ CTString astrCrosshair[] = {
   "Textures\\Interface\\Crosshairs\\Crosshair7.tex",
 };
 
+CTString *astrDeviceSlots = NULL; // [Cecil]
+
 CTString astrMaxPlayersRadioTexts[] = {
   RADIOTRANS("2"),
   RADIOTRANS("3"),

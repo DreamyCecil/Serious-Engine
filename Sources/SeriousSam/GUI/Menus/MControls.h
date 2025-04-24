@@ -31,6 +31,7 @@ public:
   CMGTitle gm_mgTitle;
   CMGButton gm_mgNameLabel;
   CMGButton gm_mgButtons;
+  CMGTrigger gm_mgDeviceSlot; // [Cecil]
   CMGSlider gm_mgSensitivity;
   CMGTrigger gm_mgInvertTrigger;
   CMGTrigger gm_mgSmoothTrigger;

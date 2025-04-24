@@ -66,6 +66,7 @@ CControls &CControls::operator=(CControls &ctrlOriginal)
   ctrl_fSensitivity  = ctrlOriginal.ctrl_fSensitivity;
   ctrl_bInvertLook   = ctrlOriginal.ctrl_bInvertLook;
   ctrl_bSmoothAxes   = ctrlOriginal.ctrl_bSmoothAxes;
+  ctrl_iDeviceSlot   = ctrlOriginal.ctrl_iDeviceSlot; // [Cecil]
 
   return *this;
 }
@@ -102,6 +103,7 @@ void CControls::SwitchAxesToDefaults(void)
   ctrl_fSensitivity = 50;
   ctrl_bInvertLook = FALSE;
   ctrl_bSmoothAxes = TRUE;
+  ctrl_iDeviceSlot = -1; // [Cecil] Any slot
 }
 
 void CControls::SwitchToDefaults(void)
@@ -185,13 +187,16 @@ void CControls::Load_t( CTFileName fnFile)
     achrID[0] = 0;
     strmFile.GetLine_t( achrLine, 1024);
     sscanf( achrLine, "%s", achrID);
+
+    const CTString strProperty = achrID;
+
     // if name
-    if( CTString( achrID) == "Name") {
+    if (strProperty == "Name") {
       // name is obsolete, just skip it
       sscanf( achrLine, "%*[^\"]\"%1024[^\"]\"", achrName);
     
     // if this is button action
-    } else if( CTString( achrID) == "Button") {
+    } else if (strProperty == "Button") {
       // create and read button action
       CButtonAction &baNew = AddButtonAction();
       baNew.ba_strName = ReadTextLine(strmFile, "Name:", TRUE);
@@ -203,7 +208,7 @@ void CControls::Load_t( CTFileName fnFile)
       baNew.ba_strCommandLineWhenReleased = ReadTextLine(strmFile, "Released:", FALSE);
 
     // if this is axis action
-    } else if( CTString( achrID) == "Axis") {
+    } else if (strProperty == "Axis") {
       char achrAxis[ 1024];
       achrAxis[ 0] = 0;
       char achrIfInverted[ 1024];
@@ -240,16 +245,21 @@ void CControls::Load_t( CTFileName fnFile)
         ctrl_aaAxisActions[ iActionAxisNo].aa_bSmooth = ( CTString( "Smooth") == achrIfRelative);
       }
     // read global parameters
-    } else if( CTString( achrID) == "GlobalInvertLook") {
+    } else if (strProperty == "GlobalInvertLook") {
       ctrl_bInvertLook = TRUE;
-    } else if( CTString( achrID) == "GlobalDontInvertLook") {
+    } else if (strProperty == "GlobalDontInvertLook") {
       ctrl_bInvertLook = FALSE;
-    } else if( CTString( achrID) == "GlobalSmoothAxes") {
+    } else if (strProperty == "GlobalSmoothAxes") {
       ctrl_bSmoothAxes = TRUE;
-    } else if( CTString( achrID) == "GlobalDontSmoothAxes") {
+    } else if (strProperty == "GlobalDontSmoothAxes") {
       ctrl_bSmoothAxes = FALSE;
-    } else if( CTString( achrID) == "GlobalSensitivity") {
-      sscanf( achrLine, "GlobalSensitivity %g", &ctrl_fSensitivity);
+    } else if (strProperty == "GlobalSensitivity") {
+      sscanf(achrLine, "GlobalSensitivity %g", &ctrl_fSensitivity);
+
+    // [Cecil] Read device slot
+    } else if (strProperty == "DeviceSlot") {
+      sscanf(achrLine, "DeviceSlot %d", &ctrl_iDeviceSlot);
+      ctrl_iDeviceSlot = Clamp(ctrl_iDeviceSlot, -1, 7);
     }
   }
   while( !strmFile.AtEOF());
@@ -382,6 +392,9 @@ void CControls::Save_t( CTFileName fnFile)
     strmFile.PutLine_t( "GlobalDontSmoothAxes");
   }
   strmFile.FPrintF_t("GlobalSensitivity %g\n", ctrl_fSensitivity);
+
+  // [Cecil] Write device slot
+  strmFile.FPrintF_t("DeviceSlot %d\n", (INDEX)Clamp(ctrl_iDeviceSlot, -1, 7));
 }
 
 // check if these controls use any joystick
