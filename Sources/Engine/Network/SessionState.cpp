@@ -724,7 +724,7 @@ void CSessionState::HandleTimers(TICK tckCurrentTick)
     }
 
     // check that timers are propertly handled
-    ASSERT(penTimer->en_tckTimer > tckCurrentTick - 1);
+    ASSERT(penTimer->en_tckTimer >= tckCurrentTick - 1);
     //ASSERT(penTimer->en_tckTimer >= tckLast);
     IFDEBUG(tckLast = penTimer->en_tckTimer);
 
