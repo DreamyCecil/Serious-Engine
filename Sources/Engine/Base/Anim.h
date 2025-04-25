@@ -26,7 +26,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define NAME_SIZE 32
 typedef char NAME[NAME_SIZE];
 #define PATH_MAX 260
-typedef char FILE_NAME[PATH_MAX];
 
 /*
  * An object used for obtaining animation's information
@@ -45,7 +44,7 @@ public:
  */
 class ENGINE_API CFileNameNode {
 public:
-	FILE_NAME cfnn_FileName;
+	CTString cfnn_fnm; // [Cecil] 'char[PATH_MAX]' -> 'CTString'
 	CListNode cfnn_Node;
 	CFileNameNode(const char *NewFileName, CListHead *LH);
 };

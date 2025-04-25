@@ -143,8 +143,9 @@ void ILegacy::ServerParsePacket(INDEX iLength) {
 
     // Send basic response
     CTString strPacket;
+    // [Cecil] NOTE: The location is set to "EU" instead of printing the last argument
     strPacket.PrintF("\\gamename\\%s\\gamever\\%s\\location\\EU\\final\\" "\\queryid\\1.1",
-      sam_strGameName, _SE_VER_STRING, strLocation.ConstData()); // [Cecil] NOTE: Unused location
+      sam_strGameName, _SE_VER_STRING/*, strLocation.ConstData()*/);
 
     IQuery::SendReply(strPacket);
 

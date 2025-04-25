@@ -1798,10 +1798,10 @@ static void PrintStats( CDrawPort *pdpDrawPort)
 
     if (tckSeconds >= tckOneHour) {
       // print hours
-      strTime.PrintF("%02d:%02d:%02d", tckSeconds / tckOneHour, tckMins, tckSecs);
+      strTime.PrintF("%02d:%02d:%02d", SLONG(tckSeconds / tckOneHour), (SLONG)tckMins, (SLONG)tckSecs);
     } else {
       // skip hours
-      strTime.PrintF("%2d:%02d", tckMins, tckSecs);
+      strTime.PrintF("%2d:%02d", (SLONG)tckMins, (SLONG)tckSecs);
     }
     pdpDrawPort->PutTextC( strTime, slDPWidth*0.5f, slDPHeight*0.06f, C_WHITE|CT_OPAQUE);
   }

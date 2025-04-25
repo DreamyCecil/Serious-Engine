@@ -3362,9 +3362,13 @@ void CModelerView::OnCreateMipModels()
 	CListHead FrameNamesList;
   CTFileName fnFrameFileName;
 	char achrLine[ 128];
-  char achrBasePath[ PATH_MAX] = "";
-	char achrRestFrame[ PATH_MAX] = "";
-	char achrRestFrameFullPath[ PATH_MAX] = "";
+
+  // [Cecil] Task-specific constant
+  const size_t ctMaxAnimPath = 260;
+
+  char achrBasePath[ctMaxAnimPath] = "";
+  char achrRestFrame[ctMaxAnimPath] = "";
+  char achrRestFrameFullPath[ctMaxAnimPath * 2 + 1] = ""; // [Cecil] Twice the size to fit the two other strings
 
   CModelerDoc* pDoc = GetDocument();
   CTFileName fnModelName = MfcStringToCT(pDoc->GetPathName());
@@ -3429,7 +3433,7 @@ void CModelerView::OnCreateMipModels()
           {
             if( m_iCurrentFrame == iFrame)
             {
-              fnFrameFileName = CTString(itFrameName->cfnn_FileName);
+              fnFrameFileName = itFrameName->cfnn_fnm;
               break;
             }
             iFrame++;

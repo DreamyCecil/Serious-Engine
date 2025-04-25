@@ -188,9 +188,9 @@ void CEditModel::LoadModelAnimationData_t( CTStream *pFile, const FLOATmatrix3D 
     CFileNameNode &fnnFileNameNode = itFr.Current();
     if( ProgresRoutines.SetProgressState != NULL) ProgresRoutines.SetProgressState(iO3D);
 		OB3D.Clear();
-    OB3D.LoadAny3DFormat_t(CTString(itFr->cfnn_FileName), mStretch);
+    OB3D.LoadAny3DFormat_t(itFr->cfnn_fnm, mStretch);
     if( edm_md.md_VerticesCt != OB3D.ob_aoscSectors[0].osc_aovxVertices.Count()) {
-			ThrowF_t("File %s, one of animation frame files has wrong number of points.", fnnFileNameNode.cfnn_FileName);
+			ThrowF_t("File %s, one of animation frame files has wrong number of points.", fnnFileNameNode.cfnn_fnm.ConstData());
 		}
     if(bOrigin)
     {
@@ -248,7 +248,7 @@ void CEditModel::LoadModelAnimationData_t( CTStream *pFile, const FLOATmatrix3D 
   
   // lost 1st frame (one frame is enough because all frames has same poly->edge->vertex links)
 	OB3D.Clear();
-  const CTString &fnmFirstFrame = LIST_HEAD( FrameNamesList, CFileNameNode, cfnn_Node)->cfnn_FileName;
+  const CTString &fnmFirstFrame = LIST_HEAD(FrameNamesList, CFileNameNode, cfnn_Node)->cfnn_fnm;
   OB3D.LoadAny3DFormat_t( fnmFirstFrame, mStretch);
 	OB3D.ob_aoscSectors[0].LockAll();
 
@@ -944,10 +944,13 @@ void CEditModel::LoadFromScript_t(CTFileName &fnScriptName) // throw char *
   CTFileName fnOpened, fnClosed, fnUnwrapped, fnImportMapping;
 	char ld_line[ 128];
 	char flag_str[ 128];
-	char base_path[ PATH_MAX] = "";
-	char file_name[ PATH_MAX];
-  char mapping_file_name[ PATH_MAX] = "";
-	char full_path[ PATH_MAX];
+
+  // [Cecil] Task-specific constant
+  const size_t ctMaxAnimPath = 260;
+
+	char base_path[ctMaxAnimPath] = "";
+	char file_name[ctMaxAnimPath];
+	char full_path[ctMaxAnimPath * 2 + 1]; // [Cecil] Twice the size to fit the two other strings
   FLOATmatrix3D mStretch;
   mStretch.Diagonal(1.0f);
 	BOOL bMappingDimFound ;
@@ -1813,9 +1816,13 @@ void CEditModel::UpdateMipModels_t(CTFileName &fnScriptName) // throw char *
   CObject3D::BatchLoading_t(TRUE);
 	CTFileStream File;
 	CObject3D O3D;
-	char base_path[ PATH_MAX] = "";
-	char file_name[ PATH_MAX];
-	char full_path[ PATH_MAX];
+
+  // [Cecil] Task-specific constant
+  const size_t ctMaxAnimPath = 260;
+
+	char base_path[ctMaxAnimPath] = "";
+	char file_name[ctMaxAnimPath];
+	char full_path[ctMaxAnimPath * 2 + 1]; // [Cecil] Twice the size to fit the two other strings
 	char ld_line[ 128];
   FLOATmatrix3D mStretch;
   mStretch.Diagonal(1.0f);
@@ -2868,7 +2875,7 @@ void CEditModel::SetCollisionBoxDimensionEquality( INDEX iNewDimEqType)
         // only triangles are supported!
         ASSERT( opo.opo_PolygonEdges.Count() == 3);  
         if( opo.opo_PolygonEdges.Count() != 3) {
-  			  ThrowF_t("Non-triangle polygon encountered in model file %s !", itFr->cfnn_FileName);
+  			  ThrowF_t("Non-triangle polygon encountered in model file %s !", itFr->cfnn_fnm.ConstData());
         }
 
         CObjectPolygonEdge &ope0 = opo.opo_PolygonEdges[0];

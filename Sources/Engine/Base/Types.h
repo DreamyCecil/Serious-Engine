@@ -39,8 +39,9 @@ typedef int BOOL; // This is for TRUE/FALSE
   typedef unsigned __int64 UQUAD;
   typedef   signed __int64 SQUAD;
 #else
-  typedef unsigned long long UQUAD;
-  typedef   signed long long SQUAD;
+  #include <cstdint>
+  typedef uint64_t UQUAD;
+  typedef  int64_t SQUAD;
 #endif
 
 // [Cecil] Platform-specific types

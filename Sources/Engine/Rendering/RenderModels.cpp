@@ -828,10 +828,12 @@ void CRenderer::RenderLensFlares(void)
     // fade the flare in/out
     #define FLAREINSPEED  (SECOND)SecToTicks(0.2)
     #define FLAREOUTSPEED (SECOND)SecToTicks(0.1)
+    const SECOND fTickDiff = SECOND(tckNow - lfi.lfi_tckLastFrame);
+
     if( lfi.lfi_ulFlags&LFF_VISIBLE) {
-      lfi.lfi_fFadeFactor += SECOND(tckNow - lfi.lfi_tckLastFrame) / FLAREINSPEED;
+      lfi.lfi_fFadeFactor += FLOAT(fTickDiff / FLAREINSPEED);
     } else {
-      lfi.lfi_fFadeFactor -= SECOND(tckNow - lfi.lfi_tckLastFrame) / FLAREOUTSPEED;
+      lfi.lfi_fFadeFactor -= FLOAT(fTickDiff / FLAREOUTSPEED);
     }
     lfi.lfi_fFadeFactor = Max( Min(lfi.lfi_fFadeFactor, 1.0f), 0.0f);
 

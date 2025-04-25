@@ -1593,7 +1593,7 @@ void ProcessScript_t( const CTFileName &inFileName) // throw char *
 
   // load first picture
   CFileNameNode *pFirstFNN = LIST_HEAD( FrameNamesList, CFileNameNode, cfnn_Node);
-  inPic.LoadAnyGfxFormat_t( CTString(pFirstFNN->cfnn_FileName));
+  inPic.LoadAnyGfxFormat_t(pFirstFNN->cfnn_fnm);
 
   // create texture with one frame
   tex.Create_t( &inPic, MEX_METERS(fTextureWidthMeters), TexMipmaps, bForce32bit);
@@ -1604,7 +1604,7 @@ void ProcessScript_t( const CTFileName &inFileName) // throw char *
   FOREACHINLIST( CFileNameNode, cfnn_Node, FrameNamesList, it1)
   {
     if( i != 0) {   // we have to skip first picture since it has already been done
-      inPic.LoadAnyGfxFormat_t( CTString(it1->cfnn_FileName));
+      inPic.LoadAnyGfxFormat_t(it1->cfnn_fnm);
       // add picture as next frame in texture
       tex.AddFrame_t( &inPic);
       inPic.Clear();

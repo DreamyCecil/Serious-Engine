@@ -129,7 +129,7 @@ CFileNameNode::CFileNameNode(const char *NewFileName, CListHead *LH)
 {
 	ASSERT(NewFileName != NULL);
 	ASSERT(strlen(NewFileName)>0);
-	strcpy( cfnn_FileName, NewFileName);
+	cfnn_fnm = NewFileName;
 	LH->AddTail( cfnn_Node);
 };
 
@@ -250,7 +250,7 @@ INDEX FindFrameIndex( CListHead *pFrameFileList, const char *pFileName)
 	UWORD i=0;
 
 	FOREACHINLIST(CFileNameNode, cfnn_Node, *pFrameFileList, it) {
-		if (stricmp(it->cfnn_FileName, pFileName) == 0)
+		if (it->cfnn_fnm == pFileName)
 			return( i);
 		i++;
 	}
@@ -264,7 +264,7 @@ CTString GetFrameFileName( CListHead *pFrameFileList, INDEX iMemberInList)
   UWORD iMember=0;
 	FOREACHINLIST(CFileNameNode, cfnn_Node, *pFrameFileList, it)
   {
-		if( iMember == iMemberInList) return CTString( it->cfnn_FileName);
+		if (iMember == iMemberInList) return it->cfnn_fnm;
 		iMember++;
 	}
 	ASSERTALWAYS( "Frame with given index is not found in list of frames");
@@ -283,10 +283,14 @@ void CAnimData::LoadFromScript_t( CTStream *File, CListHead *pFrameFileList) // 
 	UWORD i;
 	char error_str[ 256];
   char key_word[ 256];
-	char base_path[ PATH_MAX] = "";
-	char file_name[ PATH_MAX];
+
+  // [Cecil] Task-specific constant
+  const size_t ctMaxAnimPath = 260;
+
+	char base_path[ctMaxAnimPath] = "";
+	char file_name[ctMaxAnimPath];
 	char anim_name[ 256];
-	char full_path[ PATH_MAX];
+	char full_path[ctMaxAnimPath * 2 + 1]; // [Cecil] Twice the size to fit the two other strings
 	char ld_line[ 128];
 	CTmpListHead TempAnimationList;
 	SLONG lc;
