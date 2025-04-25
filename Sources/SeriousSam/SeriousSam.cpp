@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <GameMP/Game.h>
 #include "resource.h"
 #include "MainWindow.h"
 #include "GLSettings.h"

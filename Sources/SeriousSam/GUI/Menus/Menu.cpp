@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MainWindow.h"
 #include <Engine/Templates/Stock_CSoundData.h>
 #include <Engine/Templates/Stock_CTextureData.h>
-#include <GameMP/LCDDrawing.h>
 #include "MenuPrinting.h"
 #include "LevelInfo.h"
 #include "VarList.h"
