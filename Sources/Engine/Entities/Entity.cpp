@@ -3762,8 +3762,6 @@ void CRationalEntity::ChecksumForSync(ULONG &ulCRC, INDEX iExtensiveSyncCheck)
     CRC_AddLONGLONG(ulCRC, en_tckTimer);
     CRC_AddLONG(ulCRC, en_stslStateStack.Count());
   }
-  if (iExtensiveSyncCheck>0) {
-  }
 }
 
 // dump sync data to text file
@@ -3791,7 +3789,7 @@ void CRationalEntity::Copy(CEntity &enOther, ULONG ulFlags)
   }
 }
 
-// [Cecil] TEMP: Ticks chunk
+// [Cecil] New ticks chunk
 static const CChunkID _cidTicks("TCKS");
 
 /* Read from stream. */
@@ -3799,7 +3797,7 @@ void CRationalEntity::Read_t( CTStream *istr) // throw char *
 {
   CLiveEntity::Read_t(istr);
 
-  // [Cecil] TEMP: Read new time in ticks
+  // [Cecil] Read new time in ticks
   if (istr->PeekID_t() == _cidTicks) {
     istr->ExpectID_t(_cidTicks);
     *istr >> en_tckTimer;
@@ -3808,7 +3806,7 @@ void CRationalEntity::Read_t( CTStream *istr) // throw char *
     FLOAT fTime;
     *istr >> fTime;
 
-    if (fTime == -1.f) {
+    if (fTime < 0.0f) {
       en_tckTimer = THINKTIME_NEVER;
     } else {
       en_tckTimer = SecToTicks(fTime);
@@ -3840,9 +3838,15 @@ void CRationalEntity::Write_t( CTStream *ostr) // throw char *
     en_tckTimer = THINKTIME_NEVER;
   }
 
-  // [Cecil] TEMP: Write new time in ticks
-  ostr->WriteID_t(_cidTicks);
-  *ostr << en_tckTimer;
+  // [Cecil] TEMP: Write time in seconds when saving the world in the editor for compatibility
+  if (_SE1Setup.IsAppEditor()) {
+    *ostr << (FLOAT)TicksToSec(en_tckTimer);
+
+  // [Cecil] Otherwise write new time in ticks in-game
+  } else {
+    ostr->WriteID_t(_cidTicks);
+    *ostr << en_tckTimer;
+  }
 
   // write the state stack
   (*ostr)<<en_stslStateStack.Count();
