@@ -37,7 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #endif
 #endif
 
-#define _SE_DEMO            0  // Set for demo versions
 #define _SE_BUILD_MAJOR 10000  // Use new number for each released version
 #define _SE_BUILD_MINOR    10  // Minor versions that are data-compatibile, but are not netgame-compatibile
 #define _SE_BUILD_EXTRA    ""  // Extra version with minor code changes

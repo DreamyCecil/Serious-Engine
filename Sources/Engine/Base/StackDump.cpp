@@ -171,7 +171,7 @@ void MSJExceptionHandler::GenerateExceptionReport(
     char strDate[80];
     _strdate(strDate);
     _tprintf( "Crashed at: %s %s\n", strDate, strTime);
-    _tprintf( "Version: %d.%d%s%s\n", _ulEngineBuildMajor, _ulEngineBuildMinor, _SE_BUILD_EXTRA, _SE_DEMO?"-demo":"");
+    _tprintf( "Version: %d.%d%s\n", _ulEngineBuildMajor, _ulEngineBuildMinor, _SE_BUILD_EXTRA);
 
     PEXCEPTION_RECORD pExceptionRecord = pExceptionInfo->ExceptionRecord;
 
