@@ -106,7 +106,7 @@ void HideSplashScreen(void)
 
 #else
 
-#include "resource.h"
+#include "Resource.h"
 
 #define NAME "Splash"
 

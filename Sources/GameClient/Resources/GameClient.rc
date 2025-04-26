@@ -1,6 +1,6 @@
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+#include "Resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "resource.h\0"
+    "Resource.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE 
@@ -54,22 +54,22 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\GameClient.ico"
+IDR_MAINFRAME           ICON    DISCARDABLE     "Resources\\GameClient.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDB_SPLASH              BITMAP  DISCARDABLE     "Splash.bmp"
-IDB_SPLASHMASK          BITMAP  DISCARDABLE     "SplashMask.bmp"
+IDB_SPLASH              BITMAP  DISCARDABLE     "Resources\\Splash.bmp"
+IDB_SPLASHMASK          BITMAP  DISCARDABLE     "Resources\\SplashMask.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_NOCURSOR            CURSOR  DISCARDABLE     "nocursor.cur"
+IDC_NOCURSOR            CURSOR  DISCARDABLE     "Resources\\nocursor.cur"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

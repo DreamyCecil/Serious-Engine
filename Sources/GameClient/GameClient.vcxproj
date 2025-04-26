@@ -645,20 +645,20 @@
     <ClInclude Include="GLSettings.h" />
     <ClInclude Include="LevelInfo.h" />
     <ClInclude Include="MainWindow.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Resource.h" />
     <ClInclude Include="ScreenResolutions.h" />
     <ClInclude Include="GameClient.h" />
     <ClInclude Include="StdH.h" />
     <ClInclude Include="VarList.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="nocursor.cur" />
-    <CustomBuild Include="nodrop.cur" />
-    <CustomBuild Include="res\GameClient.ico" />
-    <CustomBuild Include="Splash.bmp" />
+    <CustomBuild Include="Resources\nocursor.cur" />
+    <CustomBuild Include="Resources\GameClient.ico" />
+    <CustomBuild Include="Resources\Splash.bmp" />
+    <CustomBuild Include="Resources\SplashMask.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GameClient.rc" />
+    <ResourceCompile Include="Resources\GameClient.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
