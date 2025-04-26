@@ -269,8 +269,6 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
 
 void CPlayerProfileMenu::StartMenu(void)
 {
-  _pGUIM->gmPlayerProfile.gm_pmgSelectedByDefault = &gm_mgNameField;
-
   if (_gmRunningGameMode == GM_NONE || _gmRunningGameMode == GM_DEMO) {
     for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
       gm_mgNumber[i].mg_bEnabled = TRUE;

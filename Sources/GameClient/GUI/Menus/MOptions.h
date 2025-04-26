@@ -39,6 +39,11 @@ public:
     return "Options";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgVideoOptions;
+  };
+
 	void Initialize_t(void);
 };
 

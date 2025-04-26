@@ -18,6 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MHighScore.h"
 
+// [Cecil] Selected gadget by default
+CMenuGadget *CHighScoreMenu::GetDefaultGadget(void) {
+  extern CMGButton mgBack;
+  return &mgBack;
+};
+
 void CHighScoreMenu::Initialize_t(void)
 {
   gm_mgHScore.mg_boxOnScreen = FLOATaabbox2D(FLOAT2D(0, 0), FLOAT2D(1, 0.5));

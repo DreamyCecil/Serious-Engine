@@ -40,6 +40,11 @@ public:
     return "VideoOptions";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgDisplayAPITrigger;
+  };
+
   void StartMenu(void);
   void Initialize_t(void);
 };

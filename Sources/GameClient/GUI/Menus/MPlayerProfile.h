@@ -55,6 +55,11 @@ public:
     return "PlayerProfile";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgNameField;
+  };
+
   void Initialize_t(void);
   INDEX ComboFromPlayer(INDEX iPlayer);
   INDEX PlayerFromCombo(INDEX iCombo);

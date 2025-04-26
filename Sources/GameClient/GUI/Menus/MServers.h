@@ -39,6 +39,11 @@ public:
     return "Servers";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgList;
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void Think(void);

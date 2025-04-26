@@ -34,6 +34,9 @@ public:
     return "HighScore";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void);
+
   void Initialize_t(void);
   void StartMenu(void);
 };

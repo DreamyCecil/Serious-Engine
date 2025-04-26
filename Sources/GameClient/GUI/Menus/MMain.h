@@ -41,6 +41,11 @@ public:
     return "Main";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgSingle;
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

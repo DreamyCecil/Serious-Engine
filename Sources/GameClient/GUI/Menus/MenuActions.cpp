@@ -259,7 +259,7 @@ void VideoConfirm(void)
   // FIXUP: keyboard focus lost when going from full screen to window mode
   // due to WM_MOUSEMOVE being sent
   _bMouseUsedLast = FALSE;
-  _pmgUnderCursor = gmCurrent.gm_pmgSelectedByDefault;
+  _pmgUnderCursor = gmCurrent.GetDefaultGadget();
 
   gmCurrent._pConfimedYes = NULL;
   gmCurrent._pConfimedNo = RevertVideoSettings;

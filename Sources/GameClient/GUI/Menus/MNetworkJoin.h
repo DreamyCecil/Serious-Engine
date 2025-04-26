@@ -36,6 +36,11 @@ public:
     return "NetworkJoin";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgLAN;
+  };
+
   void Initialize_t(void);
 };
 

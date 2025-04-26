@@ -43,6 +43,11 @@ public:
     return "CustomizeAxis";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgActionTrigger;
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void EndMenu(void);

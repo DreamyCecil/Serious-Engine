@@ -42,6 +42,11 @@ public:
     return "Confirm";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgConfirmYes;
+  };
+
   void Initialize_t(void);
   // return TRUE if handled
   BOOL OnKeyDown(PressedMenuButton pmb);

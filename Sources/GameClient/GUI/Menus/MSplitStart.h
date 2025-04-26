@@ -39,6 +39,11 @@ public:
     return "SplitStart";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgStart;
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void EndMenu(void);

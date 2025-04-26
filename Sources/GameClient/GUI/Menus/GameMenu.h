@@ -19,17 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+class CMenuGadget;
 
 class CGameMenu {
 public:
   CListHead gm_lhGadgets;
   CGameMenu *gm_pgmParentMenu;
   BOOL gm_bPopup;
-  class CMenuGadget *gm_pmgSelectedByDefault;
-  class CMenuGadget *gm_pmgArrowUp;
-  class CMenuGadget *gm_pmgArrowDn;
-  class CMenuGadget *gm_pmgListTop;
-  class CMenuGadget *gm_pmgListBottom;
+  CMenuGadget *gm_pmgArrowUp;
+  CMenuGadget *gm_pmgArrowDn;
+  CMenuGadget *gm_pmgListTop;
+  CMenuGadget *gm_pmgListBottom;
   INDEX gm_iListOffset;
   INDEX gm_iListWantedItem;   // item you want to focus initially
   INDEX gm_ctListVisible;
@@ -38,6 +38,12 @@ public:
 
   // [Cecil] Menu name for the mod interface (used to be a gm_strName field)
   virtual const char *GetName(void) const = 0;
+
+  // [Cecil] Selected gadget by default (used to be a gm_pmgSelectedByDefault field)
+  virtual CMenuGadget *GetDefaultGadget(void) = 0;
+
+  // [Cecil] Find gadget in a list by its index
+  CMenuGadget *FindListGadget(INDEX iInList);
 
   void ScrollList(INDEX iDir);
   void KillAllFocuses(void);

@@ -41,6 +41,11 @@ public:
     return "AudioOptions";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgFrequencyTrigger;
+  };
+
   void StartMenu(void);
   void Initialize_t(void);
 };

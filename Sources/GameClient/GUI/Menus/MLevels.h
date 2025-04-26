@@ -37,6 +37,12 @@ public:
     return "Levels";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    CMenuGadget *pmg = FindListGadget(gm_iListWantedItem);
+    return (pmg != NULL ? pmg : &gm_mgManualLevel[0]);
+  };
+
   void Initialize_t(void);
   void FillListItems(void);
   void StartMenu(void);

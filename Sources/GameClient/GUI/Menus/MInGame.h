@@ -44,6 +44,11 @@ public:
     return "InGame";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgQuickLoad;
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

@@ -39,6 +39,11 @@ public:
     return "SinglePlayerNew";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    return &gm_mgMedium;
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

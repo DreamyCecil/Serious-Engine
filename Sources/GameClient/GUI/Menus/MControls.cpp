@@ -106,7 +106,6 @@ void CControlsMenu::Initialize_t(void)
 
 void CControlsMenu::StartMenu(void)
 {
-  gm_pmgSelectedByDefault = &gm_mgButtons;
   INDEX iPlayer = _pGame->gm_iSinglePlayer;
   if (_iLocalPlayer >= 0 && _iLocalPlayer < NET_MAXLOCALPLAYERS) {
     iPlayer = _pGame->gm_aiMenuLocalPlayers[_iLocalPlayer];

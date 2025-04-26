@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 CGameMenu::CGameMenu(void)
 {
   gm_pgmParentMenu = NULL;
-  gm_pmgSelectedByDefault = NULL;
   gm_pmgArrowUp = NULL;
   gm_pmgArrowDn = NULL;
   gm_pmgListTop = NULL;
@@ -31,6 +30,17 @@ CGameMenu::CGameMenu(void)
   gm_ctListTotal = 0;
   gm_bPopup = FALSE;
 }
+
+// [Cecil] Find gadget in a list by its index
+CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
+  FOREACHINLIST(CMenuGadget, mg_lnNode, gm_lhGadgets, itmg) {
+    if (itmg->mg_iInList == iInList) {
+      return itmg;
+    }
+  }
+
+  return NULL;
+};
 
 void CGameMenu::Initialize_t(void)
 {
@@ -254,6 +264,8 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
     }
   }
 
+  CMenuGadget *pmgDefault = GetDefaultGadget();
+
   // [Cecil] Go left in the menu
   if (pmb.Left()) {
     // if we can go left
@@ -261,8 +273,8 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
       // call lose focus to still active gadget and
       pmgActive->OnKillFocus();
       // set focus to new one
-      if (!pmgActive->mg_pmgLeft->mg_bVisible && gm_pmgSelectedByDefault != NULL) {
-        pmgActive = gm_pmgSelectedByDefault;
+      if (!pmgActive->mg_pmgLeft->mg_bVisible && pmgDefault != NULL) {
+        pmgActive = pmgDefault;
       }
       else {
         pmgActive = pmgActive->mg_pmgLeft;
@@ -280,8 +292,8 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
       // call lose focus to still active gadget and
       pmgActive->OnKillFocus();
       // set focus to new one
-      if (!pmgActive->mg_pmgRight->mg_bVisible && gm_pmgSelectedByDefault != NULL) {
-        pmgActive = gm_pmgSelectedByDefault;
+      if (!pmgActive->mg_pmgRight->mg_bVisible && pmgDefault != NULL) {
+        pmgActive = pmgDefault;
       }
       else {
         pmgActive = pmgActive->mg_pmgRight;
@@ -322,16 +334,11 @@ void CGameMenu::StartMenu(void)
       if (itmg->mg_iInList == -2) {
         // hide it
         itmg->mg_bVisible = FALSE;
+
       // if in list
       } else if (itmg->mg_iInList >= 0) {
         // show it
         itmg->mg_bVisible = TRUE;
-      }
-      // if wanted
-      if (itmg->mg_iInList == gm_iListWantedItem) {
-        // focus it
-        itmg->OnSetFocus();
-        gm_pmgSelectedByDefault = itmg;
       }
     }
   }

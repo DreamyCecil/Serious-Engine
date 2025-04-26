@@ -73,6 +73,12 @@ public:
     return "LoadSave";
   };
 
+  // [Cecil] Selected gadget by default
+  virtual CMenuGadget *GetDefaultGadget(void) {
+    CMenuGadget *pmg = FindListGadget(gm_iListWantedItem);
+    return (pmg != NULL ? pmg : &gm_amgButton[0]);
+  };
+
   // called to get info of a file from directory, or to skip it
   BOOL ParseFile(const CTFileName &fnm, CTString &strName);
 
