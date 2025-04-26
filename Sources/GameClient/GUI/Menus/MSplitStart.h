@@ -34,6 +34,11 @@ public:
   CMGButton gm_mgOptions;
   CMGButton gm_mgStart;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "SplitStart";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void EndMenu(void);

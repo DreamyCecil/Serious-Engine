@@ -31,6 +31,11 @@ public:
   CMGButton gm_mgQuickLoad;
   CMGButton gm_mgLoad;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "SplitScreen";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

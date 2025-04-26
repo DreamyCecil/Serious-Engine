@@ -34,6 +34,11 @@ public:
   CMGButton gm_mgSerious;
   CMGButton gm_mgMental;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "SinglePlayerNew";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

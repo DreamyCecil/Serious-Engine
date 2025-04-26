@@ -37,6 +37,12 @@ public:
   CMGTrigger gm_mgSmoothTrigger;
 
   ~CCustomizeAxisMenu(void);
+
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "CustomizeAxis";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void EndMenu(void);

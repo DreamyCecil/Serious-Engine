@@ -34,6 +34,11 @@ public:
   CMGServerList gm_mgList;
   CMGButton gm_mgRefresh;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "Servers";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void Think(void);

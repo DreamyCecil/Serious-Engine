@@ -32,6 +32,11 @@ public:
   CMGArrow gm_mgArrowUp;
   CMGArrow gm_mgArrowDn;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "Levels";
+  };
+
   void Initialize_t(void);
   void FillListItems(void);
   void StartMenu(void);

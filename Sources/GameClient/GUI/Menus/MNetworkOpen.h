@@ -36,6 +36,11 @@ public:
   CMGEdit gm_mgPort;
   CMGButton gm_mgJoin;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "NetworkOpen";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void EndMenu(void);

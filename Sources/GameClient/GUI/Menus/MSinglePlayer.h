@@ -37,6 +37,11 @@ public:
   CMGButton gm_mgPlayersAndControls;
   CMGButton gm_mgOptions;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "SinglePlayer";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

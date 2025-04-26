@@ -50,6 +50,11 @@ public:
   CMGTrigger gm_mgSharpTurning;
   CMGModel gm_mgModel;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "PlayerProfile";
+  };
+
   void Initialize_t(void);
   INDEX ComboFromPlayer(INDEX iPlayer);
   INDEX PlayerFromCombo(INDEX iCombo);

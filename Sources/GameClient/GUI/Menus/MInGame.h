@@ -39,6 +39,11 @@ public:
   CMGButton gm_mgStop;
   CMGButton gm_mgQuit;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "InGame";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
 };

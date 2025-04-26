@@ -68,6 +68,11 @@ public:
   CMGArrow gm_mgArrowUp;
   CMGArrow gm_mgArrowDn;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "LoadSave";
+  };
+
   // called to get info of a file from directory, or to skip it
   BOOL ParseFile(const CTFileName &fnm, CTString &strName);
 

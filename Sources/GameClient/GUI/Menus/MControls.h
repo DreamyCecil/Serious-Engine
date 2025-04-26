@@ -40,6 +40,11 @@ public:
   CMGButton gm_mgPredefined;
   CMGButton gm_mgAdvanced;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "Controls";
+  };
+
   void Initialize_t(void);
   void StartMenu(void);
   void EndMenu(void);

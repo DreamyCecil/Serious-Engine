@@ -34,6 +34,11 @@ public:
   CMGButton gm_mgCustomOptions;
   CMGButton gm_mgAddonOptions;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "Options";
+  };
+
 	void Initialize_t(void);
 };
 

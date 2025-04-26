@@ -36,6 +36,11 @@ public:
   CMGSlider gm_mgMPEGVolume;
   CMGButton gm_mgApply;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "AudioOptions";
+  };
+
   void StartMenu(void);
   void Initialize_t(void);
 };

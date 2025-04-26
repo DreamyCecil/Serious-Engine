@@ -35,6 +35,11 @@ public:
   CMGTrigger gm_mgBitsPerPixelTrigger;
   CMGButton gm_mgApply;
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "VideoOptions";
+  };
+
   void StartMenu(void);
   void Initialize_t(void);
 };

@@ -37,6 +37,11 @@ public:
   {
   };
 
+  // [Cecil] Menu name for the mod interface
+  virtual const char *GetName(void) const {
+    return "Confirm";
+  };
+
   void Initialize_t(void);
   // return TRUE if handled
   BOOL OnKeyDown(PressedMenuButton pmb);

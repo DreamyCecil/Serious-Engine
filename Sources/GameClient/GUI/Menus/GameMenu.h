@@ -25,7 +25,6 @@ public:
   CListHead gm_lhGadgets;
   CGameMenu *gm_pgmParentMenu;
   BOOL gm_bPopup;
-  const char *gm_strName;   // menu name (for mod interface only)
   class CMenuGadget *gm_pmgSelectedByDefault;
   class CMenuGadget *gm_pmgArrowUp;
   class CMenuGadget *gm_pmgArrowDn;
@@ -36,6 +35,10 @@ public:
   INDEX gm_ctListVisible;
   INDEX gm_ctListTotal;
   CGameMenu(void);
+
+  // [Cecil] Menu name for the mod interface (used to be a gm_strName field)
+  virtual const char *GetName(void) const = 0;
+
   void ScrollList(INDEX iDir);
   void KillAllFocuses(void);
   virtual void Initialize_t(void);
