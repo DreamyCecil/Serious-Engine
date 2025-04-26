@@ -48,7 +48,7 @@
     <ClCompile Include="MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SeriousSam.cpp">
+    <ClCompile Include="GameClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SplashScreen.cpp">
@@ -227,7 +227,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SeriousSam.h">
+    <ClInclude Include="GameClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StdH.h">
@@ -397,7 +397,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SeriousSam.rc">
+    <ResourceCompile Include="GameClient.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -408,7 +408,7 @@
     <CustomBuild Include="nodrop.cur">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="res\SeriousSam.ico">
+    <CustomBuild Include="res\GameClient.ico">
       <Filter>Resource Files</Filter>
     </CustomBuild>
     <CustomBuild Include="Splash.bmp">

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7.2)
-project(SeriousSam)
+project(GameClient)
 
-set(SERIOUSSAM_SRCS
+set(GAMECLIENT_SRCS
   "GUI/Components/MenuGadget.cpp"
   "GUI/Components/MGArrow.cpp"
   "GUI/Components/MGButton.cpp"
@@ -52,35 +52,35 @@ set(SERIOUSSAM_SRCS
   "GUI/Menus/MVideoOptions.cpp"
   "CmdLine.cpp"
   "Credits.cpp"
+  "GameClient.cpp"
   "GLSettings.cpp"
   "LevelInfo.cpp"
   "MainWindow.cpp"
   "ScreenResolutions.cpp"
-  "SeriousSam.cpp"
   "SplashScreen.cpp"
   "VarList.cpp"
 )
 
-add_executable(SeriousSam ${SERIOUSSAM_SRCS})
-add_dependencies(SeriousSam ${GAMELIB} Engine)
+add_executable(${GAMECLIENT} ${GAMECLIENT_SRCS})
+add_dependencies(${GAMECLIENT} ${GAMELIB} Engine)
 
-# For SeriousSam/StdH.h access
-target_include_directories(SeriousSam PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+# For GameClient/StdH.h access
+target_include_directories(${GAMECLIENT} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-target_link_libraries(SeriousSam Engine ${ENTITIESLIB} ${GAMELIB} ${SHADERSLIB})
-#set_target_properties(SeriousSam PROPERTIES ENABLE_EXPORTS ON)
+target_link_libraries(${GAMECLIENT} Engine ${ENTITIESLIB} ${GAMELIB} ${SHADERSLIB})
+#set_target_properties(${GAMECLIENT} PROPERTIES ENABLE_EXPORTS ON)
 
 if(LINUX)
   # For preserving global class registrars in static modules
-  target_link_options(SeriousSam PRIVATE -Wl,--whole-archive ../EntitiesMP/lib${ENTITIESLIB}.a ../Shaders/lib${SHADERSLIB}.a -Wl,--no-whole-archive)
+  target_link_options(${GAMECLIENT} PRIVATE -Wl,--whole-archive ../EntitiesMP/lib${ENTITIESLIB}.a ../Shaders/lib${SHADERSLIB}.a -Wl,--no-whole-archive)
 
-  set_target_properties(SeriousSam PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
-  target_link_libraries(SeriousSam "m")
-  target_link_libraries(SeriousSam "dl")
-  target_link_libraries(SeriousSam "pthread")
-  target_link_libraries(SeriousSam SDL3::SDL3 ${ZLIB_LIBRARIES})
+  set_target_properties(${GAMECLIENT} PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
+  target_link_libraries(${GAMECLIENT} "m")
+  target_link_libraries(${GAMECLIENT} "dl")
+  target_link_libraries(${GAMECLIENT} "pthread")
+  target_link_libraries(${GAMECLIENT} SDL3::SDL3 ${ZLIB_LIBRARIES})
 
   if (SE1_OPENAL_SUPPORT)
-    target_link_libraries(SeriousSam ${OPENAL_LIBRARY})
+    target_link_libraries(${GAMECLIENT} ${OPENAL_LIBRARY})
   endif()
 endif()

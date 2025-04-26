@@ -86,17 +86,19 @@ set(SHADERSLIB "Shaders${DEBUGSUFFIX}")
 add_subdirectory(Shaders)
 
 add_subdirectory(DedicatedServer)
-add_subdirectory(SeriousSam)
+
+set(GAMECLIENT "SeriousSam")
+add_subdirectory(GameClient)
 
 # Install executable files
 if(DEBUG)
-  install(TARGETS DedicatedServer SeriousSam
+  install(TARGETS DedicatedServer ${GAMECLIENT}
           RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin/Debug"
           LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin/Debug"
           ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin/Debug"
           PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 else()
-  install(TARGETS DedicatedServer SeriousSam
+  install(TARGETS DedicatedServer ${GAMECLIENT}
           RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin"
           LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin"
           ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/Bin"
