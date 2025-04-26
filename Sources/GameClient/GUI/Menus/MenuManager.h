@@ -24,8 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MControls.h"
 #include "MCustomizeAxis.h"
 #include "MCustomizeKeyboard.h"
-#include "MCredits.h"
-#include "MDisabled.h"
 #include "MHighScore.h"
 #include "MInGame.h"
 #include "MLevels.h"
@@ -35,7 +33,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MNetworkOpen.h"
 #include "MNetworkStart.h"
 #include "MOptions.h"
-#include "MRenderingOptions.h"
 #include "MServers.h"
 #include "MSinglePlayer.h"
 #include "MSinglePlayerNew.h"
@@ -52,7 +49,6 @@ public:
   CInGameMenu gmInGameMenu;
   CSinglePlayerMenu gmSinglePlayerMenu;
   CSinglePlayerNewMenu gmSinglePlayerNewMenu;
-  CDisabledMenu gmDisabledFunction;
   CLevelsMenu gmLevelsMenu;
   CVarMenu gmVarMenu;
   CPlayerProfileMenu gmPlayerProfile;

@@ -23,7 +23,6 @@ set(GAMECLIENT_SRCS
   "GUI/Menus/MControls.cpp"
   "GUI/Menus/MCustomizeAxis.cpp"
   "GUI/Menus/MCustomizeKeyboard.cpp"
-  "GUI/Menus/MDisabled.cpp"
   "GUI/Menus/Menu.cpp"
   "GUI/Menus/MenuActions.cpp"
   "GUI/Menus/MenuManager.cpp"

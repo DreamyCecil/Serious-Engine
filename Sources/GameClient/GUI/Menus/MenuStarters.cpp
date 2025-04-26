@@ -848,14 +848,3 @@ void StartSplitScreenSaveMenu(void)
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   ChangeToMenu(&gmCurrent);
 }
-
-// -------- Disabled Menu Calling Function
-void DisabledFunction(void)
-{
-  CDisabledMenu &gmCurrent = _pGUIM->gmDisabledFunction;
-
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.gm_mgButton.mg_strText = TRANS("The feature is not available in this version!");
-  gmCurrent.gm_mgTitle.mg_strText = TRANS("DISABLED");
-  ChangeToMenu(&gmCurrent);
-}

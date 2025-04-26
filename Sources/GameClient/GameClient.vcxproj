@@ -543,7 +543,6 @@
     <ClCompile Include="GUI\Menus\MControls.cpp" />
     <ClCompile Include="GUI\Menus\MCustomizeAxis.cpp" />
     <ClCompile Include="GUI\Menus\MCustomizeKeyboard.cpp" />
-    <ClCompile Include="GUI\Menus\MDisabled.cpp" />
     <ClCompile Include="GUI\Menus\Menu.cpp" />
     <ClCompile Include="GUI\Menus\MenuStartersAF.cpp" />
     <ClCompile Include="GUI\Menus\MenuManager.cpp" />
@@ -591,10 +590,8 @@
     <ClInclude Include="GUI\Menus\MAudioOptions.h" />
     <ClInclude Include="GUI\Menus\MConfirm.h" />
     <ClInclude Include="GUI\Menus\MControls.h" />
-    <ClInclude Include="GUI\Menus\MCredits.h" />
     <ClInclude Include="GUI\Menus\MCustomizeAxis.h" />
     <ClInclude Include="GUI\Menus\MCustomizeKeyboard.h" />
-    <ClInclude Include="GUI\Menus\MDisabled.h" />
     <ClInclude Include="GUI\Menus\Menu.h" />
     <ClInclude Include="GUI\Menus\MenuActions.h" />
     <ClInclude Include="GUI\Menus\MenuManager.h" />
@@ -613,7 +610,6 @@
     <ClInclude Include="GUI\Menus\MNetworkStart.h" />
     <ClInclude Include="GUI\Menus\MOptions.h" />
     <ClInclude Include="GUI\Menus\MPlayerProfile.h" />
-    <ClInclude Include="GUI\Menus\MRenderingOptions.h" />
     <ClInclude Include="GUI\Menus\MSelectPlayers.h" />
     <ClInclude Include="GUI\Menus\MServers.h" />
     <ClInclude Include="GUI\Menus\MSinglePlayer.h" />

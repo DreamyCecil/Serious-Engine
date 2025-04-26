@@ -380,11 +380,6 @@ void InitializeMenus(void)
   _pGUIM->gmSinglePlayerNewMenu.gm_pgmParentMenu = &_pGUIM->gmSinglePlayerMenu;
   InitActionsForSinglePlayerNewMenu();
 
-  _pGUIM->gmDisabledFunction.Initialize_t();
-  _pGUIM->gmDisabledFunction.gm_strName = "DisabledFunction";
-  _pGUIM->gmDisabledFunction.gm_pmgSelectedByDefault = &_pGUIM->gmDisabledFunction.gm_mgButton;
-  _pGUIM->gmDisabledFunction.gm_pgmParentMenu = NULL;
-
   _pGUIM->gmPlayerProfile.Initialize_t();
   _pGUIM->gmPlayerProfile.gm_strName = "PlayerProfile";
   _pGUIM->gmPlayerProfile.gm_pmgSelectedByDefault = &_pGUIM->gmPlayerProfile.gm_mgNameField;
