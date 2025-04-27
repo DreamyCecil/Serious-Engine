@@ -108,7 +108,7 @@ void MenuOnMouseMove(PIX pixI, PIX pixJ);
 BOOL DoMenu( CDrawPort *pdp); // returns TRUE if still active, FALSE if should quit
 void StartMenus(const CTString &str = "");
 void StopMenus(BOOL bGoToRoot =TRUE);
-BOOL IsMenusInRoot(void);
+BOOL IsMenuRoot(class CGameMenu *pgm); // [Cecil] Check if it's a root menu
 void ChangeToMenu( class CGameMenu *pgmNew);
 extern void PlayMenuSound(CSoundData *psd);
 

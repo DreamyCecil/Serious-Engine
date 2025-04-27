@@ -25,6 +25,12 @@ void CMGLevelButton::OnActivate(void)
   PlayMenuSound(_psdPress);
   IFeel_PlayEffect("Menu_press");
   _pGame->gam_strCustomLevel = mg_fnmLevel;
+
+  // [Cecil] Rewind to some menu after choosing the level
+  extern CGameMenu *_pgmRewindToAfterLevelChosen;
+  extern CGameMenu *_pgmRewindTo;
+  _pgmRewindTo = _pgmRewindToAfterLevelChosen;
+
   extern void(*_pAfterLevelChosen)(void);
   _pAfterLevelChosen();
 }

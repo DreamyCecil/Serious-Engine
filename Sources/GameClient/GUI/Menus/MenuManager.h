@@ -44,6 +44,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class CMenuManager {
 public:
+  // [Cecil] List of previously visited menus
+  // Each time the "Back" button is pressed, it pops the last menu and switches
+  // to it, otherwise returns to the game (if it's active) or to the main menu
+  CStaticStackArray<CGameMenu *> aVisitedMenus;
+
   CConfirmMenu gmConfirmMenu;
   CMainMenu gmMainMenu;
   CInGameMenu gmInGameMenu;

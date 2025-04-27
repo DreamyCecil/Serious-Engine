@@ -24,7 +24,6 @@ class CMenuGadget;
 class CGameMenu {
 public:
   CListHead gm_lhGadgets;
-  CGameMenu *gm_pgmParentMenu;
   BOOL gm_bPopup;
   CMenuGadget *gm_pmgArrowUp;
   CMenuGadget *gm_pmgArrowDn;

@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CGameMenu::CGameMenu(void)
 {
-  gm_pgmParentMenu = NULL;
   gm_pmgArrowUp = NULL;
   gm_pmgArrowDn = NULL;
   gm_pmgListTop = NULL;

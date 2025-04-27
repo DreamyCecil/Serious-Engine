@@ -40,7 +40,6 @@ enum ELSSortType
 class CLoadSaveMenu : public CGameMenu {
 public:
   // settings adjusted before starting the menu
-  CGameMenu *gm_pgmNextMenu;  // menu to go to after selecting a file (if null, use parent menu)
   CTFileName gm_fnmSelected;  // file that is selected initially
   CTFileName gm_fnmDirectory; // directory that should be read
   CTFileName gm_fnmBaseName;  // base file name for saving (numbers are auto-added)

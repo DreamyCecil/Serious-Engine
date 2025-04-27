@@ -1097,11 +1097,13 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
         // And if the console isn't active (or has been deactivated just now)
         if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
           // Start the current menu if it's not the root one
-          if (!IsMenusInRoot()) StartMenus();
+          if (!IsMenuRoot(pgmCurrentMenu)) {
+            StartMenus();
+          }
         }
 
       // If currently in the menu and wanting to return to the previous menu
-      } else if (bMenuForced && bMenuToggle && pgmCurrentMenu->gm_pgmParentMenu == NULL) {
+      } else if (bMenuForced && bMenuToggle && _pGUIM->aVisitedMenus.Count() == 0) {
         // Delete key down message because there's no previous menu
         if (event.type != WM_CTRLBUTTONDOWN) {
           event.type = WM_NULL;

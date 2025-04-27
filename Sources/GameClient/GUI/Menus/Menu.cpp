@@ -58,6 +58,10 @@ extern CTString sam_strNetworkSettings;
 // function to activate when level is chosen
 void (*_pAfterLevelChosen)(void);
 
+// [Cecil] Rewind visited menus to this one before changing to some menu
+CGameMenu *_pgmRewindToAfterLevelChosen = NULL; // Sets _pgmRewindTo before calling _pAfterLevelChosen()
+CGameMenu *_pgmRewindTo = NULL;
+
 // functions for init actions
 
 void FixupBackButton(CGameMenu *pgm);
@@ -225,7 +229,11 @@ void StartMenus(const CTString &str)
   // start main menu, or last active one
   if (pgmCurrentMenu!=NULL) {
     ChangeToMenu(pgmCurrentMenu);
+
   } else {
+    // [Cecil] Reset visited menus
+    _pGUIM->aVisitedMenus.PopAll();
+
     if (_gmRunningGameMode==GM_NONE) {
       CMainMenu::ChangeTo();
     } else {
@@ -235,32 +243,27 @@ void StartMenus(const CTString &str)
 
   if (str == "load") {
     StartCurrentLoadMenu();
-    _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = NULL;
   }
 
   if (str == "save") {
     StartCurrentSaveMenu();
-    _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = NULL;
     FixupBackButton(&_pGUIM->gmLoadSaveMenu);
   }
 
   if (str == "controls") {
     void StartControlsMenuFromOptions(void);
     StartControlsMenuFromOptions();
-    _pGUIM->gmControls.gm_pgmParentMenu = NULL;
     FixupBackButton(&_pGUIM->gmControls);
   }
 
   if (str == "join") {
     void StartSelectPlayersMenuFromOpen(void);
     StartSelectPlayersMenuFromOpen();
-    _pGUIM->gmSelectPlayersMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
     FixupBackButton(&_pGUIM->gmSelectPlayersMenu);
   }
 
   if (str == "hiscore") {
     CHighScoreMenu::ChangeTo();
-    _pGUIM->gmHighScoreMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
     FixupBackButton(&_pGUIM->gmHighScoreMenu);
   }
 
@@ -285,10 +288,10 @@ void StopMenus( BOOL bGoToRoot /*=TRUE*/)
   }
 }
 
-BOOL IsMenusInRoot(void)
-{
-  return pgmCurrentMenu == NULL || pgmCurrentMenu == &_pGUIM->gmMainMenu || pgmCurrentMenu == &_pGUIM->gmInGameMenu;
-}
+// [Cecil] Check if it's a root menu
+BOOL IsMenuRoot(class CGameMenu *pgm) {
+  return pgm == NULL || pgm == &_pGUIM->gmMainMenu || pgm == &_pGUIM->gmInGameMenu;
+};
 
 // ------------------------ Global menu function implementation
 void InitializeMenus(void)
@@ -350,23 +353,18 @@ void InitializeMenus(void)
 
     // ------------------- Initialize menus
   _pGUIM->gmConfirmMenu.Initialize_t();
-  _pGUIM->gmConfirmMenu.gm_pgmParentMenu = NULL;
   InitActionsForConfirmMenu();
 
   _pGUIM->gmMainMenu.Initialize_t();
-  _pGUIM->gmMainMenu.gm_pgmParentMenu = NULL;
   InitActionsForMainMenu();
 
   _pGUIM->gmInGameMenu.Initialize_t();
-  _pGUIM->gmInGameMenu.gm_pgmParentMenu = NULL;
   InitActionsForInGameMenu();
 
   _pGUIM->gmSinglePlayerMenu.Initialize_t();
-  _pGUIM->gmSinglePlayerMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
   InitActionsForSinglePlayerMenu();
 
   _pGUIM->gmSinglePlayerNewMenu.Initialize_t();
-  _pGUIM->gmSinglePlayerNewMenu.gm_pgmParentMenu = &_pGUIM->gmSinglePlayerMenu;
   InitActionsForSinglePlayerNewMenu();
 
   _pGUIM->gmPlayerProfile.Initialize_t();
@@ -382,45 +380,34 @@ void InitializeMenus(void)
   _pGUIM->gmHighScoreMenu.Initialize_t();
 
   _pGUIM->gmCustomizeKeyboardMenu.Initialize_t();
-  _pGUIM->gmCustomizeKeyboardMenu.gm_pgmParentMenu = &_pGUIM->gmControls;
 
   _pGUIM->gmCustomizeAxisMenu.Initialize_t();
-  _pGUIM->gmCustomizeAxisMenu.gm_pgmParentMenu = &_pGUIM->gmControls;
   InitActionsForCustomizeAxisMenu();
 
   _pGUIM->gmOptionsMenu.Initialize_t();
-  _pGUIM->gmOptionsMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
   InitActionsForOptionsMenu();
 
   _pGUIM->gmVideoOptionsMenu.Initialize_t();
-  _pGUIM->gmVideoOptionsMenu.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
   InitActionsForVideoOptionsMenu();
 
   _pGUIM->gmAudioOptionsMenu.Initialize_t();
-  _pGUIM->gmAudioOptionsMenu.gm_pgmParentMenu = &_pGUIM->gmOptionsMenu;
   InitActionsForAudioOptionsMenu();
 
   _pGUIM->gmLevelsMenu.Initialize_t();
-  _pGUIM->gmLevelsMenu.gm_pgmParentMenu = &_pGUIM->gmSinglePlayerMenu;
 
   _pGUIM->gmVarMenu.Initialize_t();
-  _pGUIM->gmVarMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkStartMenu;
   InitActionsForVarMenu();
 
   _pGUIM->gmServersMenu.Initialize_t();
-  _pGUIM->gmServersMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkOpenMenu;
   InitActionsForServersMenu();
 
   _pGUIM->gmNetworkMenu.Initialize_t();
-  _pGUIM->gmNetworkMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
   InitActionsForNetworkMenu();
 
   _pGUIM->gmNetworkStartMenu.Initialize_t();
-  _pGUIM->gmNetworkStartMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkMenu;
   InitActionsForNetworkStartMenu();
 
   _pGUIM->gmNetworkJoinMenu.Initialize_t();
-  _pGUIM->gmNetworkJoinMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkMenu;
   InitActionsForNetworkJoinMenu();
 
   _pGUIM->gmSelectPlayersMenu.gm_bAllowDedicated = FALSE;
@@ -429,15 +416,12 @@ void InitializeMenus(void)
   InitActionsForSelectPlayersMenu();
 
   _pGUIM->gmNetworkOpenMenu.Initialize_t();
-  _pGUIM->gmNetworkOpenMenu.gm_pgmParentMenu = &_pGUIM->gmNetworkJoinMenu;
   InitActionsForNetworkOpenMenu();
 
   _pGUIM->gmSplitScreenMenu.Initialize_t();
-  _pGUIM->gmSplitScreenMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
   InitActionsForSplitScreenMenu();
 
   _pGUIM->gmSplitStartMenu.Initialize_t();
-  _pGUIM->gmSplitStartMenu.gm_pgmParentMenu = &_pGUIM->gmSplitScreenMenu;
   InitActionsForSplitStartMenu();
   }
   catch( char *strError)
@@ -471,21 +455,21 @@ void DestroyMenus( void)
 // go to parent menu if possible
 void MenuGoToParent(void)
 {
-  // if there is no parent menu
-  if( pgmCurrentMenu->gm_pgmParentMenu == NULL) {
+  // [Cecil] No more visited menus
+  if (_pGUIM->aVisitedMenus.Count() == 0) {
     // if in game
-    if (_gmRunningGameMode!=GM_NONE) {
+    if (_gmRunningGameMode != GM_NONE) {
       // exit menus
       StopMenus();
-    // if no game is running
+      // if no game is running
     } else {
       // go to main menu
       CMainMenu::ChangeTo();
     }
-  // if there is some parent menu
+
+  // [Cecil] No next menu - return to the previous menu
   } else {
-    // go to parent menu
-    ChangeToMenu( pgmCurrentMenu->gm_pgmParentMenu);
+    ChangeToMenu(NULL);
   }
 }
 
@@ -814,16 +798,32 @@ BOOL DoMenu( CDrawPort *pdp)
 
   // if this is popup menu
   if (pgmCurrentMenu->gm_bPopup) {
+    // [Cecil] Render last visited proper menu
+    CGameMenu *pgmLast = NULL;
 
-    // render parent menu first
-    if (pgmCurrentMenu->gm_pgmParentMenu!=NULL) {
-      _pGame->MenuPreRenderMenu(pgmCurrentMenu->gm_pgmParentMenu->GetName());
-      FOREACHINLIST( CMenuGadget, mg_lnNode, pgmCurrentMenu->gm_pgmParentMenu->gm_lhGadgets, itmg) {
-        if( itmg->mg_bVisible) {
-          itmg->Render( &dpMenu);
+    // Go from the end
+    INDEX iMenu = _pGUIM->aVisitedMenus.Count();
+
+    while (--iMenu >= 0) {
+      CGameMenu *pgmVisited = _pGUIM->aVisitedMenus[iMenu];
+
+      // Not a popup menu
+      if (!pgmVisited->gm_bPopup) {
+        pgmLast = pgmVisited;
+        break;
+      }
+    }
+
+    if (pgmLast != NULL) {
+      _pGame->MenuPreRenderMenu(pgmLast->GetName());
+
+      FOREACHINLIST(CMenuGadget, mg_lnNode, pgmLast->gm_lhGadgets, itmg) {
+        if (itmg->mg_bVisible) {
+          itmg->Render(&dpMenu);
         }
       }
-      _pGame->MenuPostRenderMenu(pgmCurrentMenu->gm_pgmParentMenu->GetName());
+
+      _pGame->MenuPostRenderMenu(pgmLast->GetName());
     }
 
     // gray it out
@@ -931,13 +931,16 @@ extern void FixupBackButton(CGameMenu *pgm)
     bHasBack = FALSE;
   }
 
-  if (pgm->gm_pgmParentMenu==NULL) {
-    if (_gmRunningGameMode==GM_NONE) {
-      bHasBack = FALSE;
-    } else {
+  if (_pGUIM->aVisitedMenus.Count() == 0) {
+    if (_gmRunningGameMode != GM_NONE) {
       bResume = TRUE;
+
+    // [Cecil] Only remove the back button in root menus
+    } else if (IsMenuRoot(pgm)) {
+      bHasBack = FALSE;
     }
   }
+
   if (!bHasBack) {
     mgBack.Disappear();
     return;
@@ -977,7 +980,40 @@ void ChangeToMenu( CGameMenu *pgmNewMenu)
   // auto-clear old thumbnail when going out of menu
   ClearThumbnail();
 
-  if( pgmCurrentMenu != NULL) {
+  // [Cecil] Reset gadget under the cursor
+  _pmgUnderCursor = NULL;
+
+  // [Cecil] If no new menu specified
+  if (pgmNewMenu == NULL) {
+    // Simply return to the previous one
+    ASSERT(_pGUIM->aVisitedMenus.Count() != 0);
+    pgmNewMenu = _pGUIM->aVisitedMenus.Pop();
+
+  // Otherwise remember this menu before changing from it
+  } else if (pgmCurrentMenu != NULL && pgmCurrentMenu != pgmNewMenu) {
+    _pGUIM->aVisitedMenus.Add(pgmCurrentMenu);
+
+    // [Cecil] Rewind back a few menus until the specified one, if needed
+    if (_pgmRewindTo != NULL) {
+      while (_pGUIM->aVisitedMenus.Count() != 0) {
+        CGameMenu *pgmPrev = _pGUIM->aVisitedMenus.Pop();
+
+        // Popped the menu to rewind to
+        if (pgmPrev == _pgmRewindTo) break;
+      }
+
+      _pgmRewindTo = NULL;
+    }
+  }
+
+  ASSERT(pgmNewMenu != NULL);
+
+  // [Cecil] Reset visited menus if returning to any root menu, just in case
+  if (IsMenuRoot(pgmNewMenu)) {
+    _pGUIM->aVisitedMenus.PopAll();
+  }
+
+  if (pgmCurrentMenu != NULL) {
     if (!pgmNewMenu->gm_bPopup) {
       pgmCurrentMenu->EndMenu();
     } else {
@@ -986,6 +1022,7 @@ void ChangeToMenu( CGameMenu *pgmNewMenu)
       }
     }
   }
+
   pgmNewMenu->StartMenu();
 
   CMenuGadget *pmgDefault = pgmNewMenu->GetDefaultGadget();
@@ -996,6 +1033,7 @@ void ChangeToMenu( CGameMenu *pgmNewMenu)
     }
     pmgDefault->OnSetFocus();
   }
+
   FixupBackButton(pgmNewMenu);
   pgmCurrentMenu = pgmNewMenu;
 }

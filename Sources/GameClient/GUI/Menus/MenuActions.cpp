@@ -135,8 +135,6 @@ static void ExitGame(void)
 
 static void ExitConfirm(void)
 {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   CConfirmMenu::ChangeTo(TRANS("ARE YOU SERIOUS?"), &ExitGame, NULL, TRUE);
 }
 
@@ -150,8 +148,6 @@ static void StopCurrentGame(void)
 
 static void StopConfirm(void)
 {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   CConfirmMenu::ChangeTo(TRANS("ARE YOU SERIOUS?"), &StopCurrentGame, NULL, TRUE);
 }
 
@@ -168,8 +164,6 @@ static void ModConnect(void)
 
 extern void ModConnectConfirm(void)
 {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
   if (_fnmModSelected == " ") {
     _fnmModSelected = CTString("SeriousSam");
   }
@@ -185,14 +179,11 @@ extern void ModConnectConfirm(void)
   }
 
   CPrintF(TRANS("Server is running a different MOD (%s).\nYou need to reload to connect.\n"), _fnmModSelected.ConstData());
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   CConfirmMenu::ChangeTo(TRANS("CHANGE THE MOD?"), &ModConnect, NULL, TRUE);
 }
 
 void SaveConfirm(void)
 {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   extern void OnFileSaveOK(void);
   CConfirmMenu::ChangeTo(TRANS("OVERWRITE?"), &OnFileSaveOK, NULL, TRUE);
 }
@@ -207,16 +198,12 @@ void ExitAndSpawnExplorer(void)
 
 void ModNotInstalled(void)
 {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   CTString strLabel(0, TRANS("You don't have MOD '%s' installed.\nDo you want to visit its web site?"), _fnmModSelected.ConstData());
   CConfirmMenu::ChangeTo(strLabel, &ExitAndSpawnExplorer, NULL, FALSE);
 }
 
 extern void ModConfirm(void)
 {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-  gmCurrent.gm_pgmParentMenu = &_pGUIM->gmLoadSaveMenu;
   CConfirmMenu::ChangeTo(TRANS("LOAD THIS MOD?"), &ModLoadYes, NULL, TRUE);
 }
 
@@ -230,7 +217,6 @@ void VideoConfirm(void)
   // due to WM_MOUSEMOVE being sent
   _bMouseUsedLast = FALSE;
   _pmgUnderCursor = gmCurrent.GetDefaultGadget();
-  gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
   CConfirmMenu::ChangeTo(TRANS("KEEP THIS SETTING?"), NULL, &RevertVideoSettings, TRUE);
 }
 
@@ -329,14 +315,12 @@ extern CTString sam_strTrainingLevel;
 static void StartSinglePlayerGame_Normal(void);
 static void StartTechTest(void)
 {
-  _pGUIM->gmSinglePlayerNewMenu.gm_pgmParentMenu = &_pGUIM->gmSinglePlayerMenu;
   _pGame->gam_strCustomLevel = sam_strTechTestLevel;
   StartSinglePlayerGame_Normal();
 }
 
 static void StartTraining(void)
 {
-  _pGUIM->gmSinglePlayerNewMenu.gm_pgmParentMenu = &_pGUIM->gmSinglePlayerMenu;
   _pGame->gam_strCustomLevel = sam_strTrainingLevel;
   CSinglePlayerNewMenu::ChangeTo();
 }

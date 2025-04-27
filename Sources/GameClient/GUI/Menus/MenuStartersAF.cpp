@@ -151,7 +151,6 @@ BOOL LSLoadMod(const CTFileName &fnm)
 
 BOOL LSLoadCustom(const CTFileName &fnm)
 {
-  _pGUIM->gmVarMenu.gm_pgmParentMenu = &_pGUIM->gmLoadSaveMenu;
   CVarMenu::ChangeTo(TRANS("ADVANCED OPTIONS"), fnm);
   return TRUE;
 }

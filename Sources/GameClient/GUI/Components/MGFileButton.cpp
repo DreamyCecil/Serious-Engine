@@ -85,9 +85,6 @@ void CMGFileButton::DoLoad(void)
     // do nothing
     return;
   }
-  if (_pGUIM->gmLoadSaveMenu.gm_pgmNextMenu != NULL) {
-    _pGUIM->gmLoadSaveMenu.gm_pgmParentMenu = _pGUIM->gmLoadSaveMenu.gm_pgmNextMenu;
-  }
   // call loading function
   BOOL bSucceeded = _pGUIM->gmLoadSaveMenu.gm_pAfterFileChosen(mg_fnm);
   ASSERT(bSucceeded);

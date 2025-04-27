@@ -21,8 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 void CLoadSaveMenu::Initialize_t(void)
 {
-  gm_pgmNextMenu = NULL;
-
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
@@ -149,7 +147,6 @@ void CLoadSaveMenu::EndMenu(void)
   FORDELETELIST(CFileInfo, fi_lnNode, gm_lhFileInfos, itfi) {
     delete &itfi.Current();
   }
-  gm_pgmNextMenu = NULL;
   CGameMenu::EndMenu();
 }
 
