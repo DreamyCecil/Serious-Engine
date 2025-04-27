@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 
 #include "MGFileButton.h"
-#include "GUI/Menus/MenuManager.h"
 
 extern CSoundData *_psdPress;
 
@@ -30,8 +29,8 @@ CMGFileButton::CMGFileButton(void)
 void CMGFileButton::RefreshText(void)
 {
   CTString strText = mg_strDes;
-  SetText(strText);
   strText.OnlyFirstLine();
+  SetText(strText);
   mg_strInfo = mg_strDes;
   mg_strInfo.RemovePrefix(strText);
   mg_strInfo.DeleteChar(0);
