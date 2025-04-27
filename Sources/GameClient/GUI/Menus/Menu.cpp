@@ -25,9 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "VarList.h"
 #include "FileInfo.h"
 
-#include "MenuActions.h"
 #include "MenuStuff.h"
-#include "MenuStarters.h"
 
 // macros for translating radio button text arrays
 #define TRANSLATERADIOARRAY(array) TranslateRadioTexts(array, ARRAYCOUNT(array))
@@ -39,8 +37,6 @@ extern CTextureObject *_ptoLogoODI;
 extern CTextureObject *_ptoLogoEAX;
 
 INDEX _iLocalPlayer = -1;
-BOOL  _bPlayerMenuFromSinglePlayer = FALSE;
-
 GameMode _gmMenuGameMode = GM_NONE;
 GameMode _gmRunningGameMode = GM_NONE;
 CListHead _lhServers;
@@ -49,11 +45,6 @@ void OnPlayerSelect(void);
 
 // last tick done
 static TICK _tckMenuLastTickDone = -1;
-// all possible menu entities
-CListHead lhMenuEntities;
-
-CTString _strLastPlayerAppearance = "";
-extern CTString sam_strNetworkSettings;
 
 // function to activate when level is chosen
 void (*_pAfterLevelChosen)(void);
@@ -242,22 +233,23 @@ void StartMenus(const CTString &str)
   }
 
   if (str == "load") {
+    extern void StartCurrentLoadMenu(void);
     StartCurrentLoadMenu();
   }
 
   if (str == "save") {
+    extern void StartCurrentSaveMenu(void);
     StartCurrentSaveMenu();
     FixupBackButton(&_pGUIM->gmLoadSaveMenu);
   }
 
   if (str == "controls") {
-    void StartControlsMenuFromOptions(void);
-    StartControlsMenuFromOptions();
+    CControlsMenu::ChangeTo();
     FixupBackButton(&_pGUIM->gmControls);
   }
 
   if (str == "join") {
-    void StartSelectPlayersMenuFromOpen(void);
+    extern void StartSelectPlayersMenuFromOpen(void);
     StartSelectPlayersMenuFromOpen();
     FixupBackButton(&_pGUIM->gmSelectPlayersMenu);
   }
@@ -351,78 +343,31 @@ void InitializeMenus(void)
     // initialize game type strings table
     InitGameTypes();
 
-    // ------------------- Initialize menus
-  _pGUIM->gmConfirmMenu.Initialize_t();
-  InitActionsForConfirmMenu();
-
-  _pGUIM->gmMainMenu.Initialize_t();
-  InitActionsForMainMenu();
-
-  _pGUIM->gmInGameMenu.Initialize_t();
-  InitActionsForInGameMenu();
-
-  _pGUIM->gmSinglePlayerMenu.Initialize_t();
-  InitActionsForSinglePlayerMenu();
-
-  _pGUIM->gmSinglePlayerNewMenu.Initialize_t();
-  InitActionsForSinglePlayerNewMenu();
-
-  _pGUIM->gmPlayerProfile.Initialize_t();
-  InitActionsForPlayerProfileMenu();
-
-  _pGUIM->gmControls.Initialize_t();
-  InitActionsForControlsMenu();
-
-    // warning! parent menu has to be set inside button activate function from where
-    // Load/Save menu is called
-  _pGUIM->gmLoadSaveMenu.Initialize_t();
-
-  _pGUIM->gmHighScoreMenu.Initialize_t();
-
-  _pGUIM->gmCustomizeKeyboardMenu.Initialize_t();
-
-  _pGUIM->gmCustomizeAxisMenu.Initialize_t();
-  InitActionsForCustomizeAxisMenu();
-
-  _pGUIM->gmOptionsMenu.Initialize_t();
-  InitActionsForOptionsMenu();
-
-  _pGUIM->gmVideoOptionsMenu.Initialize_t();
-  InitActionsForVideoOptionsMenu();
-
-  _pGUIM->gmAudioOptionsMenu.Initialize_t();
-  InitActionsForAudioOptionsMenu();
-
-  _pGUIM->gmLevelsMenu.Initialize_t();
-
-  _pGUIM->gmVarMenu.Initialize_t();
-  InitActionsForVarMenu();
-
-  _pGUIM->gmServersMenu.Initialize_t();
-  InitActionsForServersMenu();
-
-  _pGUIM->gmNetworkMenu.Initialize_t();
-  InitActionsForNetworkMenu();
-
-  _pGUIM->gmNetworkStartMenu.Initialize_t();
-  InitActionsForNetworkStartMenu();
-
-  _pGUIM->gmNetworkJoinMenu.Initialize_t();
-  InitActionsForNetworkJoinMenu();
-
-  _pGUIM->gmSelectPlayersMenu.gm_bAllowDedicated = FALSE;
-  _pGUIM->gmSelectPlayersMenu.gm_bAllowObserving = FALSE;
-  _pGUIM->gmSelectPlayersMenu.Initialize_t();
-  InitActionsForSelectPlayersMenu();
-
-  _pGUIM->gmNetworkOpenMenu.Initialize_t();
-  InitActionsForNetworkOpenMenu();
-
-  _pGUIM->gmSplitScreenMenu.Initialize_t();
-  InitActionsForSplitScreenMenu();
-
-  _pGUIM->gmSplitStartMenu.Initialize_t();
-  InitActionsForSplitStartMenu();
+    // Initialize menus
+    _pGUIM->gmConfirmMenu.Initialize_t();
+    _pGUIM->gmMainMenu.Initialize_t();
+    _pGUIM->gmInGameMenu.Initialize_t();
+    _pGUIM->gmSinglePlayerMenu.Initialize_t();
+    _pGUIM->gmSinglePlayerNewMenu.Initialize_t();
+    _pGUIM->gmPlayerProfile.Initialize_t();
+    _pGUIM->gmControls.Initialize_t();
+    _pGUIM->gmLoadSaveMenu.Initialize_t();
+    _pGUIM->gmHighScoreMenu.Initialize_t();
+    _pGUIM->gmCustomizeKeyboardMenu.Initialize_t();
+    _pGUIM->gmCustomizeAxisMenu.Initialize_t();
+    _pGUIM->gmOptionsMenu.Initialize_t();
+    _pGUIM->gmVideoOptionsMenu.Initialize_t();
+    _pGUIM->gmAudioOptionsMenu.Initialize_t();
+    _pGUIM->gmLevelsMenu.Initialize_t();
+    _pGUIM->gmVarMenu.Initialize_t();
+    _pGUIM->gmServersMenu.Initialize_t();
+    _pGUIM->gmNetworkMenu.Initialize_t();
+    _pGUIM->gmNetworkStartMenu.Initialize_t();
+    _pGUIM->gmNetworkJoinMenu.Initialize_t();
+    _pGUIM->gmSelectPlayersMenu.Initialize_t();
+    _pGUIM->gmNetworkOpenMenu.Initialize_t();
+    _pGUIM->gmSplitScreenMenu.Initialize_t();
+    _pGUIM->gmSplitStartMenu.Initialize_t();
   }
   catch( char *strError)
   {

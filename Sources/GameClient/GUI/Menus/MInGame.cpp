@@ -18,6 +18,195 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MInGame.h"
 
+static void StartCurrentQuickLoadMenu(void) {
+  if (_gmRunningGameMode == GM_NETWORK) {
+    extern void StartNetworkQuickLoadMenu(void);
+    StartNetworkQuickLoadMenu();
+
+  } else if (_gmRunningGameMode == GM_SPLIT_SCREEN) {
+    extern void StartSplitScreenQuickLoadMenu(void);
+    StartSplitScreenQuickLoadMenu();
+
+  } else {
+    extern void StartSinglePlayerQuickLoadMenu(void);
+    StartSinglePlayerQuickLoadMenu();
+  }
+};
+
+// start load/save menus depending on type of game running
+static void QuickSaveFromMenu(void) {
+  _pShell->SetINDEX("gam_bQuickSave", 2); // force save with reporting
+  StopMenus(TRUE);
+};
+
+void StartCurrentLoadMenu(void) {
+  if (_gmRunningGameMode == GM_NETWORK) {
+    extern void StartNetworkLoadMenu(void);
+    StartNetworkLoadMenu();
+
+  } else if (_gmRunningGameMode == GM_SPLIT_SCREEN) {
+    extern void StartSplitScreenLoadMenu(void);
+    StartSplitScreenLoadMenu();
+
+  } else {
+    extern void StartSinglePlayerLoadMenu(void);
+    StartSinglePlayerLoadMenu();
+  }
+};
+
+// same function for saving in singleplay, network and splitscreen
+static BOOL LSSaveAnyGame(const CTFileName &fnm) {
+  if (_pGame->SaveGame(fnm)) {
+    StopMenus();
+    return TRUE;
+  }
+
+  return FALSE;
+};
+
+static void StartNetworkSaveMenu(void) {
+  if (_gmRunningGameMode != GM_NETWORK) return;
+  _gmMenuGameMode = GM_NETWORK;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("SAVE"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = TRUE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\", TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmBaseName = CTString("SaveGame");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSSaveAnyGame;
+  gmCurrent.gm_mgNotes.SetText("");
+  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(TRUE);
+  CLoadSaveMenu::ChangeTo();
+};
+
+static void StartSplitScreenSaveMenu(void) {
+  if (_gmRunningGameMode != GM_SPLIT_SCREEN) return;
+  _gmMenuGameMode = GM_SPLIT_SCREEN;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("SAVE"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = TRUE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\", TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmBaseName = CTString("SaveGame");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSSaveAnyGame;
+  gmCurrent.gm_mgNotes.SetText("");
+  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(TRUE);
+  CLoadSaveMenu::ChangeTo();
+};
+
+static void StartSinglePlayerSaveMenu(void) {
+  if (_gmRunningGameMode != GM_SINGLE_PLAYER) return;
+
+  // Do nothing if no live players
+  if (_pGame->GetPlayersCount() > 0 && _pGame->GetLivePlayersCount() <= 0) {
+    return;
+  }
+
+  _gmMenuGameMode = GM_SINGLE_PLAYER;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("SAVE"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = TRUE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmBaseName = CTString("SaveGame");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSSaveAnyGame;
+  gmCurrent.gm_mgNotes.SetText("");
+  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(TRUE);
+  CLoadSaveMenu::ChangeTo();
+};
+
+void StartCurrentSaveMenu(void) {
+  if (_gmRunningGameMode == GM_NETWORK) {
+    StartNetworkSaveMenu();
+
+  } else if (_gmRunningGameMode == GM_SPLIT_SCREEN) {
+    StartSplitScreenSaveMenu();
+
+  } else {
+    StartSinglePlayerSaveMenu();
+  }
+};
+
+static BOOL LSSaveDemo(const CTFileName &fnm) {
+  // save the demo
+  if (_pGame->StartDemoRec(fnm)) {
+    StopMenus();
+    return TRUE;
+  }
+
+  return FALSE;
+};
+
+static void StartDemoSaveMenu(void) {
+  if (_gmRunningGameMode == GM_NONE) return;
+  _gmMenuGameMode = GM_DEMO;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("RECORD DEMO"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEUP;
+  gmCurrent.gm_bSave = TRUE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = CTString("Demos\\");
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmBaseName = CTString("Demo");
+  gmCurrent.gm_fnmExt = CTString(".dem");
+  gmCurrent.gm_pAfterFileChosen = &LSSaveDemo;
+  gmCurrent.gm_mgNotes.SetText("");
+  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(FALSE);
+  CLoadSaveMenu::ChangeTo();
+};
+
+static void SetDemoStartStopRecText(void);
+
+static void StopRecordingDemo(void) {
+  _pNetwork->StopDemoRec();
+  SetDemoStartStopRecText();
+};
+
+void SetDemoStartStopRecText(void) {
+  CInGameMenu &gmCurrent = _pGUIM->gmInGameMenu;
+
+  if (_pNetwork->IsRecordingDemo()) {
+    gmCurrent.gm_mgDemoRec.SetText(TRANS("STOP RECORDING"));
+    gmCurrent.gm_mgDemoRec.mg_strTip = TRANS("stop current recording");
+    gmCurrent.gm_mgDemoRec.mg_pActivatedFunction = &StopRecordingDemo;
+  } else {
+    gmCurrent.gm_mgDemoRec.SetText(TRANS("RECORD DEMO"));
+    gmCurrent.gm_mgDemoRec.mg_strTip = TRANS("start recording current game");
+    gmCurrent.gm_mgDemoRec.mg_pActivatedFunction = &StartDemoSaveMenu;
+  }
+};
+
+static void StopCurrentGame(void) {
+  _pGame->StopGame();
+  _gmRunningGameMode = GM_NONE;
+  StopMenus(TRUE);
+  StartMenus("");
+};
+
+static void StopConfirm(void) {
+  CConfirmMenu::ChangeTo(TRANS("ARE YOU SERIOUS?"), &StopCurrentGame, NULL, TRUE);
+};
+
+extern void ExitConfirm(void);
+
 void CInGameMenu::Initialize_t(void)
 {
   // intialize main menu
@@ -48,7 +237,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgQuickLoad.mg_lnNode);
   gm_mgQuickLoad.mg_pmgUp = &gm_mgQuit;
   gm_mgQuickLoad.mg_pmgDown = &gm_mgQuickSave;
-  gm_mgQuickLoad.mg_pActivatedFunction = NULL;
+  gm_mgQuickLoad.mg_pActivatedFunction = &StartCurrentQuickLoadMenu;
 
   gm_mgQuickSave.SetText(TRANS("QUICK SAVE"));
   gm_mgQuickSave.mg_bfsFontSize = BFS_LARGE;
@@ -57,7 +246,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgQuickSave.mg_lnNode);
   gm_mgQuickSave.mg_pmgUp = &gm_mgQuickLoad;
   gm_mgQuickSave.mg_pmgDown = &gm_mgLoad;
-  gm_mgQuickSave.mg_pActivatedFunction = NULL;
+  gm_mgQuickSave.mg_pActivatedFunction = &QuickSaveFromMenu;
 
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
@@ -66,7 +255,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgLoad.mg_lnNode);
   gm_mgLoad.mg_pmgUp = &gm_mgQuickSave;
   gm_mgLoad.mg_pmgDown = &gm_mgSave;
-  gm_mgLoad.mg_pActivatedFunction = NULL;
+  gm_mgLoad.mg_pActivatedFunction = &StartCurrentLoadMenu;
 
   gm_mgSave.SetText(TRANS("SAVE"));
   gm_mgSave.mg_bfsFontSize = BFS_LARGE;
@@ -75,7 +264,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgSave.mg_lnNode);
   gm_mgSave.mg_pmgUp = &gm_mgLoad;
   gm_mgSave.mg_pmgDown = &gm_mgDemoRec;
-  gm_mgSave.mg_pActivatedFunction = NULL;
+  gm_mgSave.mg_pActivatedFunction = &StartCurrentSaveMenu;
 
   gm_mgDemoRec.mg_boxOnScreen = BoxBigRow(4.0f);
   gm_mgDemoRec.mg_bfsFontSize = BFS_LARGE;
@@ -92,7 +281,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgHighScore.mg_lnNode);
   gm_mgHighScore.mg_pmgUp = &gm_mgDemoRec;
   gm_mgHighScore.mg_pmgDown = &gm_mgOptions;
-  gm_mgHighScore.mg_pActivatedFunction = NULL;
+  gm_mgHighScore.mg_pActivatedFunction = &CHighScoreMenu::ChangeTo;
 
   gm_mgOptions.SetText(TRANS("OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
@@ -101,7 +290,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgOptions.mg_lnNode);
   gm_mgOptions.mg_pmgUp = &gm_mgHighScore;
   gm_mgOptions.mg_pmgDown = &gm_mgStop;
-  gm_mgOptions.mg_pActivatedFunction = NULL;
+  gm_mgOptions.mg_pActivatedFunction = &COptionsMenu::ChangeTo;
 
   gm_mgStop.SetText(TRANS("STOP GAME"));
   gm_mgStop.mg_bfsFontSize = BFS_LARGE;
@@ -110,7 +299,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgStop.mg_lnNode);
   gm_mgStop.mg_pmgUp = &gm_mgOptions;
   gm_mgStop.mg_pmgDown = &gm_mgQuit;
-  gm_mgStop.mg_pActivatedFunction = NULL;
+  gm_mgStop.mg_pActivatedFunction = &StopConfirm;
 
   gm_mgQuit.SetText(TRANS("QUIT"));
   gm_mgQuit.mg_bfsFontSize = BFS_LARGE;
@@ -119,7 +308,7 @@ void CInGameMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgQuit.mg_lnNode);
   gm_mgQuit.mg_pmgUp = &gm_mgStop;
   gm_mgQuit.mg_pmgDown = &gm_mgQuickLoad;
-  gm_mgQuit.mg_pActivatedFunction = NULL;
+  gm_mgQuit.mg_pActivatedFunction = &ExitConfirm;
 }
 
 void CInGameMenu::StartMenu(void)

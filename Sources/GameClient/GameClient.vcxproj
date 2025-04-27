@@ -544,11 +544,9 @@
     <ClCompile Include="GUI\Menus\MCustomizeAxis.cpp" />
     <ClCompile Include="GUI\Menus\MCustomizeKeyboard.cpp" />
     <ClCompile Include="GUI\Menus\Menu.cpp" />
-    <ClCompile Include="GUI\Menus\MenuStartersAF.cpp" />
     <ClCompile Include="GUI\Menus\MenuManager.cpp" />
     <ClCompile Include="GUI\Menus\MenuPrinting.cpp" />
     <ClCompile Include="GUI\Menus\MenuStuff.cpp" />
-    <ClCompile Include="GUI\Menus\MenuActions.cpp" />
     <ClCompile Include="GUI\Menus\MHighScore.cpp" />
     <ClCompile Include="GUI\Menus\MInGame.cpp" />
     <ClCompile Include="GUI\Menus\MLevels.cpp" />
@@ -593,12 +591,9 @@
     <ClInclude Include="GUI\Menus\MCustomizeAxis.h" />
     <ClInclude Include="GUI\Menus\MCustomizeKeyboard.h" />
     <ClInclude Include="GUI\Menus\Menu.h" />
-    <ClInclude Include="GUI\Menus\MenuActions.h" />
     <ClInclude Include="GUI\Menus\MenuManager.h" />
     <ClInclude Include="GUI\Menus\MenuPrinting.h" />
-    <ClInclude Include="GUI\Menus\MenuStartersAF.h" />
     <ClInclude Include="GUI\Menus\MenuStuff.h" />
-    <ClInclude Include="GUI\Menus\MenuStarters.h" />
     <ClInclude Include="GUI\Menus\MHighScore.h" />
     <ClInclude Include="GUI\Menus\MInGame.h" />
     <ClInclude Include="GUI\Menus\MLevels.h" />
@@ -618,7 +613,6 @@
     <ClInclude Include="GUI\Menus\MSplitStart.h" />
     <ClInclude Include="GUI\Menus\MVar.h" />
     <ClInclude Include="GUI\Menus\MVideoOptions.h" />
-    <ClCompile Include="GUI\Menus\MenuStarters.cpp" />
     <ClCompile Include="GameClient.cpp" />
     <ClCompile Include="SplashScreen.cpp" />
     <ClCompile Include="StdH.cpp">

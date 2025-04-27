@@ -20,7 +20,50 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MSplitStart.h"
 
-extern void UpdateSplitLevel(INDEX iDummy);
+static void UpdateSplitLevel(INDEX iDummy) {
+  CSplitStartMenu &gmCurrent = _pGUIM->gmSplitStartMenu;
+
+  ValidateLevelForFlags(_pGame->gam_strCustomLevel, GetSpawnFlagsForGameType(gmCurrent.gm_mgGameType.mg_iSelected));
+  gmCurrent.gm_mgLevel.SetText(FindLevelByFileName(_pGame->gam_strCustomLevel).li_strName);
+};
+
+static void StartSelectLevelFromSplit(void) {
+  extern void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent);
+  StartSelectLevel(GetSpawnFlagsForGameType(_pGUIM->gmSplitStartMenu.gm_mgGameType.mg_iSelected),
+    &CSplitStartMenu::ChangeTo, &_pGUIM->gmSplitStartMenu);
+};
+
+extern void StartVarGameOptions(void);
+
+static void StartSplitScreenGame(void) {
+  _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
+
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
+
+  CTFileName fnWorld = _pGame->gam_strCustomLevel;
+
+  _pGame->gm_strNetworkProvider = "Local";
+
+  CUniversalSessionProperties sp;
+  _pGame->SetMultiPlayerSession(sp);
+
+  if (_pGame->NewGame(fnWorld.FileName(), fnWorld, sp)) {
+    StopMenus();
+    _gmRunningGameMode = GM_SPLIT_SCREEN;
+  } else {
+    _gmRunningGameMode = GM_NONE;
+  }
+};
+
+static void StartSelectPlayersMenuFromSplit(void) {
+  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
+  gmCurrent.gm_bAllowDedicated = FALSE;
+  gmCurrent.gm_bAllowObserving = FALSE;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartSplitScreenGame;
+  CSelectPlayersMenu::ChangeTo();
+};
 
 void CSplitStartMenu::Initialize_t(void)
 {
@@ -50,7 +93,7 @@ void CSplitStartMenu::Initialize_t(void)
   gm_mgLevel.mg_pmgUp = &gm_mgDifficulty;
   gm_mgLevel.mg_pmgDown = &gm_mgOptions;
   gm_mgLevel.mg_strTip = TRANS("choose the level to start");
-  gm_mgLevel.mg_pActivatedFunction = NULL;
+  gm_mgLevel.mg_pActivatedFunction = &StartSelectLevelFromSplit;
   gm_lhGadgets.AddTail(gm_mgLevel.mg_lnNode);
 
   // options button
@@ -61,7 +104,7 @@ void CSplitStartMenu::Initialize_t(void)
   gm_mgOptions.mg_pmgUp = &gm_mgLevel;
   gm_mgOptions.mg_pmgDown = &gm_mgStart;
   gm_mgOptions.mg_strTip = TRANS("adjust game rules");
-  gm_mgOptions.mg_pActivatedFunction = NULL;
+  gm_mgOptions.mg_pActivatedFunction = &StartVarGameOptions;
   gm_lhGadgets.AddTail(gm_mgOptions.mg_lnNode);
 
   // start button
@@ -71,7 +114,7 @@ void CSplitStartMenu::Initialize_t(void)
   gm_mgStart.mg_pmgDown = &gm_mgGameType;
   gm_mgStart.SetText(TRANS("START"));
   gm_lhGadgets.AddTail(gm_mgStart.mg_lnNode);
-  gm_mgStart.mg_pActivatedFunction = NULL;
+  gm_mgStart.mg_pActivatedFunction = &StartSelectPlayersMenuFromSplit;
 }
 
 void CSplitStartMenu::StartMenu(void)

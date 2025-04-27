@@ -19,6 +19,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MNetworkJoin.h"
 
+static void StartSelectServerLAN(void) {
+  CServersMenu &gmCurrent = _pGUIM->gmServersMenu;
+  gmCurrent.m_bInternet = FALSE;
+  CServersMenu::ChangeTo();
+};
+
+static void StartSelectServerNET(void) {
+  CServersMenu &gmCurrent = _pGUIM->gmServersMenu;
+  gmCurrent.m_bInternet = TRUE;
+  CServersMenu::ChangeTo();
+};
+
 void CNetworkJoinMenu::Initialize_t(void)
 {
   // title
@@ -33,7 +45,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgLAN.SetText(TRANS("SEARCH LAN"));
   gm_mgLAN.mg_strTip = TRANS("search local network for servers");
   gm_lhGadgets.AddTail(gm_mgLAN.mg_lnNode);
-  gm_mgLAN.mg_pActivatedFunction = NULL;
+  gm_mgLAN.mg_pActivatedFunction = &StartSelectServerLAN;
 
   gm_mgNET.mg_bfsFontSize = BFS_LARGE;
   gm_mgNET.mg_boxOnScreen = BoxBigRow(2.0f);
@@ -42,7 +54,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgNET.SetText(TRANS("SEARCH INTERNET"));
   gm_mgNET.mg_strTip = TRANS("search internet for servers");
   gm_lhGadgets.AddTail(gm_mgNET.mg_lnNode);
-  gm_mgNET.mg_pActivatedFunction = NULL;
+  gm_mgNET.mg_pActivatedFunction = &StartSelectServerNET;
 
   gm_mgOpen.mg_bfsFontSize = BFS_LARGE;
   gm_mgOpen.mg_boxOnScreen = BoxBigRow(3.0f);
@@ -51,7 +63,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgOpen.SetText(TRANS("SPECIFY SERVER"));
   gm_mgOpen.mg_strTip = TRANS("type in server address to connect to");
   gm_lhGadgets.AddTail(gm_mgOpen.mg_lnNode);
-  gm_mgOpen.mg_pActivatedFunction = NULL;
+  gm_mgOpen.mg_pActivatedFunction = &CNetworkOpenMenu::ChangeTo;
 }
 
 // [Cecil] Change to the menu

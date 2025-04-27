@@ -19,6 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MCustomizeAxis.h"
 
+static void PreChangeAxis(INDEX iDummy) {
+  _pGUIM->gmCustomizeAxisMenu.ApplyActionSettings();
+};
+
+static void PostChangeAxis(INDEX iDummy) {
+  _pGUIM->gmCustomizeAxisMenu.ObtainActionSettings();
+};
+
 void CCustomizeAxisMenu::Initialize_t(void)
 {
   // intialize axis menu
@@ -35,8 +43,8 @@ void CCustomizeAxisMenu::Initialize_t(void)
   gm_mgActionTrigger.mg_astrTexts = new CTString[AXIS_ACTIONS_CT];
   gm_mgActionTrigger.mg_ctTexts = AXIS_ACTIONS_CT;
 
-  gm_mgActionTrigger.mg_pPreTriggerChange = NULL;
-  gm_mgActionTrigger.mg_pOnTriggerChange = NULL;
+  gm_mgActionTrigger.mg_pPreTriggerChange = &PreChangeAxis;
+  gm_mgActionTrigger.mg_pOnTriggerChange = &PostChangeAxis;
 
   // for all available axis type controlers
   for (INDEX iControler = 0; iControler<AXIS_ACTIONS_CT; iControler++) {

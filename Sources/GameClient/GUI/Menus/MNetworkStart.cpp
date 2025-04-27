@@ -20,7 +20,57 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MNetworkStart.h"
 
-extern void UpdateNetworkLevel(INDEX iDummy);
+static void UpdateNetworkLevel(INDEX iDummy) {
+  ValidateLevelForFlags(_pGame->gam_strCustomLevel,
+    GetSpawnFlagsForGameType(_pGUIM->gmNetworkStartMenu.gm_mgGameType.mg_iSelected));
+  _pGUIM->gmNetworkStartMenu.gm_mgLevel.SetText(FindLevelByFileName(_pGame->gam_strCustomLevel).li_strName);
+};
+
+void StartVarGameOptions(void) {
+  CVarMenu::ChangeTo(TRANS("GAME OPTIONS"), CTFILENAME("Scripts\\Menu\\GameOptions.cfg"));
+};
+
+static void StartSelectLevelFromNetwork(void) {
+  extern void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent);
+  StartSelectLevel(GetSpawnFlagsForGameType(_pGUIM->gmNetworkStartMenu.gm_mgGameType.mg_iSelected),
+    &CNetworkStartMenu::ChangeTo, &_pGUIM->gmNetworkStartMenu);
+};
+
+void StartNetworkGame(void) {
+  _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
+
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
+
+  _pGame->gm_strNetworkProvider = "TCP/IP Server";
+
+  CUniversalSessionProperties sp;
+  _pGame->SetMultiPlayerSession(sp);
+
+  if (_pGame->NewGame(_pGame->gam_strSessionName, _pGame->gam_strCustomLevel, sp)) {
+    StopMenus();
+    _gmRunningGameMode = GM_NETWORK;
+
+    // if starting a dedicated server
+    if (_pGame->gm_MenuSplitScreenCfg == CGame::SSC_DEDICATED) {
+      // pull down the console
+      extern INDEX sam_bToggleConsole;
+      sam_bToggleConsole = TRUE;
+    }
+
+  } else {
+    _gmRunningGameMode = GM_NONE;
+  }
+};
+
+static void StartSelectPlayersMenuFromNetwork(void) {
+  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
+  gmCurrent.gm_bAllowDedicated = TRUE;
+  gmCurrent.gm_bAllowObserving = TRUE;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkGame;
+  CSelectPlayersMenu::ChangeTo();
+};
 
 void CNetworkStartMenu::Initialize_t(void)
 {
@@ -63,7 +113,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgLevel.mg_pmgUp = &gm_mgDifficulty;
   gm_mgLevel.mg_pmgDown = &gm_mgMaxPlayers;
   gm_mgLevel.mg_strTip = TRANS("choose the level to start");
-  gm_mgLevel.mg_pActivatedFunction = NULL;
+  gm_mgLevel.mg_pActivatedFunction = &StartSelectLevelFromNetwork;
   gm_lhGadgets.AddTail(gm_mgLevel.mg_lnNode);
 
   // max players trigger
@@ -89,7 +139,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgGameOptions.mg_pmgUp = &gm_mgVisible;
   gm_mgGameOptions.mg_pmgDown = &gm_mgStart;
   gm_mgGameOptions.mg_strTip = TRANS("adjust game rules");
-  gm_mgGameOptions.mg_pActivatedFunction = NULL;
+  gm_mgGameOptions.mg_pActivatedFunction = &StartVarGameOptions;
   gm_lhGadgets.AddTail(gm_mgGameOptions.mg_lnNode);
 
   // start button
@@ -99,7 +149,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgStart.mg_pmgDown = &gm_mgSessionName;
   gm_mgStart.SetText(TRANS("START"));
   gm_lhGadgets.AddTail(gm_mgStart.mg_lnNode);
-  gm_mgStart.mg_pActivatedFunction = NULL;
+  gm_mgStart.mg_pActivatedFunction = &StartSelectPlayersMenuFromNetwork;
 }
 
 void CNetworkStartMenu::StartMenu(void)

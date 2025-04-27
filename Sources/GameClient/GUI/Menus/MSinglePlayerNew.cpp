@@ -19,6 +19,63 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MSinglePlayerNew.h"
 
+void StartSinglePlayerGame(void) {
+  _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY;
+  _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_iSinglePlayer;
+
+  for (INDEX iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+  }
+
+  _pGame->gm_strNetworkProvider = "Local";
+
+  CUniversalSessionProperties sp;
+  _pGame->SetSinglePlayerSession(sp);
+
+  if (_pGame->NewGame(_pGame->gam_strCustomLevel, _pGame->gam_strCustomLevel, sp)) {
+    StopMenus();
+    _gmRunningGameMode = GM_SINGLE_PLAYER;
+  } else {
+    _gmRunningGameMode = GM_NONE;
+  }
+};
+
+static void StartSinglePlayerGame_Tourist(void) {
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_TOURIST);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  StartSinglePlayerGame();
+};
+
+static void StartSinglePlayerGame_Easy(void) {
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_EASY);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  StartSinglePlayerGame();
+};
+
+void StartSinglePlayerGame_Normal(void) {
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_NORMAL);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  StartSinglePlayerGame();
+};
+
+static void StartSinglePlayerGame_Hard(void) {
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_HARD);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  StartSinglePlayerGame();
+};
+
+static void StartSinglePlayerGame_Serious(void) {
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_EXTREME);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  StartSinglePlayerGame();
+};
+
+static void StartSinglePlayerGame_Mental(void) {
+  _pShell->SetINDEX("gam_iStartDifficulty", CSessionProperties::GD_EXTREME + 1);
+  _pShell->SetINDEX("gam_iStartMode", CSessionProperties::GM_COOPERATIVE);
+  StartSinglePlayerGame();
+};
+
 void CSinglePlayerNewMenu::Initialize_t(void)
 {
   // intialize single player new menu
@@ -33,7 +90,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgTourist.mg_lnNode);
   gm_mgTourist.mg_pmgUp = &gm_mgSerious;
   gm_mgTourist.mg_pmgDown = &gm_mgEasy;
-  gm_mgTourist.mg_pActivatedFunction = NULL;
+  gm_mgTourist.mg_pActivatedFunction = &StartSinglePlayerGame_Tourist;
 
   gm_mgEasy.SetText(TRANS("EASY"));
   gm_mgEasy.mg_bfsFontSize = BFS_LARGE;
@@ -42,7 +99,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgEasy.mg_lnNode);
   gm_mgEasy.mg_pmgUp = &gm_mgTourist;
   gm_mgEasy.mg_pmgDown = &gm_mgMedium;
-  gm_mgEasy.mg_pActivatedFunction = NULL;
+  gm_mgEasy.mg_pActivatedFunction = &StartSinglePlayerGame_Easy;
 
   gm_mgMedium.SetText(TRANS("NORMAL"));
   gm_mgMedium.mg_bfsFontSize = BFS_LARGE;
@@ -51,7 +108,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgMedium.mg_lnNode);
   gm_mgMedium.mg_pmgUp = &gm_mgEasy;
   gm_mgMedium.mg_pmgDown = &gm_mgHard;
-  gm_mgMedium.mg_pActivatedFunction = NULL;
+  gm_mgMedium.mg_pActivatedFunction = &StartSinglePlayerGame_Normal;
 
   gm_mgHard.SetText(TRANS("HARD"));
   gm_mgHard.mg_bfsFontSize = BFS_LARGE;
@@ -60,7 +117,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgHard.mg_lnNode);
   gm_mgHard.mg_pmgUp = &gm_mgMedium;
   gm_mgHard.mg_pmgDown = &gm_mgSerious;
-  gm_mgHard.mg_pActivatedFunction = NULL;
+  gm_mgHard.mg_pActivatedFunction = &StartSinglePlayerGame_Hard;
 
   gm_mgSerious.SetText(TRANS("SERIOUS"));
   gm_mgSerious.mg_bfsFontSize = BFS_LARGE;
@@ -69,7 +126,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgSerious.mg_lnNode);
   gm_mgSerious.mg_pmgUp = &gm_mgHard;
   gm_mgSerious.mg_pmgDown = &gm_mgTourist;
-  gm_mgSerious.mg_pActivatedFunction = NULL;
+  gm_mgSerious.mg_pActivatedFunction = &StartSinglePlayerGame_Serious;
 
   gm_mgMental.SetText(TRANS("MENTAL"));
   gm_mgMental.mg_bfsFontSize = BFS_LARGE;
@@ -78,7 +135,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgMental.mg_lnNode);
   gm_mgMental.mg_pmgUp = &gm_mgSerious;
   gm_mgMental.mg_pmgDown = &gm_mgTourist;
-  gm_mgMental.mg_pActivatedFunction = NULL;
+  gm_mgMental.mg_pActivatedFunction = &StartSinglePlayerGame_Mental;
   gm_mgMental.mg_bMental = TRUE;
 
 

@@ -354,6 +354,20 @@ void CMGServerList::OnMouseOver(PIX pixI, PIX pixJ)
   }
 }
 
+extern void JoinNetworkGame(void);
+
+static void StartSelectPlayersMenuFromServers(void) {
+  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
+  gmCurrent.gm_bAllowDedicated = FALSE;
+  gmCurrent.gm_bAllowObserving = TRUE;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &JoinNetworkGame;
+  CSelectPlayersMenu::ChangeTo();
+  
+  extern void StartNetworkSettingsMenu(void);
+  StartNetworkSettingsMenu();
+  _pGUIM->gmLoadSaveMenu.gm_bNoEscape = TRUE;
+};
+
 BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
 {
   // [Cecil] Start dragging with left mouse button
@@ -419,7 +433,6 @@ BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
         _pGame->gam_strJoinAddress = strAddress;
         _pShell->SetINDEX("net_iPort", iPort);
 
-        extern void StartSelectPlayersMenuFromServers(void);
         StartSelectPlayersMenuFromServers();
         return TRUE;
       }

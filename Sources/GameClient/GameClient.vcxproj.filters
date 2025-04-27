@@ -192,15 +192,6 @@
     <ClCompile Include="GUI\Menus\MenuManager.cpp">
       <Filter>Source Files\GUI\Menus</Filter>
     </ClCompile>
-    <ClCompile Include="GUI\Menus\MenuStarters.cpp">
-      <Filter>Source Files\GUI\Menus</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI\Menus\MenuStartersAF.cpp">
-      <Filter>Source Files\GUI\Menus</Filter>
-    </ClCompile>
-    <ClCompile Include="GUI\Menus\MenuActions.cpp">
-      <Filter>Source Files\GUI\Menus</Filter>
-    </ClCompile>
     <ClCompile Include="ScreenResolutions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -369,15 +360,6 @@
       <Filter>Header Files\GUI headers\Menus headers</Filter>
     </ClInclude>
     <ClInclude Include="GUI\Menus\MenuManager.h">
-      <Filter>Header Files\GUI headers\Menus headers</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI\Menus\MenuStarters.h">
-      <Filter>Header Files\GUI headers\Menus headers</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI\Menus\MenuStartersAF.h">
-      <Filter>Header Files\GUI headers\Menus headers</Filter>
-    </ClInclude>
-    <ClInclude Include="GUI\Menus\MenuActions.h">
       <Filter>Header Files\GUI headers\Menus headers</Filter>
     </ClInclude>
     <ClInclude Include="ScreenResolutions.h">

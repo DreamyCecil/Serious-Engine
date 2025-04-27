@@ -19,7 +19,91 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MAudioOptions.h"
 
-extern void RefreshSoundFormat(void);
+ENGINE_API extern INDEX snd_iFormat;
+
+#define VOLUME_STEPS 50
+
+static void RefreshSoundFormat(void) {
+  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
+
+  switch (_pSound->GetFormat()) {
+    default:
+    case CSoundLibrary::SF_NONE:     gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 0; break;
+    case CSoundLibrary::SF_11025_16: gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 1; break;
+    case CSoundLibrary::SF_22050_16: gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 2; break;
+    case CSoundLibrary::SF_44100_16: gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 3; break;
+  }
+
+  gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected = Clamp(sam_bAutoAdjustAudio, 0, 1);
+  gmCurrent.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0L, CAbstractSoundAPI::E_SND_MAX - 1);
+
+  gmCurrent.gm_mgWaveVolume.mg_iMinPos = 0;
+  gmCurrent.gm_mgWaveVolume.mg_iMaxPos = VOLUME_STEPS;
+  gmCurrent.gm_mgWaveVolume.mg_iCurPos = (INDEX)(_pShell->GetFLOAT("snd_fSoundVolume")*VOLUME_STEPS + 0.5f);
+  gmCurrent.gm_mgWaveVolume.ApplyCurrentPosition();
+
+  gmCurrent.gm_mgMPEGVolume.mg_iMinPos = 0;
+  gmCurrent.gm_mgMPEGVolume.mg_iMaxPos = VOLUME_STEPS;
+  gmCurrent.gm_mgMPEGVolume.mg_iCurPos = (INDEX)(_pShell->GetFLOAT("snd_fMusicVolume")*VOLUME_STEPS + 0.5f);
+  gmCurrent.gm_mgMPEGVolume.ApplyCurrentPosition();
+
+  gmCurrent.gm_mgAudioAutoTrigger.ApplyCurrentSelection();
+  gmCurrent.gm_mgAudioAPITrigger.ApplyCurrentSelection();
+  gmCurrent.gm_mgFrequencyTrigger.ApplyCurrentSelection();
+};
+
+static void ApplyAudioOptions(void) {
+  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
+  sam_bAutoAdjustAudio = gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected;
+
+  if (sam_bAutoAdjustAudio) {
+    _pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
+  } else {
+    _pShell->SetINDEX("snd_iInterface", gmCurrent.gm_mgAudioAPITrigger.mg_iSelected);
+
+    switch (gmCurrent.gm_mgFrequencyTrigger.mg_iSelected) {
+      // [Cecil] Report reinitialization
+      case 0:  _pSound->SetFormat(CSoundLibrary::SF_NONE, TRUE); break;
+      case 1:  _pSound->SetFormat(CSoundLibrary::SF_11025_16, TRUE); break;
+      case 2:  _pSound->SetFormat(CSoundLibrary::SF_22050_16, TRUE); break;
+      case 3:  _pSound->SetFormat(CSoundLibrary::SF_44100_16, TRUE); break;
+      default: _pSound->SetFormat(CSoundLibrary::SF_NONE, TRUE);
+    }
+  }
+
+  RefreshSoundFormat();
+  snd_iFormat = _pSound->GetFormat();
+};
+
+static void OnWaveVolumeChange(INDEX iCurPos) {
+  _pShell->SetFLOAT("snd_fSoundVolume", iCurPos / FLOAT(VOLUME_STEPS));
+};
+
+static void WaveSliderChange(void) {
+  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
+
+  gmCurrent.gm_mgWaveVolume.mg_iCurPos -= 5;
+  gmCurrent.gm_mgWaveVolume.ApplyCurrentPosition();
+};
+
+static void FrequencyTriggerChange(INDEX iDummy) {
+  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
+
+  sam_bAutoAdjustAudio = 0;
+  gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected = 0;
+  gmCurrent.gm_mgAudioAutoTrigger.ApplyCurrentSelection();
+};
+
+static void MPEGSliderChange(void) {
+  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
+
+  gmCurrent.gm_mgMPEGVolume.mg_iCurPos -= 5;
+  gmCurrent.gm_mgMPEGVolume.ApplyCurrentPosition();
+};
+
+static void OnMPEGVolumeChange(INDEX iCurPos) {
+  _pShell->SetFLOAT("snd_fMusicVolume", iCurPos / FLOAT(VOLUME_STEPS));
+};
 
 void CAudioOptionsMenu::Initialize_t(void)
 {
@@ -47,7 +131,7 @@ void CAudioOptionsMenu::Initialize_t(void)
   TRIGGER_MG(gm_mgFrequencyTrigger, 1,
     gm_mgAudioAutoTrigger, gm_mgAudioAPITrigger, TRANS("FREQUENCY"), astrFrequencyRadioTexts);
   gm_mgFrequencyTrigger.mg_strTip = TRANS("select sound quality or turn sound off");
-  gm_mgFrequencyTrigger.mg_pOnTriggerChange = NULL;
+  gm_mgFrequencyTrigger.mg_pOnTriggerChange = &FrequencyTriggerChange;
 
   TRIGGER_MG(gm_mgAudioAPITrigger, 2,
     gm_mgFrequencyTrigger, gm_mgWaveVolume, TRANS("SOUND SYSTEM"), astrSoundAPIRadioTexts);
@@ -60,8 +144,8 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_mgWaveVolume.mg_strTip = TRANS("adjust volume of in-game sound effects");
   gm_mgWaveVolume.mg_pmgUp = &gm_mgAudioAPITrigger;
   gm_mgWaveVolume.mg_pmgDown = &gm_mgMPEGVolume;
-  gm_mgWaveVolume.mg_pOnSliderChange = NULL;
-  gm_mgWaveVolume.mg_pActivatedFunction = NULL;
+  gm_mgWaveVolume.mg_pOnSliderChange = &OnWaveVolumeChange;
+  gm_mgWaveVolume.mg_pActivatedFunction = &WaveSliderChange;
   gm_lhGadgets.AddTail(gm_mgWaveVolume.mg_lnNode);
 
   gm_mgMPEGVolume.mg_boxOnScreen = BoxMediumRow(4);
@@ -69,8 +153,8 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_mgMPEGVolume.mg_strTip = TRANS("adjust volume of in-game music");
   gm_mgMPEGVolume.mg_pmgUp = &gm_mgWaveVolume;
   gm_mgMPEGVolume.mg_pmgDown = &gm_mgApply;
-  gm_mgMPEGVolume.mg_pOnSliderChange = NULL;
-  gm_mgMPEGVolume.mg_pActivatedFunction = NULL;
+  gm_mgMPEGVolume.mg_pOnSliderChange = &OnMPEGVolumeChange;
+  gm_mgMPEGVolume.mg_pActivatedFunction = &MPEGSliderChange;
   gm_lhGadgets.AddTail(gm_mgMPEGVolume.mg_lnNode);
 
   gm_mgApply.mg_bfsFontSize = BFS_LARGE;
@@ -80,7 +164,7 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgApply.mg_lnNode);
   gm_mgApply.mg_pmgUp = &gm_mgMPEGVolume;
   gm_mgApply.mg_pmgDown = &gm_mgAudioAutoTrigger;
-  gm_mgApply.mg_pActivatedFunction = NULL;
+  gm_mgApply.mg_pActivatedFunction = &ApplyAudioOptions;
 }
 
 void CAudioOptionsMenu::StartMenu(void)

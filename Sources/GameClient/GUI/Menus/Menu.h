@@ -102,6 +102,7 @@ void ClearThumbnail(void);
 
 void InitializeMenus( void);
 void DestroyMenus( void);
+void MenuGoToParent(void);
 void MenuOnKeyDown(PressedMenuButton pmb); // [Cecil] Handle mouse buttons separately from keys
 void MenuOnChar(const OS::SE1Event &event);
 void MenuOnMouseMove(PIX pixI, PIX pixJ);
@@ -109,7 +110,7 @@ BOOL DoMenu( CDrawPort *pdp); // returns TRUE if still active, FALSE if should q
 void StartMenus(const CTString &str = "");
 void StopMenus(BOOL bGoToRoot =TRUE);
 BOOL IsMenuRoot(class CGameMenu *pgm); // [Cecil] Check if it's a root menu
-void ChangeToMenu( class CGameMenu *pgmNew);
+void ChangeToMenu(class CGameMenu *pgmNew);
 extern void PlayMenuSound(CSoundData *psd);
 
 #define KEYS_ON_SCREEN 14

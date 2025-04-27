@@ -22,6 +22,30 @@ CTString _strServerFilter[7];
 CMGButton mgServerColumn[7];
 CMGEdit mgServerFilter[7];
 
+static void SortByColumn(int i) {
+  CServersMenu &gmCurrent = _pGUIM->gmServersMenu;
+
+  if (gmCurrent.gm_mgList.mg_iSort == i) {
+    gmCurrent.gm_mgList.mg_bSortDown = !gmCurrent.gm_mgList.mg_bSortDown;
+  } else {
+    gmCurrent.gm_mgList.mg_bSortDown = FALSE;
+  }
+
+  gmCurrent.gm_mgList.mg_iSort = i;
+};
+
+static void SortByServer(void) { SortByColumn(0); }
+static void SortByMap(void)    { SortByColumn(1); }
+static void SortByPing(void)   { SortByColumn(2); }
+static void SortByPlayers(void){ SortByColumn(3); }
+static void SortByGame(void)   { SortByColumn(4); }
+static void SortByMod(void)    { SortByColumn(5); }
+static void SortByVer(void)    { SortByColumn(6); }
+
+static void RefreshServerList(void) {
+  _pNetwork->EnumSessions(_pGUIM->gmServersMenu.m_bInternet);
+};
+
 void CServersMenu::Initialize_t(void)
 {
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
@@ -59,7 +83,7 @@ void CServersMenu::Initialize_t(void)
   gm_mgRefresh.mg_bfsFontSize = BFS_SMALL;
   gm_mgRefresh.mg_iCenterI = -1;
   gm_mgRefresh.mg_pmgDown = &gm_mgList;
-  gm_mgRefresh.mg_pActivatedFunction = NULL;
+  gm_mgRefresh.mg_pActivatedFunction = &RefreshServerList;
   gm_lhGadgets.AddTail(gm_mgRefresh.mg_lnNode);
 
   CTString astrColumns[7];
@@ -70,13 +94,13 @@ void CServersMenu::Initialize_t(void)
   mgServerColumn[4].SetText(TRANS("Game"));
   mgServerColumn[5].SetText(TRANS("Mod"));
   mgServerColumn[6].SetText(TRANS("Ver"));
-  mgServerColumn[0].mg_pActivatedFunction = NULL;
-  mgServerColumn[1].mg_pActivatedFunction = NULL;
-  mgServerColumn[2].mg_pActivatedFunction = NULL;
-  mgServerColumn[3].mg_pActivatedFunction = NULL;
-  mgServerColumn[4].mg_pActivatedFunction = NULL;
-  mgServerColumn[5].mg_pActivatedFunction = NULL;
-  mgServerColumn[6].mg_pActivatedFunction = NULL;
+  mgServerColumn[0].mg_pActivatedFunction = SortByServer;
+  mgServerColumn[1].mg_pActivatedFunction = SortByMap;
+  mgServerColumn[2].mg_pActivatedFunction = SortByPing;
+  mgServerColumn[3].mg_pActivatedFunction = SortByPlayers;
+  mgServerColumn[4].mg_pActivatedFunction = SortByGame;
+  mgServerColumn[5].mg_pActivatedFunction = SortByMod;
+  mgServerColumn[6].mg_pActivatedFunction = SortByVer;
   mgServerColumn[0].mg_strTip = TRANS("sort by server");
   mgServerColumn[1].mg_strTip = TRANS("sort by map");
   mgServerColumn[2].mg_strTip = TRANS("sort by ping");

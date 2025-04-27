@@ -19,6 +19,129 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MSinglePlayer.h"
 
+#include "LevelInfo.h"
+
+// [Cecil] Open level or category selection screen
+void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent) {
+  FilterLevels(ulFlags);
+
+  extern void (*_pAfterLevelChosen)(void);
+  _pAfterLevelChosen = pAfterChosen;
+
+  // [Cecil] Rewind visited menus to the parent
+  extern CGameMenu *_pgmRewindToAfterLevelChosen;
+  _pgmRewindToAfterLevelChosen = pgmParent;
+
+  CLevelsMenu::ChangeTo();
+};
+
+static void StartSinglePlayerNewMenu(void) {
+  extern CTString sam_strFirstLevel;
+  _pGame->gam_strCustomLevel = sam_strFirstLevel;
+  CSinglePlayerNewMenu::ChangeTo();
+};
+
+static void StartSelectLevelFromSingle(void) {
+  StartSelectLevel(GetSpawnFlagsForGameType(-1), &CSinglePlayerNewMenu::ChangeTo, NULL);
+};
+
+void SetQuickLoadNotes(void) {
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+
+  if (_pShell->GetINDEX("gam_iQuickSaveSlots") <= 8) {
+    gmCurrent.gm_mgNotes.SetText(TRANS(
+      "In-game QuickSave shortcuts:\n"
+      "F6 - save a new QuickSave\n"
+      "F9 - load the last QuickSave\n"));
+  } else {
+    gmCurrent.gm_mgNotes.SetText("");
+  }
+};
+
+BOOL LSLoadSinglePlayer(const CTFileName &fnm) {
+  _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY;
+  _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_iSinglePlayer;
+
+  for (INDEX iLocal = 1; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = -1;
+  }
+
+  _pGame->gm_strNetworkProvider = "Local";
+
+  if (_pGame->LoadGame(fnm)) {
+    StopMenus();
+    _gmRunningGameMode = GM_SINGLE_PLAYER;
+  } else {
+    _gmRunningGameMode = GM_NONE;
+  }
+
+  return TRUE;
+};
+
+void StartSinglePlayerQuickLoadMenu(void) {
+  _gmMenuGameMode = GM_SINGLE_PLAYER;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("QUICK LOAD"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\Quick\\", _pGame->gm_iSinglePlayer);
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadSinglePlayer;
+  SetQuickLoadNotes();
+  CLoadSaveMenu::ChangeTo();
+};
+
+void StartSinglePlayerLoadMenu(void) {
+  _gmMenuGameMode = GM_SINGLE_PLAYER;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadSinglePlayer;
+  gmCurrent.gm_mgNotes.SetText("");
+  CLoadSaveMenu::ChangeTo();
+};
+
+static void StartTraining(void) {
+  extern CTString sam_strTrainingLevel;
+  _pGame->gam_strCustomLevel = sam_strTrainingLevel;
+  CSinglePlayerNewMenu::ChangeTo();
+};
+
+extern void StartSinglePlayerGame_Normal(void);
+
+static void StartTechTest(void) {
+  extern CTString sam_strTechTestLevel;
+  _pGame->gam_strCustomLevel = sam_strTechTestLevel;
+  StartSinglePlayerGame_Normal();
+};
+
+static void StartChangePlayerMenuFromSinglePlayer(void) {
+  _iLocalPlayer = -1;
+
+  extern BOOL _bPlayerMenuFromSinglePlayer;
+  _bPlayerMenuFromSinglePlayer = TRUE;
+
+  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = &_pGame->gm_iSinglePlayer;
+  CPlayerProfileMenu::ChangeTo();
+};
+
+static void StartSinglePlayerGameOptions(void) {
+  CVarMenu::ChangeTo(TRANS("GAME OPTIONS"), CTFILENAME("Scripts\\Menu\\SPOptions.cfg"));
+};
+
 void CSinglePlayerMenu::Initialize_t(void)
 {
   // intialize single player menu
@@ -40,7 +163,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgNewGame.mg_lnNode);
   gm_mgNewGame.mg_pmgUp = &gm_mgOptions;
   gm_mgNewGame.mg_pmgDown = &gm_mgCustom;
-  gm_mgNewGame.mg_pActivatedFunction = NULL;
+  gm_mgNewGame.mg_pActivatedFunction = &StartSinglePlayerNewMenu;
 
   gm_mgCustom.SetText(TRANS("CUSTOM LEVEL"));
   gm_mgCustom.mg_bfsFontSize = BFS_LARGE;
@@ -49,7 +172,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgCustom.mg_lnNode);
   gm_mgCustom.mg_pmgUp = &gm_mgNewGame;
   gm_mgCustom.mg_pmgDown = &gm_mgQuickLoad;
-  gm_mgCustom.mg_pActivatedFunction = NULL;
+  gm_mgCustom.mg_pActivatedFunction = &StartSelectLevelFromSingle;
 
   gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
@@ -58,7 +181,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgQuickLoad.mg_lnNode);
   gm_mgQuickLoad.mg_pmgUp = &gm_mgCustom;
   gm_mgQuickLoad.mg_pmgDown = &gm_mgLoad;
-  gm_mgQuickLoad.mg_pActivatedFunction = NULL;
+  gm_mgQuickLoad.mg_pActivatedFunction = &StartSinglePlayerQuickLoadMenu;
 
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
@@ -67,7 +190,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgLoad.mg_lnNode);
   gm_mgLoad.mg_pmgUp = &gm_mgQuickLoad;
   gm_mgLoad.mg_pmgDown = &gm_mgTraining;
-  gm_mgLoad.mg_pActivatedFunction = NULL;
+  gm_mgLoad.mg_pActivatedFunction = &StartSinglePlayerLoadMenu;
 
   gm_mgTraining.SetText(TRANS("TRAINING"));
   gm_mgTraining.mg_bfsFontSize = BFS_LARGE;
@@ -76,7 +199,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgTraining.mg_lnNode);
   gm_mgTraining.mg_pmgUp = &gm_mgLoad;
   gm_mgTraining.mg_pmgDown = &gm_mgTechTest;
-  gm_mgTraining.mg_pActivatedFunction = NULL;
+  gm_mgTraining.mg_pActivatedFunction = &StartTraining;
 
   gm_mgTechTest.SetText(TRANS("TECHNOLOGY TEST"));
   gm_mgTechTest.mg_bfsFontSize = BFS_LARGE;
@@ -85,7 +208,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgTechTest.mg_lnNode);
   gm_mgTechTest.mg_pmgUp = &gm_mgTraining;
   gm_mgTechTest.mg_pmgDown = &gm_mgPlayersAndControls;
-  gm_mgTechTest.mg_pActivatedFunction = NULL;
+  gm_mgTechTest.mg_pActivatedFunction = &StartTechTest;
 
   gm_mgPlayersAndControls.mg_bfsFontSize = BFS_LARGE;
   gm_mgPlayersAndControls.mg_boxOnScreen = BoxBigRow(6.0f);
@@ -94,7 +217,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgPlayersAndControls.SetText(TRANS("PLAYERS AND CONTROLS"));
   gm_mgPlayersAndControls.mg_strTip = TRANS("change currently active player or adjust controls");
   gm_lhGadgets.AddTail(gm_mgPlayersAndControls.mg_lnNode);
-  gm_mgPlayersAndControls.mg_pActivatedFunction = NULL;
+  gm_mgPlayersAndControls.mg_pActivatedFunction = &StartChangePlayerMenuFromSinglePlayer;
 
   gm_mgOptions.SetText(TRANS("GAME OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
@@ -103,7 +226,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgOptions.mg_lnNode);
   gm_mgOptions.mg_pmgUp = &gm_mgPlayersAndControls;
   gm_mgOptions.mg_pmgDown = &gm_mgNewGame;
-  gm_mgOptions.mg_pActivatedFunction = NULL;
+  gm_mgOptions.mg_pActivatedFunction = &StartSinglePlayerGameOptions;
 }
 
 void CSinglePlayerMenu::StartMenu(void)

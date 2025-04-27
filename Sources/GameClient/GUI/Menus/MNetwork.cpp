@@ -18,6 +18,72 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MNetwork.h"
 
+CTFileName _fnGameToLoad;
+
+static void StartNetworkLoadGame(void) {
+  _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
+
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
+
+  _pGame->gm_strNetworkProvider = "TCP/IP Server";
+
+  if (_pGame->LoadGame(_fnGameToLoad)) {
+    StopMenus();
+    _gmRunningGameMode = GM_NETWORK;
+  } else {
+    _gmRunningGameMode = GM_NONE;
+  }
+};
+
+BOOL LSLoadNetwork(const CTFileName &fnm) {
+  // call local players menu
+  _fnGameToLoad = fnm;
+
+  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
+  gmCurrent.gm_bAllowDedicated = FALSE;
+  gmCurrent.gm_bAllowObserving = TRUE;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkLoadGame;
+  CSelectPlayersMenu::ChangeTo();
+  return TRUE;
+};
+
+void StartNetworkQuickLoadMenu(void) {
+  _gmMenuGameMode = GM_NETWORK;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("QUICK LOAD"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\Quick\\", TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadNetwork;
+  extern void SetQuickLoadNotes(void);
+  SetQuickLoadNotes();
+  CLoadSaveMenu::ChangeTo();
+};
+
+void StartNetworkLoadMenu(void) {
+  _gmMenuGameMode = GM_NETWORK;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\", TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadNetwork;
+  gmCurrent.gm_mgNotes.SetText("");
+  CLoadSaveMenu::ChangeTo();
+};
+
 void CNetworkMenu::Initialize_t(void)
 {
   // intialize network menu
@@ -32,7 +98,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgJoin.SetText(TRANS("JOIN GAME"));
   gm_mgJoin.mg_strTip = TRANS("join a network game");
   gm_lhGadgets.AddTail(gm_mgJoin.mg_lnNode);
-  gm_mgJoin.mg_pActivatedFunction = NULL;
+  gm_mgJoin.mg_pActivatedFunction = &CNetworkJoinMenu::ChangeTo;
 
   gm_mgStart.mg_bfsFontSize = BFS_LARGE;
   gm_mgStart.mg_boxOnScreen = BoxBigRow(2.0f);
@@ -41,7 +107,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgStart.SetText(TRANS("START SERVER"));
   gm_mgStart.mg_strTip = TRANS("start a network game server");
   gm_lhGadgets.AddTail(gm_mgStart.mg_lnNode);
-  gm_mgStart.mg_pActivatedFunction = NULL;
+  gm_mgStart.mg_pActivatedFunction = &CNetworkStartMenu::ChangeTo;
 
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgQuickLoad.mg_boxOnScreen = BoxBigRow(3.0f);
@@ -50,7 +116,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_strTip = TRANS("load a quick-saved game (F9)");
   gm_lhGadgets.AddTail(gm_mgQuickLoad.mg_lnNode);
-  gm_mgQuickLoad.mg_pActivatedFunction = NULL;
+  gm_mgQuickLoad.mg_pActivatedFunction = &StartNetworkQuickLoadMenu;
 
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgLoad.mg_boxOnScreen = BoxBigRow(4.0f);
@@ -59,7 +125,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_strTip = TRANS("start server and load a network game (server only)");
   gm_lhGadgets.AddTail(gm_mgLoad.mg_lnNode);
-  gm_mgLoad.mg_pActivatedFunction = NULL;
+  gm_mgLoad.mg_pActivatedFunction = &StartNetworkLoadMenu;
 }
 
 void CNetworkMenu::StartMenu(void)

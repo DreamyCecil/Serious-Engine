@@ -18,6 +18,71 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MSplitScreen.h"
 
+extern CTFileName _fnGameToLoad;
+
+static void StartSplitScreenGameLoad(void) {
+  _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
+
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
+
+  _pGame->gm_strNetworkProvider = "Local";
+
+  if (_pGame->LoadGame(_fnGameToLoad)) {
+    StopMenus();
+    _gmRunningGameMode = GM_SPLIT_SCREEN;
+  } else {
+    _gmRunningGameMode = GM_NONE;
+  }
+};
+
+static BOOL LSLoadSplitScreen(const CTFileName &fnm) {
+  _fnGameToLoad = fnm;
+
+  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
+  gmCurrent.gm_bAllowDedicated = FALSE;
+  gmCurrent.gm_bAllowObserving = FALSE;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartSplitScreenGameLoad;
+  CSelectPlayersMenu::ChangeTo();
+  return TRUE;
+};
+
+void StartSplitScreenQuickLoadMenu(void) {
+  _gmMenuGameMode = GM_SPLIT_SCREEN;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("QUICK LOAD"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\Quick\\", TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadSplitScreen;
+  extern void SetQuickLoadNotes(void);
+  SetQuickLoadNotes();
+  CLoadSaveMenu::ChangeTo();
+};
+
+void StartSplitScreenLoadMenu(void) {
+  _gmMenuGameMode = GM_SPLIT_SCREEN;
+
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD"));
+  gmCurrent.gm_bAllowThumbnails = TRUE;
+  gmCurrent.gm_iSortType = LSSORT_FILEDN;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = TRUE;
+  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\", TRUE); // [Cecil] From user data in a mod
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".sav");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadSplitScreen;
+  gmCurrent.gm_mgNotes.SetText("");
+  CLoadSaveMenu::ChangeTo();
+};
+
 void CSplitScreenMenu::Initialize_t(void)
 {
   // intialize split screen menu
@@ -32,7 +97,7 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgStart.SetText(TRANS("NEW GAME"));
   gm_mgStart.mg_strTip = TRANS("start new split-screen game");
   gm_lhGadgets.AddTail(gm_mgStart.mg_lnNode);
-  gm_mgStart.mg_pActivatedFunction = NULL;
+  gm_mgStart.mg_pActivatedFunction = &CSplitStartMenu::ChangeTo;
 
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgQuickLoad.mg_boxOnScreen = BoxBigRow(1);
@@ -41,7 +106,7 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_strTip = TRANS("load a quick-saved game (F9)");
   gm_lhGadgets.AddTail(gm_mgQuickLoad.mg_lnNode);
-  gm_mgQuickLoad.mg_pActivatedFunction = NULL;
+  gm_mgQuickLoad.mg_pActivatedFunction = &StartSplitScreenQuickLoadMenu;
 
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgLoad.mg_boxOnScreen = BoxBigRow(2);
@@ -50,7 +115,7 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_strTip = TRANS("load a saved split-screen game");
   gm_lhGadgets.AddTail(gm_mgLoad.mg_lnNode);
-  gm_mgLoad.mg_pActivatedFunction = NULL;
+  gm_mgLoad.mg_pActivatedFunction = &StartSplitScreenLoadMenu;
 }
 
 void CSplitScreenMenu::StartMenu(void)

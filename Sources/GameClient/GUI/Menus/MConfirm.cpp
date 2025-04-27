@@ -18,6 +18,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MConfirm.h"
 
+static void ConfirmYes(void) {
+  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
+
+  if (gmCurrent.gm_pConfirmedYes != NULL) {
+    gmCurrent.gm_pConfirmedYes();
+  }
+
+  MenuGoToParent();
+};
+
+static void ConfirmNo(void) {
+  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
+
+  if (gmCurrent.gm_pConfirmedNo != NULL) {
+    gmCurrent.gm_pConfirmedNo();
+  }
+
+  MenuGoToParent();
+};
+
 void CConfirmMenu::Initialize_t(void)
 {
   gm_bPopup = TRUE;
@@ -31,7 +51,7 @@ void CConfirmMenu::Initialize_t(void)
   gm_mgConfirmYes.SetText(TRANS("YES"));
   gm_lhGadgets.AddTail(gm_mgConfirmYes.mg_lnNode);
   gm_mgConfirmYes.mg_boxOnScreen = BoxPopupYesLarge();
-  gm_mgConfirmYes.mg_pActivatedFunction = NULL;
+  gm_mgConfirmYes.mg_pActivatedFunction = &ConfirmYes;
   gm_mgConfirmYes.mg_pmgLeft =
     gm_mgConfirmYes.mg_pmgRight = &gm_mgConfirmNo;
   gm_mgConfirmYes.mg_iCenterI = 1;
@@ -40,7 +60,7 @@ void CConfirmMenu::Initialize_t(void)
   gm_mgConfirmNo.SetText(TRANS("NO"));
   gm_lhGadgets.AddTail(gm_mgConfirmNo.mg_lnNode);
   gm_mgConfirmNo.mg_boxOnScreen = BoxPopupNoLarge();
-  gm_mgConfirmNo.mg_pActivatedFunction = NULL;
+  gm_mgConfirmNo.mg_pActivatedFunction = &ConfirmNo;
   gm_mgConfirmNo.mg_pmgLeft =
     gm_mgConfirmNo.mg_pmgRight = &gm_mgConfirmYes;
   gm_mgConfirmNo.mg_iCenterI = -1;

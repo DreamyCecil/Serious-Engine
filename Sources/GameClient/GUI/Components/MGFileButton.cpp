@@ -47,18 +47,21 @@ void CMGFileButton::SaveDescription(void)
 }
 
 CMGFileButton *_pmgFileToSave = NULL;
-void OnFileSaveOK(void)
-{
+
+static void OnFileSaveOK(void) {
   if (_pmgFileToSave != NULL) {
     _pmgFileToSave->SaveYes();
   }
-}
+};
+
+static void SaveConfirm(void) {
+  CConfirmMenu::ChangeTo(TRANS("OVERWRITE?"), &OnFileSaveOK, NULL, TRUE);
+};
 
 void CMGFileButton::DoSave(void)
 {
   if (FileExistsForWriting(mg_fnm)) {
     _pmgFileToSave = this;
-    extern void SaveConfirm(void);
     SaveConfirm();
   } else {
     SaveYes();

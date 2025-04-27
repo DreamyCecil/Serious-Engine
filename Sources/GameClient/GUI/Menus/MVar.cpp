@@ -21,6 +21,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern BOOL _bVarChanged;
 
+static void VarApply(void) {
+  FlushVarSettings(TRUE);
+
+  CVarMenu &gmCurrent = _pGUIM->gmVarMenu;
+  gmCurrent.EndMenu();
+  gmCurrent.StartMenu();
+};
+
 void CVarMenu::Initialize_t(void)
 {
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
@@ -50,7 +58,7 @@ void CVarMenu::Initialize_t(void)
   gm_mgApply.SetText(TRANS("APPLY"));
   gm_mgApply.mg_strTip = TRANS("apply changes");
   gm_lhGadgets.AddTail(gm_mgApply.mg_lnNode);
-  gm_mgApply.mg_pActivatedFunction = NULL;
+  gm_mgApply.mg_pActivatedFunction = &VarApply;
 
   gm_lhGadgets.AddTail(gm_mgArrowUp.mg_lnNode);
   gm_lhGadgets.AddTail(gm_mgArrowDn.mg_lnNode);

@@ -18,6 +18,95 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MOptions.h"
 
+extern CTString sam_strNetworkSettings;
+
+BOOL _bPlayerMenuFromSinglePlayer = FALSE;
+
+static void StartChangePlayerMenuFromOptions(void) {
+  _bPlayerMenuFromSinglePlayer = FALSE;
+  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = &_pGame->gm_iSinglePlayer;
+  CPlayerProfileMenu::ChangeTo();
+};
+
+static BOOL LSLoadNetSettings(const CTFileName &fnm) {
+  sam_strNetworkSettings = fnm;
+  CTString strCmd;
+  strCmd.PrintF("include \"%s\"", sam_strNetworkSettings.ConstData());
+  _pShell->Execute(strCmd);
+
+  MenuGoToParent();
+  return TRUE;
+};
+
+void StartNetworkSettingsMenu(void) {
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("CONNECTION SETTINGS"));
+  gmCurrent.gm_bAllowThumbnails = FALSE;
+  gmCurrent.gm_iSortType = LSSORT_FILEUP;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = FALSE;
+  gmCurrent.gm_fnmDirectory = CTString("Scripts\\NetSettings\\");
+  gmCurrent.gm_fnmSelected = sam_strNetworkSettings;
+  gmCurrent.gm_fnmExt = CTString(".ini");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadNetSettings;
+
+  if (sam_strNetworkSettings == "") {
+    gmCurrent.gm_mgNotes.SetText(TRANS(
+      "Before joining a network game,\n"
+      "you have to adjust your connection parameters.\n"
+      "Choose one option from the list.\n"
+      "If you have problems with connection, you can adjust\n"
+      "these parameters again from the Options menu.\n"));
+  } else {
+    gmCurrent.gm_mgNotes.SetText("");
+  }
+
+  CLoadSaveMenu::ChangeTo();
+};
+
+static BOOL LSLoadCustom(const CTFileName &fnm) {
+  CVarMenu::ChangeTo(TRANS("ADVANCED OPTIONS"), fnm);
+  return TRUE;
+};
+
+static void StartCustomLoadMenu(void) {
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("ADVANCED OPTIONS"));
+  gmCurrent.gm_bAllowThumbnails = FALSE;
+  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = FALSE;
+  gmCurrent.gm_fnmDirectory = CTString("Scripts\\CustomOptions\\");
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".cfg");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadCustom;
+  gmCurrent.gm_mgNotes.SetText("");
+  CLoadSaveMenu::ChangeTo();
+};
+
+static BOOL LSLoadAddon(const CTFileName &fnm) {
+  extern INDEX _iAddonExecState;
+  extern CTFileName _fnmAddonToExec;
+  _iAddonExecState = 1;
+  _fnmAddonToExec = fnm;
+  return TRUE;
+};
+
+static void StartAddonsLoadMenu(void) {
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("EXECUTE ADDON"));
+  gmCurrent.gm_bAllowThumbnails = FALSE;
+  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = FALSE;
+  gmCurrent.gm_fnmDirectory = CTString("Scripts\\Addons\\");
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".ini");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadAddon;
+  gmCurrent.gm_mgNotes.SetText("");
+  CLoadSaveMenu::ChangeTo();
+};
+
 void COptionsMenu::Initialize_t(void)
 {
   // intialize options menu
@@ -32,7 +121,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgVideoOptions.SetText(TRANS("VIDEO OPTIONS"));
   gm_mgVideoOptions.mg_strTip = TRANS("set video mode and driver");
   gm_lhGadgets.AddTail(gm_mgVideoOptions.mg_lnNode);
-  gm_mgVideoOptions.mg_pActivatedFunction = NULL;
+  gm_mgVideoOptions.mg_pActivatedFunction = &CVideoOptionsMenu::ChangeTo;
 
   gm_mgAudioOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgAudioOptions.mg_boxOnScreen = BoxBigRow(1.0f);
@@ -41,7 +130,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgAudioOptions.SetText(TRANS("AUDIO OPTIONS"));
   gm_mgAudioOptions.mg_strTip = TRANS("set audio quality and volume");
   gm_lhGadgets.AddTail(gm_mgAudioOptions.mg_lnNode);
-  gm_mgAudioOptions.mg_pActivatedFunction = NULL;
+  gm_mgAudioOptions.mg_pActivatedFunction = &CAudioOptionsMenu::ChangeTo;
 
   gm_mgPlayerProfileOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgPlayerProfileOptions.mg_boxOnScreen = BoxBigRow(2.0f);
@@ -50,7 +139,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgPlayerProfileOptions.SetText(TRANS("PLAYERS AND CONTROLS"));
   gm_mgPlayerProfileOptions.mg_strTip = TRANS("change currently active player or adjust controls");
   gm_lhGadgets.AddTail(gm_mgPlayerProfileOptions.mg_lnNode);
-  gm_mgPlayerProfileOptions.mg_pActivatedFunction = NULL;
+  gm_mgPlayerProfileOptions.mg_pActivatedFunction = &StartChangePlayerMenuFromOptions;
 
   gm_mgNetworkOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgNetworkOptions.mg_boxOnScreen = BoxBigRow(3);
@@ -59,7 +148,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgNetworkOptions.SetText(TRANS("NETWORK CONNECTION"));
   gm_mgNetworkOptions.mg_strTip = TRANS("choose your connection parameters");
   gm_lhGadgets.AddTail(gm_mgNetworkOptions.mg_lnNode);
-  gm_mgNetworkOptions.mg_pActivatedFunction = NULL;
+  gm_mgNetworkOptions.mg_pActivatedFunction = &StartNetworkSettingsMenu;
 
   gm_mgCustomOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgCustomOptions.mg_boxOnScreen = BoxBigRow(4);
@@ -68,7 +157,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgCustomOptions.SetText(TRANS("ADVANCED OPTIONS"));
   gm_mgCustomOptions.mg_strTip = TRANS("for advanced users only");
   gm_lhGadgets.AddTail(gm_mgCustomOptions.mg_lnNode);
-  gm_mgCustomOptions.mg_pActivatedFunction = NULL;
+  gm_mgCustomOptions.mg_pActivatedFunction = &StartCustomLoadMenu;
 
   gm_mgAddonOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgAddonOptions.mg_boxOnScreen = BoxBigRow(5);
@@ -77,7 +166,7 @@ void COptionsMenu::Initialize_t(void)
   gm_mgAddonOptions.SetText(TRANS("EXECUTE ADDON"));
   gm_mgAddonOptions.mg_strTip = TRANS("choose from list of addons to execute");
   gm_lhGadgets.AddTail(gm_mgAddonOptions.mg_lnNode);
-  gm_mgAddonOptions.mg_pActivatedFunction = NULL;
+  gm_mgAddonOptions.mg_pActivatedFunction = &StartAddonsLoadMenu;
 }
 
 // [Cecil] Change to the menu

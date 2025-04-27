@@ -21,6 +21,45 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern CTFileName _fnmControlsToCustomize;
 
+static BOOL LSLoadControls(const CTFileName &fnm) {
+  try {
+    // [Cecil] Load user controls from user data
+    CTString fnmControls = fnm;
+
+    if (fnm.HasPrefix("Controls\\Controls")) {
+      fnmControls.PrintF("Controls\\%s.ctl", fnm.FileName().ConstData());
+      fnmControls = ExpandPath::ToUser(fnmControls);
+    }
+
+    ControlsMenuOn();
+    _pGame->gm_ctrlControlsExtra.Load_t(fnmControls);
+    ControlsMenuOff();
+
+  } catch (char *strError) {
+    CPutString(strError);
+  }
+
+  MenuGoToParent();
+  return TRUE;
+};
+
+static void StartControlsLoadMenu(void) {
+  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
+  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD CONTROLS"));
+  gmCurrent.gm_bAllowThumbnails = FALSE;
+  gmCurrent.gm_iSortType = LSSORT_FILEUP;
+  gmCurrent.gm_bSave = FALSE;
+  gmCurrent.gm_bManage = FALSE;
+  // [Cecil] NOTE: It needs to list controls presets from the main directory but it will still
+  // load user controls from the user data directory when selected (see LSLoadControls() function)
+  gmCurrent.gm_fnmDirectory = CTString("Controls\\");
+  gmCurrent.gm_fnmSelected = CTString("");
+  gmCurrent.gm_fnmExt = CTString(".ctl");
+  gmCurrent.gm_pAfterFileChosen = &LSLoadControls;
+  gmCurrent.gm_mgNotes.SetText("");
+  CLoadSaveMenu::ChangeTo();
+}
+
 void CControlsMenu::Initialize_t(void)
 {
   // [Cecil] Create array of device slots
@@ -55,7 +94,7 @@ void CControlsMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgButtons.mg_lnNode);
   gm_mgButtons.mg_pmgUp = &gm_mgPredefined;
   gm_mgButtons.mg_pmgDown = &gm_mgAdvanced;
-  gm_mgButtons.mg_pActivatedFunction = NULL;
+  gm_mgButtons.mg_pActivatedFunction = &CCustomizeKeyboardMenu::ChangeTo;
   gm_mgButtons.mg_strTip = TRANS("customize buttons in current controls");
 
   gm_mgAdvanced.SetText(TRANS("ADVANCED JOYSTICK SETUP"));
@@ -65,7 +104,7 @@ void CControlsMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgAdvanced.mg_lnNode);
   gm_mgAdvanced.mg_pmgUp = &gm_mgButtons;
   gm_mgAdvanced.mg_pmgDown = &gm_mgDeviceSlot;
-  gm_mgAdvanced.mg_pActivatedFunction = NULL;
+  gm_mgAdvanced.mg_pActivatedFunction = &CCustomizeAxisMenu::ChangeTo;
   gm_mgAdvanced.mg_strTip = TRANS("adjust advanced settings for joystick axis");
 
   // [Cecil] Device slot selection
@@ -100,7 +139,7 @@ void CControlsMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgPredefined.mg_lnNode);
   gm_mgPredefined.mg_pmgUp = &gm_mgIFeelTrigger;
   gm_mgPredefined.mg_pmgDown = &gm_mgButtons;
-  gm_mgPredefined.mg_pActivatedFunction = NULL;
+  gm_mgPredefined.mg_pActivatedFunction = &StartControlsLoadMenu;
   gm_mgPredefined.mg_strTip = TRANS("load one of several predefined control settings");
 }
 

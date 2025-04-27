@@ -19,6 +19,92 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MNetworkOpen.h"
 
+extern CTFileName _fnmModSelected;
+static CTString _strModURLSelected;
+static CTString _strModServerSelected;
+
+static void ExitAndSpawnExplorer(void) {
+  _bRunning = FALSE;
+  _bQuitScreen = FALSE;
+  extern CTString _strURLToVisit;
+  _strURLToVisit = _strModURLSelected;
+};
+
+static void ModNotInstalled(void) {
+  CTString strLabel(0, TRANS("You don't have MOD '%s' installed.\nDo you want to visit its web site?"), _fnmModSelected.ConstData());
+  CConfirmMenu::ChangeTo(strLabel, &ExitAndSpawnExplorer, NULL, FALSE);
+};
+
+static void ModConnect(void) {
+  extern CTFileName _fnmModToLoad;
+  extern CTString _strModServerJoin;
+  _fnmModToLoad = _fnmModSelected;
+  _strModServerJoin = _strModServerSelected;
+};
+
+static void ModConnectConfirm(void) {
+  if (_fnmModSelected == " ") {
+    _fnmModSelected = CTString("SeriousSam");
+  }
+
+  CTFileName fnmModPath = SE1_MODS_SUBDIR + _fnmModSelected + "\\";
+
+  if (!FileExists(fnmModPath + "BaseWriteInclude.lst")  && !FileExists(fnmModPath + "BaseWriteExclude.lst")
+   && !FileExists(fnmModPath + "BaseBrowseInclude.lst") && !FileExists(fnmModPath + "BaseBrowseExclude.lst")) {
+    ModNotInstalled();
+    return;
+  }
+
+  CPrintF(TRANS("Server is running a different MOD (%s).\nYou need to reload to connect.\n"), _fnmModSelected.ConstData());
+  CConfirmMenu::ChangeTo(TRANS("CHANGE THE MOD?"), &ModConnect, NULL, TRUE);
+};
+
+void JoinNetworkGame(void) {
+  _pGame->gm_StartSplitScreenCfg = _pGame->gm_MenuSplitScreenCfg;
+
+  for (INDEX iLocal = 0; iLocal < NET_MAXLOCALPLAYERS; iLocal++) {
+    _pGame->gm_aiStartLocalPlayers[iLocal] = _pGame->gm_aiMenuLocalPlayers[iLocal];
+  }
+
+  _pGame->gm_strNetworkProvider = "TCP/IP Client";
+
+  if (_pGame->JoinGame(CNetworkSession(_pGame->gam_strJoinAddress))) {
+    StopMenus();
+    _gmRunningGameMode = GM_NETWORK;
+    return;
+  }
+
+  if (_pNetwork->ga_strRequiredMod != "") {
+    char strModName[256] = { 0 };
+    char strModURL[256] = { 0 };
+    _pNetwork->ga_strRequiredMod.ScanF("%250[^\\]\\%s", &strModName, &strModURL);
+
+    _fnmModSelected = CTString(strModName);
+    _strModURLSelected = strModURL;
+
+    if (_strModURLSelected == "") {
+      _strModURLSelected = "http://www.croteam.com/mods/Old";
+    }
+
+    _strModServerSelected.PrintF("%s:%s", _pGame->gam_strJoinAddress.ConstData(), _pShell->GetValue("net_iPort").ConstData());
+    ModConnectConfirm();
+  }
+
+  _gmRunningGameMode = GM_NONE;
+};
+
+void StartSelectPlayersMenuFromOpen(void) {
+  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
+  gmCurrent.gm_bAllowDedicated = FALSE;
+  gmCurrent.gm_bAllowObserving = TRUE;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &JoinNetworkGame;
+  CSelectPlayersMenu::ChangeTo();
+
+  extern void StartNetworkSettingsMenu(void);
+  StartNetworkSettingsMenu();
+  _pGUIM->gmLoadSaveMenu.gm_bNoEscape = TRUE;
+};
+
 void CNetworkOpenMenu::Initialize_t(void)
 {
   // intialize network join menu
@@ -63,7 +149,7 @@ void CNetworkOpenMenu::Initialize_t(void)
   gm_mgJoin.mg_pmgDown = &gm_mgAddress;
   gm_mgJoin.SetText(TRANS("Join"));
   gm_lhGadgets.AddTail(gm_mgJoin.mg_lnNode);
-  gm_mgJoin.mg_pActivatedFunction = NULL;
+  gm_mgJoin.mg_pActivatedFunction = &StartSelectPlayersMenuFromOpen;
 }
 
 void CNetworkOpenMenu::StartMenu(void)
