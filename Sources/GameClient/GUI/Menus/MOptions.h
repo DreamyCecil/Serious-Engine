@@ -44,7 +44,7 @@ public:
     return &gm_mgVideoOptions;
   };
 
-	void Initialize_t(void);
+  void Initialize_t(void);
 };
 
 #endif  /* include-once check. */

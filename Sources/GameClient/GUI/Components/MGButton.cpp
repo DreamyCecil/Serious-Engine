@@ -26,156 +26,156 @@ extern CMenuGadget *_pmgLastActivatedGadget;
 
 CMGButton::CMGButton(void)
 {
-	mg_pActivatedFunction = NULL;
-	mg_iIndex = 0;
-	mg_iCenterI = 0;
-	mg_iTextMode = 1;
-	mg_bfsFontSize = BFS_MEDIUM;
-	mg_iCursorPos = -1;
-	mg_bRectangle = FALSE;
-	mg_bMental = FALSE;
-	mg_bEditing = FALSE;
-	mg_bHighlighted = FALSE;
+  mg_pActivatedFunction = NULL;
+  mg_iIndex = 0;
+  mg_iCenterI = 0;
+  mg_iTextMode = 1;
+  mg_bfsFontSize = BFS_MEDIUM;
+  mg_iCursorPos = -1;
+  mg_bRectangle = FALSE;
+  mg_bMental = FALSE;
+  mg_bEditing = FALSE;
+  mg_bHighlighted = FALSE;
 }
 
 
 void CMGButton::OnActivate(void)
 {
-	if (mg_pActivatedFunction != NULL && mg_bEnabled)
-	{
-		PlayMenuSound(_psdPress);
-		IFeel_PlayEffect("Menu_press");
-		_pmgLastActivatedGadget = this;
-		(*mg_pActivatedFunction)();
-	}
+  if (mg_pActivatedFunction != NULL && mg_bEnabled)
+  {
+    PlayMenuSound(_psdPress);
+    IFeel_PlayEffect("Menu_press");
+    _pmgLastActivatedGadget = this;
+    (*mg_pActivatedFunction)();
+  }
 }
 
 
 void CMGButton::Render(CDrawPort *pdp)
 {
-	if (mg_bfsFontSize == BFS_LARGE) {
-		SetFontBig(pdp);
-	} else if (mg_bfsFontSize == BFS_MEDIUM) {
-		SetFontMedium(pdp);
-	} else {
-		ASSERT(mg_bfsFontSize == BFS_SMALL);
-		SetFontSmall(pdp);
-	}
-	pdp->SetTextMode(mg_iTextMode);
+  if (mg_bfsFontSize == BFS_LARGE) {
+    SetFontBig(pdp);
+  } else if (mg_bfsFontSize == BFS_MEDIUM) {
+    SetFontMedium(pdp);
+  } else {
+    ASSERT(mg_bfsFontSize == BFS_SMALL);
+    SetFontSmall(pdp);
+  }
+  pdp->SetTextMode(mg_iTextMode);
 
-	PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
-	COLOR col = GetCurrentColor();
-	if (mg_bEditing) {
-		col = _pGame->LCDGetColor(C_GREEN | 0xFF, "editing");
-	}
+  PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
+  COLOR col = GetCurrentColor();
+  if (mg_bEditing) {
+    col = _pGame->LCDGetColor(C_GREEN | 0xFF, "editing");
+  }
 
-	COLOR colRectangle = col;
-	if (mg_bHighlighted) {
-		col = _pGame->LCDGetColor(C_WHITE | 0xFF, "hilited");
-		if (!mg_bFocused) {
-			colRectangle = _pGame->LCDGetColor(C_WHITE | 0xFF, "hilited rectangle");
-		}
-	}
-	if (mg_bMental) {
-		FLOAT tmIn = 0.2f;
-		FLOAT tmOut = 1.0f;
-		FLOAT tmFade = 0.1f;
-		FLOAT tmExist = tmFade + tmIn + tmFade;
-		FLOAT tmTotal = tmFade + tmIn + tmFade + tmOut;
+  COLOR colRectangle = col;
+  if (mg_bHighlighted) {
+    col = _pGame->LCDGetColor(C_WHITE | 0xFF, "hilited");
+    if (!mg_bFocused) {
+      colRectangle = _pGame->LCDGetColor(C_WHITE | 0xFF, "hilited rectangle");
+    }
+  }
+  if (mg_bMental) {
+    FLOAT tmIn = 0.2f;
+    FLOAT tmOut = 1.0f;
+    FLOAT tmFade = 0.1f;
+    FLOAT tmExist = tmFade + tmIn + tmFade;
+    FLOAT tmTotal = tmFade + tmIn + tmFade + tmOut;
 
-		FLOAT tmTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
-		FLOAT fFactor = 1;
-		if (tmTime>0.1f) {
-			tmTime = fmod(tmTime, tmTotal);
-			fFactor = CalculateRatio(tmTime, 0, tmExist, tmFade / tmExist, tmFade / tmExist);
-		}
-		col = (col&~0xFF) | INDEX(0xFF * fFactor);
-	}
+    FLOAT tmTime = _pTimer->GetHighPrecisionTimer().GetSeconds();
+    FLOAT fFactor = 1;
+    if (tmTime>0.1f) {
+      tmTime = fmod(tmTime, tmTotal);
+      fFactor = CalculateRatio(tmTime, 0, tmExist, tmFade / tmExist, tmFade / tmExist);
+    }
+    col = (col&~0xFF) | INDEX(0xFF * fFactor);
+  }
 
-	if (mg_bRectangle) {
-		// put border
-		const PIX pixLeft = box.Min()(1);
-		const PIX pixUp = box.Min()(2) - 3;
-		const PIX pixWidth = box.Size()(1) + 1;
-		const PIX pixHeight = box.Size()(2);
-		pdp->DrawBorder(pixLeft, pixUp, pixWidth, pixHeight, colRectangle);
-	}
+  if (mg_bRectangle) {
+    // put border
+    const PIX pixLeft = box.Min()(1);
+    const PIX pixUp = box.Min()(2) - 3;
+    const PIX pixWidth = box.Size()(1) + 1;
+    const PIX pixHeight = box.Size()(2);
+    pdp->DrawBorder(pixLeft, pixUp, pixWidth, pixHeight, colRectangle);
+  }
 
   const CTString &strLabel = GetName();
 
-	if (mg_bEditing) {
-		// put border
-		PIX pixLeft = box.Min()(1);
-		PIX pixUp = box.Min()(2) - 3;
-		PIX pixWidth = box.Size()(1) + 1;
-		PIX pixHeight = box.Size()(2);
-		if (strLabel != "") {
-			pixLeft = box.Min()(1) + box.Size()(1)*0.55f;
-			pixWidth = box.Size()(1)*0.45f + 1;
-		}
-		pdp->Fill(pixLeft, pixUp, pixWidth, pixHeight, _pGame->LCDGetColor(C_dGREEN | 0x40, "edit fill"));
-	}
+  if (mg_bEditing) {
+    // put border
+    PIX pixLeft = box.Min()(1);
+    PIX pixUp = box.Min()(2) - 3;
+    PIX pixWidth = box.Size()(1) + 1;
+    PIX pixHeight = box.Size()(2);
+    if (strLabel != "") {
+      pixLeft = box.Min()(1) + box.Size()(1)*0.55f;
+      pixWidth = box.Size()(1)*0.45f + 1;
+    }
+    pdp->Fill(pixLeft, pixUp, pixWidth, pixHeight, _pGame->LCDGetColor(C_dGREEN | 0x40, "edit fill"));
+  }
 
 
-	INDEX iCursor = mg_iCursorPos;
+  INDEX iCursor = mg_iCursorPos;
 
-	// print text
-	if (strLabel != "") {
-		PIX pixIL = box.Min()(1) + box.Size()(1)*0.45f;
-		PIX pixIR = box.Min()(1) + box.Size()(1)*0.55f;
-		PIX pixJ = box.Min()(2);
+  // print text
+  if (strLabel != "") {
+    PIX pixIL = box.Min()(1) + box.Size()(1)*0.45f;
+    PIX pixIR = box.Min()(1) + box.Size()(1)*0.55f;
+    PIX pixJ = box.Min()(2);
 
-		pdp->PutTextR(strLabel, pixIL, pixJ, col);
-		pdp->PutText(GetText(), pixIR, pixJ, col);
-	} else {
-		CTString str = GetText();
-		if (pdp->dp_FontData->fd_bFixedWidth) {
-			str = str.Undecorated();
-			INDEX iLen = str.Length();
-			INDEX iMaxLen = ClampDn(box.Size()(1) / (pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth), 1L);
-			if (iCursor >= iMaxLen) {
-				str.TrimRight(iCursor);
-				str.TrimLeft(iMaxLen);
-				iCursor = iMaxLen;
-			} else {
-				str.TrimRight(iMaxLen);
-			}
-		}
-		if (mg_iCenterI == -1) pdp->PutText(str, box.Min()(1), box.Min()(2), col);
-		else if (mg_iCenterI == +1) pdp->PutTextR(str, box.Max()(1), box.Min()(2), col);
-		else                      pdp->PutTextC(str, box.Center()(1), box.Min()(2), col);
-	}
+    pdp->PutTextR(strLabel, pixIL, pixJ, col);
+    pdp->PutText(GetText(), pixIR, pixJ, col);
+  } else {
+    CTString str = GetText();
+    if (pdp->dp_FontData->fd_bFixedWidth) {
+      str = str.Undecorated();
+      INDEX iLen = str.Length();
+      INDEX iMaxLen = ClampDn(box.Size()(1) / (pdp->dp_pixTextCharSpacing + pdp->dp_FontData->fd_pixCharWidth), 1L);
+      if (iCursor >= iMaxLen) {
+        str.TrimRight(iCursor);
+        str.TrimLeft(iMaxLen);
+        iCursor = iMaxLen;
+      } else {
+        str.TrimRight(iMaxLen);
+      }
+    }
+    if (mg_iCenterI == -1) pdp->PutText(str, box.Min()(1), box.Min()(2), col);
+    else if (mg_iCenterI == +1) pdp->PutTextR(str, box.Max()(1), box.Min()(2), col);
+    else                      pdp->PutTextC(str, box.Center()(1), box.Min()(2), col);
+  }
 
-	// put cursor if editing
+  // put cursor if editing
   const BOOL bBlink = !!(ULONG(TicksToSec(_pTimer->GetRealTime()) * 2) & 1);
 
-	if (mg_bEditing && bBlink) {
-		PIX pixX = box.Min()(1) + GetCharOffset(pdp, iCursor);
-		if (strLabel != "") {
-			pixX += box.Size()(1)*0.55f;
-		}
+  if (mg_bEditing && bBlink) {
+    PIX pixX = box.Min()(1) + GetCharOffset(pdp, iCursor);
+    if (strLabel != "") {
+      pixX += box.Size()(1)*0.55f;
+    }
 
-		PIX pixY = box.Min()(2);
-		if (!pdp->dp_FontData->fd_bFixedWidth) {
-			pixY -= pdp->dp_fTextScaling * 2;
-		}
-		pdp->PutText("|", pixX, pixY, _pGame->LCDGetColor(C_WHITE | 0xFF, "editing cursor"));
-	}
+    PIX pixY = box.Min()(2);
+    if (!pdp->dp_FontData->fd_bFixedWidth) {
+      pixY -= pdp->dp_fTextScaling * 2;
+    }
+    pdp->PutText("|", pixX, pixY, _pGame->LCDGetColor(C_WHITE | 0xFF, "editing cursor"));
+  }
 }
 
 
 PIX CMGButton::GetCharOffset(CDrawPort *pdp, INDEX iCharNo)
 {
-	if (pdp->dp_FontData->fd_bFixedWidth) {
-		return (pdp->dp_FontData->fd_pixCharWidth + pdp->dp_pixTextCharSpacing)*(iCharNo - 0.5f);
-	}
+  if (pdp->dp_FontData->fd_bFixedWidth) {
+    return (pdp->dp_FontData->fd_pixCharWidth + pdp->dp_pixTextCharSpacing)*(iCharNo - 0.5f);
+  }
 
   const CTString &strText = GetText();
 
-	CTString strCut(strText);
-	strCut.TrimLeft(strText.Length() - iCharNo);
-	PIX pixFullWidth = pdp->GetTextWidth(strText);
-	PIX pixCutWidth = pdp->GetTextWidth(strCut);
-	// !!!! not implemented for different centering
-	return pixFullWidth - pixCutWidth;
+  CTString strCut(strText);
+  strCut.TrimLeft(strText.Length() - iCharNo);
+  PIX pixFullWidth = pdp->GetTextWidth(strText);
+  PIX pixCutWidth = pdp->GetTextWidth(strCut);
+  // !!!! not implemented for different centering
+  return pixFullWidth - pixCutWidth;
 }
