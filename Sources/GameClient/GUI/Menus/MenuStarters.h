@@ -19,15 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-
-void StartVideoOptionsMenu(void);
-void StartAudioOptionsMenu(void);
-void StartNetworkMenu(void);
-void StartNetworkJoinMenu(void);
-void StartNetworkStartMenu(void);
-void StartNetworkOpenMenu(void);
-void StartSplitScreenMenu(void);
-void StartSplitStartMenu(void);
 void StartSinglePlayerNewMenuCustom(void);
 void StartSinglePlayerNewMenu(void);
 void StartSinglePlayerQuickLoadMenu(void);
@@ -46,8 +37,6 @@ void StartSinglePlayerGameOptions(void);
 void StartGameOptionsFromNetwork(void);
 void StartGameOptionsFromSplitScreen(void);
 void StartRenderingOptionsMenu(void);
-void StartCustomizeKeyboardMenu(void);
-void StartCustomizeAxisMenu(void);
 void StartOptionsMenu(void);
 void StartCurrentLoadMenu();
 void StartCurrentSaveMenu();
@@ -75,7 +64,5 @@ void StartCustomLoadMenu(void);
 void StartAddonsLoadMenu(void);
 void StartModsLoadMenu(void);
 void StartNetworkSettingsMenu(void);
-void StartSinglePlayerMenu(void);
-void DisabledFunction(void);
 
 #endif  /* include-once check. */

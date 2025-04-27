@@ -52,6 +52,9 @@ public:
   void StartMenu(void);
   void EndMenu(void);
   void Think(void);
+
+  // [Cecil] Change to the menu
+  static void ChangeTo(const CTString &strTitle, const CTString &fnmConfig);
 };
 
 #endif  /* include-once check. */

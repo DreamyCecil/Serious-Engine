@@ -67,6 +67,9 @@ public:
   void ApplyComboPlayer(INDEX iPlayer);
   void StartMenu(void);
   void EndMenu(void);
+
+  // [Cecil] Change to the menu
+  static void ChangeTo(void);
 };
 
 #endif  /* include-once check. */

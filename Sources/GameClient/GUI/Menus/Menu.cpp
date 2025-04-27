@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "LevelInfo.h"
 #include "VarList.h"
 #include "FileInfo.h"
-#include "MenuManager.h"
 
 #include "MenuActions.h"
 #include "MenuStuff.h"
@@ -228,9 +227,9 @@ void StartMenus(const CTString &str)
     ChangeToMenu(pgmCurrentMenu);
   } else {
     if (_gmRunningGameMode==GM_NONE) {
-      ChangeToMenu(&_pGUIM->gmMainMenu);
+      CMainMenu::ChangeTo();
     } else {
-      ChangeToMenu(&_pGUIM->gmInGameMenu);
+      CInGameMenu::ChangeTo();
     }
   }
 
@@ -260,7 +259,7 @@ void StartMenus(const CTString &str)
   }
 
   if (str == "hiscore") {
-    ChangeToMenu(&_pGUIM->gmHighScoreMenu);
+    CHighScoreMenu::ChangeTo();
     _pGUIM->gmHighScoreMenu.gm_pgmParentMenu = &_pGUIM->gmMainMenu;
     FixupBackButton(&_pGUIM->gmHighScoreMenu);
   }
@@ -481,7 +480,7 @@ void MenuGoToParent(void)
     // if no game is running
     } else {
       // go to main menu
-      ChangeToMenu(&_pGUIM->gmMainMenu);
+      CMainMenu::ChangeTo();
     }
   // if there is some parent menu
   } else {

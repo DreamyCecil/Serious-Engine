@@ -97,3 +97,8 @@ void CSinglePlayerNewMenu::StartMenu(void)
     gm_mgTourist.mg_pmgUp = &gm_mgSerious;
   }
 }
+
+// [Cecil] Change to the menu
+void CSinglePlayerNewMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmSinglePlayerNewMenu);
+};

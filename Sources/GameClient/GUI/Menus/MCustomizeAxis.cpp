@@ -153,3 +153,8 @@ void CCustomizeAxisMenu::EndMenu(void)
   ApplyActionSettings();
   CGameMenu::EndMenu();
 }
+
+// [Cecil] Change to the menu
+void CCustomizeAxisMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmCustomizeAxisMenu);
+};

@@ -233,3 +233,8 @@ BOOL CLoadSaveMenu::ParseFile(const CTFileName &fnm, CTString &strName)
 
   return TRUE;
 }
+
+// [Cecil] Change to the menu
+void CLoadSaveMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmLoadSaveMenu);
+};

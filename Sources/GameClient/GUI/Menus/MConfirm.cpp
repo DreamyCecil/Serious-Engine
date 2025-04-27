@@ -46,8 +46,8 @@ void CConfirmMenu::Initialize_t(void)
   gm_mgConfirmNo.mg_iCenterI = -1;
   gm_mgConfirmNo.mg_bfsFontSize = BFS_LARGE;
 
-  _pConfimedYes = NULL;
-  _pConfimedNo = NULL;
+  gm_pConfirmedYes = NULL;
+  gm_pConfirmedNo = NULL;
 }
 
 void CConfirmMenu::BeLarge(void)
@@ -82,3 +82,21 @@ BOOL CConfirmMenu::OnKeyDown(PressedMenuButton pmb)
 
   return CGameMenu::OnKeyDown(pmb);
 }
+
+// [Cecil] Change to the menu
+void CConfirmMenu::ChangeTo(const CTString &strLabel, CConfirmFunc pFuncYes, CConfirmFunc pFuncNo, BOOL bBigLabel)
+{
+  CConfirmMenu &gm = _pGUIM->gmConfirmMenu;
+
+  gm.gm_pConfirmedYes = pFuncYes;
+  gm.gm_pConfirmedNo = pFuncNo;
+  gm.gm_mgConfirmLabel.SetText(strLabel);
+
+  if (bBigLabel) {
+    gm.BeLarge();
+  } else {
+    gm.BeSmall();
+  }
+
+  ChangeToMenu(&gm);
+};

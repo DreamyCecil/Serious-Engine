@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
-#include "MenuManager.h"
 #include "MenuStartersAF.h"
 #include "MenuStarters.h"
 #include "MenuStuff.h"
@@ -152,10 +151,8 @@ BOOL LSLoadMod(const CTFileName &fnm)
 
 BOOL LSLoadCustom(const CTFileName &fnm)
 {
-  _pGUIM->gmVarMenu.gm_mgTitle.SetText(TRANS("ADVANCED OPTIONS"));
-  _pGUIM->gmVarMenu.gm_fnmMenuCFG = fnm;
   _pGUIM->gmVarMenu.gm_pgmParentMenu = &_pGUIM->gmLoadSaveMenu;
-  ChangeToMenu(&_pGUIM->gmVarMenu);
+  CVarMenu::ChangeTo(TRANS("ADVANCED OPTIONS"), fnm);
   return TRUE;
 }
 

@@ -111,3 +111,8 @@ void CVideoOptionsMenu::StartMenu(void)
 
   UpdateVideoOptionsButtons(-1);
 }
+
+// [Cecil] Change to the menu
+void CVideoOptionsMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmVideoOptionsMenu);
+};

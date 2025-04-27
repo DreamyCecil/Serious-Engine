@@ -153,3 +153,8 @@ void CSinglePlayerMenu::StartMenu(void)
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[_pGame->gm_iSinglePlayer];
   gm_mgPlayerLabel.SetText(CTString(0, TRANS("Player: %s\n"), pc.GetNameForPrinting().ConstData()));
 }
+
+// [Cecil] Change to the menu
+void CSinglePlayerMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmSinglePlayerMenu);
+};

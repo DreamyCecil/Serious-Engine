@@ -76,3 +76,8 @@ void CNetworkOpenMenu::EndMenu(void)
 {
   _pShell->SetValue("net_iPort", gm_strPort);
 }
+
+// [Cecil] Change to the menu
+void CNetworkOpenMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmNetworkOpenMenu);
+};

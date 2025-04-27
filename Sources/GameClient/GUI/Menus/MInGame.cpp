@@ -171,3 +171,8 @@ void CInGameMenu::StartMenu(void)
 
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CInGameMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmInGameMenu);
+};

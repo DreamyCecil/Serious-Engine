@@ -15,7 +15,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "StdH.h"
 
-#include "MenuManager.h"
 #include "MenuStarters.h"
 #include "MenuStuff.h"
 #include "GUI/Components/MenuGadget.h"
@@ -137,13 +136,8 @@ static void ExitGame(void)
 static void ExitConfirm(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
-  gmCurrent._pConfimedYes = &ExitGame;
-  gmCurrent._pConfimedNo = NULL;
-  gmCurrent.gm_mgConfirmLabel.SetText(TRANS("ARE YOU SERIOUS?"));
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.BeLarge();
-  ChangeToMenu(&gmCurrent);
+  CConfirmMenu::ChangeTo(TRANS("ARE YOU SERIOUS?"), &ExitGame, NULL, TRUE);
 }
 
 static void StopCurrentGame(void)
@@ -157,13 +151,8 @@ static void StopCurrentGame(void)
 static void StopConfirm(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
-  gmCurrent._pConfimedYes = &StopCurrentGame;
-  gmCurrent._pConfimedNo = NULL;
-  gmCurrent.gm_mgConfirmLabel.SetText(TRANS("ARE YOU SERIOUS?"));
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.BeLarge();
-  ChangeToMenu(&gmCurrent);
+  CConfirmMenu::ChangeTo(TRANS("ARE YOU SERIOUS?"), &StopCurrentGame, NULL, TRUE);
 }
 
 static void ModLoadYes(void)
@@ -196,25 +185,16 @@ extern void ModConnectConfirm(void)
   }
 
   CPrintF(TRANS("Server is running a different MOD (%s).\nYou need to reload to connect.\n"), _fnmModSelected.ConstData());
-  gmCurrent._pConfimedYes = &ModConnect;
-  gmCurrent._pConfimedNo = NULL;
-  gmCurrent.gm_mgConfirmLabel.SetText(TRANS("CHANGE THE MOD?"));
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.BeLarge();
-  ChangeToMenu(&gmCurrent);
+  CConfirmMenu::ChangeTo(TRANS("CHANGE THE MOD?"), &ModConnect, NULL, TRUE);
 }
 
 void SaveConfirm(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
-  extern void OnFileSaveOK(void);
-  gmCurrent._pConfimedYes = &OnFileSaveOK;
-  gmCurrent._pConfimedNo = NULL;
-  gmCurrent.gm_mgConfirmLabel.SetText(TRANS("OVERWRITE?"));
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.BeLarge();
-  ChangeToMenu(&gmCurrent);
+  extern void OnFileSaveOK(void);
+  CConfirmMenu::ChangeTo(TRANS("OVERWRITE?"), &OnFileSaveOK, NULL, TRUE);
 }
 
 void ExitAndSpawnExplorer(void)
@@ -228,26 +208,16 @@ void ExitAndSpawnExplorer(void)
 void ModNotInstalled(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
-  gmCurrent._pConfimedYes = &ExitAndSpawnExplorer;
-  gmCurrent._pConfimedNo = NULL;
-  gmCurrent.gm_mgConfirmLabel.SetText(CTString(0,
-    TRANS("You don't have MOD '%s' installed.\nDo you want to visit its web site?"), _fnmModSelected.ConstData()));
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.BeSmall();
-  ChangeToMenu(&gmCurrent);
+  CTString strLabel(0, TRANS("You don't have MOD '%s' installed.\nDo you want to visit its web site?"), _fnmModSelected.ConstData());
+  CConfirmMenu::ChangeTo(strLabel, &ExitAndSpawnExplorer, NULL, FALSE);
 }
 
 extern void ModConfirm(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
-  gmCurrent._pConfimedYes = &ModLoadYes;
-  gmCurrent._pConfimedNo = NULL;
-  gmCurrent.gm_mgConfirmLabel.SetText(TRANS("LOAD THIS MOD?"));
   gmCurrent.gm_pgmParentMenu = &_pGUIM->gmLoadSaveMenu;
-  gmCurrent.BeLarge();
-  ChangeToMenu(&gmCurrent);
+  CConfirmMenu::ChangeTo(TRANS("LOAD THIS MOD?"), &ModLoadYes, NULL, TRUE);
 }
 
 static void RevertVideoSettings(void);
@@ -260,22 +230,16 @@ void VideoConfirm(void)
   // due to WM_MOUSEMOVE being sent
   _bMouseUsedLast = FALSE;
   _pmgUnderCursor = gmCurrent.GetDefaultGadget();
-
-  gmCurrent._pConfimedYes = NULL;
-  gmCurrent._pConfimedNo = RevertVideoSettings;
-
-  gmCurrent.gm_mgConfirmLabel.SetText(TRANS("KEEP THIS SETTING?"));
   gmCurrent.gm_pgmParentMenu = pgmCurrentMenu;
-  gmCurrent.BeLarge();
-  ChangeToMenu(&gmCurrent);
+  CConfirmMenu::ChangeTo(TRANS("KEEP THIS SETTING?"), NULL, &RevertVideoSettings, TRUE);
 }
 
 static void ConfirmYes(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
 
-  if (gmCurrent._pConfimedYes != NULL) {
-    gmCurrent._pConfimedYes();
+  if (gmCurrent.gm_pConfirmedYes != NULL) {
+    gmCurrent.gm_pConfirmedYes();
   }
   void MenuGoToParent(void);
   MenuGoToParent();
@@ -285,8 +249,8 @@ static void ConfirmNo(void)
 {
   CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
 
-  if (gmCurrent._pConfimedNo != NULL) {
-    gmCurrent._pConfimedNo();
+  if (gmCurrent.gm_pConfirmedNo != NULL) {
+    gmCurrent.gm_pConfirmedNo();
   }
   void MenuGoToParent(void);
   MenuGoToParent();
@@ -303,9 +267,9 @@ void InitActionsForConfirmMenu() {
 void InitActionsForMainMenu() {
   CMainMenu &gmCurrent = _pGUIM->gmMainMenu;
 
-  gmCurrent.gm_mgSingle.mg_pActivatedFunction = &StartSinglePlayerMenu;
-  gmCurrent.gm_mgNetwork.mg_pActivatedFunction = StartNetworkMenu;
-  gmCurrent.gm_mgSplitScreen.mg_pActivatedFunction = &StartSplitScreenMenu;
+  gmCurrent.gm_mgSingle.mg_pActivatedFunction = &CSinglePlayerMenu::ChangeTo;
+  gmCurrent.gm_mgNetwork.mg_pActivatedFunction = &CNetworkMenu::ChangeTo;
+  gmCurrent.gm_mgSplitScreen.mg_pActivatedFunction = &CSplitScreenMenu::ChangeTo;
   gmCurrent.gm_mgDemo.mg_pActivatedFunction = &StartDemoLoadMenu;
   gmCurrent.gm_mgMods.mg_pActivatedFunction = &StartModsLoadMenu;
   gmCurrent.gm_mgHighScore.mg_pActivatedFunction = &StartHighScoreMenu;
@@ -374,7 +338,7 @@ static void StartTraining(void)
 {
   _pGUIM->gmSinglePlayerNewMenu.gm_pgmParentMenu = &_pGUIM->gmSinglePlayerMenu;
   _pGame->gam_strCustomLevel = sam_strTrainingLevel;
-  ChangeToMenu(&_pGUIM->gmSinglePlayerNewMenu);
+  CSinglePlayerNewMenu::ChangeTo();
 }
 
 void InitActionsForSinglePlayerMenu()
@@ -590,8 +554,8 @@ void InitActionsForControlsMenu()
 {
   CControlsMenu &gmCurrent = _pGUIM->gmControls;
 
-  gmCurrent.gm_mgButtons.mg_pActivatedFunction = &StartCustomizeKeyboardMenu;
-  gmCurrent.gm_mgAdvanced.mg_pActivatedFunction = &StartCustomizeAxisMenu;
+  gmCurrent.gm_mgButtons.mg_pActivatedFunction = &CCustomizeKeyboardMenu::ChangeTo;
+  gmCurrent.gm_mgAdvanced.mg_pActivatedFunction = &CCustomizeAxisMenu::ChangeTo;
   gmCurrent.gm_mgPredefined.mg_pActivatedFunction = &StartControlsLoadMenu;
 }
 
@@ -619,8 +583,8 @@ void InitActionsForOptionsMenu()
 {
   COptionsMenu &gmCurrent = _pGUIM->gmOptionsMenu;
 
-  gmCurrent.gm_mgVideoOptions.mg_pActivatedFunction = &StartVideoOptionsMenu;
-  gmCurrent.gm_mgAudioOptions.mg_pActivatedFunction = &StartAudioOptionsMenu;
+  gmCurrent.gm_mgVideoOptions.mg_pActivatedFunction = &CVideoOptionsMenu::ChangeTo;
+  gmCurrent.gm_mgAudioOptions.mg_pActivatedFunction = &CAudioOptionsMenu::ChangeTo;
   gmCurrent.gm_mgPlayerProfileOptions.mg_pActivatedFunction = &StartChangePlayerMenuFromOptions;
   gmCurrent.gm_mgNetworkOptions.mg_pActivatedFunction = &StartNetworkSettingsMenu;
   gmCurrent.gm_mgCustomOptions.mg_pActivatedFunction = &StartCustomLoadMenu;
@@ -1033,11 +997,6 @@ extern void RefreshServerList(void)
   _pNetwork->EnumSessions(_pGUIM->gmServersMenu.m_bInternet);
 }
 
-void RefreshServerListManually(void)
-{
-  ChangeToMenu(&_pGUIM->gmServersMenu); // this refreshes the list and sets focuses
-}
-
 void InitActionsForServersMenu() {
   _pGUIM->gmServersMenu.gm_mgRefresh.mg_pActivatedFunction = &RefreshServerList;
 
@@ -1055,8 +1014,8 @@ void InitActionsForNetworkMenu()
 {
   CNetworkMenu &gmCurrent = _pGUIM->gmNetworkMenu;
 
-  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &StartNetworkJoinMenu;
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkStartMenu;
+  gmCurrent.gm_mgJoin.mg_pActivatedFunction = &CNetworkJoinMenu::ChangeTo;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &CNetworkStartMenu::ChangeTo;
   gmCurrent.gm_mgQuickLoad.mg_pActivatedFunction = &StartNetworkQuickLoadMenu;
   gmCurrent.gm_mgLoad.mg_pActivatedFunction = &StartNetworkLoadMenu;
 }
@@ -1068,7 +1027,7 @@ void InitActionsForNetworkJoinMenu()
 
   gmCurrent.gm_mgLAN.mg_pActivatedFunction = &StartSelectServerLAN;
   gmCurrent.gm_mgNET.mg_pActivatedFunction = &StartSelectServerNET;
-  gmCurrent.gm_mgOpen.mg_pActivatedFunction = &StartNetworkOpenMenu;
+  gmCurrent.gm_mgOpen.mg_pActivatedFunction = &CNetworkOpenMenu::ChangeTo;
 }
 
 // ------------------------ CNetworkStartMenu implementation
@@ -1283,7 +1242,7 @@ void InitActionsForSplitScreenMenu()
 {
   CSplitScreenMenu &gmCurrent = _pGUIM->gmSplitScreenMenu;
 
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartSplitStartMenu;
+  gmCurrent.gm_mgStart.mg_pActivatedFunction = &CSplitStartMenu::ChangeTo;
   gmCurrent.gm_mgQuickLoad.mg_pActivatedFunction = &StartSplitScreenQuickLoadMenu;
   gmCurrent.gm_mgLoad.mg_pActivatedFunction = &StartSplitScreenLoadMenu;
 }

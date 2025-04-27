@@ -57,3 +57,8 @@ void CSplitScreenMenu::StartMenu(void)
 {
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CSplitScreenMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmSplitScreenMenu);
+};

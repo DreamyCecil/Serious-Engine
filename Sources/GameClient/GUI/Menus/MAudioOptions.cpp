@@ -88,3 +88,8 @@ void CAudioOptionsMenu::StartMenu(void)
   RefreshSoundFormat();
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CAudioOptionsMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmAudioOptionsMenu);
+};

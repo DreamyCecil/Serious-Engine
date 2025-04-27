@@ -66,3 +66,8 @@ void CNetworkMenu::StartMenu(void)
 {
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CNetworkMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmNetworkMenu);
+};

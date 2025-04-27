@@ -180,3 +180,8 @@ void CControlsMenu::ApplyActionSettings(void)
   _pShell->SetFLOAT("inp_fIFeelGain", bIFeel ? 1.0f : 0.0f);
   ctrls.CalculateInfluencesForAllAxis();
 }
+
+// [Cecil] Change to the menu
+void CControlsMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmControls);
+};

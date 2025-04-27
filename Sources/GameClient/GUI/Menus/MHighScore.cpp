@@ -39,3 +39,8 @@ void CHighScoreMenu::StartMenu(void)
   gm_pgmParentMenu = pgmCurrentMenu;
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CHighScoreMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmHighScoreMenu);
+};

@@ -120,3 +120,8 @@ void CSelectPlayersMenu::EndMenu(void)
   SelectPlayersApplyMenu();
   CGameMenu::EndMenu();
 }
+
+// [Cecil] Change to the menu
+void CSelectPlayersMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmSelectPlayersMenu);
+};

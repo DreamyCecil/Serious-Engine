@@ -86,6 +86,9 @@ public:
   void StartMenu(void);
   void EndMenu(void);
   void FillListItems(void);
+
+  // [Cecil] Change to the menu
+  static void ChangeTo(void);
 };
 
 #endif  /* include-once check. */

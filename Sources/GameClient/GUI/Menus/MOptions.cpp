@@ -79,3 +79,8 @@ void COptionsMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgAddonOptions.mg_lnNode);
   gm_mgAddonOptions.mg_pActivatedFunction = NULL;
 }
+
+// [Cecil] Change to the menu
+void COptionsMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmOptionsMenu);
+};

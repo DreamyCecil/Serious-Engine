@@ -53,3 +53,8 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgOpen.mg_lnNode);
   gm_mgOpen.mg_pActivatedFunction = NULL;
 }
+
+// [Cecil] Change to the menu
+void CNetworkJoinMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmNetworkJoinMenu);
+};

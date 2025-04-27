@@ -108,3 +108,8 @@ void CServersMenu::Think(void)
   }
   _pNetwork->ga_bEnumerationChange = FALSE;
 }
+
+// [Cecil] Change to the menu
+void CServersMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmServersMenu);
+};

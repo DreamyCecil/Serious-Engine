@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 
 #include "MGChangePlayer.h"
-#include "GUI/Menus/MenuManager.h"
 
 extern CSoundData *_psdPress;
 
@@ -35,7 +34,7 @@ void CMGChangePlayer::OnActivate(void)
 
   extern BOOL _bPlayerMenuFromSinglePlayer;
   _bPlayerMenuFromSinglePlayer = FALSE;
-  ChangeToMenu(&_pGUIM->gmPlayerProfile);
+  CPlayerProfileMenu::ChangeTo();
 }
 
 void CMGChangePlayer::SetPlayerText(void)

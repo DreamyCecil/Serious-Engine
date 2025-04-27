@@ -127,3 +127,8 @@ void CMainMenu::StartMenu(void)
   gm_mgHighScore.mg_bEnabled = IsMenuEnabled("High Score");
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CMainMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmMainMenu);
+};

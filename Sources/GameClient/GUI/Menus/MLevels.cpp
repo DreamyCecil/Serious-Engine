@@ -109,3 +109,8 @@ void CLevelsMenu::StartMenu(void)
   }
   CGameMenu::StartMenu();
 }
+
+// [Cecil] Change to the menu
+void CLevelsMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmLevelsMenu);
+};

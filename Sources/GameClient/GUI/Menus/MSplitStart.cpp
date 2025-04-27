@@ -98,3 +98,8 @@ void CSplitStartMenu::EndMenu(void)
 
   CGameMenu::EndMenu();
 }
+
+// [Cecil] Change to the menu
+void CSplitStartMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmSplitStartMenu);
+};

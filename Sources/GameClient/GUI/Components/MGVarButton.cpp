@@ -18,8 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "VarList.h"
 #include "MGVarButton.h"
 
-#include "GUI/Menus/MenuManager.h"
-
 extern FLOAT _fCursorPosI;
 extern FLOAT _fCursorPosJ;
 

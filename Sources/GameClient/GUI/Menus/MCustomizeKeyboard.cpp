@@ -109,3 +109,8 @@ void CCustomizeKeyboardMenu::EndMenu(void)
   ControlsMenuOff();
   CGameMenu::EndMenu();
 }
+
+// [Cecil] Change to the menu
+void CCustomizeKeyboardMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmCustomizeKeyboardMenu);
+};

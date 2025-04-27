@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MenuStuff.h"
 #include "MPlayerProfile.h"
-#include "GUI/Menus/MenuManager.h"
 
 #define ADD_SELECT_PLAYER_MG( index, mg, mgprev, mgnext, me)\
   mg.mg_iIndex = index; \
@@ -303,3 +302,8 @@ void CPlayerProfileMenu::EndMenu(void)
   _pGame->SavePlayersAndControls();
   CGameMenu::EndMenu();
 }
+
+// [Cecil] Change to the menu
+void CPlayerProfileMenu::ChangeTo(void) {
+  ChangeToMenu(&_pGUIM->gmPlayerProfile);
+};
