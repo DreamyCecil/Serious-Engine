@@ -37,7 +37,7 @@ void CAudioOptionsMenu::Initialize_t(void)
 
   // intialize Audio options menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_mgTitle.mg_strText = TRANS("AUDIO");
+  gm_mgTitle.SetText(TRANS("AUDIO"));
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
   TRIGGER_MG(gm_mgAudioAutoTrigger, 0,
@@ -56,7 +56,7 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_mgAudioAPITrigger.mg_ctTexts = ctAPIs; // [Cecil] Amount of available APIs
 
   gm_mgWaveVolume.mg_boxOnScreen = BoxMediumRow(3);
-  gm_mgWaveVolume.mg_strText = TRANS("SOUND EFFECTS VOLUME");
+  gm_mgWaveVolume.SetText(TRANS("SOUND EFFECTS VOLUME"));
   gm_mgWaveVolume.mg_strTip = TRANS("adjust volume of in-game sound effects");
   gm_mgWaveVolume.mg_pmgUp = &gm_mgAudioAPITrigger;
   gm_mgWaveVolume.mg_pmgDown = &gm_mgMPEGVolume;
@@ -65,7 +65,7 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgWaveVolume.mg_lnNode);
 
   gm_mgMPEGVolume.mg_boxOnScreen = BoxMediumRow(4);
-  gm_mgMPEGVolume.mg_strText = TRANS("MUSIC VOLUME");
+  gm_mgMPEGVolume.SetText(TRANS("MUSIC VOLUME"));
   gm_mgMPEGVolume.mg_strTip = TRANS("adjust volume of in-game music");
   gm_mgMPEGVolume.mg_pmgUp = &gm_mgWaveVolume;
   gm_mgMPEGVolume.mg_pmgDown = &gm_mgApply;
@@ -75,7 +75,7 @@ void CAudioOptionsMenu::Initialize_t(void)
 
   gm_mgApply.mg_bfsFontSize = BFS_LARGE;
   gm_mgApply.mg_boxOnScreen = BoxBigRow(4);
-  gm_mgApply.mg_strText = TRANS("APPLY");
+  gm_mgApply.SetText(TRANS("APPLY"));
   gm_mgApply.mg_strTip = TRANS("activate selected options");
   gm_lhGadgets.AddTail(gm_mgApply.mg_lnNode);
   gm_mgApply.mg_pmgUp = &gm_mgMPEGVolume;

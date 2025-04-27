@@ -26,5 +26,5 @@ void CMGTitle::Render(CDrawPort *pdp)
   PIX pixI = box.Center()(1);
   PIX pixJ = box.Min()(2);
 
-  pdp->PutTextC(mg_strText, pixI, pixJ, _pGame->LCDGetColor(C_WHITE | CT_OPAQUE, "title"));
+  pdp->PutTextC(GetText(), pixI, pixJ, _pGame->LCDGetColor(C_WHITE | CT_OPAQUE, "title"));
 }

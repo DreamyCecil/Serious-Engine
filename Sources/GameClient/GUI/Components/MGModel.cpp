@@ -30,7 +30,7 @@ void CMGModel::Render(CDrawPort *pdp)
   // if no model
   if (mg_moModel.GetData() == NULL) {
     // just render text
-    mg_strText = TRANS("No model");
+    SetText(TRANS("No model"));
     CMGButton::Render(pdp);
     return;
   }
@@ -119,6 +119,6 @@ void CMGModel::Render(CDrawPort *pdp)
 
     PIX pixI = box.Min()(1);
     PIX pixJ = box.Max()(2);
-    pdp->PutText(mg_strText, pixI, pixJ, col);
+    pdp->PutText(GetText(), pixI, pixJ, col);
   }
 }

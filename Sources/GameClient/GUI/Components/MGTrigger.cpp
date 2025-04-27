@@ -45,7 +45,7 @@ CMGTrigger::CMGTrigger(void)
 void CMGTrigger::ApplyCurrentSelection(void)
 {
   mg_iSelected = Clamp(mg_iSelected, 0L, mg_ctTexts - 1L);
-  mg_strValue = mg_astrTexts[mg_iSelected];
+  SetText(mg_astrTexts[mg_iSelected]);
 }
 
 void CMGTrigger::OnSetNextInList(PressedMenuButton pmb)
@@ -55,7 +55,7 @@ void CMGTrigger::OnSetNextInList(PressedMenuButton pmb)
   }
 
   mg_iSelected = GetNewLoopValue(pmb, mg_iSelected, mg_ctTexts);
-  mg_strValue = mg_astrTexts[mg_iSelected];
+  SetText(mg_astrTexts[mg_iSelected]);
 
   if (mg_pOnTriggerChange != NULL) {
     (*mg_pOnTriggerChange)(mg_iSelected);
@@ -84,25 +84,26 @@ void CMGTrigger::Render(CDrawPort *pdp)
   PIX pixJ = box.Min()(2);
 
   COLOR col = GetCurrentColor();
-  if (!mg_bVisual || mg_strValue == "") {
-    CTString strValue = mg_strValue;
+  const CTString &strLabel = GetName();
+  CTString strValue = GetText();
+
+  if (!mg_bVisual || strValue == "") {
     if (mg_bVisual) {
       strValue = TRANS("none");
     }
 
     if (mg_iCenterI == -1) {
-      pdp->PutText(mg_strLabel, box.Min()(1), pixJ, col);
+      pdp->PutText(strLabel, box.Min()(1), pixJ, col);
       pdp->PutTextR(strValue, box.Max()(1), pixJ, col);
     } else {
-      pdp->PutTextR(mg_strLabel, pixIL, pixJ, col);
+      pdp->PutTextR(strLabel, pixIL, pixJ, col);
       pdp->PutText(strValue, pixIR, pixJ, col);
     }
   } else {
-    CTString strLabel = mg_strLabel + ": ";
-    pdp->PutText(strLabel, box.Min()(1), pixJ, col);
+    pdp->PutText(strLabel + ": ", box.Min()(1), pixJ, col);
     CTextureObject to;
     try {
-      to.SetData_t(mg_strValue);
+      to.SetData_t(strValue);
       CTextureData *ptd = (CTextureData *)to.GetData();
       PIX pixSize = box.Size()(2);
       PIX pixCX = box.Max()(1) - pixSize / 2;

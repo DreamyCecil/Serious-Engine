@@ -44,8 +44,9 @@ void CMGChangePlayer::SetPlayerText(void)
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[iPlayer];
 
   if (iPlayer < 0 || iPlayer >= MAX_PLAYER_PROFILES) {
-    mg_strText = "????";
+    SetText("????");
   } else {
-    mg_strText.PrintF(TRANS("Player %d: %s\n"), mg_iLocalPlayer + 1, pc.GetNameForPrinting().ConstData());
+    CTString str(0, TRANS("Player %d: %s\n"), mg_iLocalPlayer + 1, pc.GetNameForPrinting().ConstData());
+    SetText(str);
   }
 }

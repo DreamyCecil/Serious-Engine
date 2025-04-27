@@ -25,7 +25,7 @@ CMGEdit mgServerFilter[7];
 void CServersMenu::Initialize_t(void)
 {
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_mgTitle.mg_strText = TRANS("CHOOSE SERVER");
+  gm_mgTitle.SetText(TRANS("CHOOSE SERVER"));
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
   gm_mgList.mg_boxOnScreen = FLOATaabbox2D(FLOAT2D(0, 0), FLOAT2D(1, 1));
@@ -35,7 +35,7 @@ void CServersMenu::Initialize_t(void)
 
   ASSERT(ARRAYCOUNT(mgServerColumn) == ARRAYCOUNT(mgServerFilter));
   for (INDEX i = 0; i<ARRAYCOUNT(mgServerFilter); i++) {
-    mgServerColumn[i].mg_strText = "";
+    mgServerColumn[i].SetText("");
     mgServerColumn[i].mg_boxOnScreen = BoxPlayerEdit(5.0);
     mgServerColumn[i].mg_bfsFontSize = BFS_SMALL;
     mgServerColumn[i].mg_iCenterI = -1;
@@ -54,7 +54,7 @@ void CServersMenu::Initialize_t(void)
     mgServerFilter[i].SetText(*mgServerFilter[i].mg_pstrToChange);
   }
 
-  gm_mgRefresh.mg_strText = TRANS("REFRESH");
+  gm_mgRefresh.SetText(TRANS("REFRESH"));
   gm_mgRefresh.mg_boxOnScreen = BoxLeftColumn(15.0);
   gm_mgRefresh.mg_bfsFontSize = BFS_SMALL;
   gm_mgRefresh.mg_iCenterI = -1;
@@ -63,13 +63,13 @@ void CServersMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgRefresh.mg_lnNode);
 
   CTString astrColumns[7];
-  mgServerColumn[0].mg_strText = TRANS("Server");
-  mgServerColumn[1].mg_strText = TRANS("Map");
-  mgServerColumn[2].mg_strText = TRANS("Ping");
-  mgServerColumn[3].mg_strText = TRANS("Players");
-  mgServerColumn[4].mg_strText = TRANS("Game");
-  mgServerColumn[5].mg_strText = TRANS("Mod");
-  mgServerColumn[6].mg_strText = TRANS("Ver");
+  mgServerColumn[0].SetText(TRANS("Server"));
+  mgServerColumn[1].SetText(TRANS("Map"));
+  mgServerColumn[2].SetText(TRANS("Ping"));
+  mgServerColumn[3].SetText(TRANS("Players"));
+  mgServerColumn[4].SetText(TRANS("Game"));
+  mgServerColumn[5].SetText(TRANS("Mod"));
+  mgServerColumn[6].SetText(TRANS("Ver"));
   mgServerColumn[0].mg_pActivatedFunction = NULL;
   mgServerColumn[1].mg_pActivatedFunction = NULL;
   mgServerColumn[2].mg_pActivatedFunction = NULL;

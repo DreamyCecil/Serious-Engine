@@ -25,6 +25,8 @@ BOOL _bDefiningKey = FALSE;
 BOOL _bEditingString = FALSE;
 CMenuGadget *_pmgLastActivatedGadget = NULL;
 
+const CTString CMenuGadget::mg_strDummyString;
+
 CMenuGadget::CMenuGadget(void)
 {
   mg_pmgLeft = NULL;

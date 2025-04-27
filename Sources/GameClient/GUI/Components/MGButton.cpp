@@ -39,12 +39,6 @@ CMGButton::CMGButton(void)
 }
 
 
-void CMGButton::SetText(CTString strNew)
-{
-	mg_strText = strNew;
-}
-
-
 void CMGButton::OnActivate(void)
 {
 	if (mg_pActivatedFunction != NULL && mg_bEnabled)
@@ -107,13 +101,15 @@ void CMGButton::Render(CDrawPort *pdp)
 		pdp->DrawBorder(pixLeft, pixUp, pixWidth, pixHeight, colRectangle);
 	}
 
+  const CTString &strLabel = GetName();
+
 	if (mg_bEditing) {
 		// put border
 		PIX pixLeft = box.Min()(1);
 		PIX pixUp = box.Min()(2) - 3;
 		PIX pixWidth = box.Size()(1) + 1;
 		PIX pixHeight = box.Size()(2);
-		if (mg_strLabel != "") {
+		if (strLabel != "") {
 			pixLeft = box.Min()(1) + box.Size()(1)*0.55f;
 			pixWidth = box.Size()(1)*0.45f + 1;
 		}
@@ -124,15 +120,15 @@ void CMGButton::Render(CDrawPort *pdp)
 	INDEX iCursor = mg_iCursorPos;
 
 	// print text
-	if (mg_strLabel != "") {
+	if (strLabel != "") {
 		PIX pixIL = box.Min()(1) + box.Size()(1)*0.45f;
 		PIX pixIR = box.Min()(1) + box.Size()(1)*0.55f;
 		PIX pixJ = box.Min()(2);
 
-		pdp->PutTextR(mg_strLabel, pixIL, pixJ, col);
-		pdp->PutText(mg_strText, pixIR, pixJ, col);
+		pdp->PutTextR(strLabel, pixIL, pixJ, col);
+		pdp->PutText(GetText(), pixIR, pixJ, col);
 	} else {
-		CTString str = mg_strText;
+		CTString str = GetText();
 		if (pdp->dp_FontData->fd_bFixedWidth) {
 			str = str.Undecorated();
 			INDEX iLen = str.Length();
@@ -155,7 +151,7 @@ void CMGButton::Render(CDrawPort *pdp)
 
 	if (mg_bEditing && bBlink) {
 		PIX pixX = box.Min()(1) + GetCharOffset(pdp, iCursor);
-		if (mg_strLabel != "") {
+		if (strLabel != "") {
 			pixX += box.Size()(1)*0.55f;
 		}
 
@@ -173,9 +169,12 @@ PIX CMGButton::GetCharOffset(CDrawPort *pdp, INDEX iCharNo)
 	if (pdp->dp_FontData->fd_bFixedWidth) {
 		return (pdp->dp_FontData->fd_pixCharWidth + pdp->dp_pixTextCharSpacing)*(iCharNo - 0.5f);
 	}
-	CTString strCut(mg_strText);
-	strCut.TrimLeft(mg_strText.Length() - iCharNo);
-	PIX pixFullWidth = pdp->GetTextWidth(mg_strText);
+
+  const CTString &strText = GetText();
+
+	CTString strCut(strText);
+	strCut.TrimLeft(strText.Length() - iCharNo);
+	PIX pixFullWidth = pdp->GetTextWidth(strText);
 	PIX pixCutWidth = pdp->GetTextWidth(strCut);
 	// !!!! not implemented for different centering
 	return pixFullWidth - pixCutWidth;

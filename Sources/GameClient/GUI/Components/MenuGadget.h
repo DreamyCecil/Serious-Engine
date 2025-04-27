@@ -29,6 +29,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMenuGadget {
+private:
+  static const CTString mg_strDummyString;
+
 public:
   CListNode mg_lnNode;
   FLOATaabbox2D mg_boxOnScreen;
@@ -45,6 +48,29 @@ public:
   CMenuGadget *mg_pmgDown;
 
   CMenuGadget(void);
+
+  // [Cecil] Get gadget name/label
+  virtual const CTString &GetName(void) const {
+    ASSERTALWAYS("CMenuGadget::GetName() isn't redefined for this gadget!");
+    return mg_strDummyString;
+  };
+
+  // [Cecil] Set gadget name/label
+  virtual void SetName(const CTString &strNew) {
+    ASSERTALWAYS("CMenuGadget::SetName() isn't redefined for this gadget!");
+  };
+
+  // [Cecil] Get gadget text
+  virtual const CTString &GetText(void) const {
+    ASSERTALWAYS("CMenuGadget::GetText() isn't redefined for this gadget!");
+    return mg_strDummyString;
+  };
+
+  // [Cecil] Set gadget text
+  virtual void SetText(const CTString &strNew) {
+    ASSERTALWAYS("CMenuGadget::SetText() isn't redefined for this gadget!");
+  };
+
   // return TRUE if handled
   virtual BOOL OnKeyDown(PressedMenuButton pmb);
   virtual BOOL OnChar(const OS::SE1Event &event);

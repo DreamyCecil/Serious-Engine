@@ -26,12 +26,12 @@ void CNetworkStartMenu::Initialize_t(void)
 {
   // title
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_mgTitle.mg_strText = TRANS("START SERVER");
+  gm_mgTitle.SetText(TRANS("START SERVER"));
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
   // session name edit box
-  gm_mgSessionName.mg_strText = _pGame->gam_strSessionName;
-  gm_mgSessionName.mg_strLabel = TRANS("Session name:");
+  gm_mgSessionName.SetText(_pGame->gam_strSessionName);
+  gm_mgSessionName.SetName(TRANS("Session name:"));
   gm_mgSessionName.mg_ctMaxStringLen = 25;
   gm_mgSessionName.mg_pstrToChange = &_pGame->gam_strSessionName;
   gm_mgSessionName.mg_boxOnScreen = BoxMediumRow(1);
@@ -55,8 +55,8 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgDifficulty.mg_strTip = TRANS("choose difficulty level");
 
   // level name
-  gm_mgLevel.mg_strText = "";
-  gm_mgLevel.mg_strLabel = TRANS("Level:");
+  gm_mgLevel.SetText("");
+  gm_mgLevel.SetName(TRANS("Level:"));
   gm_mgLevel.mg_boxOnScreen = BoxMediumRow(4);
   gm_mgLevel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgLevel.mg_iCenterI = -1;
@@ -82,7 +82,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgVisible.mg_strTip = TRANS("invisible servers are not listed, cleints have to join manually");
 
   // options button
-  gm_mgGameOptions.mg_strText = TRANS("Game options");
+  gm_mgGameOptions.SetText(TRANS("Game options"));
   gm_mgGameOptions.mg_boxOnScreen = BoxMediumRow(8);
   gm_mgGameOptions.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgGameOptions.mg_iCenterI = 0;
@@ -97,7 +97,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgStart.mg_boxOnScreen = BoxBigRow(7);
   gm_mgStart.mg_pmgUp = &gm_mgGameOptions;
   gm_mgStart.mg_pmgDown = &gm_mgSessionName;
-  gm_mgStart.mg_strText = TRANS("START");
+  gm_mgStart.SetText(TRANS("START"));
   gm_lhGadgets.AddTail(gm_mgStart.mg_lnNode);
   gm_mgStart.mg_pActivatedFunction = NULL;
 }

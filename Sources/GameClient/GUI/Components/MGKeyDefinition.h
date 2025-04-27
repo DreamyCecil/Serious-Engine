@@ -23,14 +23,36 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMGKeyDefinition : public CMenuGadget {
+private:
+  CTString mg_strLabel;
+  CTString mg_strBinding;
+
 public:
   INDEX mg_iState;
   INDEX mg_iControlNumber;
 
-  CTString mg_strLabel;
-  CTString mg_strBinding;
-
   CMGKeyDefinition(void);
+
+  // [Cecil] Get gadget name/label
+  virtual const CTString &GetName(void) const {
+    return mg_strLabel;
+  };
+
+  // [Cecil] Set gadget name/label
+  virtual void SetName(const CTString &strNew) {
+    mg_strLabel = strNew;
+  };
+
+  // [Cecil] Get gadget text
+  virtual const CTString &GetText(void) const {
+    return mg_strBinding;
+  };
+
+  // [Cecil] Set gadget text
+  virtual void SetText(const CTString &strNew) {
+    mg_strBinding = strNew;
+  };
+
   void Appear(void);
   void Disappear(void);
   void OnActivate(void);

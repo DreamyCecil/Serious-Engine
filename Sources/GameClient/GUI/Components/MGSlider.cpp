@@ -108,7 +108,7 @@ void CMGSlider::Render(CDrawPort *pdp)
   if (sam_bWideScreen) pixJSize++;
 
   // print text left of slider
-  pdp->PutTextR(mg_strText, pixIL, pixJ, col);
+  pdp->PutTextR(GetText(), pixIL, pixJ, col);
 
   // draw box around slider
   _pGame->LCDDrawBox(0, -1, PIXaabbox2D(PIX2D(pixIR + 1, pixJ), PIX2D(pixIR + pixISizeR - 2, pixJ + pixJSize - 2)),

@@ -23,9 +23,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMGTrigger : public CMenuGadget {
-public:
+private:
   CTString mg_strLabel;
   CTString mg_strValue;
+
+public:
   CTString *mg_astrTexts;
   INDEX mg_ctTexts;
   INDEX mg_iSelected;
@@ -33,6 +35,26 @@ public:
   BOOL mg_bVisual;
 
   CMGTrigger(void);
+
+  // [Cecil] Get gadget name/label
+  virtual const CTString &GetName(void) const {
+    return mg_strLabel;
+  };
+
+  // [Cecil] Set gadget name/label
+  virtual void SetName(const CTString &strNew) {
+    mg_strLabel = strNew;
+  };
+
+  // [Cecil] Get gadget text
+  virtual const CTString &GetText(void) const {
+    return mg_strValue;
+  };
+
+  // [Cecil] Set gadget text
+  virtual void SetText(const CTString &strNew) {
+    mg_strValue = strNew;
+  };
 
   void ApplyCurrentSelection(void);
   void OnSetNextInList(PressedMenuButton pmb);

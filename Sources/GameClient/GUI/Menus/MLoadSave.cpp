@@ -158,7 +158,7 @@ void CLoadSaveMenu::FillListItems(void)
   // disable all items first
   for (INDEX i = 0; i<SAVELOAD_BUTTONS_CT; i++) {
     gm_amgButton[i].mg_bEnabled = FALSE;
-    gm_amgButton[i].mg_strText = TRANS("<empty>");
+    gm_amgButton[i].SetText(TRANS("<empty>"));
     gm_amgButton[i].mg_strTip = "";
     gm_amgButton[i].mg_iInList = -2;
   }

@@ -23,13 +23,13 @@ void CMainMenu::Initialize_t(void)
 {
   // intialize main menu
   /*
-  gm_mgTitle.mg_strText = "SERIOUS SAM - BETA";  // nothing to see here, kazuya
+  gm_mgTitle.SetText("SERIOUS SAM - BETA";  // nothing to see here, kazuya
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_lhGadgets.AddTail( gm_mgTitle.mg_lnNode);
   */
 
   extern CTString sam_strVersion;
-  gm_mgVersionLabel.mg_strText = sam_strVersion;
+  gm_mgVersionLabel.SetText(sam_strVersion);
   gm_mgVersionLabel.mg_boxOnScreen = BoxVersion();
   gm_mgVersionLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgVersionLabel.mg_iCenterI = +1;
@@ -38,7 +38,7 @@ void CMainMenu::Initialize_t(void)
   gm_lhGadgets.AddTail(gm_mgVersionLabel.mg_lnNode);
 
   extern CTString sam_strModName;
-  gm_mgModLabel.mg_strText = sam_strModName;
+  gm_mgModLabel.SetText(sam_strModName);
   gm_mgModLabel.mg_boxOnScreen = BoxMediumRow(-2.0f);
   gm_mgModLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgModLabel.mg_iCenterI = 0;
@@ -46,7 +46,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgModLabel.mg_bLabel = TRUE;
   gm_lhGadgets.AddTail(gm_mgModLabel.mg_lnNode);
 
-  gm_mgSingle.mg_strText = TRANS("SINGLE PLAYER");
+  gm_mgSingle.SetText(TRANS("SINGLE PLAYER"));
   gm_mgSingle.mg_bfsFontSize = BFS_LARGE;
   gm_mgSingle.mg_boxOnScreen = BoxBigRow(0.0f);
   gm_mgSingle.mg_strTip = TRANS("single player game menus");
@@ -55,7 +55,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgSingle.mg_pmgDown = &gm_mgNetwork;
   gm_mgSingle.mg_pActivatedFunction = NULL;
 
-  gm_mgNetwork.mg_strText = TRANS("NETWORK");
+  gm_mgNetwork.SetText(TRANS("NETWORK"));
   gm_mgNetwork.mg_bfsFontSize = BFS_LARGE;
   gm_mgNetwork.mg_boxOnScreen = BoxBigRow(1.0f);
   gm_mgNetwork.mg_strTip = TRANS("LAN/iNet multiplayer menus");
@@ -64,7 +64,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgNetwork.mg_pmgDown = &gm_mgSplitScreen;
   gm_mgNetwork.mg_pActivatedFunction = NULL;
 
-  gm_mgSplitScreen.mg_strText = TRANS("SPLIT SCREEN");
+  gm_mgSplitScreen.SetText(TRANS("SPLIT SCREEN"));
   gm_mgSplitScreen.mg_bfsFontSize = BFS_LARGE;
   gm_mgSplitScreen.mg_boxOnScreen = BoxBigRow(2.0f);
   gm_mgSplitScreen.mg_strTip = TRANS("play with multiple players on one computer");
@@ -73,7 +73,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgSplitScreen.mg_pmgDown = &gm_mgDemo;
   gm_mgSplitScreen.mg_pActivatedFunction = NULL;
 
-  gm_mgDemo.mg_strText = TRANS("DEMO");
+  gm_mgDemo.SetText(TRANS("DEMO"));
   gm_mgDemo.mg_bfsFontSize = BFS_LARGE;
   gm_mgDemo.mg_boxOnScreen = BoxBigRow(3.0f);
   gm_mgDemo.mg_strTip = TRANS("play a game demo");
@@ -82,7 +82,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgDemo.mg_pmgDown = &gm_mgMods;
   gm_mgDemo.mg_pActivatedFunction = NULL;
 
-  gm_mgMods.mg_strText = TRANS("MODS");
+  gm_mgMods.SetText(TRANS("MODS"));
   gm_mgMods.mg_bfsFontSize = BFS_LARGE;
   gm_mgMods.mg_boxOnScreen = BoxBigRow(4.0f);
   gm_mgMods.mg_strTip = TRANS("run one of installed game modifications");
@@ -91,7 +91,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgMods.mg_pmgDown = &gm_mgHighScore;
   gm_mgMods.mg_pActivatedFunction = NULL;
 
-  gm_mgHighScore.mg_strText = TRANS("HIGH SCORES");
+  gm_mgHighScore.SetText(TRANS("HIGH SCORES"));
   gm_mgHighScore.mg_bfsFontSize = BFS_LARGE;
   gm_mgHighScore.mg_boxOnScreen = BoxBigRow(5.0f);
   gm_mgHighScore.mg_strTip = TRANS("view list of top ten best scores");
@@ -100,7 +100,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgHighScore.mg_pmgDown = &gm_mgOptions;
   gm_mgHighScore.mg_pActivatedFunction = NULL;
 
-  gm_mgOptions.mg_strText = TRANS("OPTIONS");
+  gm_mgOptions.SetText(TRANS("OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgOptions.mg_boxOnScreen = BoxBigRow(6.0f);
   gm_mgOptions.mg_strTip = TRANS("adjust video, audio and input options");
@@ -109,7 +109,7 @@ void CMainMenu::Initialize_t(void)
   gm_mgOptions.mg_pmgDown = &gm_mgQuit;
   gm_mgOptions.mg_pActivatedFunction = NULL;
 
-  gm_mgQuit.mg_strText = TRANS("QUIT");
+  gm_mgQuit.SetText(TRANS("QUIT"));
   gm_mgQuit.mg_bfsFontSize = BFS_LARGE;
   gm_mgQuit.mg_boxOnScreen = BoxBigRow(7.0f);
   gm_mgQuit.mg_strTip = TRANS("exit game immediately");

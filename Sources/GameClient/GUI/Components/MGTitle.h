@@ -23,8 +23,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMGTitle : public CMenuGadget {
-public:
+private:
   CTString mg_strText;
+
+public:
+  // [Cecil] Get gadget text
+  virtual const CTString &GetText(void) const {
+    return mg_strText;
+  };
+
+  // [Cecil] Set gadget text
+  virtual void SetText(const CTString &strNew) {
+    mg_strText = strNew;
+  };
+
   void Render(CDrawPort *pdp);
 };
 

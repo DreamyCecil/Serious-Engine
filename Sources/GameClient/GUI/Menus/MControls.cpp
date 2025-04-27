@@ -37,10 +37,10 @@ void CControlsMenu::Initialize_t(void)
 
   // intialize player and controls menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_mgTitle.mg_strText = TRANS("CONTROLS");
+  gm_mgTitle.SetText(TRANS("CONTROLS"));
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
-  gm_mgNameLabel.mg_strText = "";
+  gm_mgNameLabel.SetText("");
   gm_mgNameLabel.mg_boxOnScreen = BoxMediumRow(0.0);
   gm_mgNameLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgNameLabel.mg_iCenterI = -1;
@@ -48,7 +48,7 @@ void CControlsMenu::Initialize_t(void)
   gm_mgNameLabel.mg_bLabel = TRUE;
   gm_lhGadgets.AddTail(gm_mgNameLabel.mg_lnNode);
 
-  gm_mgButtons.mg_strText = TRANS("CUSTOMIZE BUTTONS");
+  gm_mgButtons.SetText(TRANS("CUSTOMIZE BUTTONS"));
   gm_mgButtons.mg_boxOnScreen = BoxMediumRow(2.0);
   gm_mgButtons.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgButtons.mg_iCenterI = 0;
@@ -58,7 +58,7 @@ void CControlsMenu::Initialize_t(void)
   gm_mgButtons.mg_pActivatedFunction = NULL;
   gm_mgButtons.mg_strTip = TRANS("customize buttons in current controls");
 
-  gm_mgAdvanced.mg_strText = TRANS("ADVANCED JOYSTICK SETUP");
+  gm_mgAdvanced.SetText(TRANS("ADVANCED JOYSTICK SETUP"));
   gm_mgAdvanced.mg_iCenterI = 0;
   gm_mgAdvanced.mg_boxOnScreen = BoxMediumRow(3);
   gm_mgAdvanced.mg_bfsFontSize = BFS_MEDIUM;
@@ -74,7 +74,7 @@ void CControlsMenu::Initialize_t(void)
   gm_mgDeviceSlot.mg_strTip = TRANS("which slot to use when polling input from specific devices (for split screen)");
 
   gm_mgSensitivity.mg_boxOnScreen = BoxMediumRow(5.5);
-  gm_mgSensitivity.mg_strText = TRANS("SENSITIVITY");
+  gm_mgSensitivity.SetText(TRANS("SENSITIVITY"));
   gm_mgSensitivity.mg_pmgUp = &gm_mgDeviceSlot;
   gm_mgSensitivity.mg_pmgDown = &gm_mgInvertTrigger;
   gm_mgSensitivity.mg_strTip = TRANS("sensitivity for all axis in this control set");
@@ -93,7 +93,7 @@ void CControlsMenu::Initialize_t(void)
     TRANS("ENABLE IFEEL"), astrNoYes);
   gm_mgIFeelTrigger.mg_strTip = TRANS("enable support for iFeel tactile feedback mouse");
 
-  gm_mgPredefined.mg_strText = TRANS("LOAD PREDEFINED SETTINGS");
+  gm_mgPredefined.SetText(TRANS("LOAD PREDEFINED SETTINGS"));
   gm_mgPredefined.mg_iCenterI = 0;
   gm_mgPredefined.mg_boxOnScreen = BoxMediumRow(11);
   gm_mgPredefined.mg_bfsFontSize = BFS_MEDIUM;
@@ -115,7 +115,7 @@ void CControlsMenu::StartMenu(void)
 
   ControlsMenuOn();
 
-  gm_mgNameLabel.mg_strText.PrintF(TRANS("CONTROLS FOR: %s"), _pGame->gm_apcPlayers[iPlayer].GetNameForPrinting().ConstData());
+  gm_mgNameLabel.SetText(CTString(0, TRANS("CONTROLS FOR: %s"), _pGame->gm_apcPlayers[iPlayer].GetNameForPrinting().ConstData()));
 
   ObtainActionSettings();
   CGameMenu::StartMenu();

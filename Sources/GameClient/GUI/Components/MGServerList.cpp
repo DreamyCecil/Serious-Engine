@@ -170,7 +170,7 @@ void CMGServerList::Render(CDrawPort *pdp)
 
   INDEX ctColumns[7];
   {for (INDEX i = 0; i<ARRAYCOUNT(ctColumns); i++) {
-    ctColumns[i] = mgServerColumn[i].mg_strText.Length() + 1;
+    ctColumns[i] = mgServerColumn[i].GetText().Length() + 1;
   }}
 
   PIX pixSizePing = Max(PIX(pixCharSizeI * 5), pixCharSizeI*ctColumns[2]) + pixLineSize * 2;

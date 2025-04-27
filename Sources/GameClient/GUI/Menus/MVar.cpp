@@ -24,7 +24,7 @@ extern BOOL _bVarChanged;
 void CVarMenu::Initialize_t(void)
 {
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_mgTitle.mg_strText = "";
+  gm_mgTitle.SetText("");
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
   for (INDEX iLabel = 0; iLabel<VARS_ON_SCREEN; iLabel++)
@@ -47,7 +47,7 @@ void CVarMenu::Initialize_t(void)
     gm_mgApply.mg_pmgRight =
     gm_mgApply.mg_pmgUp =
     gm_mgApply.mg_pmgDown = &gm_mgVar[0];
-  gm_mgApply.mg_strText = TRANS("APPLY");
+  gm_mgApply.SetText(TRANS("APPLY"));
   gm_mgApply.mg_strTip = TRANS("apply changes");
   gm_lhGadgets.AddTail(gm_mgApply.mg_lnNode);
   gm_mgApply.mg_pActivatedFunction = NULL;

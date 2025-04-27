@@ -30,7 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   mg.mg_pmgUp = &gm_mgCustomizeControls; \
   mg.mg_pmgDown = &gm_mgNameField; \
   mg.mg_pActivatedFunction = &PPOnPlayerSelect; \
-  mg.mg_strText.PrintF("%d", index); \
+  mg.SetText(CTString(0, "%d", index)); \
   mg.mg_strTip = TRANS("select new currently active player"); \
   gm_lhGadgets.AddTail(mg.mg_lnNode);
 
@@ -43,10 +43,10 @@ void CPlayerProfileMenu::Initialize_t(void)
   // intialize player and controls menu
   _bPlayerMenuFromSinglePlayer = FALSE;
   gm_mgProfileTitle.mg_boxOnScreen = BoxTitle();
-  gm_mgProfileTitle.mg_strText = TRANS("PLAYER PROFILE");
+  gm_mgProfileTitle.SetText(TRANS("PLAYER PROFILE"));
   gm_lhGadgets.AddTail(gm_mgProfileTitle.mg_lnNode);
 
-  gm_mgNoLabel.mg_strText = TRANS("PROFILE:");
+  gm_mgNoLabel.SetText(TRANS("PROFILE:"));
   gm_mgNoLabel.mg_boxOnScreen = BoxMediumLeft(0.0f);
   gm_mgNoLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgNoLabel.mg_iCenterI = -1;
@@ -60,14 +60,14 @@ void CPlayerProfileMenu::Initialize_t(void)
   }
   gm_mgNumber[MAX_PLAYER_PROFILES - 1].mg_pmgRight = &gm_mgModel;
 
-  gm_mgNameLabel.mg_strText = TRANS("NAME:");
+  gm_mgNameLabel.SetText(TRANS("NAME:"));
   gm_mgNameLabel.mg_boxOnScreen = BoxMediumLeft(1.25f);
   gm_mgNameLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgNameLabel.mg_iCenterI = -1;
   gm_lhGadgets.AddTail(gm_mgNameLabel.mg_lnNode);
 
   // setup of player name button is done on start menu
-  gm_mgNameField.mg_strText = "<???>";
+  gm_mgNameField.SetText("<???>");
   gm_mgNameField.mg_ctMaxStringLen = 25;
   gm_mgNameField.mg_boxOnScreen = BoxPlayerEdit(1.25);
   gm_mgNameField.mg_bfsFontSize = BFS_MEDIUM;
@@ -78,14 +78,14 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgNameField.mg_strTip = TRANS("rename currently active player");
   gm_lhGadgets.AddTail(gm_mgNameField.mg_lnNode);
 
-  gm_mgTeamLabel.mg_strText = TRANS("TEAM:");
+  gm_mgTeamLabel.SetText(TRANS("TEAM:"));
   gm_mgTeamLabel.mg_boxOnScreen = BoxMediumLeft(2.25f);
   gm_mgTeamLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgTeamLabel.mg_iCenterI = -1;
   gm_lhGadgets.AddTail(gm_mgTeamLabel.mg_lnNode);
 
   // setup of player name button is done on start menu
-  gm_mgTeam.mg_strText = "<???>";
+  gm_mgTeam.SetText("<???>");
   gm_mgTeam.mg_ctMaxStringLen = 25;
   gm_mgTeam.mg_boxOnScreen = BoxPlayerEdit(2.25f);
   gm_mgTeam.mg_bfsFontSize = BFS_MEDIUM;
@@ -144,7 +144,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgViewBobbing.mg_iCenterI = -1;
   gm_mgViewBobbing.mg_pOnTriggerChange = NULL;
 
-  gm_mgCustomizeControls.mg_strText = TRANS("CUSTOMIZE CONTROLS");
+  gm_mgCustomizeControls.SetText(TRANS("CUSTOMIZE CONTROLS"));
   gm_mgCustomizeControls.mg_boxOnScreen = BoxMediumLeft(14.5f);
   gm_mgCustomizeControls.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgCustomizeControls.mg_iCenterI = -1;
@@ -254,7 +254,7 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
     strName.RemovePrefix("#female#");
     strName.RemovePrefix("#male#");
     gm_mgModel.mg_plModel = CPlacement3D(FLOAT3D(0.1f, -1.0f, -3.5f), ANGLE3D(150, 0, 0));
-    gm_mgModel.mg_strText = strName;
+    gm_mgModel.SetText(strName);
     CPlayerSettings *pps = (CPlayerSettings *)pc.pc_aubAppearance;
     _strLastPlayerAppearance = pps->GetModelFilename();
     try {

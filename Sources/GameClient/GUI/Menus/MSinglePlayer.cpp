@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 void CSinglePlayerMenu::Initialize_t(void)
 {
   // intialize single player menu
-  gm_mgTitle.mg_strText = TRANS("SINGLE PLAYER");
+  gm_mgTitle.SetText(TRANS("SINGLE PLAYER"));
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
 
@@ -33,7 +33,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgPlayerLabel.mg_bLabel = TRUE;
   gm_lhGadgets.AddTail(gm_mgPlayerLabel.mg_lnNode);
 
-  gm_mgNewGame.mg_strText = TRANS("NEW GAME");
+  gm_mgNewGame.SetText(TRANS("NEW GAME"));
   gm_mgNewGame.mg_bfsFontSize = BFS_LARGE;
   gm_mgNewGame.mg_boxOnScreen = BoxBigRow(0.0f);
   gm_mgNewGame.mg_strTip = TRANS("start new game with current player");
@@ -42,7 +42,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgNewGame.mg_pmgDown = &gm_mgCustom;
   gm_mgNewGame.mg_pActivatedFunction = NULL;
 
-  gm_mgCustom.mg_strText = TRANS("CUSTOM LEVEL");
+  gm_mgCustom.SetText(TRANS("CUSTOM LEVEL"));
   gm_mgCustom.mg_bfsFontSize = BFS_LARGE;
   gm_mgCustom.mg_boxOnScreen = BoxBigRow(1.0f);
   gm_mgCustom.mg_strTip = TRANS("start new game on a custom level");
@@ -51,7 +51,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgCustom.mg_pmgDown = &gm_mgQuickLoad;
   gm_mgCustom.mg_pActivatedFunction = NULL;
 
-  gm_mgQuickLoad.mg_strText = TRANS("QUICK LOAD");
+  gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgQuickLoad.mg_boxOnScreen = BoxBigRow(2.0f);
   gm_mgQuickLoad.mg_strTip = TRANS("load a quick-saved game (F9)");
@@ -60,7 +60,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgQuickLoad.mg_pmgDown = &gm_mgLoad;
   gm_mgQuickLoad.mg_pActivatedFunction = NULL;
 
-  gm_mgLoad.mg_strText = TRANS("LOAD");
+  gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgLoad.mg_boxOnScreen = BoxBigRow(3.0f);
   gm_mgLoad.mg_strTip = TRANS("load a saved game of current player");
@@ -69,7 +69,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgLoad.mg_pmgDown = &gm_mgTraining;
   gm_mgLoad.mg_pActivatedFunction = NULL;
 
-  gm_mgTraining.mg_strText = TRANS("TRAINING");
+  gm_mgTraining.SetText(TRANS("TRAINING"));
   gm_mgTraining.mg_bfsFontSize = BFS_LARGE;
   gm_mgTraining.mg_boxOnScreen = BoxBigRow(4.0f);
   gm_mgTraining.mg_strTip = TRANS("start training level - KarnakDemo");
@@ -78,7 +78,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgTraining.mg_pmgDown = &gm_mgTechTest;
   gm_mgTraining.mg_pActivatedFunction = NULL;
 
-  gm_mgTechTest.mg_strText = TRANS("TECHNOLOGY TEST");
+  gm_mgTechTest.SetText(TRANS("TECHNOLOGY TEST"));
   gm_mgTechTest.mg_bfsFontSize = BFS_LARGE;
   gm_mgTechTest.mg_boxOnScreen = BoxBigRow(5.0f);
   gm_mgTechTest.mg_strTip = TRANS("start technology testing level");
@@ -91,12 +91,12 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgPlayersAndControls.mg_boxOnScreen = BoxBigRow(6.0f);
   gm_mgPlayersAndControls.mg_pmgUp = &gm_mgTechTest;
   gm_mgPlayersAndControls.mg_pmgDown = &gm_mgOptions;
-  gm_mgPlayersAndControls.mg_strText = TRANS("PLAYERS AND CONTROLS");
+  gm_mgPlayersAndControls.SetText(TRANS("PLAYERS AND CONTROLS"));
   gm_mgPlayersAndControls.mg_strTip = TRANS("change currently active player or adjust controls");
   gm_lhGadgets.AddTail(gm_mgPlayersAndControls.mg_lnNode);
   gm_mgPlayersAndControls.mg_pActivatedFunction = NULL;
 
-  gm_mgOptions.mg_strText = TRANS("GAME OPTIONS");
+  gm_mgOptions.SetText(TRANS("GAME OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
   gm_mgOptions.mg_boxOnScreen = BoxBigRow(7.0f);
   gm_mgOptions.mg_strTip = TRANS("adjust miscellaneous game options");
@@ -151,5 +151,5 @@ void CSinglePlayerMenu::StartMenu(void)
   CGameMenu::StartMenu();
 
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[_pGame->gm_iSinglePlayer];
-  gm_mgPlayerLabel.mg_strText.PrintF(TRANS("Player: %s\n"), pc.GetNameForPrinting().ConstData());
+  gm_mgPlayerLabel.SetText(CTString(0, TRANS("Player: %s\n"), pc.GetNameForPrinting().ConstData()));
 }

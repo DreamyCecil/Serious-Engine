@@ -23,9 +23,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMGButton : public CMenuGadget {
-public:
+private:
   CTString mg_strLabel;   // for those that have labels separately from main text
   CTString mg_strText;
+
+public:
   INDEX mg_iCenterI;
   enum  ButtonFontSize mg_bfsFontSize;
   BOOL  mg_bEditing;
@@ -39,7 +41,27 @@ public:
   void(*mg_pActivatedFunction)(void);
 
   CMGButton(void);
-  void SetText(CTString strNew);
+
+  // [Cecil] Get gadget name/label
+  virtual const CTString &GetName(void) const {
+    return mg_strLabel;
+  };
+
+  // [Cecil] Set gadget name/label
+  virtual void SetName(const CTString &strNew) {
+    mg_strLabel = strNew;
+  };
+
+  // [Cecil] Get gadget text
+  virtual const CTString &GetText(void) const {
+    return mg_strText;
+  };
+
+  // [Cecil] Set gadget text
+  virtual void SetText(const CTString &strNew) {
+    mg_strText = strNew;
+  };
+
   void OnActivate(void);
   void Render(CDrawPort *pdp);
   PIX  GetCharOffset(CDrawPort *pdp, INDEX iCharNo);
