@@ -20,20 +20,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MNetworkStart.h"
 
-static void UpdateNetworkLevel(INDEX iDummy) {
-  ValidateLevelForFlags(_pGame->gam_strCustomLevel,
-    GetSpawnFlagsForGameType(_pGUIM->gmNetworkStartMenu.gm_mgGameType.mg_iSelected));
-  _pGUIM->gmNetworkStartMenu.gm_mgLevel.SetText(FindLevelByFileName(_pGame->gam_strCustomLevel).li_strName);
+static void UpdateNetworkLevel(CMenuGadget *pmg, INDEX iDummy) {
+  CNetworkStartMenu &gmStart = *(CNetworkStartMenu *)pmg->GetParentMenu();
+
+  ValidateLevelForFlags(_pGame->gam_strCustomLevel, GetSpawnFlagsForGameType(gmStart.gm_mgGameType.mg_iSelected));
+  gmStart.gm_mgLevel.SetText(FindLevelByFileName(_pGame->gam_strCustomLevel).li_strName);
 };
 
 void StartVarGameOptions(void) {
   CVarMenu::ChangeTo(TRANS("GAME OPTIONS"), CTFILENAME("Scripts\\Menu\\GameOptions.cfg"));
 };
 
-static void StartSelectLevelFromNetwork(void) {
+static void StartSelectLevelFromNetwork(CMenuGadget *pmg) {
+  CNetworkStartMenu &gmStart = *(CNetworkStartMenu *)pmg->GetParentMenu();
+
   extern void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent);
-  StartSelectLevel(GetSpawnFlagsForGameType(_pGUIM->gmNetworkStartMenu.gm_mgGameType.mg_iSelected),
-    &CNetworkStartMenu::ChangeTo, &_pGUIM->gmNetworkStartMenu);
+  StartSelectLevel(GetSpawnFlagsForGameType(gmStart.gm_mgGameType.mg_iSelected), &CNetworkStartMenu::ChangeTo, &gmStart);
 };
 
 void StartNetworkGame(void) {
@@ -68,7 +70,7 @@ static void StartSelectPlayersMenuFromNetwork(void) {
   CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
   gmCurrent.gm_bAllowDedicated = TRUE;
   gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkGame;
+  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartNetworkGame;
   CSelectPlayersMenu::ChangeTo();
 };
 
@@ -139,7 +141,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgGameOptions.mg_pmgUp = &gm_mgVisible;
   gm_mgGameOptions.mg_pmgDown = &gm_mgStart;
   gm_mgGameOptions.mg_strTip = TRANS("adjust game rules");
-  gm_mgGameOptions.mg_pActivatedFunction = &StartVarGameOptions;
+  gm_mgGameOptions.mg_pCallbackFunction = &StartVarGameOptions;
   AddChild(&gm_mgGameOptions);
 
   // start button
@@ -149,7 +151,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgStart.mg_pmgDown = &gm_mgSessionName;
   gm_mgStart.SetText(TRANS("START"));
   AddChild(&gm_mgStart);
-  gm_mgStart.mg_pActivatedFunction = &StartSelectPlayersMenuFromNetwork;
+  gm_mgStart.mg_pCallbackFunction = &StartSelectPlayersMenuFromNetwork;
 }
 
 void CNetworkStartMenu::StartMenu(void)
@@ -179,7 +181,7 @@ void CNetworkStartMenu::StartMenu(void)
   gm_mgVisible.mg_iSelected = ser_bEnumeration;
   gm_mgVisible.ApplyCurrentSelection();
 
-  UpdateNetworkLevel(0);
+  UpdateNetworkLevel(&gm_mgGameType, 0);
 
   CGameMenu::StartMenu();
 }

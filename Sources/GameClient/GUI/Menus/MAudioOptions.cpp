@@ -23,45 +23,43 @@ ENGINE_API extern INDEX snd_iFormat;
 
 #define VOLUME_STEPS 50
 
-static void RefreshSoundFormat(void) {
-  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
-
+static void RefreshSoundFormat(CAudioOptionsMenu &gmAudio) {
   switch (_pSound->GetFormat()) {
     default:
-    case CSoundLibrary::SF_NONE:     gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 0; break;
-    case CSoundLibrary::SF_11025_16: gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 1; break;
-    case CSoundLibrary::SF_22050_16: gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 2; break;
-    case CSoundLibrary::SF_44100_16: gmCurrent.gm_mgFrequencyTrigger.mg_iSelected = 3; break;
+    case CSoundLibrary::SF_NONE:     gmAudio.gm_mgFrequencyTrigger.mg_iSelected = 0; break;
+    case CSoundLibrary::SF_11025_16: gmAudio.gm_mgFrequencyTrigger.mg_iSelected = 1; break;
+    case CSoundLibrary::SF_22050_16: gmAudio.gm_mgFrequencyTrigger.mg_iSelected = 2; break;
+    case CSoundLibrary::SF_44100_16: gmAudio.gm_mgFrequencyTrigger.mg_iSelected = 3; break;
   }
 
-  gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected = Clamp(sam_bAutoAdjustAudio, 0, 1);
-  gmCurrent.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0L, CAbstractSoundAPI::E_SND_MAX - 1);
+  gmAudio.gm_mgAudioAutoTrigger.mg_iSelected = Clamp(sam_bAutoAdjustAudio, 0, 1);
+  gmAudio.gm_mgAudioAPITrigger.mg_iSelected = Clamp(_pShell->GetINDEX("snd_iInterface"), 0L, CAbstractSoundAPI::E_SND_MAX - 1);
 
-  gmCurrent.gm_mgWaveVolume.mg_iMinPos = 0;
-  gmCurrent.gm_mgWaveVolume.mg_iMaxPos = VOLUME_STEPS;
-  gmCurrent.gm_mgWaveVolume.mg_iCurPos = (INDEX)(_pShell->GetFLOAT("snd_fSoundVolume")*VOLUME_STEPS + 0.5f);
-  gmCurrent.gm_mgWaveVolume.ApplyCurrentPosition();
+  gmAudio.gm_mgWaveVolume.mg_iMinPos = 0;
+  gmAudio.gm_mgWaveVolume.mg_iMaxPos = VOLUME_STEPS;
+  gmAudio.gm_mgWaveVolume.mg_iCurPos = (INDEX)(_pShell->GetFLOAT("snd_fSoundVolume")*VOLUME_STEPS + 0.5f);
+  gmAudio.gm_mgWaveVolume.ApplyCurrentPosition();
 
-  gmCurrent.gm_mgMPEGVolume.mg_iMinPos = 0;
-  gmCurrent.gm_mgMPEGVolume.mg_iMaxPos = VOLUME_STEPS;
-  gmCurrent.gm_mgMPEGVolume.mg_iCurPos = (INDEX)(_pShell->GetFLOAT("snd_fMusicVolume")*VOLUME_STEPS + 0.5f);
-  gmCurrent.gm_mgMPEGVolume.ApplyCurrentPosition();
+  gmAudio.gm_mgMPEGVolume.mg_iMinPos = 0;
+  gmAudio.gm_mgMPEGVolume.mg_iMaxPos = VOLUME_STEPS;
+  gmAudio.gm_mgMPEGVolume.mg_iCurPos = (INDEX)(_pShell->GetFLOAT("snd_fMusicVolume")*VOLUME_STEPS + 0.5f);
+  gmAudio.gm_mgMPEGVolume.ApplyCurrentPosition();
 
-  gmCurrent.gm_mgAudioAutoTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgAudioAPITrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgFrequencyTrigger.ApplyCurrentSelection();
+  gmAudio.gm_mgAudioAutoTrigger.ApplyCurrentSelection();
+  gmAudio.gm_mgAudioAPITrigger.ApplyCurrentSelection();
+  gmAudio.gm_mgFrequencyTrigger.ApplyCurrentSelection();
 };
 
-static void ApplyAudioOptions(void) {
-  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
-  sam_bAutoAdjustAudio = gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected;
+static void ApplyAudioOptions(CMenuGadget *pmg) {
+  CAudioOptionsMenu &gmAudio = *(CAudioOptionsMenu *)pmg->GetParentMenu();
+  sam_bAutoAdjustAudio = gmAudio.gm_mgAudioAutoTrigger.mg_iSelected;
 
   if (sam_bAutoAdjustAudio) {
     _pShell->Execute("include \"Scripts\\Addons\\SFX-AutoAdjust.ini\"");
   } else {
-    _pShell->SetINDEX("snd_iInterface", gmCurrent.gm_mgAudioAPITrigger.mg_iSelected);
+    _pShell->SetINDEX("snd_iInterface", gmAudio.gm_mgAudioAPITrigger.mg_iSelected);
 
-    switch (gmCurrent.gm_mgFrequencyTrigger.mg_iSelected) {
+    switch (gmAudio.gm_mgFrequencyTrigger.mg_iSelected) {
       // [Cecil] Report reinitialization
       case 0:  _pSound->SetFormat(CSoundLibrary::SF_NONE, TRUE); break;
       case 1:  _pSound->SetFormat(CSoundLibrary::SF_11025_16, TRUE); break;
@@ -71,37 +69,35 @@ static void ApplyAudioOptions(void) {
     }
   }
 
-  RefreshSoundFormat();
+  RefreshSoundFormat(gmAudio);
   snd_iFormat = _pSound->GetFormat();
 };
 
-static void OnWaveVolumeChange(INDEX iCurPos) {
+static void OnWaveVolumeChange(CMenuGadget *, INDEX iCurPos) {
   _pShell->SetFLOAT("snd_fSoundVolume", iCurPos / FLOAT(VOLUME_STEPS));
 };
 
-static void WaveSliderChange(void) {
-  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
-
-  gmCurrent.gm_mgWaveVolume.mg_iCurPos -= 5;
-  gmCurrent.gm_mgWaveVolume.ApplyCurrentPosition();
+static void WaveSliderChange(CMenuGadget *pmg) {
+  CMGSlider &mgSlider = *(CMGSlider *)pmg;
+  mgSlider.mg_iCurPos -= 5;
+  mgSlider.ApplyCurrentPosition();
 };
 
-static void FrequencyTriggerChange(INDEX iDummy) {
-  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
+static void FrequencyTriggerChange(CMenuGadget *pmg, INDEX iDummy) {
+  CAudioOptionsMenu &gmAudio = *(CAudioOptionsMenu *)pmg->GetParentMenu();
 
   sam_bAutoAdjustAudio = 0;
-  gmCurrent.gm_mgAudioAutoTrigger.mg_iSelected = 0;
-  gmCurrent.gm_mgAudioAutoTrigger.ApplyCurrentSelection();
+  gmAudio.gm_mgAudioAutoTrigger.mg_iSelected = 0;
+  gmAudio.gm_mgAudioAutoTrigger.ApplyCurrentSelection();
 };
 
-static void MPEGSliderChange(void) {
-  CAudioOptionsMenu &gmCurrent = _pGUIM->gmAudioOptionsMenu;
-
-  gmCurrent.gm_mgMPEGVolume.mg_iCurPos -= 5;
-  gmCurrent.gm_mgMPEGVolume.ApplyCurrentPosition();
+static void MPEGSliderChange(CMenuGadget *pmg) {
+  CMGSlider &mgSlider = *(CMGSlider *)pmg;
+  mgSlider.mg_iCurPos -= 5;
+  mgSlider.ApplyCurrentPosition();
 };
 
-static void OnMPEGVolumeChange(INDEX iCurPos) {
+static void OnMPEGVolumeChange(CMenuGadget *, INDEX iCurPos) {
   _pShell->SetFLOAT("snd_fMusicVolume", iCurPos / FLOAT(VOLUME_STEPS));
 };
 
@@ -169,7 +165,7 @@ void CAudioOptionsMenu::Initialize_t(void)
 
 void CAudioOptionsMenu::StartMenu(void)
 {
-  RefreshSoundFormat();
+  RefreshSoundFormat(*this);
   CGameMenu::StartMenu();
 }
 

@@ -37,14 +37,14 @@ static void StartNetworkLoadGame(void) {
   }
 };
 
-BOOL LSLoadNetwork(const CTFileName &fnm) {
+BOOL LSLoadNetwork(CGameMenu *pgm, const CTString &fnm) {
   // call local players menu
   _fnGameToLoad = fnm;
 
   CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
   gmCurrent.gm_bAllowDedicated = FALSE;
   gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartNetworkLoadGame;
+  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartNetworkLoadGame;
   CSelectPlayersMenu::ChangeTo();
   return TRUE;
 };
@@ -98,7 +98,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgJoin.SetText(TRANS("JOIN GAME"));
   gm_mgJoin.mg_strTip = TRANS("join a network game");
   AddChild(&gm_mgJoin);
-  gm_mgJoin.mg_pActivatedFunction = &CNetworkJoinMenu::ChangeTo;
+  gm_mgJoin.mg_pCallbackFunction = &CNetworkJoinMenu::ChangeTo;
 
   gm_mgStart.mg_bfsFontSize = BFS_LARGE;
   gm_mgStart.mg_boxOnScreen = BoxBigRow(2.0f);
@@ -107,7 +107,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgStart.SetText(TRANS("START SERVER"));
   gm_mgStart.mg_strTip = TRANS("start a network game server");
   AddChild(&gm_mgStart);
-  gm_mgStart.mg_pActivatedFunction = &CNetworkStartMenu::ChangeTo;
+  gm_mgStart.mg_pCallbackFunction = &CNetworkStartMenu::ChangeTo;
 
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgQuickLoad.mg_boxOnScreen = BoxBigRow(3.0f);
@@ -116,7 +116,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_strTip = TRANS("load a quick-saved game (F9)");
   AddChild(&gm_mgQuickLoad);
-  gm_mgQuickLoad.mg_pActivatedFunction = &StartNetworkQuickLoadMenu;
+  gm_mgQuickLoad.mg_pCallbackFunction = &StartNetworkQuickLoadMenu;
 
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
   gm_mgLoad.mg_boxOnScreen = BoxBigRow(4.0f);
@@ -125,7 +125,7 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_strTip = TRANS("start server and load a network game (server only)");
   AddChild(&gm_mgLoad);
-  gm_mgLoad.mg_pActivatedFunction = &StartNetworkLoadMenu;
+  gm_mgLoad.mg_pCallbackFunction = &StartNetworkLoadMenu;
 }
 
 void CNetworkMenu::StartMenu(void)

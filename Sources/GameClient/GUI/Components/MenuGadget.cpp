@@ -23,7 +23,6 @@ extern CSoundData *_psdSelect;
 
 BOOL _bDefiningKey = FALSE;
 BOOL _bEditingString = FALSE;
-CMenuGadget *_pmgLastActivatedGadget = NULL;
 
 const CTString CMenuGadget::mg_strDummyString;
 

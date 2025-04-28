@@ -26,10 +26,13 @@ void CMGChangePlayer::OnActivate(void)
   IFeel_PlayEffect("Menu_press");
   _iLocalPlayer = mg_iLocalPlayer;
 
-  if (_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer] < 0)
+  if (_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer] < 0) {
     _pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer] = 0;
+  }
 
-  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = &_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer];
+  ASSERT(GetParentMenu()->GetName() == CTString("PlayerProfile"));
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)GetParentMenu();
+  gmProfile.gm_piCurrentPlayer = &_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer];
 
   extern BOOL _bPlayerMenuFromSinglePlayer;
   _bPlayerMenuFromSinglePlayer = FALSE;

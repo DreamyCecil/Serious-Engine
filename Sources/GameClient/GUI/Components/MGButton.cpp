@@ -21,12 +21,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern CSoundData *_psdPress;
 
-extern CMenuGadget *_pmgLastActivatedGadget;
-
-
 CMGButton::CMGButton(void)
 {
   mg_pActivatedFunction = NULL;
+  mg_pCallbackFunction = NULL;
   mg_iIndex = 0;
   mg_iCenterI = 0;
   mg_iTextMode = 1;
@@ -41,12 +39,19 @@ CMGButton::CMGButton(void)
 
 void CMGButton::OnActivate(void)
 {
-  if (mg_pActivatedFunction != NULL && mg_bEnabled)
+  if ((mg_pActivatedFunction != NULL || mg_pCallbackFunction != NULL) && mg_bEnabled)
   {
     PlayMenuSound(_psdPress);
     IFeel_PlayEffect("Menu_press");
-    _pmgLastActivatedGadget = this;
-    (*mg_pActivatedFunction)();
+
+    if (mg_pActivatedFunction != NULL) {
+      (*mg_pActivatedFunction)(this);
+    }
+
+    // [Cecil] Execute generic callback
+    if (mg_pCallbackFunction != NULL) {
+      (*mg_pCallbackFunction)();
+    }
   }
 }
 

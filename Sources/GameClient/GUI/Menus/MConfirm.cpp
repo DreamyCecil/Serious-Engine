@@ -18,21 +18,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "MConfirm.h"
 
-static void ConfirmYes(void) {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
+static void ConfirmYes(CMenuGadget *pmg) {
+  CConfirmMenu &gmConfirm = *(CConfirmMenu *)pmg->GetParentMenu();
 
-  if (gmCurrent.gm_pConfirmedYes != NULL) {
-    gmCurrent.gm_pConfirmedYes();
+  if (gmConfirm.gm_pConfirmedYes != NULL) {
+    gmConfirm.gm_pConfirmedYes();
   }
 
   MenuGoToParent();
 };
 
-static void ConfirmNo(void) {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
+static void ConfirmNo(CMenuGadget *pmg) {
+  CConfirmMenu &gmConfirm = *(CConfirmMenu *)pmg->GetParentMenu();
 
-  if (gmCurrent.gm_pConfirmedNo != NULL) {
-    gmCurrent.gm_pConfirmedNo();
+  if (gmConfirm.gm_pConfirmedNo != NULL) {
+    gmConfirm.gm_pConfirmedNo();
   }
 
   MenuGoToParent();
@@ -104,7 +104,7 @@ BOOL CConfirmMenu::OnKeyDown(PressedMenuButton pmb)
 }
 
 // [Cecil] Change to the menu
-void CConfirmMenu::ChangeTo(const CTString &strLabel, CConfirmFunc pFuncYes, CConfirmFunc pFuncNo, BOOL bBigLabel)
+void CConfirmMenu::ChangeTo(const CTString &strLabel, FConfirm pFuncYes, FConfirm pFuncNo, BOOL bBigLabel)
 {
   CConfirmMenu &gm = _pGUIM->gmConfirmMenu;
 

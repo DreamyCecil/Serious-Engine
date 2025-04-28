@@ -90,7 +90,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   AddChild(&gm_mgTourist);
   gm_mgTourist.mg_pmgUp = &gm_mgSerious;
   gm_mgTourist.mg_pmgDown = &gm_mgEasy;
-  gm_mgTourist.mg_pActivatedFunction = &StartSinglePlayerGame_Tourist;
+  gm_mgTourist.mg_pCallbackFunction = &StartSinglePlayerGame_Tourist;
 
   gm_mgEasy.SetText(TRANS("EASY"));
   gm_mgEasy.mg_bfsFontSize = BFS_LARGE;
@@ -99,7 +99,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   AddChild(&gm_mgEasy);
   gm_mgEasy.mg_pmgUp = &gm_mgTourist;
   gm_mgEasy.mg_pmgDown = &gm_mgMedium;
-  gm_mgEasy.mg_pActivatedFunction = &StartSinglePlayerGame_Easy;
+  gm_mgEasy.mg_pCallbackFunction = &StartSinglePlayerGame_Easy;
 
   gm_mgMedium.SetText(TRANS("NORMAL"));
   gm_mgMedium.mg_bfsFontSize = BFS_LARGE;
@@ -108,7 +108,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   AddChild(&gm_mgMedium);
   gm_mgMedium.mg_pmgUp = &gm_mgEasy;
   gm_mgMedium.mg_pmgDown = &gm_mgHard;
-  gm_mgMedium.mg_pActivatedFunction = &StartSinglePlayerGame_Normal;
+  gm_mgMedium.mg_pCallbackFunction = &StartSinglePlayerGame_Normal;
 
   gm_mgHard.SetText(TRANS("HARD"));
   gm_mgHard.mg_bfsFontSize = BFS_LARGE;
@@ -117,7 +117,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   AddChild(&gm_mgHard);
   gm_mgHard.mg_pmgUp = &gm_mgMedium;
   gm_mgHard.mg_pmgDown = &gm_mgSerious;
-  gm_mgHard.mg_pActivatedFunction = &StartSinglePlayerGame_Hard;
+  gm_mgHard.mg_pCallbackFunction = &StartSinglePlayerGame_Hard;
 
   gm_mgSerious.SetText(TRANS("SERIOUS"));
   gm_mgSerious.mg_bfsFontSize = BFS_LARGE;
@@ -126,7 +126,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   AddChild(&gm_mgSerious);
   gm_mgSerious.mg_pmgUp = &gm_mgHard;
   gm_mgSerious.mg_pmgDown = &gm_mgTourist;
-  gm_mgSerious.mg_pActivatedFunction = &StartSinglePlayerGame_Serious;
+  gm_mgSerious.mg_pCallbackFunction = &StartSinglePlayerGame_Serious;
 
   gm_mgMental.SetText(TRANS("MENTAL"));
   gm_mgMental.mg_bfsFontSize = BFS_LARGE;
@@ -135,7 +135,7 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   AddChild(&gm_mgMental);
   gm_mgMental.mg_pmgUp = &gm_mgSerious;
   gm_mgMental.mg_pmgDown = &gm_mgTourist;
-  gm_mgMental.mg_pActivatedFunction = &StartSinglePlayerGame_Mental;
+  gm_mgMental.mg_pCallbackFunction = &StartSinglePlayerGame_Mental;
   gm_mgMental.mg_bMental = TRUE;
 
 

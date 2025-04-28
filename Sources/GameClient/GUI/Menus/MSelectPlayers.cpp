@@ -54,9 +54,7 @@ static INDEX FindUnusedPlayer(void) {
   return iPlayer;
 };
 
-static void SelectPlayersFillMenu(void) {
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-
+static void SelectPlayersFillMenu(CSelectPlayersMenu &gmCurrent) {
   INDEX iLocal;
   INDEX *ai = _pGame->gm_aiMenuLocalPlayers;
 
@@ -184,9 +182,7 @@ static void SelectPlayersFillMenu(void) {
   }
 };
 
-static void SelectPlayersApplyMenu(void) {
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-
+static void SelectPlayersApplyMenu(CSelectPlayersMenu &gmCurrent) {
   if (gmCurrent.gm_bAllowDedicated && gmCurrent.gm_mgDedicated.mg_iSelected) {
     _pGame->gm_MenuSplitScreenCfg = CGame::SSC_DEDICATED;
     return;
@@ -200,9 +196,9 @@ static void SelectPlayersApplyMenu(void) {
   _pGame->gm_MenuSplitScreenCfg = (enum CGame::SplitScreenCfg) gmCurrent.gm_mgSplitScreenCfg.mg_iSelected;
 };
 
-static void UpdateSelectPlayers(INDEX i) {
-  SelectPlayersApplyMenu();
-  SelectPlayersFillMenu();
+static void UpdateSelectPlayers(CMenuGadget *pmg, INDEX i) {
+  SelectPlayersApplyMenu(*(CSelectPlayersMenu *)pmg->GetParentMenu());
+  SelectPlayersFillMenu(*(CSelectPlayersMenu *)pmg->GetParentMenu());
 };
 
 void CSelectPlayersMenu::Initialize_t(void)
@@ -265,13 +261,13 @@ void CSelectPlayersMenu::Initialize_t(void)
 void CSelectPlayersMenu::StartMenu(void)
 {
   CGameMenu::StartMenu();
-  SelectPlayersFillMenu();
-  SelectPlayersApplyMenu();
+  SelectPlayersFillMenu(*this);
+  SelectPlayersApplyMenu(*this);
 }
 
 void CSelectPlayersMenu::EndMenu(void)
 {
-  SelectPlayersApplyMenu();
+  SelectPlayersApplyMenu(*this);
   CGameMenu::EndMenu();
 }
 

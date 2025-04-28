@@ -360,7 +360,7 @@ static void StartSelectPlayersMenuFromServers(void) {
   CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
   gmCurrent.gm_bAllowDedicated = FALSE;
   gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &JoinNetworkGame;
+  gmCurrent.gm_mgStart.mg_pCallbackFunction = &JoinNetworkGame;
   CSelectPlayersMenu::ChangeTo();
   
   extern void StartNetworkSettingsMenu(void);

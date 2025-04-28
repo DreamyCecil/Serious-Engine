@@ -55,7 +55,7 @@ void StartCurrentLoadMenu(void) {
 };
 
 // same function for saving in singleplay, network and splitscreen
-static BOOL LSSaveAnyGame(const CTFileName &fnm) {
+static BOOL LSSaveAnyGame(CGameMenu *pgm, const CTString &fnm) {
   if (_pGame->SaveGame(fnm)) {
     StopMenus();
     return TRUE;
@@ -143,7 +143,7 @@ void StartCurrentSaveMenu(void) {
   }
 };
 
-static BOOL LSSaveDemo(const CTFileName &fnm) {
+static BOOL LSSaveDemo(CGameMenu *pgm, const CTString &fnm) {
   // save the demo
   if (_pGame->StartDemoRec(fnm)) {
     StopMenus();
@@ -173,24 +173,24 @@ static void StartDemoSaveMenu(void) {
   CLoadSaveMenu::ChangeTo();
 };
 
-static void SetDemoStartStopRecText(void);
+static void SetDemoStartStopRecText(CMenuGadget *pmg);
 
-static void StopRecordingDemo(void) {
+static void StopRecordingDemo(CMenuGadget *pmg) {
   _pNetwork->StopDemoRec();
-  SetDemoStartStopRecText();
+  SetDemoStartStopRecText(pmg);
 };
 
-void SetDemoStartStopRecText(void) {
-  CInGameMenu &gmCurrent = _pGUIM->gmInGameMenu;
+void SetDemoStartStopRecText(CMenuGadget *pmg) {
+  CMGButton &mgRec = *(CMGButton *)pmg;
 
   if (_pNetwork->IsRecordingDemo()) {
-    gmCurrent.gm_mgDemoRec.SetText(TRANS("STOP RECORDING"));
-    gmCurrent.gm_mgDemoRec.mg_strTip = TRANS("stop current recording");
-    gmCurrent.gm_mgDemoRec.mg_pActivatedFunction = &StopRecordingDemo;
+    mgRec.SetText(TRANS("STOP RECORDING"));
+    mgRec.mg_strTip = TRANS("stop current recording");
+    mgRec.mg_pActivatedFunction = &StopRecordingDemo;
   } else {
-    gmCurrent.gm_mgDemoRec.SetText(TRANS("RECORD DEMO"));
-    gmCurrent.gm_mgDemoRec.mg_strTip = TRANS("start recording current game");
-    gmCurrent.gm_mgDemoRec.mg_pActivatedFunction = &StartDemoSaveMenu;
+    mgRec.SetText(TRANS("RECORD DEMO"));
+    mgRec.mg_strTip = TRANS("start recording current game");
+    mgRec.mg_pCallbackFunction = &StartDemoSaveMenu;
   }
 };
 
@@ -237,7 +237,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgQuickLoad);
   gm_mgQuickLoad.mg_pmgUp = &gm_mgQuit;
   gm_mgQuickLoad.mg_pmgDown = &gm_mgQuickSave;
-  gm_mgQuickLoad.mg_pActivatedFunction = &StartCurrentQuickLoadMenu;
+  gm_mgQuickLoad.mg_pCallbackFunction = &StartCurrentQuickLoadMenu;
 
   gm_mgQuickSave.SetText(TRANS("QUICK SAVE"));
   gm_mgQuickSave.mg_bfsFontSize = BFS_LARGE;
@@ -246,7 +246,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgQuickSave);
   gm_mgQuickSave.mg_pmgUp = &gm_mgQuickLoad;
   gm_mgQuickSave.mg_pmgDown = &gm_mgLoad;
-  gm_mgQuickSave.mg_pActivatedFunction = &QuickSaveFromMenu;
+  gm_mgQuickSave.mg_pCallbackFunction = &QuickSaveFromMenu;
 
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
@@ -255,7 +255,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgLoad);
   gm_mgLoad.mg_pmgUp = &gm_mgQuickSave;
   gm_mgLoad.mg_pmgDown = &gm_mgSave;
-  gm_mgLoad.mg_pActivatedFunction = &StartCurrentLoadMenu;
+  gm_mgLoad.mg_pCallbackFunction = &StartCurrentLoadMenu;
 
   gm_mgSave.SetText(TRANS("SAVE"));
   gm_mgSave.mg_bfsFontSize = BFS_LARGE;
@@ -264,7 +264,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgSave);
   gm_mgSave.mg_pmgUp = &gm_mgLoad;
   gm_mgSave.mg_pmgDown = &gm_mgDemoRec;
-  gm_mgSave.mg_pActivatedFunction = &StartCurrentSaveMenu;
+  gm_mgSave.mg_pCallbackFunction = &StartCurrentSaveMenu;
 
   gm_mgDemoRec.mg_boxOnScreen = BoxBigRow(4.0f);
   gm_mgDemoRec.mg_bfsFontSize = BFS_LARGE;
@@ -281,7 +281,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgHighScore);
   gm_mgHighScore.mg_pmgUp = &gm_mgDemoRec;
   gm_mgHighScore.mg_pmgDown = &gm_mgOptions;
-  gm_mgHighScore.mg_pActivatedFunction = &CHighScoreMenu::ChangeTo;
+  gm_mgHighScore.mg_pCallbackFunction = &CHighScoreMenu::ChangeTo;
 
   gm_mgOptions.SetText(TRANS("OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
@@ -290,7 +290,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgOptions);
   gm_mgOptions.mg_pmgUp = &gm_mgHighScore;
   gm_mgOptions.mg_pmgDown = &gm_mgStop;
-  gm_mgOptions.mg_pActivatedFunction = &COptionsMenu::ChangeTo;
+  gm_mgOptions.mg_pCallbackFunction = &COptionsMenu::ChangeTo;
 
   gm_mgStop.SetText(TRANS("STOP GAME"));
   gm_mgStop.mg_bfsFontSize = BFS_LARGE;
@@ -299,7 +299,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgStop);
   gm_mgStop.mg_pmgUp = &gm_mgOptions;
   gm_mgStop.mg_pmgDown = &gm_mgQuit;
-  gm_mgStop.mg_pActivatedFunction = &StopConfirm;
+  gm_mgStop.mg_pCallbackFunction = &StopConfirm;
 
   gm_mgQuit.SetText(TRANS("QUIT"));
   gm_mgQuit.mg_bfsFontSize = BFS_LARGE;
@@ -308,7 +308,7 @@ void CInGameMenu::Initialize_t(void)
   AddChild(&gm_mgQuit);
   gm_mgQuit.mg_pmgUp = &gm_mgStop;
   gm_mgQuit.mg_pmgDown = &gm_mgQuickLoad;
-  gm_mgQuit.mg_pActivatedFunction = &ExitConfirm;
+  gm_mgQuit.mg_pCallbackFunction = &ExitConfirm;
 }
 
 void CInGameMenu::StartMenu(void)
@@ -317,10 +317,8 @@ void CInGameMenu::StartMenu(void)
   gm_mgQuickSave.mg_bEnabled = _pNetwork->IsServer();
   gm_mgLoad.mg_bEnabled = _pNetwork->IsServer();
   gm_mgSave.mg_bEnabled = _pNetwork->IsServer();
-  gm_mgDemoRec.mg_bEnabled = TRUE;//_pNetwork->IsServer();
-  extern void SetDemoStartStopRecText();
-  SetDemoStartStopRecText();
 
+  SetDemoStartStopRecText(&gm_mgDemoRec);
 
   if (_gmRunningGameMode == GM_SINGLE_PLAYER) {
     CPlayerCharacter &pc = _pGame->gm_apcPlayers[_pGame->gm_iSinglePlayer];

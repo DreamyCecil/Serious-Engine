@@ -23,6 +23,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMGButton : public CMenuGadget {
+public:
+  typedef void (*FCallback)(void);
+  typedef void (*FActivate)(CMenuGadget *pmg);
+
 private:
   CTString mg_strLabel;   // for those that have labels separately from main text
   CTString mg_strText;
@@ -38,7 +42,8 @@ public:
   INDEX mg_iCursorPos;
   INDEX mg_iIndex;
 
-  void(*mg_pActivatedFunction)(void);
+  FActivate mg_pActivatedFunction; // Gadget activation
+  FCallback mg_pCallbackFunction; // [Cecil] Generic callback
 
   CMGButton(void);
 

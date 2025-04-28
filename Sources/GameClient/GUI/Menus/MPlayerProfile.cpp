@@ -22,20 +22,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern BOOL _bPlayerMenuFromSinglePlayer;
 static CTString _strLastPlayerAppearance = "";
 
-static void ChangeCrosshair(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeCrosshair(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
   pps->ps_iCrossHairType = iNew - 1;
 };
 
-static void ChangeWeaponSelect(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeWeaponSelect(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
   pps->ps_iWeaponAutoSelect = iNew;
 };
 
-static void ChangeWeaponHide(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeWeaponHide(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -45,8 +48,9 @@ static void ChangeWeaponHide(INDEX iNew) {
   }
 };
 
-static void Change3rdPerson(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void Change3rdPerson(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -56,8 +60,9 @@ static void Change3rdPerson(INDEX iNew) {
   }
 };
 
-static void ChangeQuotes(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeQuotes(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -67,8 +72,9 @@ static void ChangeQuotes(INDEX iNew) {
   }
 };
 
-static void ChangeAutoSave(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeAutoSave(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -78,8 +84,9 @@ static void ChangeAutoSave(INDEX iNew) {
   }
 };
 
-static void ChangeCompDoubleClick(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeCompDoubleClick(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -89,8 +96,9 @@ static void ChangeCompDoubleClick(INDEX iNew) {
   }
 };
 
-static void ChangeViewBobbing(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeViewBobbing(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -100,8 +108,9 @@ static void ChangeViewBobbing(INDEX iNew) {
   }
 };
 
-static void ChangeSharpTurning(INDEX iNew) {
-  INDEX iPlayer = *_pGUIM->gmPlayerProfile.gm_piCurrentPlayer;
+static void ChangeSharpTurning(CMenuGadget *pmg, INDEX iNew) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+  INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
   CPlayerSettings *pps = (CPlayerSettings *)_pGame->gm_apcPlayers[iPlayer].pc_aubAppearance;
 
   if (iNew) {
@@ -111,17 +120,18 @@ static void ChangeSharpTurning(INDEX iNew) {
   }
 };
 
-static void PPOnPlayerSelect(void) {
-  extern CMenuGadget *_pmgLastActivatedGadget;
-  ASSERT(_pmgLastActivatedGadget != NULL);
+static void PPOnPlayerSelect(CMenuGadget *pmg) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
 
-  if (_pmgLastActivatedGadget->mg_bEnabled) {
-    _pGUIM->gmPlayerProfile.SelectPlayer(((CMGButton *)_pmgLastActivatedGadget)->mg_iIndex);
+  if (pmg->mg_bEnabled) {
+    gmProfile.SelectPlayer(((CMGButton *)pmg)->mg_iIndex);
   }
 };
 
-static BOOL LSLoadPlayerModel(const CTFileName &fnm) {
-  CPlayerCharacter &pc = _pGame->gm_apcPlayers[*_pGUIM->gmPlayerProfile.gm_piCurrentPlayer];
+static BOOL LSLoadPlayerModel(CGameMenu *pgm, const CTString &fnm) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pgm;
+
+  CPlayerCharacter &pc = _pGame->gm_apcPlayers[*gmProfile.gm_piCurrentPlayer];
   CPlayerSettings *pps = (CPlayerSettings *)pc.pc_aubAppearance;
   memset(pps->ps_achModelFile, 0, sizeof(pps->ps_achModelFile));
   strncpy(pps->ps_achModelFile, fnm.FileName().ConstData(), sizeof(pps->ps_achModelFile));
@@ -270,7 +280,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgCustomizeControls.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgCustomizeControls.mg_iCenterI = -1;
   gm_mgCustomizeControls.mg_pmgUp = &gm_mgViewBobbing;
-  gm_mgCustomizeControls.mg_pActivatedFunction = &CControlsMenu::ChangeTo;
+  gm_mgCustomizeControls.mg_pCallbackFunction = &CControlsMenu::ChangeTo;
   gm_mgCustomizeControls.mg_pmgDown = &gm_mgNumber[0];
   gm_mgCustomizeControls.mg_pmgRight = &gm_mgModel;
   gm_mgCustomizeControls.mg_strTip = TRANS("customize controls for this player");
@@ -278,7 +288,7 @@ void CPlayerProfileMenu::Initialize_t(void)
 
   gm_mgModel.mg_boxOnScreen = BoxPlayerModel();
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
-  gm_mgModel.mg_pActivatedFunction = &StartPlayerModelLoadMenu;
+  gm_mgModel.mg_pCallbackFunction = &StartPlayerModelLoadMenu;
   gm_mgModel.mg_pmgDown = &gm_mgNameField;
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
   gm_mgModel.mg_strTip = TRANS("change model for this player");

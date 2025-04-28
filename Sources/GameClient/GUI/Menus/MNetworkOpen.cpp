@@ -97,7 +97,7 @@ void StartSelectPlayersMenuFromOpen(void) {
   CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
   gmCurrent.gm_bAllowDedicated = FALSE;
   gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &JoinNetworkGame;
+  gmCurrent.gm_mgStart.mg_pCallbackFunction = &JoinNetworkGame;
   CSelectPlayersMenu::ChangeTo();
 
   extern void StartNetworkSettingsMenu(void);
@@ -149,7 +149,7 @@ void CNetworkOpenMenu::Initialize_t(void)
   gm_mgJoin.mg_pmgDown = &gm_mgAddress;
   gm_mgJoin.SetText(TRANS("Join"));
   AddChild(&gm_mgJoin);
-  gm_mgJoin.mg_pActivatedFunction = &StartSelectPlayersMenuFromOpen;
+  gm_mgJoin.mg_pCallbackFunction = &StartSelectPlayersMenuFromOpen;
 }
 
 void CNetworkOpenMenu::StartMenu(void)

@@ -61,7 +61,7 @@ void SetQuickLoadNotes(void) {
   }
 };
 
-BOOL LSLoadSinglePlayer(const CTFileName &fnm) {
+BOOL LSLoadSinglePlayer(CGameMenu *pgm, const CTString &fnm) {
   _pGame->gm_StartSplitScreenCfg = CGame::SSC_PLAY;
   _pGame->gm_aiStartLocalPlayers[0] = _pGame->gm_iSinglePlayer;
 
@@ -164,7 +164,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgNewGame);
   gm_mgNewGame.mg_pmgUp = &gm_mgOptions;
   gm_mgNewGame.mg_pmgDown = &gm_mgCustom;
-  gm_mgNewGame.mg_pActivatedFunction = &StartSinglePlayerNewMenu;
+  gm_mgNewGame.mg_pCallbackFunction = &StartSinglePlayerNewMenu;
 
   gm_mgCustom.SetText(TRANS("CUSTOM LEVEL"));
   gm_mgCustom.mg_bfsFontSize = BFS_LARGE;
@@ -173,7 +173,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgCustom);
   gm_mgCustom.mg_pmgUp = &gm_mgNewGame;
   gm_mgCustom.mg_pmgDown = &gm_mgQuickLoad;
-  gm_mgCustom.mg_pActivatedFunction = &StartSelectLevelFromSingle;
+  gm_mgCustom.mg_pCallbackFunction = &StartSelectLevelFromSingle;
 
   gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
@@ -182,7 +182,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgQuickLoad);
   gm_mgQuickLoad.mg_pmgUp = &gm_mgCustom;
   gm_mgQuickLoad.mg_pmgDown = &gm_mgLoad;
-  gm_mgQuickLoad.mg_pActivatedFunction = &StartSinglePlayerQuickLoadMenu;
+  gm_mgQuickLoad.mg_pCallbackFunction = &StartSinglePlayerQuickLoadMenu;
 
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
@@ -191,7 +191,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgLoad);
   gm_mgLoad.mg_pmgUp = &gm_mgQuickLoad;
   gm_mgLoad.mg_pmgDown = &gm_mgTraining;
-  gm_mgLoad.mg_pActivatedFunction = &StartSinglePlayerLoadMenu;
+  gm_mgLoad.mg_pCallbackFunction = &StartSinglePlayerLoadMenu;
 
   gm_mgTraining.SetText(TRANS("TRAINING"));
   gm_mgTraining.mg_bfsFontSize = BFS_LARGE;
@@ -200,7 +200,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgTraining);
   gm_mgTraining.mg_pmgUp = &gm_mgLoad;
   gm_mgTraining.mg_pmgDown = &gm_mgTechTest;
-  gm_mgTraining.mg_pActivatedFunction = &StartTraining;
+  gm_mgTraining.mg_pCallbackFunction = &StartTraining;
 
   gm_mgTechTest.SetText(TRANS("TECHNOLOGY TEST"));
   gm_mgTechTest.mg_bfsFontSize = BFS_LARGE;
@@ -209,7 +209,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgTechTest);
   gm_mgTechTest.mg_pmgUp = &gm_mgTraining;
   gm_mgTechTest.mg_pmgDown = &gm_mgPlayersAndControls;
-  gm_mgTechTest.mg_pActivatedFunction = &StartTechTest;
+  gm_mgTechTest.mg_pCallbackFunction = &StartTechTest;
 
   gm_mgPlayersAndControls.mg_bfsFontSize = BFS_LARGE;
   gm_mgPlayersAndControls.mg_boxOnScreen = BoxBigRow(6.0f);
@@ -218,7 +218,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgPlayersAndControls.SetText(TRANS("PLAYERS AND CONTROLS"));
   gm_mgPlayersAndControls.mg_strTip = TRANS("change currently active player or adjust controls");
   AddChild(&gm_mgPlayersAndControls);
-  gm_mgPlayersAndControls.mg_pActivatedFunction = &StartChangePlayerMenuFromSinglePlayer;
+  gm_mgPlayersAndControls.mg_pCallbackFunction = &StartChangePlayerMenuFromSinglePlayer;
 
   gm_mgOptions.SetText(TRANS("GAME OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
@@ -227,7 +227,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   AddChild(&gm_mgOptions);
   gm_mgOptions.mg_pmgUp = &gm_mgPlayersAndControls;
   gm_mgOptions.mg_pmgDown = &gm_mgNewGame;
-  gm_mgOptions.mg_pActivatedFunction = &StartSinglePlayerGameOptions;
+  gm_mgOptions.mg_pCallbackFunction = &StartSinglePlayerGameOptions;
 }
 
 void CSinglePlayerMenu::StartMenu(void)

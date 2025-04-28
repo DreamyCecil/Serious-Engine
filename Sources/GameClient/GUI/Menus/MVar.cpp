@@ -21,12 +21,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern BOOL _bVarChanged;
 
-static void VarApply(void) {
+static void VarApply(CMenuGadget *pmg) {
   FlushVarSettings(TRUE);
 
-  CVarMenu &gmCurrent = _pGUIM->gmVarMenu;
-  gmCurrent.EndMenu();
-  gmCurrent.StartMenu();
+  CVarMenu &gmVar = *(CVarMenu *)pmg->GetParentMenu();
+  gmVar.EndMenu();
+  gmVar.StartMenu();
 };
 
 void CVarMenu::Initialize_t(void)

@@ -23,6 +23,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 class CMGTrigger : public CMenuGadget {
+public:
+  typedef void (*FTriggerChange)(CMenuGadget *pmg, INDEX iSelected);
+
 private:
   CTString mg_strLabel;
   CTString mg_strValue;
@@ -58,8 +61,8 @@ public:
 
   void ApplyCurrentSelection(void);
   void OnSetNextInList(PressedMenuButton pmb);
-  void(*mg_pPreTriggerChange)(INDEX iCurrentlySelected);
-  void(*mg_pOnTriggerChange)(INDEX iCurrentlySelected);
+  FTriggerChange mg_pPreTriggerChange;
+  FTriggerChange mg_pOnTriggerChange;
 
   // return TRUE if handled
   BOOL OnKeyDown(PressedMenuButton pmb);

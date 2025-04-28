@@ -39,6 +39,9 @@ enum ELSSortType
 
 class CLoadSaveMenu : public CGameMenu {
 public:
+  typedef BOOL (*FAfterChoosing)(CGameMenu *pgm, const CTString &fnm);
+
+public:
   // settings adjusted before starting the menu
   CTFileName gm_fnmSelected;  // file that is selected initially
   CTFileName gm_fnmDirectory; // directory that should be read
@@ -55,7 +58,7 @@ public:
   // function to activate when file is chosen
   // return true if saving succeeded - description is saved automatically
   // always return true for loading
-  BOOL(*gm_pAfterFileChosen)(const CTFileName &fnm);
+  FAfterChoosing gm_pAfterFileChosen;
 
   // internal properties
   CListHead gm_lhFileInfos;   // all file infos to list

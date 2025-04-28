@@ -45,7 +45,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgLAN.SetText(TRANS("SEARCH LAN"));
   gm_mgLAN.mg_strTip = TRANS("search local network for servers");
   AddChild(&gm_mgLAN);
-  gm_mgLAN.mg_pActivatedFunction = &StartSelectServerLAN;
+  gm_mgLAN.mg_pCallbackFunction = &StartSelectServerLAN;
 
   gm_mgNET.mg_bfsFontSize = BFS_LARGE;
   gm_mgNET.mg_boxOnScreen = BoxBigRow(2.0f);
@@ -54,7 +54,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgNET.SetText(TRANS("SEARCH INTERNET"));
   gm_mgNET.mg_strTip = TRANS("search internet for servers");
   AddChild(&gm_mgNET);
-  gm_mgNET.mg_pActivatedFunction = &StartSelectServerNET;
+  gm_mgNET.mg_pCallbackFunction = &StartSelectServerNET;
 
   gm_mgOpen.mg_bfsFontSize = BFS_LARGE;
   gm_mgOpen.mg_boxOnScreen = BoxBigRow(3.0f);
@@ -63,7 +63,7 @@ void CNetworkJoinMenu::Initialize_t(void)
   gm_mgOpen.SetText(TRANS("SPECIFY SERVER"));
   gm_mgOpen.mg_strTip = TRANS("type in server address to connect to");
   AddChild(&gm_mgOpen);
-  gm_mgOpen.mg_pActivatedFunction = &CNetworkOpenMenu::ChangeTo;
+  gm_mgOpen.mg_pCallbackFunction = &CNetworkOpenMenu::ChangeTo;
 }
 
 // [Cecil] Change to the menu

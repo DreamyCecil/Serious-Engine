@@ -25,15 +25,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class CConfirmMenu : public CGameMenu {
 public:
-  typedef void (*CConfirmFunc)(void);
+  typedef void (*FConfirm)(void);
 
 public:
   CMGButton gm_mgConfirmLabel;
   CMGButton gm_mgConfirmYes;
   CMGButton gm_mgConfirmNo;
 
-  CConfirmFunc gm_pConfirmedYes;
-  CConfirmFunc gm_pConfirmedNo;
+  FConfirm gm_pConfirmedYes;
+  FConfirm gm_pConfirmedNo;
 
   CConfirmMenu() : CGameMenu(),
     gm_pConfirmedYes(NULL), gm_pConfirmedNo(NULL)
@@ -58,7 +58,7 @@ public:
   void BeSmall(void);
 
   // [Cecil] Change to the menu
-  static void ChangeTo(const CTString &strLabel, CConfirmFunc pFuncYes, CConfirmFunc pFuncNo, BOOL bBigLabel);
+  static void ChangeTo(const CTString &strLabel, FConfirm pFuncYes, FConfirm pFuncNo, BOOL bBigLabel);
 };
 
 #endif  /* include-once check. */

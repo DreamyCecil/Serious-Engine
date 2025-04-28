@@ -136,8 +136,8 @@ static void PlayDemo(void* pArgs)
   CTString strDemoFilename = *NEXTARGUMENT(CTString*);
   _gmMenuGameMode = GM_DEMO;
   CTFileName fnDemo = "demos\\" + strDemoFilename + ".dem";
-  extern BOOL LSLoadDemo(const CTFileName &fnm);
-  LSLoadDemo(fnDemo);
+  extern BOOL LSLoadDemo(CGameMenu *pgm, const CTString &fnm);
+  LSLoadDemo(NULL, fnDemo);
 }
 
 static void ApplyRenderingPreferences(void)
@@ -866,8 +866,8 @@ static void SetDPIAwareness(void) {
   if (hUser == NULL) return;
 
   // Try to find the DPI awareness method
-  typedef BOOL (*CSetAwarenessFunc)(void);
-  CSetAwarenessFunc pFunc = (CSetAwarenessFunc)GetProcAddress(hUser, "SetProcessDPIAware");
+  typedef BOOL (*FSetAwareness)(void);
+  FSetAwareness pFunc = (FSetAwareness)GetProcAddress(hUser, "SetProcessDPIAware");
 
   if (pFunc == NULL) return;
 

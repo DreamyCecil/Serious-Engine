@@ -118,9 +118,7 @@ static INDEX sam_old_iDisplayAdapter;
 static INDEX sam_old_iGfxAPI;
 static INDEX sam_old_iVideoSetup; // 0==speed, 1==normal, 2==quality, 3==custom
 
-static void FillResolutionsList(void) {
-  CVideoOptionsMenu &gmCurrent = _pGUIM->gmVideoOptionsMenu;
-
+static void FillResolutionsList(CVideoOptionsMenu &gmVideo) {
   // free resolutions
   if (_astrResolutionTexts != NULL) {
     delete[] _astrResolutionTexts;
@@ -133,16 +131,16 @@ static void FillResolutionsList(void) {
   _ctResolutions = 0;
 
   // [Cecil] Select current aspect ratio
-  const INDEX iAspectRatio = gmCurrent.gm_mgAspectRatiosTrigger.mg_iSelected;
+  const INDEX iAspectRatio = gmVideo.gm_mgAspectRatiosTrigger.mg_iSelected;
   const CAspectRatio &ar = *_aAspectRatios[iAspectRatio];
 
   // [Cecil] If 4:3 in borderless or fullscreen
-  if (iAspectRatio == 0 && gmCurrent.gm_mgWindowModeTrigger.mg_iSelected != E_WM_WINDOWED) {
+  if (iAspectRatio == 0 && gmVideo.gm_mgWindowModeTrigger.mg_iSelected != E_WM_WINDOWED) {
     // Get resolutions from the engine
     INDEX ctEngineRes = 0;
 
     CDisplayMode *pdm = _pGfx->EnumDisplayModes(ctEngineRes,
-      SwitchToAPI(gmCurrent.gm_mgDisplayAPITrigger.mg_iSelected), gmCurrent.gm_mgDisplayAdaptersTrigger.mg_iSelected);
+      SwitchToAPI(gmVideo.gm_mgDisplayAPITrigger.mg_iSelected), gmVideo.gm_mgDisplayAdaptersTrigger.mg_iSelected);
 
     // Remember current amount here to prevent assertions from SetResolutionInList()
     _ctResolutions = ctEngineRes;
@@ -170,20 +168,18 @@ static void FillResolutionsList(void) {
     _ctResolutions = ctRes;
   }
 
-  gmCurrent.gm_mgResolutionsTrigger.mg_astrTexts = _astrResolutionTexts;
-  gmCurrent.gm_mgResolutionsTrigger.mg_ctTexts = _ctResolutions;
+  gmVideo.gm_mgResolutionsTrigger.mg_astrTexts = _astrResolutionTexts;
+  gmVideo.gm_mgResolutionsTrigger.mg_ctTexts = _ctResolutions;
 };
 
-static void FillAdaptersList(void) {
-  CVideoOptionsMenu &gmCurrent = _pGUIM->gmVideoOptionsMenu;
-
+static void FillAdaptersList(CVideoOptionsMenu &gmVideo) {
   if (_astrAdapterTexts != NULL) {
     delete[] _astrAdapterTexts;
   }
 
   _ctAdapters = 0;
 
-  INDEX iApi = SwitchToAPI(gmCurrent.gm_mgDisplayAPITrigger.mg_iSelected);
+  INDEX iApi = SwitchToAPI(gmVideo.gm_mgDisplayAPITrigger.mg_iSelected);
   _ctAdapters = _pGfx->gl_gaAPI[iApi].ga_ctAdapters;
   _astrAdapterTexts = new CTString[_ctAdapters];
 
@@ -191,12 +187,12 @@ static void FillAdaptersList(void) {
     _astrAdapterTexts[iAdapter] = _pGfx->gl_gaAPI[iApi].ga_adaAdapter[iAdapter].da_strRenderer;
   }
 
-  gmCurrent.gm_mgDisplayAdaptersTrigger.mg_astrTexts = _astrAdapterTexts;
-  gmCurrent.gm_mgDisplayAdaptersTrigger.mg_ctTexts = _ctAdapters;
+  gmVideo.gm_mgDisplayAdaptersTrigger.mg_astrTexts = _astrAdapterTexts;
+  gmVideo.gm_mgDisplayAdaptersTrigger.mg_ctTexts = _ctAdapters;
 };
 
-static void UpdateVideoOptionsButtons(INDEX iSelected) {
-  CVideoOptionsMenu &gmCurrent = _pGUIM->gmVideoOptionsMenu;
+static void UpdateVideoOptionsButtons(CMenuGadget *pmg, INDEX iSelected) {
+  CVideoOptionsMenu &gmVideo = *(CVideoOptionsMenu *)pmg->GetParentMenu();
 
   const BOOL _bVideoOptionsChanged = (iSelected != -1);
 
@@ -204,85 +200,83 @@ static void UpdateVideoOptionsButtons(INDEX iSelected) {
   const BOOL bD3DEnabled = _pGfx->HasAPI(GAT_D3D);
   ASSERT(bOGLEnabled || bD3DEnabled);
 
-  CDisplayAdapter &da = _pGfx->gl_gaAPI[SwitchToAPI(gmCurrent.gm_mgDisplayAPITrigger.mg_iSelected)]
-    .ga_adaAdapter[gmCurrent.gm_mgDisplayAdaptersTrigger.mg_iSelected];
+  CDisplayAdapter &da = _pGfx->gl_gaAPI[SwitchToAPI(gmVideo.gm_mgDisplayAPITrigger.mg_iSelected)]
+    .ga_adaAdapter[gmVideo.gm_mgDisplayAdaptersTrigger.mg_iSelected];
 
   // number of available preferences is higher if video setup is custom
-  gmCurrent.gm_mgDisplayPrefsTrigger.mg_ctTexts = 3;
+  gmVideo.gm_mgDisplayPrefsTrigger.mg_ctTexts = 3;
 
-  if (sam_iVideoSetup == 3) gmCurrent.gm_mgDisplayPrefsTrigger.mg_ctTexts++;
+  if (sam_iVideoSetup == 3) gmVideo.gm_mgDisplayPrefsTrigger.mg_ctTexts++;
 
   // enumerate adapters
-  FillAdaptersList();
+  FillAdaptersList(gmVideo);
 
   // show or hide buttons
-  gmCurrent.gm_mgDisplayAPITrigger.mg_bEnabled = bOGLEnabled && bD3DEnabled; // [Cecil] Check for D3D
-  gmCurrent.gm_mgDisplayAdaptersTrigger.mg_bEnabled = _ctAdapters > 1;
-  gmCurrent.gm_mgApply.mg_bEnabled = _bVideoOptionsChanged;
+  gmVideo.gm_mgDisplayAPITrigger.mg_bEnabled = bOGLEnabled && bD3DEnabled; // [Cecil] Check for D3D
+  gmVideo.gm_mgDisplayAdaptersTrigger.mg_bEnabled = _ctAdapters > 1;
+  gmVideo.gm_mgApply.mg_bEnabled = _bVideoOptionsChanged;
 
   // determine which should be visible
-  gmCurrent.gm_mgWindowModeTrigger.mg_bEnabled = TRUE;
+  gmVideo.gm_mgWindowModeTrigger.mg_bEnabled = TRUE;
 
   if (da.da_ulFlags & DAF_FULLSCREENONLY) {
-    gmCurrent.gm_mgWindowModeTrigger.mg_bEnabled = FALSE;
-    gmCurrent.gm_mgWindowModeTrigger.mg_iSelected = E_WM_FULLSCREEN;
-    gmCurrent.gm_mgWindowModeTrigger.ApplyCurrentSelection();
+    gmVideo.gm_mgWindowModeTrigger.mg_bEnabled = FALSE;
+    gmVideo.gm_mgWindowModeTrigger.mg_iSelected = E_WM_FULLSCREEN;
+    gmVideo.gm_mgWindowModeTrigger.ApplyCurrentSelection();
   }
 
-  gmCurrent.gm_mgBitsPerPixelTrigger.mg_bEnabled = TRUE;
+  gmVideo.gm_mgBitsPerPixelTrigger.mg_bEnabled = TRUE;
 
   // [Cecil] If not fullscreen
-  if (gmCurrent.gm_mgWindowModeTrigger.mg_iSelected != E_WM_FULLSCREEN) {
-    gmCurrent.gm_mgBitsPerPixelTrigger.mg_bEnabled = FALSE;
-    gmCurrent.gm_mgBitsPerPixelTrigger.mg_iSelected = DepthToSwitch(DD_DEFAULT);
-    gmCurrent.gm_mgBitsPerPixelTrigger.ApplyCurrentSelection();
+  if (gmVideo.gm_mgWindowModeTrigger.mg_iSelected != E_WM_FULLSCREEN) {
+    gmVideo.gm_mgBitsPerPixelTrigger.mg_bEnabled = FALSE;
+    gmVideo.gm_mgBitsPerPixelTrigger.mg_iSelected = DepthToSwitch(DD_DEFAULT);
+    gmVideo.gm_mgBitsPerPixelTrigger.ApplyCurrentSelection();
 
   } else if (da.da_ulFlags & DAF_16BITONLY) {
-    gmCurrent.gm_mgBitsPerPixelTrigger.mg_bEnabled = FALSE;
-    gmCurrent.gm_mgBitsPerPixelTrigger.mg_iSelected = DepthToSwitch(DD_16BIT);
-    gmCurrent.gm_mgBitsPerPixelTrigger.ApplyCurrentSelection();
+    gmVideo.gm_mgBitsPerPixelTrigger.mg_bEnabled = FALSE;
+    gmVideo.gm_mgBitsPerPixelTrigger.mg_iSelected = DepthToSwitch(DD_16BIT);
+    gmVideo.gm_mgBitsPerPixelTrigger.ApplyCurrentSelection();
   }
 
   // remember current selected resolution
   PIX pixSizeI, pixSizeJ;
-  ResolutionToSize(gmCurrent.gm_mgResolutionsTrigger.mg_iSelected, pixSizeI, pixSizeJ);
+  ResolutionToSize(gmVideo.gm_mgResolutionsTrigger.mg_iSelected, pixSizeI, pixSizeJ);
 
   // select same resolution again if possible
-  FillResolutionsList();
-  SizeToResolution(pixSizeI, pixSizeJ, gmCurrent.gm_mgResolutionsTrigger.mg_iSelected);
+  FillResolutionsList(gmVideo);
+  SizeToResolution(pixSizeI, pixSizeJ, gmVideo.gm_mgResolutionsTrigger.mg_iSelected);
 
   // apply adapter and resolutions
-  gmCurrent.gm_mgDisplayAdaptersTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgResolutionsTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgAspectRatiosTrigger.ApplyCurrentSelection(); // [Cecil]
+  gmVideo.gm_mgDisplayAdaptersTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgResolutionsTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgAspectRatiosTrigger.ApplyCurrentSelection(); // [Cecil]
 };
 
-static void InitVideoOptionsButtons(void) {
-  CVideoOptionsMenu &gmCurrent = _pGUIM->gmVideoOptionsMenu;
-
+static void InitVideoOptionsButtons(CVideoOptionsMenu &gmVideo) {
   // [Cecil] Limit to existing window modes
   INDEX iWindowMode = Clamp(sam_iWindowMode, (INDEX)E_WM_WINDOWED, (INDEX)E_WM_FULLSCREEN);
-  gmCurrent.gm_mgWindowModeTrigger.mg_iSelected = iWindowMode;
+  gmVideo.gm_mgWindowModeTrigger.mg_iSelected = iWindowMode;
 
-  gmCurrent.gm_mgDisplayAPITrigger.mg_iSelected = APIToSwitch((GfxAPIType)(INDEX)sam_iGfxAPI);
-  gmCurrent.gm_mgDisplayAdaptersTrigger.mg_iSelected = sam_iDisplayAdapter;
-  gmCurrent.gm_mgBitsPerPixelTrigger.mg_iSelected = DepthToSwitch((enum DisplayDepth)(INDEX)sam_iDisplayDepth);
+  gmVideo.gm_mgDisplayAPITrigger.mg_iSelected = APIToSwitch((GfxAPIType)(INDEX)sam_iGfxAPI);
+  gmVideo.gm_mgDisplayAdaptersTrigger.mg_iSelected = sam_iDisplayAdapter;
+  gmVideo.gm_mgBitsPerPixelTrigger.mg_iSelected = DepthToSwitch((enum DisplayDepth)(INDEX)sam_iDisplayDepth);
 
   // [Cecil] Find aspect ratio and the resolution within it
   PIX2D vScreen(sam_iScreenSizeI, sam_iScreenSizeJ);
-  SizeToAspectRatio(vScreen, gmCurrent.gm_mgAspectRatiosTrigger.mg_iSelected);
+  SizeToAspectRatio(vScreen, gmVideo.gm_mgAspectRatiosTrigger.mg_iSelected);
 
-  FillResolutionsList();
-  SizeToResolution(vScreen(1), vScreen(2), gmCurrent.gm_mgResolutionsTrigger.mg_iSelected);
-  gmCurrent.gm_mgDisplayPrefsTrigger.mg_iSelected = Clamp(int(sam_iVideoSetup), 0, 3);
+  FillResolutionsList(gmVideo);
+  SizeToResolution(vScreen(1), vScreen(2), gmVideo.gm_mgResolutionsTrigger.mg_iSelected);
+  gmVideo.gm_mgDisplayPrefsTrigger.mg_iSelected = Clamp(int(sam_iVideoSetup), 0, 3);
 
-  gmCurrent.gm_mgWindowModeTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgDisplayPrefsTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgDisplayAPITrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgDisplayAdaptersTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgResolutionsTrigger.ApplyCurrentSelection();
-  gmCurrent.gm_mgAspectRatiosTrigger.ApplyCurrentSelection(); // [Cecil]
-  gmCurrent.gm_mgBitsPerPixelTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgWindowModeTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgDisplayPrefsTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgDisplayAPITrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgDisplayAdaptersTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgResolutionsTrigger.ApplyCurrentSelection();
+  gmVideo.gm_mgAspectRatiosTrigger.ApplyCurrentSelection(); // [Cecil]
+  gmVideo.gm_mgBitsPerPixelTrigger.ApplyCurrentSelection();
 };
 
 static void StartRenderingOptionsMenu(void) {
@@ -304,8 +298,8 @@ static void VideoConfirm(void) {
   CConfirmMenu::ChangeTo(TRANS("KEEP THIS SETTING?"), NULL, &RevertVideoSettings, TRUE);
 };
 
-static void ApplyVideoOptions(void) {
-  CVideoOptionsMenu &gmCurrent = _pGUIM->gmVideoOptionsMenu;
+static void ApplyVideoOptions(CMenuGadget *pmg) {
+  CVideoOptionsMenu &gmVideo = *(CVideoOptionsMenu *)pmg->GetParentMenu();
 
   // Remember old video settings
   sam_old_iWindowMode = sam_iWindowMode;
@@ -317,17 +311,17 @@ static void ApplyVideoOptions(void) {
   sam_old_iVideoSetup = sam_iVideoSetup;
 
   // [Cecil] Different window modes
-  INDEX iWindowMode = gmCurrent.gm_mgWindowModeTrigger.mg_iSelected;
+  INDEX iWindowMode = gmVideo.gm_mgWindowModeTrigger.mg_iSelected;
   PIX pixWindowSizeI, pixWindowSizeJ;
-  ResolutionToSize(gmCurrent.gm_mgResolutionsTrigger.mg_iSelected, pixWindowSizeI, pixWindowSizeJ);
-  enum GfxAPIType gat = SwitchToAPI(gmCurrent.gm_mgDisplayAPITrigger.mg_iSelected);
-  enum DisplayDepth dd = SwitchToDepth(gmCurrent.gm_mgBitsPerPixelTrigger.mg_iSelected);
-  const INDEX iAdapter = gmCurrent.gm_mgDisplayAdaptersTrigger.mg_iSelected;
+  ResolutionToSize(gmVideo.gm_mgResolutionsTrigger.mg_iSelected, pixWindowSizeI, pixWindowSizeJ);
+  enum GfxAPIType gat = SwitchToAPI(gmVideo.gm_mgDisplayAPITrigger.mg_iSelected);
+  enum DisplayDepth dd = SwitchToDepth(gmVideo.gm_mgBitsPerPixelTrigger.mg_iSelected);
+  const INDEX iAdapter = gmVideo.gm_mgDisplayAdaptersTrigger.mg_iSelected;
 
   // setup preferences
   extern INDEX _iLastPreferences;
   if (sam_iVideoSetup == 3) _iLastPreferences = 3;
-  sam_iVideoSetup = gmCurrent.gm_mgDisplayPrefsTrigger.mg_iSelected;
+  sam_iVideoSetup = gmVideo.gm_mgDisplayPrefsTrigger.mg_iSelected;
 
   // force fullscreen mode if needed
   CDisplayAdapter &da = _pGfx->gl_gaAPI[gat].ga_adaAdapter[iAdapter];
@@ -340,8 +334,8 @@ static void ApplyVideoOptions(void) {
   StartNewMode(gat, iAdapter, pixWindowSizeI, pixWindowSizeJ, dd, iWindowMode);
 
   // refresh buttons
-  InitVideoOptionsButtons();
-  UpdateVideoOptionsButtons(-1);
+  InitVideoOptionsButtons(gmVideo);
+  UpdateVideoOptionsButtons(pmg, -1);
 
   // ask user to keep or restore
   if (iWindowMode == E_WM_FULLSCREEN) VideoConfirm(); // [Cecil]
@@ -362,8 +356,9 @@ void RevertVideoSettings(void) {
   ApplyVideoMode();
 
   // refresh buttons
-  InitVideoOptionsButtons();
-  UpdateVideoOptionsButtons(-1);
+  // [Cecil] FIXME: Unable to retrieve a pointer to the video options menu here due to spaghetti
+  InitVideoOptionsButtons(_pGUIM->gmVideoOptionsMenu);
+  UpdateVideoOptionsButtons(&_pGUIM->gmVideoOptionsMenu.gm_mgDisplayPrefsTrigger, -1);
 };
 
 void CVideoOptionsMenu::Initialize_t(void)
@@ -434,7 +429,7 @@ void CVideoOptionsMenu::Initialize_t(void)
   gm_mgVideoRendering.SetText(TRANS("RENDERING OPTIONS"));
   gm_mgVideoRendering.mg_strTip = TRANS("manually adjust rendering settings");
   AddChild(&gm_mgVideoRendering);
-  gm_mgVideoRendering.mg_pActivatedFunction = &StartRenderingOptionsMenu;
+  gm_mgVideoRendering.mg_pCallbackFunction = &StartRenderingOptionsMenu;
 
   gm_mgApply.mg_bfsFontSize = BFS_LARGE;
   gm_mgApply.mg_boxOnScreen = BoxBigRow(6.5f);
@@ -448,11 +443,11 @@ void CVideoOptionsMenu::Initialize_t(void)
 
 void CVideoOptionsMenu::StartMenu(void)
 {
-  InitVideoOptionsButtons();
+  InitVideoOptionsButtons(*this);
 
   CGameMenu::StartMenu();
 
-  UpdateVideoOptionsButtons(-1);
+  UpdateVideoOptionsButtons(&gm_mgDisplayPrefsTrigger, -1);
 }
 
 // [Cecil] Change to the menu

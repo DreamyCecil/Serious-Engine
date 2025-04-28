@@ -21,7 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern CTFileName _fnmControlsToCustomize;
 
-static BOOL LSLoadControls(const CTFileName &fnm) {
+static BOOL LSLoadControls(CGameMenu *pgm, const CTString &fnm) {
   try {
     // [Cecil] Load user controls from user data
     CTString fnmControls = fnm;
@@ -94,7 +94,7 @@ void CControlsMenu::Initialize_t(void)
   AddChild(&gm_mgButtons);
   gm_mgButtons.mg_pmgUp = &gm_mgPredefined;
   gm_mgButtons.mg_pmgDown = &gm_mgAdvanced;
-  gm_mgButtons.mg_pActivatedFunction = &CCustomizeKeyboardMenu::ChangeTo;
+  gm_mgButtons.mg_pCallbackFunction = &CCustomizeKeyboardMenu::ChangeTo;
   gm_mgButtons.mg_strTip = TRANS("customize buttons in current controls");
 
   gm_mgAdvanced.SetText(TRANS("ADVANCED JOYSTICK SETUP"));
@@ -104,7 +104,7 @@ void CControlsMenu::Initialize_t(void)
   AddChild(&gm_mgAdvanced);
   gm_mgAdvanced.mg_pmgUp = &gm_mgButtons;
   gm_mgAdvanced.mg_pmgDown = &gm_mgDeviceSlot;
-  gm_mgAdvanced.mg_pActivatedFunction = &CCustomizeAxisMenu::ChangeTo;
+  gm_mgAdvanced.mg_pCallbackFunction = &CCustomizeAxisMenu::ChangeTo;
   gm_mgAdvanced.mg_strTip = TRANS("adjust advanced settings for joystick axis");
 
   // [Cecil] Device slot selection
@@ -139,7 +139,7 @@ void CControlsMenu::Initialize_t(void)
   AddChild(&gm_mgPredefined);
   gm_mgPredefined.mg_pmgUp = &gm_mgIFeelTrigger;
   gm_mgPredefined.mg_pmgDown = &gm_mgButtons;
-  gm_mgPredefined.mg_pActivatedFunction = &StartControlsLoadMenu;
+  gm_mgPredefined.mg_pCallbackFunction = &StartControlsLoadMenu;
   gm_mgPredefined.mg_strTip = TRANS("load one of several predefined control settings");
 }
 

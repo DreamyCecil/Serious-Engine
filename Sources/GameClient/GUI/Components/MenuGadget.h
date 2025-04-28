@@ -29,6 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #define EMPTYSLOTSTRING TRANS("<save a new one>")
 
+class CGameMenu;
 
 class CMenuGadget : public CLinkedNode {
 private:
@@ -49,6 +50,11 @@ public:
   CMenuGadget *mg_pmgDown;
 
   CMenuGadget(void);
+
+  // [Cecil] Get parent menu
+  inline CGameMenu *GetParentMenu(void) const {
+    return (CGameMenu *)GetParent();
+  };
 
   // [Cecil] Get gadget name/label
   virtual const CTString &GetName(void) const {

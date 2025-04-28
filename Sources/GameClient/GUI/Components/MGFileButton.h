@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define FBS_NORMAL    0 // normal active state
 #define FBS_SAVENAME  1 // typing in the save name
 #define FBS_RENAME    2 // renaming existing file
+
 class CMGFileButton : public CMGEdit {
 public:
   CMGFileButton(void);
@@ -32,6 +33,9 @@ public:
   CTString mg_strDes;   // entire description goes here
   CTString mg_strInfo;  // info part of text to print above the gadget tip
   INDEX mg_iState;
+
+  // [Cecil] TEMP: Get load/save menu of this gadget
+  class CLoadSaveMenu *GetLSMenu(void) const;
 
   // refresh current text from description
   void RefreshText(void);

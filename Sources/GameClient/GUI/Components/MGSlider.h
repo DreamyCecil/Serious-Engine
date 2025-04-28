@@ -24,6 +24,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class CMGSlider : public CMGButton {
 public:
+  typedef void (*FSliderChange)(CMenuGadget *pmg, INDEX iCurPos);
+
+public:
   FLOAT mg_fFactor;
   INDEX mg_iMinPos;
   INDEX mg_iMaxPos;
@@ -34,7 +37,7 @@ public:
   void ApplyGivenPosition(INDEX iMin, INDEX iMax, INDEX iCur);
   // return TRUE if handled
   virtual BOOL OnKeyDown(PressedMenuButton pmb);
-  void(*mg_pOnSliderChange)(INDEX iCurPos);
+  FSliderChange mg_pOnSliderChange;
   PIXaabbox2D GetSliderBox(void);
   void Render(CDrawPort *pdp);
 };

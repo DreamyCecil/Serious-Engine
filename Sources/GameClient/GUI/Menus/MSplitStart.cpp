@@ -20,17 +20,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MSplitStart.h"
 
-static void UpdateSplitLevel(INDEX iDummy) {
-  CSplitStartMenu &gmCurrent = _pGUIM->gmSplitStartMenu;
+static void UpdateSplitLevel(CMenuGadget *pmg, INDEX iDummy) {
+  CSplitStartMenu &gmSplitStart = *(CSplitStartMenu *)pmg->GetParentMenu();
 
-  ValidateLevelForFlags(_pGame->gam_strCustomLevel, GetSpawnFlagsForGameType(gmCurrent.gm_mgGameType.mg_iSelected));
-  gmCurrent.gm_mgLevel.SetText(FindLevelByFileName(_pGame->gam_strCustomLevel).li_strName);
+  ValidateLevelForFlags(_pGame->gam_strCustomLevel, GetSpawnFlagsForGameType(gmSplitStart.gm_mgGameType.mg_iSelected));
+  gmSplitStart.gm_mgLevel.SetText(FindLevelByFileName(_pGame->gam_strCustomLevel).li_strName);
 };
 
-static void StartSelectLevelFromSplit(void) {
+static void StartSelectLevelFromSplit(CMenuGadget *pmg) {
+  CSplitStartMenu &gmSplitStart = *(CSplitStartMenu *)pmg->GetParentMenu();
+
   extern void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent);
-  StartSelectLevel(GetSpawnFlagsForGameType(_pGUIM->gmSplitStartMenu.gm_mgGameType.mg_iSelected),
-    &CSplitStartMenu::ChangeTo, &_pGUIM->gmSplitStartMenu);
+  StartSelectLevel(GetSpawnFlagsForGameType(gmSplitStart.gm_mgGameType.mg_iSelected), &CSplitStartMenu::ChangeTo, &gmSplitStart);
 };
 
 extern void StartVarGameOptions(void);
@@ -61,7 +62,7 @@ static void StartSelectPlayersMenuFromSplit(void) {
   CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
   gmCurrent.gm_bAllowDedicated = FALSE;
   gmCurrent.gm_bAllowObserving = FALSE;
-  gmCurrent.gm_mgStart.mg_pActivatedFunction = &StartSplitScreenGame;
+  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartSplitScreenGame;
   CSelectPlayersMenu::ChangeTo();
 };
 
@@ -104,7 +105,7 @@ void CSplitStartMenu::Initialize_t(void)
   gm_mgOptions.mg_pmgUp = &gm_mgLevel;
   gm_mgOptions.mg_pmgDown = &gm_mgStart;
   gm_mgOptions.mg_strTip = TRANS("adjust game rules");
-  gm_mgOptions.mg_pActivatedFunction = &StartVarGameOptions;
+  gm_mgOptions.mg_pCallbackFunction = &StartVarGameOptions;
   AddChild(&gm_mgOptions);
 
   // start button
@@ -114,7 +115,7 @@ void CSplitStartMenu::Initialize_t(void)
   gm_mgStart.mg_pmgDown = &gm_mgGameType;
   gm_mgStart.SetText(TRANS("START"));
   AddChild(&gm_mgStart);
-  gm_mgStart.mg_pActivatedFunction = &StartSelectPlayersMenuFromSplit;
+  gm_mgStart.mg_pCallbackFunction = &StartSelectPlayersMenuFromSplit;
 }
 
 void CSplitStartMenu::StartMenu(void)
@@ -130,7 +131,7 @@ void CSplitStartMenu::StartMenu(void)
   // clamp maximum number of players to at least 4
   _pShell->SetINDEX("gam_ctMaxPlayers", ClampDn(_pShell->GetINDEX("gam_ctMaxPlayers"), 4L));
 
-  UpdateSplitLevel(0);
+  UpdateSplitLevel(&gm_mgGameType, 0);
   CGameMenu::StartMenu();
 }
 

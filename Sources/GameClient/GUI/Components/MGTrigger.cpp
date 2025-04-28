@@ -51,14 +51,14 @@ void CMGTrigger::ApplyCurrentSelection(void)
 void CMGTrigger::OnSetNextInList(PressedMenuButton pmb)
 {
   if (mg_pPreTriggerChange != NULL) {
-    mg_pPreTriggerChange(mg_iSelected);
+    (*mg_pPreTriggerChange)(this, mg_iSelected);
   }
 
   mg_iSelected = GetNewLoopValue(pmb, mg_iSelected, mg_ctTexts);
   SetText(mg_astrTexts[mg_iSelected]);
 
   if (mg_pOnTriggerChange != NULL) {
-    (*mg_pOnTriggerChange)(mg_iSelected);
+    (*mg_pOnTriggerChange)(this, mg_iSelected);
   }
 }
 

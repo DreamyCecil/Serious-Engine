@@ -22,28 +22,29 @@ CTString _strServerFilter[7];
 CMGButton mgServerColumn[7];
 CMGEdit mgServerFilter[7];
 
-static void SortByColumn(int i) {
-  CServersMenu &gmCurrent = _pGUIM->gmServersMenu;
+static void SortByColumn(CMenuGadget *pmg, int i) {
+  CServersMenu &gmServers = *(CServersMenu *)pmg->GetParentMenu();
 
-  if (gmCurrent.gm_mgList.mg_iSort == i) {
-    gmCurrent.gm_mgList.mg_bSortDown = !gmCurrent.gm_mgList.mg_bSortDown;
+  if (gmServers.gm_mgList.mg_iSort == i) {
+    gmServers.gm_mgList.mg_bSortDown = !gmServers.gm_mgList.mg_bSortDown;
   } else {
-    gmCurrent.gm_mgList.mg_bSortDown = FALSE;
+    gmServers.gm_mgList.mg_bSortDown = FALSE;
   }
 
-  gmCurrent.gm_mgList.mg_iSort = i;
+  gmServers.gm_mgList.mg_iSort = i;
 };
 
-static void SortByServer(void) { SortByColumn(0); }
-static void SortByMap(void)    { SortByColumn(1); }
-static void SortByPing(void)   { SortByColumn(2); }
-static void SortByPlayers(void){ SortByColumn(3); }
-static void SortByGame(void)   { SortByColumn(4); }
-static void SortByMod(void)    { SortByColumn(5); }
-static void SortByVer(void)    { SortByColumn(6); }
+static void SortByServer(CMenuGadget *pmg)  { SortByColumn(pmg, 0); }
+static void SortByMap(CMenuGadget *pmg)     { SortByColumn(pmg, 1); }
+static void SortByPing(CMenuGadget *pmg)    { SortByColumn(pmg, 2); }
+static void SortByPlayers(CMenuGadget *pmg) { SortByColumn(pmg, 3); }
+static void SortByGame(CMenuGadget *pmg)    { SortByColumn(pmg, 4); }
+static void SortByMod(CMenuGadget *pmg)     { SortByColumn(pmg, 5); }
+static void SortByVer(CMenuGadget *pmg)     { SortByColumn(pmg, 6); }
 
-static void RefreshServerList(void) {
-  _pNetwork->EnumSessions(_pGUIM->gmServersMenu.m_bInternet);
+static void RefreshServerList(CMenuGadget *pmg) {
+  CServersMenu &gmServers = *(CServersMenu *)pmg->GetParentMenu();
+  _pNetwork->EnumSessions(gmServers.m_bInternet);
 };
 
 void CServersMenu::Initialize_t(void)
@@ -119,9 +120,7 @@ void CServersMenu::Initialize_t(void)
 
 void CServersMenu::StartMenu(void)
 {
-  extern void RefreshServerList(void);
-  RefreshServerList();
-
+  RefreshServerList(&gm_mgRefresh);
   CGameMenu::StartMenu();
 }
 

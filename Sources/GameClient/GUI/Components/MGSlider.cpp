@@ -38,7 +38,7 @@ void CMGSlider::ApplyCurrentPosition(void)
   mg_fFactor = fStretch;
 
   if (mg_pOnSliderChange != NULL) {
-    mg_pOnSliderChange(mg_iCurPos);
+    mg_pOnSliderChange(this, mg_iCurPos);
   }
 }
 

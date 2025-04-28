@@ -857,11 +857,6 @@ BOOL DoMenu( CDrawPort *pdp)
   return bStilInMenus;
 }
 
-void MenuBack(void)
-{
-  MenuGoToParent();
-}
-
 extern void FixupBackButton(CGameMenu *pgm)
 {
   BOOL bResume = FALSE;
@@ -910,7 +905,7 @@ extern void FixupBackButton(CGameMenu *pgm)
   mgBack.mg_pmgUp = 
   mgBack.mg_pmgDown = pgm->GetDefaultGadget();
 
-  mgBack.mg_pActivatedFunction = &MenuBack;
+  mgBack.mg_pCallbackFunction = &MenuGoToParent;
 
   mgBack.Appear();
 }

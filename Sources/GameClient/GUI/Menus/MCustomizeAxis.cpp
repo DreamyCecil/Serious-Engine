@@ -19,12 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MCustomizeAxis.h"
 
-static void PreChangeAxis(INDEX iDummy) {
-  _pGUIM->gmCustomizeAxisMenu.ApplyActionSettings();
+static void PreChangeAxis(CMenuGadget *pmg, INDEX iDummy) {
+  CCustomizeAxisMenu &gmAxis = *(CCustomizeAxisMenu *)pmg->GetParentMenu();
+  gmAxis.ApplyActionSettings();
 };
 
-static void PostChangeAxis(INDEX iDummy) {
-  _pGUIM->gmCustomizeAxisMenu.ObtainActionSettings();
+static void PostChangeAxis(CMenuGadget *pmg, INDEX iDummy) {
+  CCustomizeAxisMenu &gmAxis = *(CCustomizeAxisMenu *)pmg->GetParentMenu();
+  gmAxis.ObtainActionSettings();
 };
 
 void CCustomizeAxisMenu::Initialize_t(void)

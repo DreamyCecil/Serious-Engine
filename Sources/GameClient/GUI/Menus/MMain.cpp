@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 CTFileName _fnmModSelected;
 extern CTFileName _fnmModToLoad;
 
-BOOL LSLoadDemo(const CTFileName &fnm) {
+BOOL LSLoadDemo(CGameMenu *pgm, const CTString &fnm) {
   _pGame->gm_StartSplitScreenCfg = CGame::SSC_OBSERVER;
   _pGame->gm_strNetworkProvider = "Local";
 
@@ -64,7 +64,7 @@ static void ModLoadYes(void) {
   _fnmModToLoad = _fnmModSelected;
 };
 
-static BOOL LSLoadMod(const CTFileName &fnm) {
+static BOOL LSLoadMod(CGameMenu *pgm, const CTString &fnm) {
   _fnmModSelected = fnm;
   CConfirmMenu::ChangeTo(TRANS("LOAD THIS MOD?"), &ModLoadYes, NULL, TRUE);
   return TRUE;
@@ -120,7 +120,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgSingle);
   gm_mgSingle.mg_pmgUp = &gm_mgQuit;
   gm_mgSingle.mg_pmgDown = &gm_mgNetwork;
-  gm_mgSingle.mg_pActivatedFunction = &CSinglePlayerMenu::ChangeTo;
+  gm_mgSingle.mg_pCallbackFunction = &CSinglePlayerMenu::ChangeTo;
 
   gm_mgNetwork.SetText(TRANS("NETWORK"));
   gm_mgNetwork.mg_bfsFontSize = BFS_LARGE;
@@ -129,7 +129,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgNetwork);
   gm_mgNetwork.mg_pmgUp = &gm_mgSingle;
   gm_mgNetwork.mg_pmgDown = &gm_mgSplitScreen;
-  gm_mgNetwork.mg_pActivatedFunction = &CNetworkMenu::ChangeTo;
+  gm_mgNetwork.mg_pCallbackFunction = &CNetworkMenu::ChangeTo;
 
   gm_mgSplitScreen.SetText(TRANS("SPLIT SCREEN"));
   gm_mgSplitScreen.mg_bfsFontSize = BFS_LARGE;
@@ -138,7 +138,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgSplitScreen);
   gm_mgSplitScreen.mg_pmgUp = &gm_mgNetwork;
   gm_mgSplitScreen.mg_pmgDown = &gm_mgDemo;
-  gm_mgSplitScreen.mg_pActivatedFunction = &CSplitScreenMenu::ChangeTo;
+  gm_mgSplitScreen.mg_pCallbackFunction = &CSplitScreenMenu::ChangeTo;
 
   gm_mgDemo.SetText(TRANS("DEMO"));
   gm_mgDemo.mg_bfsFontSize = BFS_LARGE;
@@ -147,7 +147,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgDemo);
   gm_mgDemo.mg_pmgUp = &gm_mgSplitScreen;
   gm_mgDemo.mg_pmgDown = &gm_mgMods;
-  gm_mgDemo.mg_pActivatedFunction = &StartDemoLoadMenu;
+  gm_mgDemo.mg_pCallbackFunction = &StartDemoLoadMenu;
 
   gm_mgMods.SetText(TRANS("MODS"));
   gm_mgMods.mg_bfsFontSize = BFS_LARGE;
@@ -156,7 +156,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgMods);
   gm_mgMods.mg_pmgUp = &gm_mgDemo;
   gm_mgMods.mg_pmgDown = &gm_mgHighScore;
-  gm_mgMods.mg_pActivatedFunction = &StartModsLoadMenu;
+  gm_mgMods.mg_pCallbackFunction = &StartModsLoadMenu;
 
   gm_mgHighScore.SetText(TRANS("HIGH SCORES"));
   gm_mgHighScore.mg_bfsFontSize = BFS_LARGE;
@@ -165,7 +165,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgHighScore);
   gm_mgHighScore.mg_pmgUp = &gm_mgMods;
   gm_mgHighScore.mg_pmgDown = &gm_mgOptions;
-  gm_mgHighScore.mg_pActivatedFunction = &CHighScoreMenu::ChangeTo;
+  gm_mgHighScore.mg_pCallbackFunction = &CHighScoreMenu::ChangeTo;
 
   gm_mgOptions.SetText(TRANS("OPTIONS"));
   gm_mgOptions.mg_bfsFontSize = BFS_LARGE;
@@ -174,7 +174,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgOptions);
   gm_mgOptions.mg_pmgUp = &gm_mgHighScore;
   gm_mgOptions.mg_pmgDown = &gm_mgQuit;
-  gm_mgOptions.mg_pActivatedFunction = &COptionsMenu::ChangeTo;
+  gm_mgOptions.mg_pCallbackFunction = &COptionsMenu::ChangeTo;
 
   gm_mgQuit.SetText(TRANS("QUIT"));
   gm_mgQuit.mg_bfsFontSize = BFS_LARGE;
@@ -183,7 +183,7 @@ void CMainMenu::Initialize_t(void)
   AddChild(&gm_mgQuit);
   gm_mgQuit.mg_pmgUp = &gm_mgOptions;
   gm_mgQuit.mg_pmgDown = &gm_mgSingle;
-  gm_mgQuit.mg_pActivatedFunction = &ExitConfirm;
+  gm_mgQuit.mg_pCallbackFunction = &ExitConfirm;
 }
 
 void CMainMenu::StartMenu(void)
