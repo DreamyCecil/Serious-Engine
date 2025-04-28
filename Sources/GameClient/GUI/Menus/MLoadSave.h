@@ -51,7 +51,6 @@ public:
   BOOL gm_bManage;            // set if managing (rename/delet is enabled)
   CTString gm_strSaveDes;     // default description (if saving)
   BOOL gm_bAllowThumbnails;   // set when chosing file for saving
-  BOOL gm_bNoEscape;          // forbid exiting with escape/rmb
 
   INDEX gm_iSortType;    // sort type
 

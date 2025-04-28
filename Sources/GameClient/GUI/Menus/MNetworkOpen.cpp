@@ -102,7 +102,6 @@ void StartSelectPlayersMenuFromOpen(void) {
 
   extern void StartNetworkSettingsMenu(void);
   StartNetworkSettingsMenu();
-  _pGUIM->gmLoadSaveMenu.gm_bNoEscape = TRUE;
 };
 
 void CNetworkOpenMenu::Initialize_t(void)

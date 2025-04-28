@@ -361,7 +361,6 @@ static void StartSelectPlayersMenuFromServers(void) {
   
   extern void StartNetworkSettingsMenu(void);
   StartNetworkSettingsMenu();
-  _pGUIM->gmLoadSaveMenu.gm_bNoEscape = TRUE;
 };
 
 BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)

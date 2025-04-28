@@ -485,9 +485,6 @@ void MenuOnKeyDown(PressedMenuButton pmb)
   // if not handled
   if(!bHandled) {
     if (pmb.Back(TRUE)) {
-      if (pgmCurrentMenu==&_pGUIM->gmLoadSaveMenu && _pGUIM->gmLoadSaveMenu.gm_bNoEscape) {
-        return;
-      }
       // go to parent menu if possible
       MenuGoToParent();
     }

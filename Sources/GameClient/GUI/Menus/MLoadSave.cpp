@@ -62,8 +62,6 @@ void CLoadSaveMenu::Initialize_t(void)
 
 void CLoadSaveMenu::StartMenu(void)
 {
-  gm_bNoEscape = FALSE;
-
   // delete all file infos
   FORDELETELIST(CFileInfo, fi_lnNode, gm_lhFileInfos, itfi) {
     delete &itfi.Current();
