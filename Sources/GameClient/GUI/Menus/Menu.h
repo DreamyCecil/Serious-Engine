@@ -111,7 +111,18 @@ void StartMenus(const CTString &str = "");
 void StopMenus(BOOL bGoToRoot =TRUE);
 BOOL IsMenuRoot(class CGameMenu *pgm); // [Cecil] Check if it's a root menu
 void ChangeToMenu(class CGameMenu *pgmNew);
-extern void PlayMenuSound(CSoundData *psd);
+
+// [Cecil] Menu sound types
+enum EMenuSound {
+  E_MSNG_SELECT,
+  E_MSND_PRESS,
+  // New types
+  E_MSND_RETURN,
+  E_MSND_DISABLED,
+};
+
+// [Cecil] Type instead of a pointer to any sound data and a flag for playing over other sounds
+void PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds = TRUE);
 
 #define KEYS_ON_SCREEN 14
 #define LEVELS_ON_SCREEN 16

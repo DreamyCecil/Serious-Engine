@@ -17,13 +17,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGLevelButton.h"
 
-extern CSoundData *_psdPress;
-
-
 void CMGLevelButton::OnActivate(void)
 {
-  PlayMenuSound(_psdPress);
-  IFeel_PlayEffect("Menu_press");
+  PlayMenuSound(E_MSND_PRESS);
   _pGame->gam_strCustomLevel = mg_fnmLevel;
 
   // [Cecil] Rewind to some menu after choosing the level

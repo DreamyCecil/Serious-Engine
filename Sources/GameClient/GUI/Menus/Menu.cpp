@@ -76,9 +76,11 @@ CFontData _fdMedium;
 CFontData _fdSmall;
 CFontData _fdTitle;
 
-CSoundData *_psdSelect = NULL;
-CSoundData *_psdPress = NULL;
-CSoundObject *_psoMenuSound = NULL;
+static CSoundData *_psdSelect = NULL;
+static CSoundData *_psdPress = NULL;
+static CSoundData *_psdReturn = NULL;
+static CSoundData *_psdDisabled = NULL;
+static CSoundObject *_psoMenuSound = NULL;
 
 static CTextureObject _toLogoMenuA;
 static CTextureObject _toLogoMenuB;
@@ -161,12 +163,45 @@ CMGButton mgBack;
 // -------- console variable adjustment menu
 BOOL _bVarChanged = FALSE;
 
-extern void PlayMenuSound(CSoundData *psd)
-{
-  if (_psoMenuSound!=NULL && !_psoMenuSound->IsPlaying()) {
+void PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds) {
+  CSoundData *psd = NULL;
+  const char *strEffect = NULL;
+
+  // [Cecil] Select sound based on type
+  switch (eSound) {
+    case E_MSNG_SELECT:
+      psd = _psdSelect;
+      strEffect = "Menu_select";
+      break;
+
+    case E_MSND_PRESS:
+      psd = _psdPress;
+      strEffect = "Menu_press";
+      break;
+
+    case E_MSND_RETURN:
+      psd = _psdReturn;
+      strEffect = "Menu_press";
+      break;
+
+    case E_MSND_DISABLED:
+      psd = _psdDisabled;
+      break;
+
+    default:
+      ASSERTALWAYS("Unknown menu sound type in PlayMenuSound()!");
+      return;
+  }
+
+  if (bOverOtherSounds || (_psoMenuSound != NULL && !_psoMenuSound->IsPlaying())) {
     _psoMenuSound->Play(psd, SOF_NONGAME);
   }
-}
+
+  // [Cecil] Play IFeel effects here
+  if (strEffect != NULL) {
+    IFeel_PlayEffect(strEffect);
+  }
+};
 
 // translate all texts in array for one radio button
 void TranslateRadioTexts(CTString astr[], INDEX ct)
@@ -308,8 +343,10 @@ void InitializeMenus(void)
     _fdTitle.SetLineSpacing( 0);
 
     // load menu sounds
-    _psdSelect = _pSoundStock->Obtain_t( CTFILENAME("Sounds\\Menu\\Select.wav"));
-    _psdPress  = _pSoundStock->Obtain_t( CTFILENAME("Sounds\\Menu\\Press.wav"));
+    _psdSelect   = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Select.wav"));
+    _psdPress    = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
+    _psdReturn   = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
+    _psdDisabled = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
     _psoMenuSound = new CSoundObject;
 
     // initialize and load menu textures
@@ -391,9 +428,13 @@ void DestroyMenus( void)
   pgmCurrentMenu = NULL;
   _pSoundStock->Release(_psdSelect);
   _pSoundStock->Release(_psdPress);
+  _pSoundStock->Release(_psdReturn);
+  _pSoundStock->Release(_psdDisabled);
   delete _psoMenuSound;
   _psdSelect = NULL;
   _psdPress = NULL;
+  _psdReturn = NULL;
+  _psdDisabled = NULL;
   _psoMenuSound = NULL;
 }
 
@@ -416,6 +457,9 @@ void MenuGoToParent(void)
   } else {
     ChangeToMenu(NULL);
   }
+
+  // [Cecil] Play return sound
+  PlayMenuSound(E_MSND_RETURN);
 }
 
 void MenuOnKeyDown(PressedMenuButton pmb)

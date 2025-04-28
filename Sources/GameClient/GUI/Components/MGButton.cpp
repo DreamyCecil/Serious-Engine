@@ -19,8 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "VarList.h"
 #include "MGButton.h"
 
-extern CSoundData *_psdPress;
-
 CMGButton::CMGButton(void)
 {
   mg_pActivatedFunction = NULL;
@@ -41,8 +39,7 @@ void CMGButton::OnActivate(void)
 {
   if ((mg_pActivatedFunction != NULL || mg_pCallbackFunction != NULL) && mg_bEnabled)
   {
-    PlayMenuSound(_psdPress);
-    IFeel_PlayEffect("Menu_press");
+    PlayMenuSound(E_MSND_PRESS);
 
     if (mg_pActivatedFunction != NULL) {
       (*mg_pActivatedFunction)(this);
@@ -52,6 +49,10 @@ void CMGButton::OnActivate(void)
     if (mg_pCallbackFunction != NULL) {
       (*mg_pCallbackFunction)();
     }
+
+  } else {
+    // [Cecil] Button is disabled
+    PlayMenuSound(E_MSND_DISABLED);
   }
 }
 

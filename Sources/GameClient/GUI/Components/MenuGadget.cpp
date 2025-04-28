@@ -70,10 +70,8 @@ BOOL CMenuGadget::OnChar(const OS::SE1Event &event)
 void CMenuGadget::OnSetFocus(void)
 {
   mg_bFocused = TRUE;
-  if (!IsSeparator())
-  {
-    PlayMenuSound(_psdSelect);
-    IFeel_PlayEffect("Menu_select");
+  if (!IsSeparator()) {
+    PlayMenuSound(E_MSNG_SELECT, FALSE); // [Cecil] Don't play over other sounds
   }
 }
 

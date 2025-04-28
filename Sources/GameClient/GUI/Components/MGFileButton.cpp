@@ -17,9 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGFileButton.h"
 
-extern CSoundData *_psdPress;
-
-
 CMGFileButton::CMGFileButton(void)
 {
   mg_iState = FBS_NORMAL;
@@ -119,8 +116,7 @@ void CMGFileButton::OnActivate(void)
     return;
   }
 
-  PlayMenuSound(_psdPress);
-  IFeel_PlayEffect("Menu_press");
+  PlayMenuSound(E_MSND_PRESS);
 
   CLoadSaveMenu *pgmLoadSave = GetLSMenu();
 

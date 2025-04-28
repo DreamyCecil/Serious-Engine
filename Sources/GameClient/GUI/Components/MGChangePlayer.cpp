@@ -17,13 +17,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGChangePlayer.h"
 
-extern CSoundData *_psdPress;
-
-
 void CMGChangePlayer::OnActivate(void)
 {
-  PlayMenuSound(_psdPress);
-  IFeel_PlayEffect("Menu_press");
+  PlayMenuSound(E_MSND_PRESS);
   _iLocalPlayer = mg_iLocalPlayer;
 
   if (_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer] < 0) {

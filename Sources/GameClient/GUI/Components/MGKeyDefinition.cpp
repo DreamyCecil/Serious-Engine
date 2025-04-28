@@ -17,11 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGKeyDefinition.h"
 
-extern CSoundData *_psdSelect;
-extern CSoundData *_psdPress;
-
 extern BOOL _bDefiningKey;
-
 
 CMGKeyDefinition::CMGKeyDefinition(void)
 {
@@ -30,8 +26,7 @@ CMGKeyDefinition::CMGKeyDefinition(void)
 
 void CMGKeyDefinition::OnActivate(void)
 {
-  PlayMenuSound(_psdPress);
-  IFeel_PlayEffect("Menu_press");
+  PlayMenuSound(E_MSND_PRESS);
   SetBindingNames(/*bDefining=*/TRUE);
   mg_iState = RELEASE_RETURN_WAITING;
 }

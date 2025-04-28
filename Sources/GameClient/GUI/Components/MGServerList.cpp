@@ -18,10 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MGServerList.h"
 #include "MGEdit.h"
 
-extern CSoundData *_psdSelect;
-extern CSoundData *_psdPress;
-
-
 FLOATaabbox2D GetBoxPartHoriz(const FLOATaabbox2D &box, FLOAT fMin, FLOAT fMax)
 {
   FLOAT fBoxMin = box.Min()(1);
@@ -420,8 +416,7 @@ BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
 
   // [Cecil] Select the listing
   if (pmb.Apply(TRUE)) {
-    PlayMenuSound(_psdPress);
-    IFeel_PlayEffect("Menu_press");
+    PlayMenuSound(E_MSND_PRESS);
 
     INDEX i = 0;
 
