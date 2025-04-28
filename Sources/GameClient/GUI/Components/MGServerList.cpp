@@ -54,6 +54,7 @@ CMGServerList::CMGServerList()
   mg_iSort = 2;
   mg_bSortDown = FALSE;
 }
+
 void CMGServerList::AdjustFirstOnScreen(void)
 {
   INDEX ctSessions = _lhServers.Count();
@@ -93,58 +94,56 @@ int CompareSessions(const void *pv0, const void *pv1)
   return _bSortDown ? -iResult : iResult;
 }
 
-extern CMGButton mgServerColumn[7];
-extern CMGEdit mgServerFilter[7];
-
-void SortAndFilterServers(void)
+void SortAndFilterServers(CServersMenu &gmServers)
 {
+  CTString *astrServerFilter = gmServers.gm_astrServerFilter;
+
   {FORDELETELIST(CNetworkSession, ns_lnNode, _lhServers, itns) {
     delete &*itns;
   }}
 
   {FOREACHINLIST(CNetworkSession, ns_lnNode, _pNetwork->ga_lhEnumeratedSessions, itns) {
     CNetworkSession &ns = *itns;
-    extern CTString _strServerFilter[7];
-    if (_strServerFilter[0] != "" && !ns.ns_strSession.Matches("*" + _strServerFilter[0] + "*")) continue;
-    if (_strServerFilter[1] != "" && !ns.ns_strWorld.Matches("*" + _strServerFilter[1] + "*")) continue;
-    if (_strServerFilter[2] != "") {
+    if (astrServerFilter[0] != "" && !ns.ns_strSession.Matches("*" + astrServerFilter[0] + "*")) continue;
+    if (astrServerFilter[1] != "" && !ns.ns_strWorld.Matches("*" + astrServerFilter[1] + "*")) continue;
+    if (astrServerFilter[2] != "") {
       char strCompare[3] = { 0, 0, 0 };
       int iPing = 0;
-      _strServerFilter[2].ScanF("%2[<>=]%d", strCompare, &iPing);
+      astrServerFilter[2].ScanF("%2[<>=]%d", strCompare, &iPing);
       if (strcmp(strCompare, "<") == 0 && !(int(ns.ns_tmPing * 1000)< iPing)) continue;
       if (strcmp(strCompare, "<=") == 0 && !(int(ns.ns_tmPing * 1000) <= iPing)) continue;
       if (strcmp(strCompare, ">") == 0 && !(int(ns.ns_tmPing * 1000)> iPing)) continue;
       if (strcmp(strCompare, ">=") == 0 && !(int(ns.ns_tmPing * 1000) >= iPing)) continue;
       if (strcmp(strCompare, "=") == 0 && !(int(ns.ns_tmPing * 1000) == iPing)) continue;
     }
-    if (_strServerFilter[3] != "") {
+    if (astrServerFilter[3] != "") {
       char strCompare[3] = { 0, 0, 0 };
       int iPlayers = 0;
-      _strServerFilter[3].ScanF("%2[<>=]%d", strCompare, &iPlayers);
+      astrServerFilter[3].ScanF("%2[<>=]%d", strCompare, &iPlayers);
       if (strcmp(strCompare, "<") == 0 && !(ns.ns_ctPlayers< iPlayers)) continue;
       if (strcmp(strCompare, "<=") == 0 && !(ns.ns_ctPlayers <= iPlayers)) continue;
       if (strcmp(strCompare, ">") == 0 && !(ns.ns_ctPlayers> iPlayers)) continue;
       if (strcmp(strCompare, ">=") == 0 && !(ns.ns_ctPlayers >= iPlayers)) continue;
       if (strcmp(strCompare, "=") == 0 && !(ns.ns_ctPlayers == iPlayers)) continue;
     }
-    if (_strServerFilter[4] != "" && !ns.ns_strGameType.Matches("*" + _strServerFilter[4] + "*")) continue;
-    if (_strServerFilter[5] != "" && !ns.ns_strMod.Matches("*" + _strServerFilter[5] + "*")) continue;
-    if (_strServerFilter[6] != "" && !ns.ns_strVer.Matches("*" + _strServerFilter[6] + "*")) continue;
+    if (astrServerFilter[4] != "" && !ns.ns_strGameType.Matches("*" + astrServerFilter[4] + "*")) continue;
+    if (astrServerFilter[5] != "" && !ns.ns_strMod.Matches("*" + astrServerFilter[5] + "*")) continue;
+    if (astrServerFilter[6] != "" && !ns.ns_strVer.Matches("*" + astrServerFilter[6] + "*")) continue;
 
     CNetworkSession *pnsNew = new CNetworkSession;
     pnsNew->Copy(*itns);
     _lhServers.AddTail(pnsNew->ns_lnNode);
-  }
-}
+  }}
 
   _lhServers.Sort(CompareSessions, offsetof(CNetworkSession, ns_lnNode));
 }
 
-void CMGServerList::Render(CDrawPort *pdp)
-{
+void CMGServerList::Render(CDrawPort *pdp) {
+  CServersMenu &gmServers = *(CServersMenu *)GetParentMenu();
+
   _iSort = mg_iSort;
   _bSortDown = mg_bSortDown;
-  SortAndFilterServers();
+  SortAndFilterServers(gmServers);
 
   SetFontSmall(pdp);
   BOOL bFocusedBefore = mg_bFocused;
@@ -164,9 +163,10 @@ void CMGServerList::Render(CDrawPort *pdp)
   INDEX ctSessions = _lhServers.Count();
   INDEX iSession = 0;
 
-  INDEX ctColumns[7];
-  {for (INDEX i = 0; i<ARRAYCOUNT(ctColumns); i++) {
-    ctColumns[i] = mgServerColumn[i].GetText().Length() + 1;
+  INDEX ctColumns[SERVER_MENU_COLUMNS];
+
+  {for (INDEX i = 0; i < SERVER_MENU_COLUMNS; i++) {
+    ctColumns[i] = gmServers.gm_amgServerColumn[i].GetText().Length() + 1;
   }}
 
   PIX pixSizePing = Max(PIX(pixCharSizeI * 5), pixCharSizeI*ctColumns[2]) + pixLineSize * 2;
@@ -210,10 +210,10 @@ void CMGServerList::Render(CDrawPort *pdp)
   mg_pixHeaderMaxJ = pixTopJ + (pixLineSize + pixCharSizeJ) * 2;
   memcpy(mg_pixHeaderI, apixSeparatorI, sizeof(mg_pixHeaderI));
 
-  {for (INDEX i = 0; i<ARRAYCOUNT(mgServerFilter); i++) {
-    mgServerColumn[i].mg_boxOnScreen = PixBoxToFloatBox(pdp,
+  {for (INDEX i = 0; i < SERVER_MENU_COLUMNS; i++) {
+    gmServers.gm_amgServerColumn[i].mg_boxOnScreen = PixBoxToFloatBox(pdp,
       PIXaabbox2D(PIX2D(apixSeparatorI[i] + pixCharSizeI / 2, pixTopJ + pixLineSize * 4), PIX2D(apixSeparatorI[i + 1] - pixCharSizeI / 2, pixTopJ + pixLineSize * 4 + pixCharSizeJ)));
-    mgServerFilter[i].mg_boxOnScreen = PixBoxToFloatBox(pdp,
+    gmServers.gm_amgServerFilter[i].mg_boxOnScreen = PixBoxToFloatBox(pdp,
       PIXaabbox2D(PIX2D(apixSeparatorI[i] + pixCharSizeI / 2, pixFilterTopJ), PIX2D(apixSeparatorI[i + 1] - pixCharSizeI / 2, pixFilterTopJ + pixCharSizeJ)));
   }}
 

@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGEdit.h"
 #include "GUI/Components/MGTitle.h"
 
-
 class CNetworkOpenMenu : public CGameMenu {
 public:
   CTString gm_strPort;

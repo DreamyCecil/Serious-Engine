@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGServerList.h"
 #include "GUI/Components/MGTitle.h"
 
+#define SERVER_MENU_COLUMNS 7
 
 class CServersMenu : public CGameMenu {
 public:
@@ -33,6 +34,10 @@ public:
   CMGTitle gm_mgTitle;
   CMGServerList gm_mgList;
   CMGButton gm_mgRefresh;
+
+  CTString gm_astrServerFilter[SERVER_MENU_COLUMNS];
+  CMGButton gm_amgServerColumn[SERVER_MENU_COLUMNS];
+  CMGEdit gm_amgServerFilter[SERVER_MENU_COLUMNS];
 
   // [Cecil] Menu name for the mod interface
   virtual const char *GetName(void) const {

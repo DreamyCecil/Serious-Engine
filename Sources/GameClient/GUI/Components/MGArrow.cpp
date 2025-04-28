@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGArrow.h"
 
-
 void CMGArrow::Render(CDrawPort *pdp)
 {
   SetFontMedium(pdp);

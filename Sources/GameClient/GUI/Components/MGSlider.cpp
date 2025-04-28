@@ -21,7 +21,6 @@ extern FLOAT _fCursorPosI;
 extern FLOAT _fCursorPosJ;
 extern INDEX sam_bWideScreen;
 
-
 CMGSlider::CMGSlider()
 {
   mg_iMinPos = 0;
@@ -49,7 +48,6 @@ void CMGSlider::ApplyGivenPosition(INDEX iMin, INDEX iMax, INDEX iCur)
   mg_iCurPos = iCur;
   ApplyCurrentPosition();
 }
-
 
 BOOL CMGSlider::OnKeyDown(PressedMenuButton pmb)
 {

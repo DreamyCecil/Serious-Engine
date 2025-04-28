@@ -41,7 +41,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MVar.h"
 #include "MVideoOptions.h"
 
-
 class CMenuManager {
 public:
   // [Cecil] List of previously visited menus
@@ -76,6 +75,5 @@ public:
 };
 
 extern CMenuManager *_pGUIM; // TODO: Make singleton!
-
 
 #endif  /* include-once check. */

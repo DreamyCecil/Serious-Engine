@@ -32,7 +32,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   mg.SetName(text); \
   mg.SetText(astr[0]);
 
-
 extern INDEX ctGameTypeRadioTexts;
 
 extern CTString astrNoYes[2];

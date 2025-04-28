@@ -26,7 +26,7 @@ BOOL _bEditingString = FALSE;
 
 const CTString CMenuGadget::mg_strDummyString;
 
-CMenuGadget::CMenuGadget(void)
+CMenuGadget::CMenuGadget()
 {
   mg_pmgLeft = NULL;
   mg_pmgRight = NULL;

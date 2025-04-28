@@ -41,29 +41,12 @@ CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
   return NULL;
 };
 
-void CGameMenu::Initialize_t(void)
-{
-}
-
-void CGameMenu::Destroy(void)
-{
-}
-
-void CGameMenu::FillListItems(void)
-{
-  ASSERT(FALSE);  // must be implemented to scroll up/down
-}
-
 void CGameMenu::KillAllFocuses(void)
 {
   // for each menu gadget in menu
   FOREACHNODE(this, CMenuGadget, itmg) {
     itmg->mg_bFocused = FALSE;
   }
-}
-
-void CGameMenu::Think(void)
-{
 }
 
 // +-1 -> hit top/bottom when pressing up/down on keyboard

@@ -34,7 +34,6 @@ CMGButton::CMGButton(void)
   mg_bHighlighted = FALSE;
 }
 
-
 void CMGButton::OnActivate(void)
 {
   if ((mg_pActivatedFunction != NULL || mg_pCallbackFunction != NULL) && mg_bEnabled)
@@ -55,7 +54,6 @@ void CMGButton::OnActivate(void)
     PlayMenuSound(E_MSND_DISABLED);
   }
 }
-
 
 void CMGButton::Render(CDrawPort *pdp)
 {
@@ -122,7 +120,6 @@ void CMGButton::Render(CDrawPort *pdp)
     pdp->Fill(pixLeft, pixUp, pixWidth, pixHeight, _pGame->LCDGetColor(C_dGREEN | 0x40, "edit fill"));
   }
 
-
   INDEX iCursor = mg_iCursorPos;
 
   // print text
@@ -168,7 +165,6 @@ void CMGButton::Render(CDrawPort *pdp)
     pdp->PutText("|", pixX, pixY, _pGame->LCDGetColor(C_WHITE | 0xFF, "editing cursor"));
   }
 }
-
 
 PIX CMGButton::GetCharOffset(CDrawPort *pdp, INDEX iCharNo)
 {

@@ -25,7 +25,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGTitle.h"
 #include "GUI/Components/MGTrigger.h"
 
-
 class CSelectPlayersMenu : public CGameMenu {
 public:
   BOOL gm_bAllowDedicated;

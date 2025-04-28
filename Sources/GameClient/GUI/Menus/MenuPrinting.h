@@ -55,6 +55,4 @@ void SetFontBig(CDrawPort *pdp);
 void SetFontMedium(CDrawPort *pdp);
 void SetFontSmall(CDrawPort *pdp);
 
-
 #endif  /* include-once check. */
-

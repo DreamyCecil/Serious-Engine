@@ -25,7 +25,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGTrigger.h"
 #include "GUI/Components/MGTitle.h"
 
-
 class CAudioOptionsMenu : public CGameMenu {
 public:
   CMGTitle gm_mgTitle;

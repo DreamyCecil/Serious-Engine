@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGKeyDefinition.h"
 #include "GUI/Components/MGTitle.h"
 
-
 class CCustomizeKeyboardMenu : public CGameMenu {
 public:
   CMGTitle gm_mgTitle;

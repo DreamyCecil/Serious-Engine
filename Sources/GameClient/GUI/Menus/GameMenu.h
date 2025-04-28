@@ -34,7 +34,14 @@ public:
   INDEX gm_iListWantedItem;   // item you want to focus initially
   INDEX gm_ctListVisible;
   INDEX gm_ctListTotal;
-  CGameMenu(void);
+
+  // Constructor
+  CGameMenu();
+
+  // [Cecil] Destructor for derived menus
+  virtual ~CGameMenu() {
+    Destroy();
+  };
 
   // [Cecil] Menu name for the mod interface (used to be a gm_strName field)
   virtual const char *GetName(void) const = 0;
@@ -47,15 +54,21 @@ public:
 
   void ScrollList(INDEX iDir);
   void KillAllFocuses(void);
-  virtual void Initialize_t(void);
-  virtual void Destroy(void);
+
+  virtual void Initialize_t(void) {};
+  virtual void Destroy(void) {};
+  virtual void Think(void) {};
+
+  virtual void FillListItems(void) {
+    ASSERTALWAYS("FillListItems() isn't defined for this menu!");
+  };
+
   virtual void StartMenu(void);
-  virtual void FillListItems(void);
   virtual void EndMenu(void);
+
   // return TRUE if handled
   virtual BOOL OnKeyDown(PressedMenuButton pmb);
   virtual BOOL OnChar(const OS::SE1Event &event);
-  virtual void Think(void);
 };
 
 #endif  /* include-once check. */

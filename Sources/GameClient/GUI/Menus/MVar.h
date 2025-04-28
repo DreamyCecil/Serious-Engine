@@ -25,7 +25,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGTitle.h"
 #include "GUI/Components/MGVarButton.h"
 
-
 class CVarMenu : public CGameMenu {
 public:
   CTFileName gm_fnmMenuCFG;

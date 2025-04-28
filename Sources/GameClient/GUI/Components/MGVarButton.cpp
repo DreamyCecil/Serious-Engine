@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern FLOAT _fCursorPosI;
 extern FLOAT _fCursorPosJ;
 
-
 BOOL CMGVarButton::IsSeparator(void)
 {
   if (mg_pvsVar == NULL) return FALSE;
@@ -48,6 +47,7 @@ PIXaabbox2D CMGVarButton::GetSliderBox(void)
 }
 
 extern BOOL _bVarChanged;
+
 BOOL CMGVarButton::OnKeyDown(PressedMenuButton pmb)
 {
   if (mg_pvsVar == NULL || mg_pvsVar->vs_bSeparator || !mg_pvsVar->Validate() || !mg_bEnabled) {
@@ -75,7 +75,8 @@ BOOL CMGVarButton::OnKeyDown(PressedMenuButton pmb)
 
   if (pmb.Apply(FALSE)) {
     // [Cecil] Emulate the action of clicking on "Apply"
-    _pGUIM->gmVarMenu.gm_mgApply.OnActivate();
+    ASSERT(GetParentMenu()->GetName() == CTString("Var"));
+    ((CVarMenu *)GetParentMenu())->gm_mgApply.OnActivate();
     return TRUE;
   }
 

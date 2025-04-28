@@ -137,9 +137,8 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_mgMental.mg_pmgDown = &gm_mgTourist;
   gm_mgMental.mg_pCallbackFunction = &StartSinglePlayerGame_Mental;
   gm_mgMental.mg_bMental = TRUE;
-
-
 }
+
 void CSinglePlayerNewMenu::StartMenu(void)
 {
   CGameMenu::StartMenu();

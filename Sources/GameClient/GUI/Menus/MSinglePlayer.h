@@ -23,7 +23,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGButton.h"
 #include "GUI/Components/MGTitle.h"
 
-
 class CSinglePlayerMenu : public CGameMenu {
 public:
   CMGTitle gm_mgTitle;

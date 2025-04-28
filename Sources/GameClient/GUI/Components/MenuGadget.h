@@ -49,7 +49,11 @@ public:
   CMenuGadget *mg_pmgUp;
   CMenuGadget *mg_pmgDown;
 
-  CMenuGadget(void);
+  // Constructor
+  CMenuGadget();
+
+  // [Cecil] Destructor for derived gadgets
+  virtual ~CMenuGadget() {};
 
   // [Cecil] Get parent menu
   inline CGameMenu *GetParentMenu(void) const {

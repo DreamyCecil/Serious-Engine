@@ -22,7 +22,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GameMenu.h"
 #include "GUI/Components/MGButton.h"
 
-
 class CMainMenu : public CGameMenu {
 public:
   CMGButton gm_mgVersionLabel;

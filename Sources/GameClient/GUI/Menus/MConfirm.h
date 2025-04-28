@@ -22,7 +22,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GameMenu.h"
 #include "GUI/Components/MGButton.h"
 
-
 class CConfirmMenu : public CGameMenu {
 public:
   typedef void (*FConfirm)(void);

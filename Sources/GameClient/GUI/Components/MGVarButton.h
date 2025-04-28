@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGButton.h"
 
-
 class CMGVarButton : public CMGButton {
 public:
   class CVarSetting *mg_pvsVar;

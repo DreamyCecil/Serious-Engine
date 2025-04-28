@@ -36,7 +36,6 @@ enum ELSSortType
   LSSORT_FILEDN,
 };
 
-
 class CLoadSaveMenu : public CGameMenu {
 public:
   typedef BOOL (*FAfterChoosing)(CGameMenu *pgm, const CTString &fnm);

@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGButton.h"
 
-
 class CMGModel : public CMGButton {
 public:
   CModelObject mg_moModel;
@@ -29,7 +28,9 @@ public:
   CPlacement3D mg_plModel;
   BOOL mg_fFloorY;
 
-  CMGModel(void);
+  CMGModel();
+  virtual ~CMGModel();
+
   void Render(CDrawPort *pdp);
 };
 

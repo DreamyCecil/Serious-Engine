@@ -19,11 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern INDEX sam_bWideScreen;
 
-
-CMGModel::CMGModel(void)
+CMGModel::CMGModel()
 {
   mg_fFloorY = 0;
 }
+
+// [Cecil] Clean up any models
+CMGModel::~CMGModel() {
+  mg_moModel.SetData(NULL);
+  mg_moFloor.SetData(NULL);
+};
 
 void CMGModel::Render(CDrawPort *pdp)
 {

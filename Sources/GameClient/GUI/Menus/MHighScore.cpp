@@ -34,11 +34,6 @@ void CHighScoreMenu::Initialize_t(void)
   AddChild(&gm_mgTitle);
 }
 
-void CHighScoreMenu::StartMenu(void)
-{
-  CGameMenu::StartMenu();
-}
-
 // [Cecil] Change to the menu
 void CHighScoreMenu::ChangeTo(void) {
   ChangeToMenu(&_pGUIM->gmHighScoreMenu);

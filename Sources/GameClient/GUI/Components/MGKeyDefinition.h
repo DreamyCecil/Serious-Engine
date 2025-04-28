@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MenuGadget.h"
 
-
 class CMGKeyDefinition : public CMenuGadget {
 private:
   CTString mg_strLabel;

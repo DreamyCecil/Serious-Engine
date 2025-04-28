@@ -23,7 +23,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGHighScore.h"
 #include "GUI/Components/MGTitle.h"
 
-
 class CHighScoreMenu : public CGameMenu {
 public:
   CMGTitle gm_mgTitle;
@@ -38,7 +37,6 @@ public:
   virtual CMenuGadget *GetDefaultGadget(void);
 
   void Initialize_t(void);
-  void StartMenu(void);
 
   // [Cecil] Change to the menu
   static void ChangeTo(void);

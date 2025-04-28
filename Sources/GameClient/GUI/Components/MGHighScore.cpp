@@ -18,11 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MGHighScore.h"
 
 #define HSCOLUMNS 6
+
 CTString strHighScores[HIGHSCORE_COUNT + 1][HSCOLUMNS];
 FLOAT afI[HSCOLUMNS] = {
   0.12f, 0.15f, 0.6f, 0.7f, 0.78f, 0.9f
 };
-
 
 void CMGHighScore::Render(CDrawPort *pdp)
 {

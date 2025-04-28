@@ -47,7 +47,6 @@ void CMGEdit::OnActivate(void)
   _bEditingString = TRUE;
 }
 
-
 // focus lost
 void CMGEdit::OnKillFocus(void)
 {

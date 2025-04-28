@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGTitle.h"
 #include "GUI/Components/MGTrigger.h"
 
-
 class CSplitStartMenu : public CGameMenu {
 public:
   CMGTitle gm_mgTitle;

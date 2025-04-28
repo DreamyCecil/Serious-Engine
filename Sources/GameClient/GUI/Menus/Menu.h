@@ -152,5 +152,4 @@ extern CGameMenu *pgmCurrentMenu;
 #include "MPlayerProfile.h"
 #include "MSelectPlayers.h"
 
-
 #endif  /* include-once check. */

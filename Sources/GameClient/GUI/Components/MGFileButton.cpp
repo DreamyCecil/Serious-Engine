@@ -234,6 +234,7 @@ void CMGFileButton::OnStringChanged(void)
     OnSetFocus();
   }
 }
+
 void CMGFileButton::OnStringCanceled(void)
 {
   SetText(_strOrgDescription);

@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGButton.h"
 
-
 class CMGSlider : public CMGButton {
 public:
   typedef void (*FSliderChange)(CMenuGadget *pmg, INDEX iCurPos);
