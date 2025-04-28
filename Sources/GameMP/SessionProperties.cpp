@@ -261,8 +261,6 @@ BOOL IsMenuEnabled(const CTString &strMenuName)
     return TRUE;
   } else if (strMenuName=="High Score"   ) {
     return TRUE;
-  } else if (strMenuName=="Training"   ) {
-    return FALSE;
   } else if (strMenuName=="Technology Test") {
     return TRUE;
   } else {

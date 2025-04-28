@@ -21,6 +21,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "LevelInfo.h"
 
+extern CTString sam_strFirstLevel;
+extern CTString sam_strTechTestLevel;
+extern CTString sam_strTrainingLevel;
+
 // [Cecil] Open level or category selection screen
 void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent) {
   FilterLevels(ulFlags);
@@ -36,7 +40,6 @@ void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmP
 };
 
 static void StartSinglePlayerNewMenu(void) {
-  extern CTString sam_strFirstLevel;
   _pGame->gam_strCustomLevel = sam_strFirstLevel;
   CSinglePlayerNewMenu::ChangeTo();
 };
@@ -115,7 +118,6 @@ void StartSinglePlayerLoadMenu(void) {
 };
 
 static void StartTraining(void) {
-  extern CTString sam_strTrainingLevel;
   _pGame->gam_strCustomLevel = sam_strTrainingLevel;
   CSinglePlayerNewMenu::ChangeTo();
 };
@@ -123,7 +125,6 @@ static void StartTraining(void) {
 extern void StartSinglePlayerGame_Normal(void);
 
 static void StartTechTest(void) {
-  extern CTString sam_strTechTestLevel;
   _pGame->gam_strCustomLevel = sam_strTechTestLevel;
   StartSinglePlayerGame_Normal();
 };
@@ -195,7 +196,7 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgTraining.SetText(TRANS("TRAINING"));
   gm_mgTraining.mg_bfsFontSize = BFS_LARGE;
   gm_mgTraining.mg_boxOnScreen = BoxBigRow(4.0f);
-  gm_mgTraining.mg_strTip = TRANS("start training level - KarnakDemo");
+  gm_mgTraining.mg_strTip = TRANS("start training level");
   AddChild(&gm_mgTraining);
   gm_mgTraining.mg_pmgUp = &gm_mgLoad;
   gm_mgTraining.mg_pmgDown = &gm_mgTechTest;
@@ -231,45 +232,9 @@ void CSinglePlayerMenu::Initialize_t(void)
 
 void CSinglePlayerMenu::StartMenu(void)
 {
-  gm_mgTraining.mg_bEnabled = IsMenuEnabled("Training");
+  // [Cecil] Simply toggle the training button if the level exists
+  gm_mgTraining.mg_bEnabled = FileExists(sam_strTrainingLevel);
   gm_mgTechTest.mg_bEnabled = IsMenuEnabled("Technology Test");
-
-  if (gm_mgTraining.mg_bEnabled) {
-    if (!gm_mgTraining.IsLinked()) {
-      AddChild(&gm_mgTraining);
-    }
-
-    gm_mgLoad.mg_boxOnScreen = BoxBigRow(3.0f);
-    gm_mgLoad.mg_pmgUp = &gm_mgQuickLoad;
-    gm_mgLoad.mg_pmgDown = &gm_mgTraining;
-
-    gm_mgTraining.mg_boxOnScreen = BoxBigRow(4.0f);
-    gm_mgTraining.mg_pmgUp = &gm_mgLoad;
-    gm_mgTraining.mg_pmgDown = &gm_mgTechTest;
-
-    gm_mgTechTest.mg_boxOnScreen = BoxBigRow(5.0f);
-    gm_mgTechTest.mg_pmgUp = &gm_mgTraining;
-    gm_mgTechTest.mg_pmgDown = &gm_mgPlayersAndControls;
-
-    gm_mgPlayersAndControls.mg_boxOnScreen = BoxBigRow(6.0f);
-    gm_mgOptions.mg_boxOnScreen = BoxBigRow(7.0f);
-
-  } else {
-    if (gm_mgTraining.IsLinked()) {
-      gm_mgTraining.Remove();
-    }
-
-    gm_mgLoad.mg_boxOnScreen = BoxBigRow(3.0f);
-    gm_mgLoad.mg_pmgUp = &gm_mgQuickLoad;
-    gm_mgLoad.mg_pmgDown = &gm_mgTechTest;
-
-    gm_mgTechTest.mg_boxOnScreen = BoxBigRow(4.0f);
-    gm_mgTechTest.mg_pmgUp = &gm_mgLoad;
-    gm_mgTechTest.mg_pmgDown = &gm_mgPlayersAndControls;
-
-    gm_mgPlayersAndControls.mg_boxOnScreen = BoxBigRow(5.0f);
-    gm_mgOptions.mg_boxOnScreen = BoxBigRow(6.0f);
-  }
 
   CGameMenu::StartMenu();
 
