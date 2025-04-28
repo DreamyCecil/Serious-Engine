@@ -1075,6 +1075,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClInclude Include="Base\IFeel.h" />
     <ClInclude Include="Base\Input.h" />
     <ClInclude Include="Base\KeyNames.h" />
+    <ClInclude Include="Base\LinkedNode.h" />
     <ClInclude Include="Base\Lists.h" />
     <ClInclude Include="Base\Memory.h" />
     <ClInclude Include="Base\ParsingSymbols.h" />

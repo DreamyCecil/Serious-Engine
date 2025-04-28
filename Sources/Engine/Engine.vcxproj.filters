@@ -1392,6 +1392,9 @@
     <ClInclude Include="Sound\SoundAPI_OpenAL.h">
       <Filter>Header Files\Sound Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Base\LinkedNode.h">
+      <Filter>Header Files\Base Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Base\CTString.inl">
