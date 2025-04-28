@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#include <Engine/Base/LinkedNode.h>
+
 #include "GUI/Menus/MenuPrinting.h"
 
 #define DOING_NOTHING 0
@@ -28,12 +30,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define EMPTYSLOTSTRING TRANS("<save a new one>")
 
 
-class CMenuGadget {
+class CMenuGadget : public CLinkedNode {
 private:
   static const CTString mg_strDummyString;
 
 public:
-  CListNode mg_lnNode;
   FLOATaabbox2D mg_boxOnScreen;
   BOOL mg_bVisible;
   BOOL mg_bEnabled;

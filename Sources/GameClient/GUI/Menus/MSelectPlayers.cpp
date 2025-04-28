@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   gd.mg_pmgLeft = lf; \
   gd.mg_pmgRight = rt; \
   gd.SetText(txt); \
-  gm_lhGadgets.AddTail(gd.mg_lnNode);
+  AddChild(&gd);
 
 extern CTString astrNoYes[2];
 extern CTString *astrSplitScreenRadioTexts;
@@ -225,7 +225,7 @@ void CSelectPlayersMenu::Initialize_t(void)
   // intialize split screen menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.SetText(TRANS("SELECT PLAYERS"));
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   TRIGGER_MG(gm_mgDedicated, 0, gm_mgStart, gm_mgObserver, TRANS("Dedicated:"), astrNoYes);
   gm_mgDedicated.mg_strTip = TRANS("select to start dedicated server");
@@ -246,7 +246,7 @@ void CSelectPlayersMenu::Initialize_t(void)
     gm_amgChangePlayer[iButton].mg_iCenterI = -1;
     gm_amgChangePlayer[iButton].mg_boxOnScreen = BoxMediumMiddle(4 + iButton);
     gm_amgChangePlayer[iButton].mg_strTip = TRANS("select profile for this player");
-    gm_lhGadgets.AddTail(gm_amgChangePlayer[iButton].mg_lnNode);
+    AddChild(&gm_amgChangePlayer[iButton]);
   }
 
   gm_mgNotes.mg_boxOnScreen = BoxMediumRow(9.0);
@@ -254,7 +254,7 @@ void CSelectPlayersMenu::Initialize_t(void)
   gm_mgNotes.mg_iCenterI = -1;
   gm_mgNotes.mg_bEnabled = FALSE;
   gm_mgNotes.mg_bLabel = TRUE;
-  gm_lhGadgets.AddTail(gm_mgNotes.mg_lnNode);
+  AddChild(&gm_mgNotes);
   gm_mgNotes.SetText("");
 
   ADD_GADGET(gm_mgStart, BoxMediumRow(11), &gm_mgSplitScreenCfg, &gm_amgChangePlayer[0], NULL, NULL, TRANS("START"));

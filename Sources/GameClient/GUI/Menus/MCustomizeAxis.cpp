@@ -32,7 +32,7 @@ void CCustomizeAxisMenu::Initialize_t(void)
   // intialize axis menu
   gm_mgTitle.SetText(TRANS("CUSTOMIZE AXIS"));
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   TRIGGER_MG(gm_mgActionTrigger, 0, gm_mgSmoothTrigger, gm_mgMountedTrigger, TRANS("ACTION"), astrNoYes);
   gm_mgActionTrigger.mg_strTip = TRANS("choose action to customize");
@@ -64,14 +64,14 @@ void CCustomizeAxisMenu::Initialize_t(void)
   gm_mgSensitivity.SetText(TRANS("SENSITIVITY"));
   gm_mgSensitivity.mg_pmgUp = &gm_mgMountedTrigger;
   gm_mgSensitivity.mg_pmgDown = &gm_mgDeadzone;
-  gm_lhGadgets.AddTail(gm_mgSensitivity.mg_lnNode);
+  AddChild(&gm_mgSensitivity);
   gm_mgSensitivity.mg_strTip = TRANS("set sensitivity for this axis");
 
   gm_mgDeadzone.mg_boxOnScreen = BoxMediumRow(4);
   gm_mgDeadzone.SetText(TRANS("DEAD ZONE"));
   gm_mgDeadzone.mg_pmgUp = &gm_mgSensitivity;
   gm_mgDeadzone.mg_pmgDown = &gm_mgInvertTrigger;
-  gm_lhGadgets.AddTail(gm_mgDeadzone.mg_lnNode);
+  AddChild(&gm_mgDeadzone);
   gm_mgDeadzone.mg_strTip = TRANS("set dead zone for this axis");
 
   TRIGGER_MG(gm_mgInvertTrigger, 5, gm_mgDeadzone, gm_mgRelativeTrigger, TRANS("INVERTED"), astrNoYes);

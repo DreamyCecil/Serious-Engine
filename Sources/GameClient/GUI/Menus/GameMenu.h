@@ -19,11 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#include <Engine/Base/LinkedNode.h>
+
 class CMenuGadget;
 
-class CGameMenu {
+class CGameMenu : public CLinkedNode {
 public:
-  CListHead gm_lhGadgets;
   BOOL gm_bPopup;
   CMenuGadget *gm_pmgArrowUp;
   CMenuGadget *gm_pmgArrowDn;

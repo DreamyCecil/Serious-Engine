@@ -386,7 +386,7 @@ void CVideoOptionsMenu::Initialize_t(void)
   // intialize video options menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.SetText(TRANS("VIDEO"));
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   TRIGGER_MG(gm_mgDisplayAPITrigger, 0,
     gm_mgApply, gm_mgDisplayAdaptersTrigger, TRANS("GRAPHICS API"), astrDisplayAPIRadioTexts);
@@ -433,7 +433,7 @@ void CVideoOptionsMenu::Initialize_t(void)
   gm_mgVideoRendering.mg_pmgDown = &gm_mgApply;
   gm_mgVideoRendering.SetText(TRANS("RENDERING OPTIONS"));
   gm_mgVideoRendering.mg_strTip = TRANS("manually adjust rendering settings");
-  gm_lhGadgets.AddTail(gm_mgVideoRendering.mg_lnNode);
+  AddChild(&gm_mgVideoRendering);
   gm_mgVideoRendering.mg_pActivatedFunction = &StartRenderingOptionsMenu;
 
   gm_mgApply.mg_bfsFontSize = BFS_LARGE;
@@ -442,7 +442,7 @@ void CVideoOptionsMenu::Initialize_t(void)
   gm_mgApply.mg_pmgDown = &gm_mgDisplayAPITrigger;
   gm_mgApply.SetText(TRANS("APPLY"));
   gm_mgApply.mg_strTip = TRANS("apply selected options");
-  gm_lhGadgets.AddTail(gm_mgApply.mg_lnNode);
+  AddChild(&gm_mgApply);
   gm_mgApply.mg_pActivatedFunction = &ApplyVideoOptions;
 }
 

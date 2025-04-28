@@ -122,7 +122,7 @@ void CAudioOptionsMenu::Initialize_t(void)
   // intialize Audio options menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.SetText(TRANS("AUDIO"));
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   TRIGGER_MG(gm_mgAudioAutoTrigger, 0,
     gm_mgApply, gm_mgFrequencyTrigger, TRANS("AUTO-ADJUST"), astrNoYes);
@@ -146,7 +146,7 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_mgWaveVolume.mg_pmgDown = &gm_mgMPEGVolume;
   gm_mgWaveVolume.mg_pOnSliderChange = &OnWaveVolumeChange;
   gm_mgWaveVolume.mg_pActivatedFunction = &WaveSliderChange;
-  gm_lhGadgets.AddTail(gm_mgWaveVolume.mg_lnNode);
+  AddChild(&gm_mgWaveVolume);
 
   gm_mgMPEGVolume.mg_boxOnScreen = BoxMediumRow(4);
   gm_mgMPEGVolume.SetText(TRANS("MUSIC VOLUME"));
@@ -155,13 +155,13 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_mgMPEGVolume.mg_pmgDown = &gm_mgApply;
   gm_mgMPEGVolume.mg_pOnSliderChange = &OnMPEGVolumeChange;
   gm_mgMPEGVolume.mg_pActivatedFunction = &MPEGSliderChange;
-  gm_lhGadgets.AddTail(gm_mgMPEGVolume.mg_lnNode);
+  AddChild(&gm_mgMPEGVolume);
 
   gm_mgApply.mg_bfsFontSize = BFS_LARGE;
   gm_mgApply.mg_boxOnScreen = BoxBigRow(4);
   gm_mgApply.SetText(TRANS("APPLY"));
   gm_mgApply.mg_strTip = TRANS("activate selected options");
-  gm_lhGadgets.AddTail(gm_mgApply.mg_lnNode);
+  AddChild(&gm_mgApply);
   gm_mgApply.mg_pmgUp = &gm_mgMPEGVolume;
   gm_mgApply.mg_pmgDown = &gm_mgAudioAutoTrigger;
   gm_mgApply.mg_pActivatedFunction = &ApplyAudioOptions;

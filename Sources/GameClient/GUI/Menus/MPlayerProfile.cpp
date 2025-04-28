@@ -157,7 +157,7 @@ static void StartPlayerModelLoadMenu(void) {
   mg.mg_pActivatedFunction = &PPOnPlayerSelect; \
   mg.SetText(CTString(0, "%d", index)); \
   mg.mg_strTip = TRANS("select new currently active player"); \
-  gm_lhGadgets.AddTail(mg.mg_lnNode);
+  AddChild(&mg);
 
 void CPlayerProfileMenu::Initialize_t(void)
 {
@@ -165,13 +165,13 @@ void CPlayerProfileMenu::Initialize_t(void)
   _bPlayerMenuFromSinglePlayer = FALSE;
   gm_mgProfileTitle.mg_boxOnScreen = BoxTitle();
   gm_mgProfileTitle.SetText(TRANS("PLAYER PROFILE"));
-  gm_lhGadgets.AddTail(gm_mgProfileTitle.mg_lnNode);
+  AddChild(&gm_mgProfileTitle);
 
   gm_mgNoLabel.SetText(TRANS("PROFILE:"));
   gm_mgNoLabel.mg_boxOnScreen = BoxMediumLeft(0.0f);
   gm_mgNoLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgNoLabel.mg_iCenterI = -1;
-  gm_lhGadgets.AddTail(gm_mgNoLabel.mg_lnNode);
+  AddChild(&gm_mgNoLabel);
 
   for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
     INDEX iPrev = (i + MAX_PLAYER_PROFILES - 1) % MAX_PLAYER_PROFILES;
@@ -185,7 +185,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgNameLabel.mg_boxOnScreen = BoxMediumLeft(1.25f);
   gm_mgNameLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgNameLabel.mg_iCenterI = -1;
-  gm_lhGadgets.AddTail(gm_mgNameLabel.mg_lnNode);
+  AddChild(&gm_mgNameLabel);
 
   // setup of player name button is done on start menu
   gm_mgNameField.SetText("<???>");
@@ -197,13 +197,13 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgNameField.mg_pmgDown = &gm_mgTeam;
   gm_mgNameField.mg_pmgRight = &gm_mgModel;
   gm_mgNameField.mg_strTip = TRANS("rename currently active player");
-  gm_lhGadgets.AddTail(gm_mgNameField.mg_lnNode);
+  AddChild(&gm_mgNameField);
 
   gm_mgTeamLabel.SetText(TRANS("TEAM:"));
   gm_mgTeamLabel.mg_boxOnScreen = BoxMediumLeft(2.25f);
   gm_mgTeamLabel.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgTeamLabel.mg_iCenterI = -1;
-  gm_lhGadgets.AddTail(gm_mgTeamLabel.mg_lnNode);
+  AddChild(&gm_mgTeamLabel);
 
   // setup of player name button is done on start menu
   gm_mgTeam.SetText("<???>");
@@ -217,7 +217,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgTeam.mg_pmgRight = &gm_mgModel;
   //gm_mgTeam.mg_strTip = TRANS("teamplay is disabled in this version");
   gm_mgTeam.mg_strTip = TRANS("enter team name, if playing in team");
-  gm_lhGadgets.AddTail(gm_mgTeam.mg_lnNode);
+  AddChild(&gm_mgTeam);
 
   TRIGGER_MG(gm_mgCrosshair, 4.0, gm_mgTeam, gm_mgWeaponSelect, TRANS("CROSSHAIR"), astrCrosshair);
   gm_mgCrosshair.mg_bVisual = TRUE;
@@ -274,7 +274,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgCustomizeControls.mg_pmgDown = &gm_mgNumber[0];
   gm_mgCustomizeControls.mg_pmgRight = &gm_mgModel;
   gm_mgCustomizeControls.mg_strTip = TRANS("customize controls for this player");
-  gm_lhGadgets.AddTail(gm_mgCustomizeControls.mg_lnNode);
+  AddChild(&gm_mgCustomizeControls);
 
   gm_mgModel.mg_boxOnScreen = BoxPlayerModel();
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
@@ -282,7 +282,7 @@ void CPlayerProfileMenu::Initialize_t(void)
   gm_mgModel.mg_pmgDown = &gm_mgNameField;
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
   gm_mgModel.mg_strTip = TRANS("change model for this player");
-  gm_lhGadgets.AddTail(gm_mgModel.mg_lnNode);
+  AddChild(&gm_mgModel);
 }
 
 INDEX CPlayerProfileMenu::ComboFromPlayer(INDEX iPlayer)

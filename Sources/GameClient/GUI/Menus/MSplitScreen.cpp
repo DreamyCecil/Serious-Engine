@@ -88,7 +88,7 @@ void CSplitScreenMenu::Initialize_t(void)
   // intialize split screen menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.SetText(TRANS("SPLIT SCREEN"));
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   gm_mgStart.mg_bfsFontSize = BFS_LARGE;
   gm_mgStart.mg_boxOnScreen = BoxBigRow(0);
@@ -96,7 +96,7 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgStart.mg_pmgDown = &gm_mgQuickLoad;
   gm_mgStart.SetText(TRANS("NEW GAME"));
   gm_mgStart.mg_strTip = TRANS("start new split-screen game");
-  gm_lhGadgets.AddTail(gm_mgStart.mg_lnNode);
+  AddChild(&gm_mgStart);
   gm_mgStart.mg_pActivatedFunction = &CSplitStartMenu::ChangeTo;
 
   gm_mgQuickLoad.mg_bfsFontSize = BFS_LARGE;
@@ -105,7 +105,7 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgQuickLoad.mg_pmgDown = &gm_mgLoad;
   gm_mgQuickLoad.SetText(TRANS("QUICK LOAD"));
   gm_mgQuickLoad.mg_strTip = TRANS("load a quick-saved game (F9)");
-  gm_lhGadgets.AddTail(gm_mgQuickLoad.mg_lnNode);
+  AddChild(&gm_mgQuickLoad);
   gm_mgQuickLoad.mg_pActivatedFunction = &StartSplitScreenQuickLoadMenu;
 
   gm_mgLoad.mg_bfsFontSize = BFS_LARGE;
@@ -114,7 +114,7 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgLoad.mg_pmgDown = &gm_mgStart;
   gm_mgLoad.SetText(TRANS("LOAD"));
   gm_mgLoad.mg_strTip = TRANS("load a saved split-screen game");
-  gm_lhGadgets.AddTail(gm_mgLoad.mg_lnNode);
+  AddChild(&gm_mgLoad);
   gm_mgLoad.mg_pActivatedFunction = &StartSplitScreenLoadMenu;
 }
 

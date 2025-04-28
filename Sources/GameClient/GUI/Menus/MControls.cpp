@@ -77,7 +77,7 @@ void CControlsMenu::Initialize_t(void)
   // intialize player and controls menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.SetText(TRANS("CONTROLS"));
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   gm_mgNameLabel.SetText("");
   gm_mgNameLabel.mg_boxOnScreen = BoxMediumRow(0.0);
@@ -85,13 +85,13 @@ void CControlsMenu::Initialize_t(void)
   gm_mgNameLabel.mg_iCenterI = -1;
   gm_mgNameLabel.mg_bEnabled = FALSE;
   gm_mgNameLabel.mg_bLabel = TRUE;
-  gm_lhGadgets.AddTail(gm_mgNameLabel.mg_lnNode);
+  AddChild(&gm_mgNameLabel);
 
   gm_mgButtons.SetText(TRANS("CUSTOMIZE BUTTONS"));
   gm_mgButtons.mg_boxOnScreen = BoxMediumRow(2.0);
   gm_mgButtons.mg_bfsFontSize = BFS_MEDIUM;
   gm_mgButtons.mg_iCenterI = 0;
-  gm_lhGadgets.AddTail(gm_mgButtons.mg_lnNode);
+  AddChild(&gm_mgButtons);
   gm_mgButtons.mg_pmgUp = &gm_mgPredefined;
   gm_mgButtons.mg_pmgDown = &gm_mgAdvanced;
   gm_mgButtons.mg_pActivatedFunction = &CCustomizeKeyboardMenu::ChangeTo;
@@ -101,7 +101,7 @@ void CControlsMenu::Initialize_t(void)
   gm_mgAdvanced.mg_iCenterI = 0;
   gm_mgAdvanced.mg_boxOnScreen = BoxMediumRow(3);
   gm_mgAdvanced.mg_bfsFontSize = BFS_MEDIUM;
-  gm_lhGadgets.AddTail(gm_mgAdvanced.mg_lnNode);
+  AddChild(&gm_mgAdvanced);
   gm_mgAdvanced.mg_pmgUp = &gm_mgButtons;
   gm_mgAdvanced.mg_pmgDown = &gm_mgDeviceSlot;
   gm_mgAdvanced.mg_pActivatedFunction = &CCustomizeAxisMenu::ChangeTo;
@@ -117,7 +117,7 @@ void CControlsMenu::Initialize_t(void)
   gm_mgSensitivity.mg_pmgUp = &gm_mgDeviceSlot;
   gm_mgSensitivity.mg_pmgDown = &gm_mgInvertTrigger;
   gm_mgSensitivity.mg_strTip = TRANS("sensitivity for all axis in this control set");
-  gm_lhGadgets.AddTail(gm_mgSensitivity.mg_lnNode);
+  AddChild(&gm_mgSensitivity);
 
   TRIGGER_MG(gm_mgInvertTrigger, 6.5, gm_mgSensitivity, gm_mgSmoothTrigger,
     TRANS("INVERT LOOK"), astrNoYes);
@@ -136,7 +136,7 @@ void CControlsMenu::Initialize_t(void)
   gm_mgPredefined.mg_iCenterI = 0;
   gm_mgPredefined.mg_boxOnScreen = BoxMediumRow(11);
   gm_mgPredefined.mg_bfsFontSize = BFS_MEDIUM;
-  gm_lhGadgets.AddTail(gm_mgPredefined.mg_lnNode);
+  AddChild(&gm_mgPredefined);
   gm_mgPredefined.mg_pmgUp = &gm_mgIFeelTrigger;
   gm_mgPredefined.mg_pmgDown = &gm_mgButtons;
   gm_mgPredefined.mg_pActivatedFunction = &StartControlsLoadMenu;

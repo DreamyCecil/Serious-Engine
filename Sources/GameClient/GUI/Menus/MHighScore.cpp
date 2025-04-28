@@ -27,11 +27,11 @@ CMenuGadget *CHighScoreMenu::GetDefaultGadget(void) {
 void CHighScoreMenu::Initialize_t(void)
 {
   gm_mgHScore.mg_boxOnScreen = FLOATaabbox2D(FLOAT2D(0, 0), FLOAT2D(1, 0.5));
-  gm_lhGadgets.AddTail(gm_mgHScore.mg_lnNode);
+  AddChild(&gm_mgHScore);
 
   gm_mgTitle.SetText(TRANS("HIGH SCORE TABLE"));
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 }
 
 void CHighScoreMenu::StartMenu(void)

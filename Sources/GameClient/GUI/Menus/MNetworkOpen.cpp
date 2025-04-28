@@ -110,12 +110,12 @@ void CNetworkOpenMenu::Initialize_t(void)
   // intialize network join menu
   gm_mgTitle.mg_boxOnScreen = BoxTitle();
   gm_mgTitle.SetText(TRANS("JOIN"));
-  gm_lhGadgets.AddTail(gm_mgTitle.mg_lnNode);
+  AddChild(&gm_mgTitle);
 
   gm_mgAddressLabel.SetText(TRANS("Address:"));
   gm_mgAddressLabel.mg_boxOnScreen = BoxMediumLeft(1);
   gm_mgAddressLabel.mg_iCenterI = -1;
-  gm_lhGadgets.AddTail(gm_mgAddressLabel.mg_lnNode);
+  AddChild(&gm_mgAddressLabel);
 
   gm_mgAddress.SetText(_pGame->gam_strJoinAddress);
   gm_mgAddress.mg_ctMaxStringLen = 20;
@@ -126,12 +126,12 @@ void CNetworkOpenMenu::Initialize_t(void)
   gm_mgAddress.mg_pmgUp = &gm_mgJoin;
   gm_mgAddress.mg_pmgDown = &gm_mgPort;
   gm_mgAddress.mg_strTip = TRANS("specify server address");
-  gm_lhGadgets.AddTail(gm_mgAddress.mg_lnNode);
+  AddChild(&gm_mgAddress);
 
   gm_mgPortLabel.SetText(TRANS("Port:"));
   gm_mgPortLabel.mg_boxOnScreen = BoxMediumLeft(2);
   gm_mgPortLabel.mg_iCenterI = -1;
-  gm_lhGadgets.AddTail(gm_mgPortLabel.mg_lnNode);
+  AddChild(&gm_mgPortLabel);
 
   gm_mgPort.SetText("");
   gm_mgPort.mg_ctMaxStringLen = 10;
@@ -142,13 +142,13 @@ void CNetworkOpenMenu::Initialize_t(void)
   gm_mgPort.mg_pmgUp = &gm_mgAddress;
   gm_mgPort.mg_pmgDown = &gm_mgJoin;
   gm_mgPort.mg_strTip = TRANS("specify server address");
-  gm_lhGadgets.AddTail(gm_mgPort.mg_lnNode);
+  AddChild(&gm_mgPort);
 
   gm_mgJoin.mg_boxOnScreen = BoxMediumMiddle(3);
   gm_mgJoin.mg_pmgUp = &gm_mgPort;
   gm_mgJoin.mg_pmgDown = &gm_mgAddress;
   gm_mgJoin.SetText(TRANS("Join"));
-  gm_lhGadgets.AddTail(gm_mgJoin.mg_lnNode);
+  AddChild(&gm_mgJoin);
   gm_mgJoin.mg_pActivatedFunction = &StartSelectPlayersMenuFromOpen;
 }
 
