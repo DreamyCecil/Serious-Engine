@@ -206,7 +206,7 @@ void CMGKeyDefinition::Think(void)
         mg_iState = DOING_NOTHING;
         _bDefiningKey = FALSE;
         // refresh all buttons
-        pgmCurrentMenu->FillListItems();
+        _pGUIM->GetCurrentMenu()->FillListItems();
         break;
       }
     }

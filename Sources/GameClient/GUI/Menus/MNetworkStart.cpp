@@ -34,8 +34,8 @@ void StartVarGameOptions(void) {
 static void StartSelectLevelFromNetwork(CMenuGadget *pmg) {
   CNetworkStartMenu &gmStart = *(CNetworkStartMenu *)pmg->GetParentMenu();
 
-  extern void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent);
-  StartSelectLevel(GetSpawnFlagsForGameType(gmStart.gm_mgGameType.mg_iSelected), &CNetworkStartMenu::ChangeTo, &gmStart);
+  extern void StartSelectLevel(ULONG ulFlags, BOOL bStartLevel);
+  StartSelectLevel(GetSpawnFlagsForGameType(gmStart.gm_mgGameType.mg_iSelected), FALSE);
 };
 
 void StartNetworkGame(void) {

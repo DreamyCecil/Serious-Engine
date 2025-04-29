@@ -26,15 +26,11 @@ extern CTString sam_strTechTestLevel;
 extern CTString sam_strTrainingLevel;
 
 // [Cecil] Open level or category selection screen
-void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent) {
+void StartSelectLevel(ULONG ulFlags, BOOL bStartLevel) {
   FilterLevels(ulFlags);
 
-  extern void (*_pAfterLevelChosen)(void);
-  _pAfterLevelChosen = pAfterChosen;
-
-  // [Cecil] Rewind visited menus to the parent
-  extern CGameMenu *_pgmRewindToAfterLevelChosen;
-  _pgmRewindToAfterLevelChosen = pgmParent;
+  extern BOOL _bStartSelectedLevel;
+  _bStartSelectedLevel = bStartLevel;
 
   CLevelsMenu::ChangeTo();
 };
@@ -45,7 +41,7 @@ static void StartSinglePlayerNewMenu(void) {
 };
 
 static void StartSelectLevelFromSingle(void) {
-  StartSelectLevel(GetSpawnFlagsForGameType(-1), &CSinglePlayerNewMenu::ChangeTo, NULL);
+  StartSelectLevel(GetSpawnFlagsForGameType(-1), TRUE);
 };
 
 void SetQuickLoadNotes(void) {

@@ -42,12 +42,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MVideoOptions.h"
 
 class CMenuManager {
-public:
-  // [Cecil] List of previously visited menus
-  // Each time the "Back" button is pressed, it pops the last menu and switches
-  // to it, otherwise returns to the game (if it's active) or to the main menu
+private:
+  // [Cecil] List of previously visited menus with the last one being the current one
+  // Each time the "Back" button is pressed, it pops the current menu and switches to
+  // the previous one, otherwise returns to game (if it's active) or to the main menu
   CStaticStackArray<CGameMenu *> aVisitedMenus;
 
+public:
   CConfirmMenu gmConfirmMenu;
   CMainMenu gmMainMenu;
   CInGameMenu gmInGameMenu;
@@ -72,6 +73,50 @@ public:
   CSplitScreenMenu gmSplitScreenMenu;
   CSplitStartMenu gmSplitStartMenu;
   CSelectPlayersMenu gmSelectPlayersMenu;
+
+public:
+  // [Cecil] Get amount of visited menus
+  inline INDEX GetMenuCount(void) {
+    return aVisitedMenus.Count();
+  };
+
+  // [Cecil] Get a visited menu from the stack
+  inline CGameMenu *GetMenu(INDEX i) {
+    const INDEX ct = GetMenuCount();
+
+    ASSERT(i >= 0 && i < ct);
+    if (i < 0 || i >= ct) return NULL;
+
+    return aVisitedMenus[i];
+  };
+
+  // [Cecil] Get the currently active menu
+  inline CGameMenu *GetCurrentMenu(void) {
+    const INDEX ct = GetMenuCount();
+    if (ct == 0) return NULL;
+
+    return aVisitedMenus[ct - 1];
+  };
+
+  // [Cecil] Push a new menu on top, making it the current one
+  inline void PushMenu(CGameMenu *pgm) {
+    aVisitedMenus.Add(pgm);
+  };
+
+  // [Cecil] Pop the current menu from top, making the previous menu the current one
+  inline void PopMenu(void) {
+    aVisitedMenus.Pop();
+  };
+
+  // [Cecil] Pop the menus from top until a specific one
+  inline void PopMenusUntil(INDEX i) {
+    aVisitedMenus.PopUntil(i);
+  };
+
+  // [Cecil] Pop all visited menus
+  inline void ClearVisitedMenus(void) {
+    aVisitedMenus.PopAll();
+  };
 };
 
 extern CMenuManager *_pGUIM; // TODO: Make singleton!

@@ -30,8 +30,8 @@ static void UpdateSplitLevel(CMenuGadget *pmg, INDEX iDummy) {
 static void StartSelectLevelFromSplit(CMenuGadget *pmg) {
   CSplitStartMenu &gmSplitStart = *(CSplitStartMenu *)pmg->GetParentMenu();
 
-  extern void StartSelectLevel(ULONG ulFlags, void (*pAfterChosen)(void), CGameMenu *pgmParent);
-  StartSelectLevel(GetSpawnFlagsForGameType(gmSplitStart.gm_mgGameType.mg_iSelected), &CSplitStartMenu::ChangeTo, &gmSplitStart);
+  extern void StartSelectLevel(ULONG ulFlags, BOOL bStartLevel);
+  StartSelectLevel(GetSpawnFlagsForGameType(gmSplitStart.gm_mgGameType.mg_iSelected), FALSE);
 };
 
 extern void StartVarGameOptions(void);

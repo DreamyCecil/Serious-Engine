@@ -107,7 +107,7 @@ void CGameMenu::ScrollList(INDEX iDir)
   }
 
   // delete all focuses
-  FOREACHNODE(pgmCurrentMenu, CMenuGadget, itmg) {
+  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
     itmg->OnKillFocus();
   }
 
@@ -146,7 +146,7 @@ BOOL CGameMenu::OnChar(const OS::SE1Event &event)
   // find curently active gadget
   CMenuGadget *pmgActive = NULL;
   // for each menu gadget in menu
-  FOREACHNODE(pgmCurrentMenu, CMenuGadget, itmg) {
+  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
     // if focused
     if (itmg->mg_bFocused) {
       // remember as active
@@ -176,7 +176,7 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
   // find curently active gadget
   CMenuGadget *pmgActive = NULL;
   // for each menu gadget in menu
-  FOREACHNODE(pgmCurrentMenu, CMenuGadget, itmg) {
+  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
     // if focused
     if (itmg->mg_bFocused) {
       // remember as active

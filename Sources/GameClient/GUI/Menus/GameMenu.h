@@ -66,6 +66,12 @@ public:
   virtual void StartMenu(void);
   virtual void EndMenu(void);
 
+  // [Cecil] Reload this menu, if needed
+  inline void ReloadMenu(void) {
+    EndMenu();
+    StartMenu();
+  };
+
   // return TRUE if handled
   virtual BOOL OnKeyDown(PressedMenuButton pmb);
   virtual BOOL OnChar(const OS::SE1Event &event);

@@ -17,18 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGLevelButton.h"
 
+// [Cecil] Whether to immediately start a selected level instead of returning to the previous menu
+BOOL _bStartSelectedLevel = TRUE;
+
 void CMGLevelButton::OnActivate(void)
 {
   PlayMenuSound(E_MSND_PRESS);
   _pGame->gam_strCustomLevel = mg_fnmLevel;
 
-  // [Cecil] Rewind to some menu after choosing the level
-  extern CGameMenu *_pgmRewindToAfterLevelChosen;
-  extern CGameMenu *_pgmRewindTo;
-  _pgmRewindTo = _pgmRewindToAfterLevelChosen;
-
-  extern void(*_pAfterLevelChosen)(void);
-  _pAfterLevelChosen();
+  if (_bStartSelectedLevel) {
+    CSinglePlayerNewMenu::ChangeTo();
+  } else {
+    MenuGoToParent();
+  }
 }
 
 void CMGLevelButton::OnSetFocus(void)

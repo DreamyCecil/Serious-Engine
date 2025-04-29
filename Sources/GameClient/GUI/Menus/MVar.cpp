@@ -24,9 +24,8 @@ extern BOOL _bVarChanged;
 static void VarApply(CMenuGadget *pmg) {
   FlushVarSettings(TRUE);
 
-  CVarMenu &gmVar = *(CVarMenu *)pmg->GetParentMenu();
-  gmVar.EndMenu();
-  gmVar.StartMenu();
+  // Reload the menu
+  pmg->GetParentMenu()->ReloadMenu();
 };
 
 void CVarMenu::Initialize_t(void)

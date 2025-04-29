@@ -36,7 +36,7 @@ static void StartCurrentQuickLoadMenu(void) {
 // start load/save menus depending on type of game running
 static void QuickSaveFromMenu(void) {
   _pShell->SetINDEX("gam_bQuickSave", 2); // force save with reporting
-  StopMenus(TRUE);
+  StopMenus();
 };
 
 void StartCurrentLoadMenu(void) {
@@ -197,8 +197,8 @@ void SetDemoStartStopRecText(CMenuGadget *pmg) {
 static void StopCurrentGame(void) {
   _pGame->StopGame();
   _gmRunningGameMode = GM_NONE;
-  StopMenus(TRUE);
-  StartMenus("");
+  StopMenus();
+  StartMenus();
 };
 
 static void StopConfirm(void) {

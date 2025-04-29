@@ -169,8 +169,7 @@ BOOL CMGFileButton::OnKeyDown(PressedMenuButton pmb)
           RemoveFile(mg_fnm.NoExt() + ".des");
           RemoveFile(mg_fnm.NoExt() + "Tbn.tex");
           // refresh menu
-          pgmLoadSave->EndMenu();
-          pgmLoadSave->StartMenu();
+          pgmLoadSave->ReloadMenu();
           OnSetFocus();
         }
         return TRUE;
@@ -199,7 +198,7 @@ void CMGFileButton::OnSetFocus(void)
     ClearThumbnail();
   }
 
-  pgmCurrentMenu->KillAllFocuses();
+  _pGUIM->GetCurrentMenu()->KillAllFocuses();
   CMGButton::OnSetFocus();
 }
 
@@ -229,8 +228,7 @@ void CMGFileButton::OnStringChanged(void)
     mg_strDes = _strTmpDescription + "\n" + mg_strInfo;
     SaveDescription();
     // refresh menu
-    pgmLoadSave->EndMenu();
-    pgmLoadSave->StartMenu();
+    pgmLoadSave->ReloadMenu();
     OnSetFocus();
   }
 }
