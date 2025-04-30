@@ -30,25 +30,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // macros for translating radio button text arrays
 #define TRANSLATERADIOARRAY(array) TranslateRadioTexts(array, ARRAYCOUNT(array))
 
-extern BOOL bMenuActive;
-extern BOOL bMenuRendering;
-extern CTextureObject *_ptoLogoCT;
-extern CTextureObject *_ptoLogoODI;
-extern CTextureObject *_ptoLogoEAX;
-
 INDEX _iLocalPlayer = -1;
 GameMode _gmMenuGameMode = GM_NONE;
 GameMode _gmRunningGameMode = GM_NONE;
-CListHead _lhServers;
 
-void OnPlayerSelect(void);
+// [Cecil] Defined here
+CMenuManager *_pGUIM = NULL;
 
 // last tick done
 static TICK _tckMenuLastTickDone = -1;
-
-// functions for init actions
-
-void FixupBackButton(CGameMenu *pgm);
 
 // mouse cursor position
 FLOAT _fCursorPosI = 0;
@@ -59,24 +49,6 @@ BOOL _bMouseUsedLast = FALSE;
 CMenuGadget *_pmgUnderCursor =  NULL;
 extern BOOL _bDefiningKey;
 extern BOOL _bEditingString;
-
-// thumbnail for showing in menu
-CTextureObject _toThumbnail;
-BOOL _bThumbnailOn = FALSE;
-
-CFontData _fdBig;
-CFontData _fdMedium;
-CFontData _fdSmall;
-CFontData _fdTitle;
-
-static CSoundData *_psdSelect = NULL;
-static CSoundData *_psdPress = NULL;
-static CSoundData *_psdReturn = NULL;
-static CSoundData *_psdDisabled = NULL;
-static CSoundObject *_psoMenuSound = NULL;
-
-static CTextureObject _toLogoMenuA;
-static CTextureObject _toLogoMenuB;
 
 #if SE1_PREFER_SDL
 
@@ -135,47 +107,32 @@ static void SetGameCursor(void) {
 
 #endif // SE1_PREFER_SDL
 
-// -------------- All possible menu entities
-#define BIG_BUTTONS_CT 6
-
-#define CHANGETRIGGERARRAY(ltbmg, astr) \
-  ltbmg.mg_astrTexts = astr;\
-  ltbmg.mg_ctTexts = sizeof( astr)/sizeof( astr[0]);\
-  ltbmg.mg_iSelected = 0;\
-  ltbmg.SetText(astr[ltbmg.mg_iSelected];
-
-#define PLACEMENT(x,y,z) CPlacement3D( FLOAT3D( x, y, z), \
-  ANGLE3D( AngleDeg(0.0f), AngleDeg(0.0f), AngleDeg(0.0f)))
-
-// global back button
-CMGButton mgBack;
-
-// -------- console variable adjustment menu
 BOOL _bVarChanged = FALSE;
 
-void PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds) {
+// Play a specific menu sound, replacing the previous sound if needed
+void CMenuManager::PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds) {
   CSoundData *psd = NULL;
   const char *strEffect = NULL;
 
   // [Cecil] Select sound based on type
   switch (eSound) {
     case E_MSNG_SELECT:
-      psd = _psdSelect;
+      psd = m_psdSelect;
       strEffect = "Menu_select";
       break;
 
     case E_MSND_PRESS:
-      psd = _psdPress;
+      psd = m_psdPress;
       strEffect = "Menu_press";
       break;
 
     case E_MSND_RETURN:
-      psd = _psdReturn;
+      psd = m_psdReturn;
       strEffect = "Menu_press";
       break;
 
     case E_MSND_DISABLED:
-      psd = _psdDisabled;
+      psd = m_psdDisabled;
       break;
 
     default:
@@ -183,8 +140,8 @@ void PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds) {
       return;
   }
 
-  if (bOverOtherSounds || (_psoMenuSound != NULL && !_psoMenuSound->IsPlaying())) {
-    _psoMenuSound->Play(psd, SOF_NONGAME);
+  if (bOverOtherSounds || !m_soMenuSound.IsPlaying()) {
+    m_soMenuSound.Play(psd, SOF_NONGAME);
   }
 
   // [Cecil] Play IFeel effects here
@@ -201,32 +158,35 @@ void TranslateRadioTexts(CTString astr[], INDEX ct)
   }
 }
 
-// set new thumbnail
-void SetThumbnail(CTFileName fn)
-{
-  _bThumbnailOn = TRUE;
+// Set new thumbnail
+void CMenuManager::SetThumbnail(const CTString &fnm) {
+  m_bThumbnailOn = TRUE;
+  const CTString fnmNoExt = fnm.NoExt();
+
   try {
-    _toThumbnail.SetData_t(fn.NoExt()+"Tbn.tex");
-  } catch(char *strError) {
+    m_toThumbnail.SetData_t(fnmNoExt + "Tbn.tex");
+
+  } catch (char *strError) {
     (void)strError;
+
     try {
-      _toThumbnail.SetData_t(fn.NoExt()+".tbn");
-    } catch(char *strError) {
+      m_toThumbnail.SetData_t(fnmNoExt + ".tbn");
+
+    } catch (char *strError) {
       (void)strError;
-      _toThumbnail.SetData(NULL);
+      m_toThumbnail.SetData(NULL);
     }
   }
-}
+};
 
-// remove thumbnail
-void ClearThumbnail(void)
-{
-  _bThumbnailOn = FALSE;
-  _toThumbnail.SetData(NULL);
-  _pShell->Execute( "FreeUnusedStock();");
-}
+// Remove thumbnail
+void CMenuManager::ClearThumbnail(void) {
+  m_bThumbnailOn = FALSE;
+  m_toThumbnail.SetData(NULL);
+  _pShell->Execute("FreeUnusedStock();");
+};
 
-void StartMenus(const CTString &str) {
+void CMenuManager::StartMenus(const CTString &str) {
   _tckMenuLastTickDone = _pTimer->GetRealTime();
 
   // disable printing of last lines
@@ -239,7 +199,7 @@ void StartMenus(const CTString &str) {
   BOOL bSpecialMenu = FALSE;
 
   if (str != "") {
-    _pGUIM->ClearVisitedMenus();
+    ClearVisitedMenus();
     bSpecialMenu = TRUE;
 
     if (str == "load") {
@@ -268,15 +228,15 @@ void StartMenus(const CTString &str) {
 
   // Otherwise open a root menu or the last active one
   if (!bSpecialMenu) {
-    CGameMenu *pgmCurrent = _pGUIM->GetCurrentMenu();
+    CGameMenu *pgmCurrent = GetCurrentMenu();
 
     // If there's no last active menu
     if (pgmCurrent == NULL) {
       // Go to the root menu depending on the game state
       if (_gmRunningGameMode == GM_NONE) {
-        pgmCurrent = &_pGUIM->gmMainMenu;
+        pgmCurrent = &gmMainMenu;
       } else {
-        pgmCurrent = &_pGUIM->gmInGameMenu;
+        pgmCurrent = &gmInGameMenu;
       }
     }
 
@@ -286,77 +246,96 @@ void StartMenus(const CTString &str) {
     }
   }
 
-  bMenuActive = TRUE;
-  bMenuRendering = TRUE;
+  m_bMenuActive = TRUE;
+  m_bMenuRendering = TRUE;
 };
 
-void StopMenus(BOOL bGoToRoot) {
+void CMenuManager::StopMenus(BOOL bGoToRoot) {
   ClearThumbnail();
 
-  CGameMenu *pgmCurrent = _pGUIM->GetCurrentMenu();
+  CGameMenu *pgmCurrent = GetCurrentMenu();
 
-  if (pgmCurrent != NULL && bMenuActive) {
+  if (pgmCurrent != NULL && m_bMenuActive) {
     pgmCurrent->EndMenu();
   }
 
-  bMenuActive = FALSE;
+  m_bMenuActive = FALSE;
 
   if (bGoToRoot) {
     // [Cecil] Clear all visited menus to open the root one next time
-    _pGUIM->ClearVisitedMenus();
+    ClearVisitedMenus();
   }
 };
 
 // [Cecil] Check if it's a root menu
-BOOL IsMenuRoot(class CGameMenu *pgm) {
-  return pgm == NULL || pgm == &_pGUIM->gmMainMenu || pgm == &_pGUIM->gmInGameMenu;
+BOOL CMenuManager::IsMenuRoot(class CGameMenu *pgm) {
+  return pgm == NULL || pgm == &gmMainMenu || pgm == &gmInGameMenu;
 };
 
-// ------------------------ Global menu function implementation
-void InitializeMenus(void)
-{
-  _pGUIM = new CMenuManager();
+static void LoadAndForceTexture(CTextureObject &to, const CTFileName &fnm) {
+  try {
+    to.SetData_t(fnm);
+
+    CTextureData *ptd = (CTextureData *)to.GetData();
+    ptd->Force(TEX_CONSTANT);
+
+    ptd = ptd->td_ptdBaseTexture;
+
+    if (ptd != NULL) {
+      ptd->Force(TEX_CONSTANT);
+    }
+
+  } catch (char *strError) {
+    (void *)strError;
+    to.SetData(NULL);
+  }
+};
+
+CMenuManager::CMenuManager() {
+  m_bMenuActive = FALSE;
+  m_bMenuRendering = FALSE;
+
+  m_bThumbnailOn = FALSE;
+  m_psdSelect = NULL;
+  m_psdPress = NULL;
+  m_psdReturn = NULL;
+  m_psdDisabled = NULL;
+
+  // Load optional logo textures
+  LoadAndForceTexture(m_toLogoCT,  CTFILENAME("Textures\\Logo\\LogoCT.tex"));
+  LoadAndForceTexture(m_toLogoODI, CTFILENAME("Textures\\Logo\\GodGamesLogo.tex"));
+  LoadAndForceTexture(m_toLogoEAX, CTFILENAME("Textures\\Logo\\LogoEAX.tex"));
 
   try {
     // initialize and load corresponding fonts
-    _fdSmall.Load_t(  CTFILENAME( "Fonts\\Display3-narrow.fnt"));
-    _fdMedium.Load_t( CTFILENAME( "Fonts\\Display3-normal.fnt"));
-    _fdBig.Load_t(    CTFILENAME( "Fonts\\Display3-caps.fnt"));
-    _fdTitle.Load_t(  CTFILENAME( "Fonts\\Title2.fnt"));
-    _fdSmall.SetCharSpacing(-1);
-    _fdSmall.SetLineSpacing( 0);
-    _fdSmall.SetSpaceWidth(0.4f);
-    _fdMedium.SetCharSpacing(+1);
-    _fdMedium.SetLineSpacing( 0);
-    _fdMedium.SetSpaceWidth(0.4f);
-    _fdBig.SetCharSpacing(+1);
-    _fdBig.SetLineSpacing( 0);
-    _fdTitle.SetCharSpacing(+1);
-    _fdTitle.SetLineSpacing( 0);
+    m_fdMedium.Load_t(CTFILENAME("Fonts\\Display3-normal.fnt"));
+    m_fdMedium.SetCharSpacing(+1);
+    m_fdMedium.SetLineSpacing(0);
+    m_fdMedium.SetSpaceWidth(0.4f);
+
+    m_fdBig.Load_t(CTFILENAME("Fonts\\Display3-caps.fnt"));
+    m_fdBig.SetCharSpacing(+1);
+    m_fdBig.SetLineSpacing(0);
+
+    m_fdTitle.Load_t(CTFILENAME("Fonts\\Title2.fnt"));
+    m_fdTitle.SetCharSpacing(+1);
+    m_fdTitle.SetLineSpacing(0);
 
     // load menu sounds
-    _psdSelect   = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Select.wav"));
-    _psdPress    = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
-    _psdReturn   = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
-    _psdDisabled = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
-    _psoMenuSound = new CSoundObject;
+    m_psdSelect   = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Select.wav"));
+    m_psdPress    = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
+    m_psdReturn   = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
+    m_psdDisabled = _pSoundStock->Obtain_t(CTFILENAME("Sounds\\Menu\\Press.wav"));
 
     // initialize and load menu textures
-    _toLogoMenuA.SetData_t(  CTFILENAME( "Textures\\Logo\\sam_menulogo256a.tex"));
-    _toLogoMenuB.SetData_t(  CTFILENAME( "Textures\\Logo\\sam_menulogo256b.tex"));
-  }
-  catch( char *strError) {
-    FatalError( strError);
-  }
-  // force logo textures to be of maximal size
-  ((CTextureData*)_toLogoMenuA.GetData())->Force(TEX_CONSTANT);
-  ((CTextureData*)_toLogoMenuB.GetData())->Force(TEX_CONSTANT);
+    m_toLogoMenuA.SetData_t(CTFILENAME("Textures\\Logo\\sam_menulogo256a.tex"));
+    m_toLogoMenuB.SetData_t(CTFILENAME("Textures\\Logo\\sam_menulogo256b.tex"));
 
-  // menu's relative placement
-  CPlacement3D plRelative = CPlacement3D( FLOAT3D( 0.0f, 0.0f, -9.0f), 
-                            ANGLE3D( AngleDeg(0.0f), AngleDeg(0.0f), AngleDeg(0.0f)));
-  try
-  {
+    // force logo textures to be of maximal size
+    ((CTextureData *)m_toLogoMenuA.GetData())->Force(TEX_CONSTANT);
+    ((CTextureData *)m_toLogoMenuB.GetData())->Force(TEX_CONSTANT);
+
+    // Translate strings in arrays
     TRANSLATERADIOARRAY(astrNoYes);
     TRANSLATERADIOARRAY(astrComputerInvoke);
     //TRANSLATERADIOARRAY(astrDisplayAPIRadioTexts);
@@ -373,71 +352,67 @@ void InitializeMenus(void)
     InitGameTypes();
 
     // Initialize menus
-    _pGUIM->gmConfirmMenu.Initialize_t();
-    _pGUIM->gmMainMenu.Initialize_t();
-    _pGUIM->gmInGameMenu.Initialize_t();
-    _pGUIM->gmSinglePlayerMenu.Initialize_t();
-    _pGUIM->gmSinglePlayerNewMenu.Initialize_t();
-    _pGUIM->gmPlayerProfile.Initialize_t();
-    _pGUIM->gmControls.Initialize_t();
-    _pGUIM->gmLoadSaveMenu.Initialize_t();
-    _pGUIM->gmHighScoreMenu.Initialize_t();
-    _pGUIM->gmCustomizeKeyboardMenu.Initialize_t();
-    _pGUIM->gmCustomizeAxisMenu.Initialize_t();
-    _pGUIM->gmOptionsMenu.Initialize_t();
-    _pGUIM->gmVideoOptionsMenu.Initialize_t();
-    _pGUIM->gmAudioOptionsMenu.Initialize_t();
-    _pGUIM->gmLevelsMenu.Initialize_t();
-    _pGUIM->gmVarMenu.Initialize_t();
-    _pGUIM->gmServersMenu.Initialize_t();
-    _pGUIM->gmNetworkMenu.Initialize_t();
-    _pGUIM->gmNetworkStartMenu.Initialize_t();
-    _pGUIM->gmNetworkJoinMenu.Initialize_t();
-    _pGUIM->gmSelectPlayersMenu.Initialize_t();
-    _pGUIM->gmNetworkOpenMenu.Initialize_t();
-    _pGUIM->gmSplitScreenMenu.Initialize_t();
-    _pGUIM->gmSplitStartMenu.Initialize_t();
-  }
-  catch( char *strError)
-  {
-    FatalError( strError);
+    gmConfirmMenu.Initialize_t();
+    gmMainMenu.Initialize_t();
+    gmInGameMenu.Initialize_t();
+    gmSinglePlayerMenu.Initialize_t();
+    gmSinglePlayerNewMenu.Initialize_t();
+    gmPlayerProfile.Initialize_t();
+    gmControls.Initialize_t();
+    gmLoadSaveMenu.Initialize_t();
+    gmHighScoreMenu.Initialize_t();
+    gmCustomizeKeyboardMenu.Initialize_t();
+    gmCustomizeAxisMenu.Initialize_t();
+    gmOptionsMenu.Initialize_t();
+    gmVideoOptionsMenu.Initialize_t();
+    gmAudioOptionsMenu.Initialize_t();
+    gmLevelsMenu.Initialize_t();
+    gmVarMenu.Initialize_t();
+    gmServersMenu.Initialize_t();
+    gmNetworkMenu.Initialize_t();
+    gmNetworkStartMenu.Initialize_t();
+    gmNetworkJoinMenu.Initialize_t();
+    gmSelectPlayersMenu.Initialize_t();
+    gmNetworkOpenMenu.Initialize_t();
+    gmSplitScreenMenu.Initialize_t();
+    gmSplitStartMenu.Initialize_t();
+
+  } catch (char *strError) {
+    FatalError(strError);
   }
 
 #if SE1_PREFER_SDL
   // [Cecil] SDL: Set custom cursor
   SetGameCursor();
 #endif
-}
+};
 
-void DestroyMenus( void)
-{
+CMenuManager::~CMenuManager() {
 #if SE1_PREFER_SDL
   // [Cecil] SDL: Clear custom cursor
   DestroyGameCursor();
 #endif
 
-  _pGUIM->gmMainMenu.Destroy();
-  _pGUIM->ClearVisitedMenus();
-  _pSoundStock->Release(_psdSelect);
-  _pSoundStock->Release(_psdPress);
-  _pSoundStock->Release(_psdReturn);
-  _pSoundStock->Release(_psdDisabled);
-  delete _psoMenuSound;
-  _psdSelect = NULL;
-  _psdPress = NULL;
-  _psdReturn = NULL;
-  _psdDisabled = NULL;
-  _psoMenuSound = NULL;
-}
+  ClearVisitedMenus();
 
-// go to parent menu if possible
-void MenuGoToParent(void) {
-  // [Cecil] Return to the previous menu with a sound
-  ChangeToMenu(NULL);
-  PlayMenuSound(E_MSND_RETURN);
+  _pSoundStock->Release(m_psdSelect);
+  _pSoundStock->Release(m_psdPress);
+  _pSoundStock->Release(m_psdReturn);
+  _pSoundStock->Release(m_psdDisabled);
+  m_psdSelect = NULL;
+  m_psdPress = NULL;
+  m_psdReturn = NULL;
+  m_psdDisabled = NULL;
 };
 
-void MenuOnKeyDown(PressedMenuButton pmb)
+// go to parent menu if possible
+void CMenuManager::MenuGoToParent(void) {
+  // [Cecil] Return to the previous menu with a sound
+  _pGUIM->ChangeToMenu(NULL);
+  _pGUIM->PlayMenuSound(E_MSND_RETURN);
+};
+
+void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb)
 {
   // [Cecil] Check if mouse buttons are used separately
   _bMouseUsedLast = (pmb.iMouse != -1);
@@ -454,7 +429,7 @@ void MenuOnKeyDown(PressedMenuButton pmb)
   // if not a mouse button, or mouse is over some gadget
   if (!_bMouseUsedLast || _pmgUnderCursor!=NULL) {
     // ask current menu to handle the key
-    bHandled = _pGUIM->GetCurrentMenu()->OnKeyDown(pmb);
+    bHandled = GetCurrentMenu()->OnKeyDown(pmb);
   }
 
   // if not handled
@@ -466,16 +441,16 @@ void MenuOnKeyDown(PressedMenuButton pmb)
   }
 }
 
-void MenuOnChar(const OS::SE1Event &event)
+void CMenuManager::MenuOnChar(const OS::SE1Event &event)
 {
   // check if mouse buttons used
   _bMouseUsedLast = FALSE;
 
   // ask current menu to handle the key
-  _pGUIM->GetCurrentMenu()->OnChar(event);
+  GetCurrentMenu()->OnChar(event);
 }
 
-void MenuOnMouseMove(PIX pixI, PIX pixJ)
+void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ)
 {
   static PIX pixLastI = 0;
   static PIX pixLastJ = 0;
@@ -487,7 +462,7 @@ void MenuOnMouseMove(PIX pixI, PIX pixJ)
   _bMouseUsedLast = !_bEditingString && !_bDefiningKey && !_pInput->IsInputEnabled();
 }
 
-void MenuUpdateMouseFocus(void)
+void CMenuManager::MenuUpdateMouseFocus(void)
 {
   // get real cursor position
   float fMouseX, fMouseY;
@@ -511,7 +486,7 @@ void MenuUpdateMouseFocus(void)
 
   CMenuGadget *pmgActive = NULL;
   // for all gadgets in menu
-  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
+  FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
     CMenuGadget &mg = *itmg;
     // if focused
     if( itmg->mg_bFocused) {
@@ -544,11 +519,10 @@ void MenuUpdateMouseFocus(void)
   }
 }
 
-static CTimerValue _tvInitialization;
-static TICK _tckInitializationTick = -1;
+void SetMenuLerping(void) {
+  static CTimerValue _tvInitialization;
+  static TICK _tckInitializationTick = -1;
 
-void SetMenuLerping(void)
-{
   CTimerValue tvNow = _pTimer->GetHighPrecisionTimer();
   
   // if lerping was never set before
@@ -602,10 +576,10 @@ void RenderMouseCursor(CDrawPort *pdp)
 }
 
 
-BOOL DoMenu( CDrawPort *pdp)
+BOOL CMenuManager::DoMenu(CDrawPort *pdp)
 {
   // [Cecil] No current menu
-  if (_pGUIM->GetCurrentMenu() == NULL) return FALSE;
+  if (GetCurrentMenu() == NULL) return FALSE;
 
   pdp->Unlock();
   CDrawPort dpMenu(pdp, TRUE);
@@ -627,7 +601,7 @@ BOOL DoMenu( CDrawPort *pdp)
     _fCursorPosJ = _fCursorExternPosJ;
   }
 
-  _pGUIM->GetCurrentMenu()->Think();
+  GetCurrentMenu()->Think();
 
   const TICK tckTickNow = _pTimer->GetRealTime();
 
@@ -635,7 +609,7 @@ BOOL DoMenu( CDrawPort *pdp)
   {
     _pTimer->SetGameTick(_tckMenuLastTickDone);
     // call think for all gadgets in menu
-    FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
+    FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
       itmg->Think();
     }
     _tckMenuLastTickDone++;
@@ -647,7 +621,7 @@ BOOL DoMenu( CDrawPort *pdp)
   PIX pixH = dpMenu.GetHeight();
 
   // blend background if menu is on
-  if( bMenuActive)
+  if (m_bMenuActive)
   {
     // get current time
     TIME  tmNow = _pTimer->GetLerpedCurrentTick();
@@ -669,10 +643,10 @@ BOOL DoMenu( CDrawPort *pdp)
     FLOAT fScaleH = (FLOAT)pixH / 480.0f;
     PIX   pixI0, pixJ0, pixI1, pixJ1;
     // put logo(s) to main menu (if logos exist)
-    if (_pGUIM->GetCurrentMenu() == &_pGUIM->gmMainMenu)
+    if (GetCurrentMenu() == &gmMainMenu)
     {
-      if( _ptoLogoODI!=NULL) {
-        CTextureData &td = (CTextureData&)*_ptoLogoODI->GetData();
+      if (m_toLogoODI.GetData() != NULL) {
+        CTextureData &td = (CTextureData &)*m_toLogoODI.GetData();
         #define LOGOSIZE 50
         const PIX pixLogoWidth  = LOGOSIZE * dpMenu.dp_fWideAdjustment;
         const PIX pixLogoHeight = LOGOSIZE* td.GetHeight() / td.GetWidth();
@@ -680,11 +654,11 @@ BOOL DoMenu( CDrawPort *pdp)
         pixJ0 = (480-pixLogoHeight-16)*fScaleH;
         pixI1 = pixI0+ pixLogoWidth *fScaleW;
         pixJ1 = pixJ0+ pixLogoHeight*fScaleH;
-        dpMenu.PutTexture( _ptoLogoODI, PIXaabbox2D( PIX2D( pixI0, pixJ0),PIX2D( pixI1, pixJ1)));
+        dpMenu.PutTexture(&m_toLogoODI, PIXaabbox2D( PIX2D( pixI0, pixJ0),PIX2D( pixI1, pixJ1)));
         #undef LOGOSIZE
       }  
-      if( _ptoLogoCT!=NULL) {
-        CTextureData &td = (CTextureData&)*_ptoLogoCT->GetData();
+      if (m_toLogoCT.GetData() != NULL) {
+        CTextureData &td = (CTextureData &)*m_toLogoCT.GetData();
         #define LOGOSIZE 50
         const PIX pixLogoWidth  = LOGOSIZE * dpMenu.dp_fWideAdjustment;
         const PIX pixLogoHeight = LOGOSIZE* td.GetHeight() / td.GetWidth();
@@ -692,7 +666,7 @@ BOOL DoMenu( CDrawPort *pdp)
         pixJ0 = (480-pixLogoHeight-16)*fScaleH;
         pixI1 = pixI0+ pixLogoWidth *fScaleW;
         pixJ1 = pixJ0+ pixLogoHeight*fScaleH;
-        dpMenu.PutTexture( _ptoLogoCT, PIXaabbox2D( PIX2D( pixI0, pixJ0),PIX2D( pixI1, pixJ1)));
+        dpMenu.PutTexture(&m_toLogoCT, PIXaabbox2D( PIX2D( pixI0, pixJ0),PIX2D( pixI1, pixJ1)));
         #undef LOGOSIZE
       } 
       
@@ -702,9 +676,9 @@ BOOL DoMenu( CDrawPort *pdp)
         PIX pixSizeJ = 64*fResize;
         PIX pixCenterI = dpMenu.GetWidth()/2;
         PIX pixHeightJ = 10*fResize;
-        dpMenu.PutTexture(&_toLogoMenuA, PIXaabbox2D( 
+        dpMenu.PutTexture(&m_toLogoMenuA, PIXaabbox2D(
           PIX2D( pixCenterI-pixSizeI, pixHeightJ),PIX2D( pixCenterI, pixHeightJ+pixSizeJ)));
-        dpMenu.PutTexture(&_toLogoMenuB, PIXaabbox2D( 
+        dpMenu.PutTexture(&m_toLogoMenuB, PIXaabbox2D(
           PIX2D( pixCenterI, pixHeightJ),PIX2D( pixCenterI+pixSizeI, pixHeightJ+pixSizeJ)));
       }
 
@@ -719,9 +693,9 @@ BOOL DoMenu( CDrawPort *pdp)
         dpMenu.PutTextR(SE_GetBuildVersion(), pixBuildX, pixBuildY, 0xFFFFFFFF);
       }
 
-    } else if (_pGUIM->GetCurrentMenu() == &_pGUIM->gmAudioOptionsMenu) {
-      if( _ptoLogoEAX!=NULL) {
-        CTextureData &td = (CTextureData&)*_ptoLogoEAX->GetData();
+    } else if (GetCurrentMenu() == &gmAudioOptionsMenu) {
+      if (m_toLogoEAX.GetData() != NULL) {
+        CTextureData &td = (CTextureData&)*m_toLogoEAX.GetData();
         const INDEX iSize = 95;
         const PIX pixLogoWidth  = iSize * dpMenu.dp_fWideAdjustment;
         const PIX pixLogoHeight = iSize * td.GetHeight() / td.GetWidth();
@@ -729,24 +703,24 @@ BOOL DoMenu( CDrawPort *pdp)
         pixJ0 = (480-pixLogoHeight - 7)*fScaleH;
         pixI1 = pixI0+ pixLogoWidth *fScaleW;
         pixJ1 = pixJ0+ pixLogoHeight*fScaleH;
-        dpMenu.PutTexture( _ptoLogoEAX, PIXaabbox2D( PIX2D( pixI0, pixJ0),PIX2D( pixI1, pixJ1)));
+        dpMenu.PutTexture(&m_toLogoEAX, PIXaabbox2D( PIX2D( pixI0, pixJ0),PIX2D( pixI1, pixJ1)));
       }
     }
 
 #define THUMBW 96
 #define THUMBH 96
     // if there is a thumbnail
-    if( _bThumbnailOn) {
+    if (m_bThumbnailOn) {
       const FLOAT fThumbScaleW = fScaleW * dpMenu.dp_fWideAdjustment;
       PIX pixOfs = 8*fScaleW;
       pixI0 = 8*fScaleW;
       pixJ0 = (240-THUMBW/2)*fScaleH;
       pixI1 = pixI0+ THUMBW*fThumbScaleW;
       pixJ1 = pixJ0+ THUMBH*fScaleH;
-      if( _toThumbnail.GetData()!=NULL)
+      if (m_toThumbnail.GetData() != NULL)
       { // show thumbnail with shadow and border
         dpMenu.Fill( pixI0+pixOfs, pixJ0+pixOfs, THUMBW*fThumbScaleW, THUMBH*fScaleH, C_BLACK|128);
-        dpMenu.PutTexture( &_toThumbnail, PIXaabbox2D( PIX2D( pixI0, pixJ0), PIX2D( pixI1, pixJ1)), C_WHITE|255);
+        dpMenu.PutTexture( &m_toThumbnail, PIXaabbox2D( PIX2D( pixI0, pixJ0), PIX2D( pixI1, pixJ1)), C_WHITE|255);
         dpMenu.DrawBorder( pixI0,pixJ0, THUMBW*fThumbScaleW,THUMBH*fScaleH, _pGame->LCDGetColor(C_mdGREEN|255, "thumbnail border"));
       } else {
         dpMenu.SetFont( _pfdDisplayFont);
@@ -761,15 +735,15 @@ BOOL DoMenu( CDrawPort *pdp)
   }
 
   // if this is popup menu
-  if (_pGUIM->GetCurrentMenu()->gm_bPopup) {
+  if (GetCurrentMenu()->gm_bPopup) {
     // [Cecil] Render last visited proper menu
     CGameMenu *pgmLast = NULL;
 
     // Go from the end (minus the current one)
-    INDEX iMenu = _pGUIM->GetMenuCount() - 1;
+    INDEX iMenu = GetMenuCount() - 1;
 
     while (--iMenu >= 0) {
-      CGameMenu *pgmVisited = _pGUIM->GetMenu(iMenu);
+      CGameMenu *pgmVisited = GetMenu(iMenu);
 
       // Not a popup menu
       if (!pgmVisited->gm_bPopup) {
@@ -812,9 +786,9 @@ BOOL DoMenu( CDrawPort *pdp)
   _pmgUnderCursor = NULL;
 
   BOOL bStilInMenus = FALSE;
-  _pGame->MenuPreRenderMenu(_pGUIM->GetCurrentMenu()->GetName());
+  _pGame->MenuPreRenderMenu(GetCurrentMenu()->GetName());
   // for each menu gadget
-  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
+  FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
     // if gadget is visible
     if( itmg->mg_bVisible) {
       bStilInMenus = TRUE;
@@ -824,14 +798,14 @@ BOOL DoMenu( CDrawPort *pdp)
       }
     }
   }
-  _pGame->MenuPostRenderMenu(_pGUIM->GetCurrentMenu()->GetName());
+  _pGame->MenuPostRenderMenu(GetCurrentMenu()->GetName());
 
   // no currently active gadget initially
   CMenuGadget *pmgActive = NULL;
   // if mouse was not active last
   if (!_bMouseUsedLast) {
     // find focused gadget
-    FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
+    FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
       CMenuGadget &mg = *itmg;
       // if focused
       if( itmg->mg_bFocused) {
@@ -876,8 +850,7 @@ BOOL DoMenu( CDrawPort *pdp)
   return bStilInMenus;
 }
 
-extern void FixupBackButton(CGameMenu *pgm)
-{
+void CMenuManager::FixupBackButton(CGameMenu *pgm) {
   BOOL bResume = FALSE;
   BOOL bHasBack = TRUE;
 
@@ -885,7 +858,7 @@ extern void FixupBackButton(CGameMenu *pgm)
     bHasBack = FALSE;
   }
 
-  if (_pGUIM->GetMenuCount() <= 1) {
+  if (GetMenuCount() <= 1) {
     if (_gmRunningGameMode != GM_NONE) {
       bResume = TRUE;
 
@@ -896,40 +869,38 @@ extern void FixupBackButton(CGameMenu *pgm)
   }
 
   if (!bHasBack) {
-    mgBack.Disappear();
+    m_mgBack.Disappear();
     return;
   }
 
   if (bResume) {
-    mgBack.SetText(TRANS("RESUME"));
-    mgBack.mg_strTip = TRANS("return to game");
+    m_mgBack.SetText(TRANS("RESUME"));
+    m_mgBack.mg_strTip = TRANS("return to game");
+
+  } else if (_bVarChanged) {
+    m_mgBack.SetText(TRANS("CANCEL"));
+    m_mgBack.mg_strTip = TRANS("cancel changes");
+
   } else {
-    if (_bVarChanged) {
-      mgBack.SetText(TRANS("CANCEL"));
-      mgBack.mg_strTip = TRANS("cancel changes");
-    } else {
-      mgBack.SetText(TRANS("BACK"));
-      mgBack.mg_strTip = TRANS("return to previous menu");
-    }
+    m_mgBack.SetText(TRANS("BACK"));
+    m_mgBack.mg_strTip = TRANS("return to previous menu");
   }
 
-  mgBack.mg_iCenterI = -1;
-  mgBack.mg_bfsFontSize = BFS_LARGE;
-  mgBack.mg_boxOnScreen = BoxBack();
-  mgBack.mg_boxOnScreen = BoxLeftColumn(16.5f);
-  pgm->AddChild(&mgBack);
+  m_mgBack.mg_iCenterI = -1;
+  m_mgBack.mg_bfsFontSize = BFS_LARGE;
+  m_mgBack.mg_boxOnScreen = BoxBack();
+  m_mgBack.mg_boxOnScreen = BoxLeftColumn(16.5f);
+  pgm->AddChild(&m_mgBack);
 
-  mgBack.mg_pmgLeft = 
-  mgBack.mg_pmgRight = 
-  mgBack.mg_pmgUp = 
-  mgBack.mg_pmgDown = pgm->GetDefaultGadget();
+  m_mgBack.mg_pmgLeft = m_mgBack.mg_pmgRight
+  = m_mgBack.mg_pmgUp = m_mgBack.mg_pmgDown = pgm->GetDefaultGadget();
 
-  mgBack.mg_pCallbackFunction = &MenuGoToParent;
+  m_mgBack.mg_pCallbackFunction = &MenuGoToParent;
 
-  mgBack.Appear();
+  m_mgBack.Appear();
 };
 
-void ChangeToMenu(CGameMenu *pgmNewMenu) {
+void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
   // auto-clear old thumbnail when going out of menu
   ClearThumbnail();
 
@@ -938,17 +909,17 @@ void ChangeToMenu(CGameMenu *pgmNewMenu) {
 
   // [Cecil] If no new menu specified
   if (pgmNewMenu == NULL) {
-    CGameMenu *pgmCurrent = _pGUIM->GetCurrentMenu();
+    CGameMenu *pgmCurrent = GetCurrentMenu();
 
     // Just exit if there are no more menus (happens intentionally sometimes)
     if (pgmCurrent == NULL) return;
 
     // End the current menu and pop it
     pgmCurrent->EndMenu();
-    _pGUIM->PopMenu();
+    PopMenu();
 
     // Make the previous menu the current one
-    pgmNewMenu = _pGUIM->GetCurrentMenu();
+    pgmNewMenu = GetCurrentMenu();
 
     // If no more menus
     if (pgmNewMenu == NULL) {
@@ -967,10 +938,10 @@ void ChangeToMenu(CGameMenu *pgmNewMenu) {
   // Otherwise if some new menu is specified
   } else {
     // [Cecil] Check whether this menu has already been visited
-    INDEX iVisited = _pGUIM->GetMenuCount();
+    INDEX iVisited = GetMenuCount();
 
     while (--iVisited >= 0) {
-      CGameMenu *pgm = _pGUIM->GetMenu(iVisited);
+      CGameMenu *pgm = GetMenu(iVisited);
 
       // Found the same menu
       if (strcmp(pgm->GetName(), pgmNewMenu->GetName()) == 0) {
@@ -981,15 +952,15 @@ void ChangeToMenu(CGameMenu *pgmNewMenu) {
     // If this menu has already been visited before
     if (iVisited >= 0) {
       // End the current menu
-      _pGUIM->GetCurrentMenu()->EndMenu();
+      GetCurrentMenu()->EndMenu();
 
       // Then rewind to the visited one and pop it too
-      _pGUIM->PopMenusUntil(iVisited - 1);
+      PopMenusUntil(iVisited - 1);
     }
 
     // Start that menu if there's supposed to be a popup on top of it
     if (pgmNewMenu->gm_bPopup) {
-      _pGUIM->GetCurrentMenu()->StartMenu();
+      GetCurrentMenu()->StartMenu();
 
       FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
         itmg->OnKillFocus();
@@ -997,7 +968,7 @@ void ChangeToMenu(CGameMenu *pgmNewMenu) {
     }
 
     // Push the new menu to the top
-    _pGUIM->PushMenu(pgmNewMenu);
+    PushMenu(pgmNewMenu);
   }
 
   // Start the new menu
@@ -1006,9 +977,9 @@ void ChangeToMenu(CGameMenu *pgmNewMenu) {
   // Change focus to the default gadget
   CMenuGadget *pmgDefault = pgmNewMenu->GetDefaultGadget();
 
-  if (pmgDefault) {
-    if (mgBack.mg_bFocused) {
-      mgBack.OnKillFocus();
+  if (pmgDefault != NULL) {
+    if (m_mgBack.mg_bFocused) {
+      m_mgBack.OnKillFocus();
     }
     pmgDefault->OnSetFocus();
   }

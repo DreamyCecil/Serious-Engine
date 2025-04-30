@@ -22,18 +22,18 @@ BOOL _bStartSelectedLevel = TRUE;
 
 void CMGLevelButton::OnActivate(void)
 {
-  PlayMenuSound(E_MSND_PRESS);
+  _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
   _pGame->gam_strCustomLevel = mg_fnmLevel;
 
   if (_bStartSelectedLevel) {
     CSinglePlayerNewMenu::ChangeTo();
   } else {
-    MenuGoToParent();
+    _pGUIM->MenuGoToParent();
   }
 }
 
 void CMGLevelButton::OnSetFocus(void)
 {
-  SetThumbnail(mg_fnmLevel);
+  _pGUIM->SetThumbnail(mg_fnmLevel);
   CMGButton::OnSetFocus();
 }

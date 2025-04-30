@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 void CMGChangePlayer::OnActivate(void)
 {
-  PlayMenuSound(E_MSND_PRESS);
+  _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
   _iLocalPlayer = mg_iLocalPlayer;
 
   if (_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer] < 0) {

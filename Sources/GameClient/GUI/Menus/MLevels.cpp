@@ -112,5 +112,5 @@ void CLevelsMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CLevelsMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmLevelsMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmLevelsMenu);
 };

@@ -95,41 +95,216 @@ struct PressedMenuButton {
   };
 };
 
-// set new thumbnail
-void SetThumbnail(CTFileName fn);
-// remove thumbnail
-void ClearThumbnail(void);
+#include "MAudioOptions.h"
+#include "MConfirm.h"
+#include "MControls.h"
+#include "MCustomizeAxis.h"
+#include "MCustomizeKeyboard.h"
+#include "MHighScore.h"
+#include "MInGame.h"
+#include "MLevels.h"
+#include "MLoadSave.h"
+#include "MMain.h"
+#include "MNetwork.h"
+#include "MNetworkJoin.h"
+#include "MNetworkOpen.h"
+#include "MNetworkStart.h"
+#include "MOptions.h"
+#include "MPlayerProfile.h"
+#include "MSelectPlayers.h"
+#include "MServers.h"
+#include "MSinglePlayer.h"
+#include "MSinglePlayerNew.h"
+#include "MSplitScreen.h"
+#include "MSplitStart.h"
+#include "MVar.h"
+#include "MVideoOptions.h"
 
-void InitializeMenus( void);
-void DestroyMenus( void);
-void MenuGoToParent(void);
-void MenuOnKeyDown(PressedMenuButton pmb); // [Cecil] Handle mouse buttons separately from keys
-void MenuOnChar(const OS::SE1Event &event);
-void MenuOnMouseMove(PIX pixI, PIX pixJ);
-BOOL DoMenu( CDrawPort *pdp); // returns TRUE if still active, FALSE if should quit
-void StartMenus(const CTString &str = "");
-void StopMenus(BOOL bGoToRoot = TRUE);
-BOOL IsMenuRoot(class CGameMenu *pgm); // [Cecil] Check if it's a root menu
-void ChangeToMenu(class CGameMenu *pgmNew);
+// [Cecil] Moved here out of MenuManager.h
+class CMenuManager {
+  public:
+    // Menu sound types
+    enum EMenuSound {
+      E_MSNG_SELECT,
+      E_MSND_PRESS,
+      // New types
+      E_MSND_RETURN,
+      E_MSND_DISABLED,
+    };
 
-// [Cecil] Menu sound types
-enum EMenuSound {
-  E_MSNG_SELECT,
-  E_MSND_PRESS,
-  // New types
-  E_MSND_RETURN,
-  E_MSND_DISABLED,
+  private:
+    // Current menu states
+    BOOL m_bMenuActive;
+    BOOL m_bMenuRendering;
+
+    // [Cecil] List of previously visited menus with the last one being the current one
+    // Each time the "Back" button is pressed, it pops the current menu and switches to
+    // the previous one, otherwise returns to game (if it's active) or to the main menu
+    CStaticStackArray<CGameMenu *> m_aVisitedMenus;
+
+    // Thumbnail for showing in the menu
+    CTextureObject m_toThumbnail;
+    BOOL m_bThumbnailOn;
+
+    // Menu sounds
+    CSoundObject m_soMenuSound;
+    CSoundData *m_psdSelect;
+    CSoundData *m_psdPress;
+    CSoundData *m_psdReturn;
+    CSoundData *m_psdDisabled;
+
+    // Extra menu textures
+    CTextureObject m_toLogoMenuA;
+    CTextureObject m_toLogoMenuB;
+    CTextureObject m_toLogoCT;
+    CTextureObject m_toLogoODI;
+    CTextureObject m_toLogoEAX;
+
+  public:
+    // Fonts used in the menu
+    CFontData m_fdBig;
+    CFontData m_fdMedium;
+    CFontData m_fdTitle;
+
+    // Menu instances
+    CConfirmMenu gmConfirmMenu;
+    CMainMenu gmMainMenu;
+    CInGameMenu gmInGameMenu;
+    CSinglePlayerMenu gmSinglePlayerMenu;
+    CSinglePlayerNewMenu gmSinglePlayerNewMenu;
+    CLevelsMenu gmLevelsMenu;
+    CVarMenu gmVarMenu;
+    CPlayerProfileMenu gmPlayerProfile;
+    CControlsMenu gmControls;
+    CLoadSaveMenu gmLoadSaveMenu;
+    CHighScoreMenu gmHighScoreMenu;
+    CCustomizeKeyboardMenu gmCustomizeKeyboardMenu;
+    CServersMenu gmServersMenu;
+    CCustomizeAxisMenu gmCustomizeAxisMenu;
+    COptionsMenu gmOptionsMenu;
+    CVideoOptionsMenu gmVideoOptionsMenu;
+    CAudioOptionsMenu gmAudioOptionsMenu;
+    CNetworkMenu gmNetworkMenu;
+    CNetworkJoinMenu gmNetworkJoinMenu;
+    CNetworkStartMenu gmNetworkStartMenu;
+    CNetworkOpenMenu gmNetworkOpenMenu;
+    CSplitScreenMenu gmSplitScreenMenu;
+    CSplitStartMenu gmSplitStartMenu;
+    CSelectPlayersMenu gmSelectPlayersMenu;
+
+    // [Cecil] Global back button from the global scope
+    CMGButton m_mgBack;
+
+  public:
+    // Constructor (used to be InitializeMenus() method)
+    CMenuManager();
+
+    // Destructor (used to be DestroyMenus() method)
+    ~CMenuManager();
+
+    // Get amount of visited menus
+    inline INDEX GetMenuCount(void) {
+      return m_aVisitedMenus.Count();
+    };
+
+    // Get a visited menu from the stack
+    inline CGameMenu *GetMenu(INDEX i) {
+      const INDEX ct = GetMenuCount();
+
+      ASSERT(i >= 0 && i < ct);
+      if (i < 0 || i >= ct) return NULL;
+
+      return m_aVisitedMenus[i];
+    };
+
+    // Get the currently active menu
+    inline CGameMenu *GetCurrentMenu(void) {
+      const INDEX ct = GetMenuCount();
+      if (ct == 0) return NULL;
+
+      return m_aVisitedMenus[ct - 1];
+    };
+
+    // Push a new menu on top, making it the current one
+    inline void PushMenu(CGameMenu *pgm) {
+      m_aVisitedMenus.Add(pgm);
+    };
+
+    // Pop the current menu from top, making the previous menu the current one
+    inline void PopMenu(void) {
+      m_aVisitedMenus.Pop();
+    };
+
+    // Pop the menus from top until a specific one
+    inline void PopMenusUntil(INDEX i) {
+      m_aVisitedMenus.PopUntil(i);
+    };
+
+    // Pop all visited menus
+    inline void ClearVisitedMenus(void) {
+      m_aVisitedMenus.PopAll();
+    };
+
+    // Automaticaly manage input enable/disable toggling
+    void UpdateInputEnabledState(void);
+
+    // Automaticaly manage pause toggling
+    void UpdatePauseState(void);
+
+    // Separate method for letting the menu manage the game client
+    void Process(void);
+
+    // Do the main game loop and render the screen
+    void DoGame(void);
+
+  // [Cecil] These methods have been moved from global scope
+  public:
+
+    // Play a specific menu sound, replacing the previous sound if needed
+    void PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds = TRUE);
+
+    // Set new thumbnail
+    void SetThumbnail(const CTString &fnm);
+
+    // Remove thumbnail
+    void ClearThumbnail(void);
+
+    // Process pressed buttons from various devices
+    void MenuOnKeyDown(PressedMenuButton pmb);
+
+    // Process character input
+    void MenuOnChar(const OS::SE1Event &event);
+
+    // Process mouse movement
+    void MenuOnMouseMove(PIX pixI, PIX pixJ);
+
+    // Select menu gadget under the mouse cursor
+    void MenuUpdateMouseFocus(void);
+
+    // Returns TRUE if any menu is still active
+    BOOL DoMenu(CDrawPort *pdp);
+
+    // Open a specific game menu
+    void StartMenus(const CTString &str = "");
+
+    // Close the current menu
+    void StopMenus(BOOL bGoToRoot = TRUE);
+
+    // Check if it's a root menu
+    BOOL IsMenuRoot(CGameMenu *pgm);
+
+    // Go to a specific menu
+    void ChangeToMenu(CGameMenu *pgmNew);
+
+    // Go to the previous menu or back to the game
+    static void MenuGoToParent(void);
+
+    // Configure the "back" button for a specific menu
+    void FixupBackButton(CGameMenu *pgm);
 };
 
-// [Cecil] Type instead of a pointer to any sound data and a flag for playing over other sounds
-void PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds = TRUE);
-
-#define KEYS_ON_SCREEN 14
-#define LEVELS_ON_SCREEN 16
-#define SERVERS_ON_SCREEN 15
-#define VARS_ON_SCREEN 14
-
-extern CListHead _lhServers;
+// [Cecil] Declared here
+extern CMenuManager *_pGUIM;
 
 extern INDEX _iLocalPlayer;
 

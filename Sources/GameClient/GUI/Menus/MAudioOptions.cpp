@@ -171,5 +171,5 @@ void CAudioOptionsMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CAudioOptionsMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmAudioOptionsMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmAudioOptionsMenu);
 };

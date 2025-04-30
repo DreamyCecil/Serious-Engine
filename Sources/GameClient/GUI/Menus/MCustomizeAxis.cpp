@@ -166,5 +166,5 @@ void CCustomizeAxisMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CCustomizeAxisMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmCustomizeAxisMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmCustomizeAxisMenu);
 };

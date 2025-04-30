@@ -68,5 +68,5 @@ void CNetworkJoinMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void CNetworkJoinMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmNetworkJoinMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkJoinMenu);
 };

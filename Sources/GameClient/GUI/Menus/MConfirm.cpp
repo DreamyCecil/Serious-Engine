@@ -25,7 +25,7 @@ static void ConfirmYes(CMenuGadget *pmg) {
     gmConfirm.gm_pConfirmedYes();
   }
 
-  MenuGoToParent();
+  _pGUIM->MenuGoToParent();
 };
 
 static void ConfirmNo(CMenuGadget *pmg) {
@@ -35,7 +35,7 @@ static void ConfirmNo(CMenuGadget *pmg) {
     gmConfirm.gm_pConfirmedNo();
   }
 
-  MenuGoToParent();
+  _pGUIM->MenuGoToParent();
 };
 
 void CConfirmMenu::Initialize_t(void)
@@ -118,5 +118,5 @@ void CConfirmMenu::ChangeTo(const CTString &strLabel, FConfirm pFuncYes, FConfir
     gm.BeSmall();
   }
 
-  ChangeToMenu(&gm);
+  _pGUIM->ChangeToMenu(&gm);
 };

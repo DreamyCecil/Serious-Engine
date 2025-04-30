@@ -51,7 +51,7 @@ static void StartSplitScreenGame(void) {
   _pGame->SetMultiPlayerSession(sp);
 
   if (_pGame->NewGame(fnWorld.FileName(), fnWorld, sp)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_SPLIT_SCREEN;
   } else {
     _gmRunningGameMode = GM_NONE;
@@ -145,5 +145,5 @@ void CSplitStartMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CSplitStartMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmSplitStartMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmSplitStartMenu);
 };

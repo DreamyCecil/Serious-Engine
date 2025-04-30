@@ -452,5 +452,5 @@ void CVideoOptionsMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CVideoOptionsMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmVideoOptionsMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmVideoOptionsMenu);
 };

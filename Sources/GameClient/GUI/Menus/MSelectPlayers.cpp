@@ -273,5 +273,5 @@ void CSelectPlayersMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CSelectPlayersMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmSelectPlayersMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmSelectPlayersMenu);
 };

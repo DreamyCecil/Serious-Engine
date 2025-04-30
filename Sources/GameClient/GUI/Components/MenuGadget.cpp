@@ -19,8 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "VarList.h"
 #include "MenuGadget.h"
 
-extern CSoundData *_psdSelect;
-
 BOOL _bDefiningKey = FALSE;
 BOOL _bEditingString = FALSE;
 
@@ -70,8 +68,10 @@ BOOL CMenuGadget::OnChar(const OS::SE1Event &event)
 void CMenuGadget::OnSetFocus(void)
 {
   mg_bFocused = TRUE;
+
   if (!IsSeparator()) {
-    PlayMenuSound(E_MSNG_SELECT, FALSE); // [Cecil] Don't play over other sounds
+    // [Cecil] Don't play over other sounds
+    _pGUIM->PlayMenuSound(CMenuManager::E_MSNG_SELECT, FALSE);
   }
 }
 

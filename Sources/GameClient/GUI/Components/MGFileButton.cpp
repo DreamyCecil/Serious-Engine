@@ -116,7 +116,7 @@ void CMGFileButton::OnActivate(void)
     return;
   }
 
-  PlayMenuSound(E_MSND_PRESS);
+  _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
 
   CLoadSaveMenu *pgmLoadSave = GetLSMenu();
 
@@ -193,9 +193,9 @@ void CMGFileButton::OnSetFocus(void)
   mg_iState = FBS_NORMAL;
 
   if (pgmLoadSave->gm_bAllowThumbnails && mg_bEnabled) {
-    SetThumbnail(mg_fnm);
+    _pGUIM->SetThumbnail(mg_fnm);
   } else {
-    ClearThumbnail();
+    _pGUIM->ClearThumbnail();
   }
 
   _pGUIM->GetCurrentMenu()->KillAllFocuses();

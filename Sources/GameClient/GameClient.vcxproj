@@ -544,7 +544,6 @@
     <ClCompile Include="GUI\Menus\MCustomizeAxis.cpp" />
     <ClCompile Include="GUI\Menus\MCustomizeKeyboard.cpp" />
     <ClCompile Include="GUI\Menus\Menu.cpp" />
-    <ClCompile Include="GUI\Menus\MenuManager.cpp" />
     <ClCompile Include="GUI\Menus\MenuPrinting.cpp" />
     <ClCompile Include="GUI\Menus\MenuStuff.cpp" />
     <ClCompile Include="GUI\Menus\MHighScore.cpp" />
@@ -591,7 +590,6 @@
     <ClInclude Include="GUI\Menus\MCustomizeAxis.h" />
     <ClInclude Include="GUI\Menus\MCustomizeKeyboard.h" />
     <ClInclude Include="GUI\Menus\Menu.h" />
-    <ClInclude Include="GUI\Menus\MenuManager.h" />
     <ClInclude Include="GUI\Menus\MenuPrinting.h" />
     <ClInclude Include="GUI\Menus\MenuStuff.h" />
     <ClInclude Include="GUI\Menus\MHighScore.h" />

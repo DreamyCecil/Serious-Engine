@@ -128,5 +128,5 @@ void CServersMenu::Think(void)
 
 // [Cecil] Change to the menu
 void CServersMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmServersMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmServersMenu);
 };

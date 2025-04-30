@@ -34,7 +34,7 @@ static BOOL LSLoadNetSettings(CGameMenu *pgm, const CTString &fnm) {
   strCmd.PrintF("include \"%s\"", sam_strNetworkSettings.ConstData());
   _pShell->Execute(strCmd);
 
-  MenuGoToParent();
+  _pGUIM->MenuGoToParent();
   return TRUE;
 };
 
@@ -171,5 +171,5 @@ void COptionsMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void COptionsMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmOptionsMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmOptionsMenu);
 };

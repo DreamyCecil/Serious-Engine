@@ -26,7 +26,7 @@ CMGKeyDefinition::CMGKeyDefinition(void)
 
 void CMGKeyDefinition::OnActivate(void)
 {
-  PlayMenuSound(E_MSND_PRESS);
+  _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
   SetBindingNames(/*bDefining=*/TRUE);
   mg_iState = RELEASE_RETURN_WAITING;
 }

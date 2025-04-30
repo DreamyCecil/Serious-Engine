@@ -25,12 +25,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGTitle.h"
 #include "GUI/Components/MGVarButton.h"
 
+#define VARS_ON_SCREEN 14
+
 class CVarMenu : public CGameMenu {
 public:
   CTFileName gm_fnmMenuCFG;
 
   CMGTitle gm_mgTitle;
-  CMGVarButton gm_mgVar[LEVELS_ON_SCREEN];
+  CMGVarButton gm_mgVar[VARS_ON_SCREEN];
   CMGButton gm_mgApply;
   CMGArrow gm_mgArrowUp;
   CMGArrow gm_mgArrowDn;

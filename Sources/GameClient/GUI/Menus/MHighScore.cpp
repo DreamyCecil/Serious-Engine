@@ -20,8 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // [Cecil] Selected gadget by default
 CMenuGadget *CHighScoreMenu::GetDefaultGadget(void) {
-  extern CMGButton mgBack;
-  return &mgBack;
+  return &_pGUIM->m_mgBack;
 };
 
 void CHighScoreMenu::Initialize_t(void)
@@ -36,5 +35,5 @@ void CHighScoreMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void CHighScoreMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmHighScoreMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmHighScoreMenu);
 };

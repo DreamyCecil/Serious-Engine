@@ -24,6 +24,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "GUI/Components/MGLevelButton.h"
 #include "GUI/Components/MGTitle.h"
 
+#define LEVELS_ON_SCREEN 16
+
 class CLevelsMenu : public CGameMenu {
 public:
   CMGTitle gm_mgTitle;

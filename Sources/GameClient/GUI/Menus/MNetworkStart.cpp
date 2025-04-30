@@ -51,7 +51,7 @@ void StartNetworkGame(void) {
   _pGame->SetMultiPlayerSession(sp);
 
   if (_pGame->NewGame(_pGame->gam_strSessionName, _pGame->gam_strCustomLevel, sp)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_NETWORK;
 
     // if starting a dedicated server
@@ -199,5 +199,5 @@ void CNetworkStartMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CNetworkStartMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmNetworkStartMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkStartMenu);
 };

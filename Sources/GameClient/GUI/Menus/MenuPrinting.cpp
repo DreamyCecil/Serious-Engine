@@ -269,26 +269,23 @@ FLOATaabbox2D PixBoxToFloatBox(const CDrawPort *pdp, const PIXaabbox2D &boxP)
     FLOAT2D(boxP.Max()(1)/fpixW, boxP.Max()(2)/fpixH));
 }
 
-extern CFontData _fdTitle;
 void SetFontTitle(CDrawPort *pdp)
 {
-  pdp->SetFont( &_fdTitle);
+  pdp->SetFont(&_pGUIM->m_fdTitle);
   pdp->SetTextScaling( 1.25f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
   pdp->SetTextAspect(1.0f);
 }
 
-extern CFontData _fdBig;
 void SetFontBig(CDrawPort *pdp)
 {
-  pdp->SetFont( &_fdBig);
+  pdp->SetFont(&_pGUIM->m_fdBig);
   pdp->SetTextScaling( 1.0f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
   pdp->SetTextAspect(1.0f);
 }
 
-extern CFontData _fdMedium;
 void SetFontMedium(CDrawPort *pdp)
 {
-  pdp->SetFont( &_fdMedium);
+  pdp->SetFont(&_pGUIM->m_fdMedium);
   pdp->SetTextScaling( 1.0f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
   pdp->SetTextAspect(0.75f);
 }

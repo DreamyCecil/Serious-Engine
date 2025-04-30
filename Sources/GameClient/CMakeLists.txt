@@ -24,7 +24,6 @@ set(GAMECLIENT_SRCS
   "GUI/Menus/MCustomizeAxis.cpp"
   "GUI/Menus/MCustomizeKeyboard.cpp"
   "GUI/Menus/Menu.cpp"
-  "GUI/Menus/MenuManager.cpp"
   "GUI/Menus/MenuPrinting.cpp"
   "GUI/Menus/MenuStuff.cpp"
   "GUI/Menus/MHighScore.cpp"

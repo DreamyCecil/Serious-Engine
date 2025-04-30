@@ -39,7 +39,7 @@ static BOOL LSLoadControls(CGameMenu *pgm, const CTString &fnm) {
     CPutString(strError);
   }
 
-  MenuGoToParent();
+  _pGUIM->MenuGoToParent();
   return TRUE;
 };
 
@@ -222,5 +222,5 @@ void CControlsMenu::ApplyActionSettings(void)
 
 // [Cecil] Change to the menu
 void CControlsMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmControls);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmControls);
 };

@@ -135,13 +135,12 @@ void CVarMenu::EndMenu(void)
 void CVarMenu::Think(void)
 {
   gm_mgApply.mg_bEnabled = _bVarChanged;
-  extern void FixupBackButton(CGameMenu *pgm);
-  FixupBackButton(this);
+  _pGUIM->FixupBackButton(this);
 }
 
 // [Cecil] Change to the menu
 void CVarMenu::ChangeTo(const CTString &strTitle, const CTString &fnmConfig) {
   _pGUIM->gmVarMenu.gm_mgTitle.SetText(strTitle);
   _pGUIM->gmVarMenu.gm_fnmMenuCFG = fnmConfig;
-  ChangeToMenu(&_pGUIM->gmVarMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmVarMenu);
 };

@@ -136,7 +136,7 @@ static BOOL LSLoadPlayerModel(CGameMenu *pgm, const CTString &fnm) {
   memset(pps->ps_achModelFile, 0, sizeof(pps->ps_achModelFile));
   strncpy(pps->ps_achModelFile, fnm.FileName().ConstData(), sizeof(pps->ps_achModelFile));
 
-  MenuGoToParent();
+  _pGUIM->MenuGoToParent();
   return TRUE;
 };
 
@@ -437,5 +437,5 @@ void CPlayerProfileMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CPlayerProfileMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmPlayerProfile);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmPlayerProfile);
 };

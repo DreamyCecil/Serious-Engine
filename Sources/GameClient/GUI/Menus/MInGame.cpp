@@ -36,7 +36,7 @@ static void StartCurrentQuickLoadMenu(void) {
 // start load/save menus depending on type of game running
 static void QuickSaveFromMenu(void) {
   _pShell->SetINDEX("gam_bQuickSave", 2); // force save with reporting
-  StopMenus();
+  _pGUIM->StopMenus();
 };
 
 void StartCurrentLoadMenu(void) {
@@ -57,7 +57,7 @@ void StartCurrentLoadMenu(void) {
 // same function for saving in singleplay, network and splitscreen
 static BOOL LSSaveAnyGame(CGameMenu *pgm, const CTString &fnm) {
   if (_pGame->SaveGame(fnm)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     return TRUE;
   }
 
@@ -146,7 +146,7 @@ void StartCurrentSaveMenu(void) {
 static BOOL LSSaveDemo(CGameMenu *pgm, const CTString &fnm) {
   // save the demo
   if (_pGame->StartDemoRec(fnm)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     return TRUE;
   }
 
@@ -197,8 +197,8 @@ void SetDemoStartStopRecText(CMenuGadget *pmg) {
 static void StopCurrentGame(void) {
   _pGame->StopGame();
   _gmRunningGameMode = GM_NONE;
-  StopMenus();
-  StartMenus();
+  _pGUIM->StopMenus();
+  _pGUIM->StartMenus();
 };
 
 static void StopConfirm(void) {
@@ -361,5 +361,5 @@ void CInGameMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CInGameMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmInGameMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmInGameMenu);
 };

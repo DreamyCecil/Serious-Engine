@@ -37,11 +37,11 @@ void CMGEdit::OnActivate(void)
 {
   if (!mg_bEnabled) {
     // [Cecil] Textbox is disabled
-    PlayMenuSound(E_MSND_DISABLED);
+    _pGUIM->PlayMenuSound(CMenuManager::E_MSND_DISABLED);
     return;
   }
   ASSERT(mg_pstrToChange != NULL);
-  PlayMenuSound(E_MSND_PRESS);
+  _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
   mg_iCursorPos = GetText().Length();
   mg_bEditing = TRUE;
   _bEditingString = TRUE;

@@ -33,7 +33,7 @@ void StartSinglePlayerGame(void) {
   _pGame->SetSinglePlayerSession(sp);
 
   if (_pGame->NewGame(_pGame->gam_strCustomLevel, _pGame->gam_strCustomLevel, sp)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_SINGLE_PLAYER;
   } else {
     _gmRunningGameMode = GM_NONE;
@@ -156,5 +156,5 @@ void CSinglePlayerNewMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CSinglePlayerNewMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmSinglePlayerNewMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmSinglePlayerNewMenu);
 };

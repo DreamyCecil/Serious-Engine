@@ -18,6 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MGServerList.h"
 #include "MGEdit.h"
 
+static CListHead _lhServers;
+
 FLOATaabbox2D GetBoxPartHoriz(const FLOATaabbox2D &box, FLOAT fMin, FLOAT fMax)
 {
   FLOAT fBoxMin = box.Min()(1);
@@ -415,7 +417,7 @@ BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
 
   // [Cecil] Select the listing
   if (pmb.Apply(TRUE)) {
-    PlayMenuSound(E_MSND_PRESS);
+    _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
 
     INDEX i = 0;
 

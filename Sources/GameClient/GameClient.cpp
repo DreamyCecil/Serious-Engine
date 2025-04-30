@@ -34,8 +34,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // application state variables
 BOOL _bRunning = TRUE;
 BOOL _bQuitScreen = TRUE;
-BOOL bMenuActive = FALSE;
-BOOL bMenuRendering = FALSE;
 
 extern BOOL _bDefiningKey;
 static BOOL _bReconsiderInput = FALSE;
@@ -101,14 +99,6 @@ CTString _strURLToVisit = CTString("");
 // 2 - console invoked, waiting for one redraw
 INDEX _iAddonExecState = 0;
 CTFileName _fnmAddonToExec = CTString("");
-
-// logo textures
-static CTextureObject  _toLogoCT;
-static CTextureObject  _toLogoODI;
-static CTextureObject  _toLogoEAX;
-CTextureObject *_ptoLogoCT  = NULL;
-CTextureObject *_ptoLogoODI = NULL;
-CTextureObject *_ptoLogoEAX = NULL;
 
 CTString sam_strVersion = _SE_VER_STRING;
 CTString sam_strModName = TRANS("-   O P E N   S O U R C E   -");
@@ -203,19 +193,16 @@ static void DirectoryLockOff(void) {};
 
 #endif // SE1_WIN
 
-void End(void);
+// Automaticaly manage input enable/disable toggling
+void CMenuManager::UpdateInputEnabledState(void) {
+  static BOOL _bInputEnabled = FALSE;
 
-
-// automaticaly manage input enable/disable toggling
-static BOOL _bInputEnabled = FALSE;
-void UpdateInputEnabledState(void)
-{
   // do nothing if window is invalid
   if( _hwndMain==NULL) return;
 
   // input should be enabled if application is active
   // and no menu is active and no console is active
-  BOOL bShouldBeEnabled = (!OS::IsIconic(_hwndMain) && !bMenuActive && _pGame->gm_csConsoleState == CS_OFF
+  BOOL bShouldBeEnabled = (!OS::IsIconic(_hwndMain) && !m_bMenuActive && _pGame->gm_csConsoleState == CS_OFF
                        && (_pGame->gm_csComputerState == CS_OFF || _pGame->gm_csComputerState == CS_ONINBACKGROUND))
                        || _bDefiningKey;
 
@@ -232,18 +219,15 @@ void UpdateInputEnabledState(void)
     _bInputEnabled = TRUE;
   }
   _bReconsiderInput = FALSE;
-}
+};
 
-
-// automaticaly manage pause toggling
-static void UpdatePauseState(void)
-{
-  BOOL bShouldPause = (_gmRunningGameMode==GM_SINGLE_PLAYER) && (bMenuActive || 
-                       _pGame->gm_csConsoleState ==CS_ON || _pGame->gm_csConsoleState ==CS_TURNINGON || _pGame->gm_csConsoleState ==CS_TURNINGOFF ||
-                       _pGame->gm_csComputerState==CS_ON || _pGame->gm_csComputerState==CS_TURNINGON || _pGame->gm_csComputerState==CS_TURNINGOFF);
+// Automaticaly manage pause toggling
+void CMenuManager::UpdatePauseState(void) {
+  BOOL bShouldPause = (_gmRunningGameMode==GM_SINGLE_PLAYER) && (m_bMenuActive
+    || _pGame->gm_csConsoleState ==CS_ON || _pGame->gm_csConsoleState ==CS_TURNINGON || _pGame->gm_csConsoleState ==CS_TURNINGOFF
+    || _pGame->gm_csComputerState==CS_ON || _pGame->gm_csComputerState==CS_TURNINGON || _pGame->gm_csComputerState==CS_TURNINGOFF);
   _pNetwork->SetLocalPause(bShouldPause);
-}
-
+};
 
 // limit current frame rate if neeeded
 void LimitFrameRate(void)
@@ -351,22 +335,8 @@ void RunBrowser(const char *strUrl)
 #endif
 }
 
-void LoadAndForceTexture(CTextureObject &to, CTextureObject *&pto, const CTFileName &fnm)
-{
-  try {
-    to.SetData_t(fnm);
-    CTextureData *ptd = (CTextureData*)to.GetData();
-    ptd->Force( TEX_CONSTANT);
-    ptd = ptd->td_ptdBaseTexture;
-    if( ptd!=NULL) ptd->Force( TEX_CONSTANT);
-    pto = &to;
-  } catch( char *pchrError) {
-    (void*)pchrError;
-    pto = NULL;
-  }
-}
-
-BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
+// Initialize the game client
+static BOOL InitClient(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   // [Cecil] NOTE: Used in ShowSplashScreen() and for creating new game windows under Windows platforms
   _hInstance = hInstance;
 
@@ -491,18 +461,15 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
     strCmd.PrintF("include \"%s\"", cmd_strScript.ConstData());
     _pShell->Execute(strCmd);
   }
-  
-  // load logo textures
-  LoadAndForceTexture(_toLogoCT,   _ptoLogoCT,   CTFILENAME("Textures\\Logo\\LogoCT.tex"));
-  LoadAndForceTexture(_toLogoODI,  _ptoLogoODI,  CTFILENAME("Textures\\Logo\\GodGamesLogo.tex"));
-  LoadAndForceTexture(_toLogoEAX,  _ptoLogoEAX,  CTFILENAME("Textures\\Logo\\LogoEAX.tex"));
 
   // !! NOTE !! Re-enable these to allow mod support.
   LoadStringVar(CTString("Data\\Var\\Sam_Version.var"), sam_strVersion);
   LoadStringVar(CTString("Data\\Var\\ModName.var"), sam_strModName);
   CPrintF(TRANS("Serious Sam version: %s\n"), sam_strVersion.ConstData());
   CPrintF(TRANS("Active mod: %s\n"), sam_strModName.ConstData());
-  InitializeMenus();      
+
+  // [Cecil] Create the menus
+  _pGUIM = new CMenuManager;
   
   // if there is a mod
   if (_fnmMod!="") {
@@ -549,7 +516,7 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       extern void JoinNetworkGame(void);
       JoinNetworkGame();
     } else {
-      StartMenus("join");
+      _pGUIM->StartMenus("join");
     }
   // if starting world from command line
   } else if (cmd_strWorld!="") {
@@ -580,10 +547,10 @@ BOOL Init(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   return TRUE;
 }
 
-
-void End(void)
-{
+// Clean up the game client
+static void EndClient(void) {
   _pGame->DisableLoadingHook();
+
   // cleanup level-info subsystem
   ClearLevelsList();
   ClearDemosList();
@@ -600,7 +567,10 @@ void End(void)
 
   CloseMainWindow();
   MainWindow_End();
-  DestroyMenus();
+
+  // [Cecil] Destroy the menus
+  delete _pGUIM;
+
   _pGame->End();
   _pGame->LCDEnd();
   // unlock the directory
@@ -653,8 +623,8 @@ void PrintDisplayModeInfo(void)
   pdp->PutText( strRes, slDPWidth*0.05f, slDPHeight*0.85f, _pGame->LCDGetColor(C_GREEN|255, "display mode"));
 }
 
-// do the main game loop and render screen
-void DoGame(void)
+// Do the main game loop and render the screen
+void CMenuManager::DoGame(void)
 {
 #if SE1_SINGLE_THREAD
   // [Cecil] Run timer logic in the same thread
@@ -702,10 +672,10 @@ void DoGame(void)
   // redraw the view
   if (!OS::IsIconic(_hwndMain) && pdp != NULL && pdp->Lock())
   {
-    if( _gmRunningGameMode!=GM_NONE && !bMenuActive ) {
+    if (_gmRunningGameMode != GM_NONE && !m_bMenuActive) {
       // handle pretouching of textures and shadowmaps
       pdp->Unlock();
-      _pGame->GameRedrawView( pdp, (_pGame->gm_csConsoleState!=CS_OFF || bMenuActive)?0:GRV_SHOWEXTRAS);
+      _pGame->GameRedrawView(pdp, (_pGame->gm_csConsoleState != CS_OFF || m_bMenuActive) ? 0 : GRV_SHOWEXTRAS);
       pdp->Lock();
       _pGame->ComputerRender(pdp);
       pdp->Unlock();
@@ -721,11 +691,11 @@ void DoGame(void)
     }
 
     // do menu
-    if( bMenuRendering) {
+    if (m_bMenuRendering) {
       // clear z-buffer
       pdp->FillZBuffer( ZBUF_BACK);
       // remember if we should render menus next tick
-      bMenuRendering = DoMenu(pdp);
+      m_bMenuRendering = DoMenu(pdp);
     }
 
     // print display mode info if needed
@@ -885,8 +855,28 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   // [Cecil] Set DPI awareness
   SetDPIAwareness();
 
-  if (!Init(hInstance, cmd)) return FALSE;
+  if (!InitClient(hInstance, cmd)) return FALSE;
 
+  // [Cecil] Separated game client logic
+  _pGUIM->Process();
+
+  _pInput->DisableInput(_hwndMain);
+  _pGame->StopGame();
+
+  // [Cecil] Setup arguments for restarting the application, if needed
+  SetupRestartArgs();
+
+  // invoke quit screen if needed
+  if (_bQuitScreen && _fnmModToLoad == "") {
+    QuitScreenLoop();
+  }
+
+  EndClient();
+  return TRUE;
+};
+
+// [Cecil] Separate method for letting the menu manage the game client
+void CMenuManager::Process(void) {
   // [Cecil] Disable SDL joystick events to handle them manually alongside Windows API
   #if !SE1_PREFER_SDL
     SDL_SetJoystickEventsEnabled(false);
@@ -1063,7 +1053,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
         // Skip to the next demo on any key (other than console)
         } else if (bAnyKey && !_pGame->IsConsoleKeyPressed(event)) {
           // Only if there's no menu or console in the way
-          if (!bMenuActive && !bMenuRendering && _pGame->gm_csConsoleState == CS_OFF) {
+          if (!m_bMenuActive && !m_bMenuRendering && _pGame->gm_csConsoleState == CS_OFF) {
             _pGame->StopGame();
             _gmRunningGameMode = GM_NONE;
             StartNextDemo();
@@ -1080,7 +1070,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       const BOOL bMenuToggle = (_pGame->IsEscapeKeyPressed(event) && (_pGame->gm_csComputerState == CS_OFF || _pGame->gm_csComputerState == CS_ONINBACKGROUND));
 
       // If currently in game
-      if (!bMenuActive) {
+      if (!m_bMenuActive) {
         // And want to be in the menu
         if (bMenuForced || bMenuToggle) {
           // Deactivate the console
@@ -1097,13 +1087,13 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
         // And if the console isn't active (or has been deactivated just now)
         if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
           // Start the current menu if it's not the root one
-          if (!IsMenuRoot(_pGUIM->GetCurrentMenu())) {
+          if (!IsMenuRoot(GetCurrentMenu())) {
             StartMenus();
           }
         }
 
       // If currently in the menu and wanting to return to the previous menu
-      } else if (bMenuForced && bMenuToggle && _pGUIM->GetMenuCount() == 0) {
+      } else if (bMenuForced && bMenuToggle && GetMenuCount() == 0) {
         // Delete key down message because there's no previous menu
         if (event.type != WM_CTRLBUTTONDOWN) {
           event.type = WM_NULL;
@@ -1134,7 +1124,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       }
 
       // Pass key and mouse messages to the menu if it's active with no input on
-      if (bMenuActive && !_pInput->IsInputEnabled()) {
+      if (m_bMenuActive && !_pInput->IsInputEnabled()) {
         if (event.type == WM_KEYDOWN) {
           MenuOnKeyDown(PressedMenuButton(event.key.code, -1, -1));
 
@@ -1175,7 +1165,7 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
           // Stop all IFeel effects and close the menu
           IFeel_StopEffect(NULL);
           // Stay in the same menu instead of resetting to the root one
-          if (bMenuActive) StopMenus(FALSE);
+          if (m_bMenuActive) StopMenus(FALSE);
         }
       }
 
@@ -1218,28 +1208,15 @@ int SubMain(HINSTANCE hInstance, const CommandLineSetup &cmd) {
     // automaticaly manage pause toggling
     UpdatePauseState();
     // notify game whether menu is active
-    _pGame->gm_bMenuOn = bMenuActive;
+    _pGame->gm_bMenuOn = m_bMenuActive;
 
     // do the main game loop and render screen
     DoGame();
 
     // limit current frame rate if neeeded
     LimitFrameRate();
-
   } // end of main application loop
-
-  _pInput->DisableInput(_hwndMain);
-  _pGame->StopGame();
-
-  // [Cecil] Setup arguments for restarting the application, if needed
-  SetupRestartArgs();
-
-  // invoke quit screen if needed
-  if( _bQuitScreen && _fnmModToLoad=="") QuitScreenLoop();
-  
-  End();
-  return TRUE;
-}
+};
 
 // [Cecil] Command line arguments for restarting the game
 static CStaticStackArray<CTString> _aRestartArgs;

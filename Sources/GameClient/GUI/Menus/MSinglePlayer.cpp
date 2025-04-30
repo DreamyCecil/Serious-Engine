@@ -68,7 +68,7 @@ BOOL LSLoadSinglePlayer(CGameMenu *pgm, const CTString &fnm) {
   _pGame->gm_strNetworkProvider = "Local";
 
   if (_pGame->LoadGame(fnm)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_SINGLE_PLAYER;
   } else {
     _gmRunningGameMode = GM_NONE;
@@ -240,5 +240,5 @@ void CSinglePlayerMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CSinglePlayerMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmSinglePlayerMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmSinglePlayerMenu);
 };

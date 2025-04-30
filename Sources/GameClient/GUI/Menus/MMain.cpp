@@ -29,7 +29,7 @@ BOOL LSLoadDemo(CGameMenu *pgm, const CTString &fnm) {
   // play the demo
   if (_pGame->StartDemoPlay(fnm)) {
     // exit menu and pull up the console
-    StopMenus();
+    _pGUIM->StopMenus();
 
     if (_pGame->gm_csConsoleState != CS_OFF) {
       _pGame->gm_csConsoleState = CS_TURNINGOFF;
@@ -197,5 +197,5 @@ void CMainMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CMainMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmMainMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmMainMenu);
 };

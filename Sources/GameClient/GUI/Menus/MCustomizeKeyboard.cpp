@@ -112,5 +112,5 @@ void CCustomizeKeyboardMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CCustomizeKeyboardMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmCustomizeKeyboardMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmCustomizeKeyboardMenu);
 };

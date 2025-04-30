@@ -30,7 +30,7 @@ static void StartNetworkLoadGame(void) {
   _pGame->gm_strNetworkProvider = "TCP/IP Server";
 
   if (_pGame->LoadGame(_fnGameToLoad)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_NETWORK;
   } else {
     _gmRunningGameMode = GM_NONE;
@@ -135,5 +135,5 @@ void CNetworkMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CNetworkMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmNetworkMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkMenu);
 };

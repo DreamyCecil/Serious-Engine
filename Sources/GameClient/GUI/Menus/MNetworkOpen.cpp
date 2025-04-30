@@ -69,7 +69,7 @@ void JoinNetworkGame(void) {
   _pGame->gm_strNetworkProvider = "TCP/IP Client";
 
   if (_pGame->JoinGame(CNetworkSession(_pGame->gam_strJoinAddress))) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_NETWORK;
     return;
   }
@@ -164,5 +164,5 @@ void CNetworkOpenMenu::EndMenu(void)
 
 // [Cecil] Change to the menu
 void CNetworkOpenMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmNetworkOpenMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkOpenMenu);
 };

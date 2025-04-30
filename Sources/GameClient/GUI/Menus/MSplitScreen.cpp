@@ -30,7 +30,7 @@ static void StartSplitScreenGameLoad(void) {
   _pGame->gm_strNetworkProvider = "Local";
 
   if (_pGame->LoadGame(_fnGameToLoad)) {
-    StopMenus();
+    _pGUIM->StopMenus();
     _gmRunningGameMode = GM_SPLIT_SCREEN;
   } else {
     _gmRunningGameMode = GM_NONE;
@@ -125,5 +125,5 @@ void CSplitScreenMenu::StartMenu(void)
 
 // [Cecil] Change to the menu
 void CSplitScreenMenu::ChangeTo(void) {
-  ChangeToMenu(&_pGUIM->gmSplitScreenMenu);
+  _pGUIM->ChangeToMenu(&_pGUIM->gmSplitScreenMenu);
 };

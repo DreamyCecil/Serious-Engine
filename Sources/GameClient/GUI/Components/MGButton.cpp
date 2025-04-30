@@ -38,7 +38,7 @@ void CMGButton::OnActivate(void)
 {
   if ((mg_pActivatedFunction != NULL || mg_pCallbackFunction != NULL) && mg_bEnabled)
   {
-    PlayMenuSound(E_MSND_PRESS);
+    _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
 
     if (mg_pActivatedFunction != NULL) {
       (*mg_pActivatedFunction)(this);
@@ -51,7 +51,7 @@ void CMGButton::OnActivate(void)
 
   } else {
     // [Cecil] Button is disabled
-    PlayMenuSound(E_MSND_DISABLED);
+    _pGUIM->PlayMenuSound(CMenuManager::E_MSND_DISABLED);
   }
 }
 

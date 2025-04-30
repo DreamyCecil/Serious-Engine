@@ -18,4 +18,3 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "GameClient.h"
 #include "GUI/Menus/Menu.h"
-#include "GUI/Menus/MenuManager.h"
