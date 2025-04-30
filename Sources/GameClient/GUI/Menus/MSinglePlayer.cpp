@@ -27,12 +27,10 @@ extern CTString sam_strTrainingLevel;
 
 // [Cecil] Open level or category selection screen
 void StartSelectLevel(ULONG ulFlags, BOOL bStartLevel) {
-  FilterLevels(ulFlags);
-
   extern BOOL _bStartSelectedLevel;
   _bStartSelectedLevel = bStartLevel;
 
-  CLevelsMenu::ChangeTo();
+  CLevelsMenu::ChangeTo(ulFlags);
 };
 
 static void StartSinglePlayerNewMenu(void) {
@@ -41,7 +39,8 @@ static void StartSinglePlayerNewMenu(void) {
 };
 
 static void StartSelectLevelFromSingle(void) {
-  StartSelectLevel(GetSpawnFlagsForGameType(-1), TRUE);
+  // [Cecil] Select from single player levels, regardless of gamemode
+  StartSelectLevel(SPF_SINGLEPLAYER, TRUE);
 };
 
 void SetQuickLoadNotes(void) {

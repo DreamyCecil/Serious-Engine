@@ -91,6 +91,9 @@ void CLevelsMenu::FillListItems(void)
 
 void CLevelsMenu::StartMenu(void)
 {
+  // [Cecil] Filter levels using local spawn flags
+  FilterLevels(gm_ulSpawnFlags);
+
   // set default parameters for the list
   gm_iListOffset = 0;
   gm_ctListTotal = _lhFilteredLevels.Count();
@@ -111,6 +114,7 @@ void CLevelsMenu::StartMenu(void)
 }
 
 // [Cecil] Change to the menu
-void CLevelsMenu::ChangeTo(void) {
+void CLevelsMenu::ChangeTo(ULONG ulSpawnFlags) {
+  _pGUIM->gmLevelsMenu.gm_ulSpawnFlags = ulSpawnFlags;
   _pGUIM->ChangeToMenu(&_pGUIM->gmLevelsMenu);
 };

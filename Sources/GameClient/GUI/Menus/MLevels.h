@@ -33,6 +33,13 @@ public:
   CMGArrow gm_mgArrowUp;
   CMGArrow gm_mgArrowDn;
 
+  ULONG gm_ulSpawnFlags; // [Cecil] Level visibility flags
+
+  // [Cecil] Constructor
+  CLevelsMenu() : CGameMenu(), gm_ulSpawnFlags(0)
+  {
+  };
+
   // [Cecil] Menu name for the mod interface
   virtual const char *GetName(void) const {
     return "Levels";
@@ -49,7 +56,7 @@ public:
   void StartMenu(void);
 
   // [Cecil] Change to the menu
-  static void ChangeTo(void);
+  static void ChangeTo(ULONG ulSpawnFlags);
 };
 
 #endif  /* include-once check. */
