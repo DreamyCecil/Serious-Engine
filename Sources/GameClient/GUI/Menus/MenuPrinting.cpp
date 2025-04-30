@@ -16,7 +16,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "StdH.h"
 
 #include "MenuPrinting.h"
-#include "ArrowDir.h"
 
 static const FLOAT _fBigStartJ = 0.25f;
 static const FLOAT _fBigSizeJ = 0.066f;
@@ -199,7 +198,7 @@ FLOATaabbox2D BoxInfoTable(INDEX iTable)
   }
 }
 
-FLOATaabbox2D BoxArrow(enum ArrowDir ad)
+FLOATaabbox2D BoxArrow(ArrowDir ad)
 {
   switch(ad) {
   default:

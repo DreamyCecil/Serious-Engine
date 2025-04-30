@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
+#include "ArrowDir.h"
+
 FLOATaabbox2D BoxTitle(void);
 FLOATaabbox2D BoxVersion(void);
 FLOATaabbox2D BoxBigRow(FLOAT fRow);
@@ -40,7 +42,7 @@ FLOATaabbox2D BoxPopupNoSmall(void);
 FLOATaabbox2D BoxInfoTable(INDEX iTable);
 FLOATaabbox2D BoxChangePlayer(INDEX iTable, INDEX iButton);
 FLOATaabbox2D BoxKeyRow(FLOAT fRow);
-FLOATaabbox2D BoxArrow(enum ArrowDir ad);
+FLOATaabbox2D BoxArrow(ArrowDir ad);
 FLOATaabbox2D BoxBack(void);
 FLOATaabbox2D BoxNext(void);
 FLOATaabbox2D BoxLeftColumn(FLOAT fRow);
