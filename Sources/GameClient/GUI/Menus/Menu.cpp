@@ -106,7 +106,7 @@ void CMenuManager::PlayMenuSound(EMenuSound eSound, BOOL bOverOtherSounds) {
 
   // [Cecil] Select sound based on type
   switch (eSound) {
-    case E_MSNG_SELECT:
+    case E_MSND_SELECT:
       psd = m_psdSelect;
       strEffect = "Menu_select";
       break;
@@ -176,7 +176,7 @@ void CMenuManager::ClearThumbnail(void) {
   _pShell->Execute("FreeUnusedStock();");
 };
 
-void CMenuManager::StartMenus(const CTString &str) {
+void CMenuManager::StartMenus(EQuickMenu eMenu) {
   _tckMenuLastTickDone = _pTimer->GetRealTime();
 
   // disable printing of last lines
@@ -188,31 +188,38 @@ void CMenuManager::StartMenus(const CTString &str) {
   // [Cecil] When opening a special menu, discard all the active ones
   BOOL bSpecialMenu = FALSE;
 
-  if (str != "") {
+  if (eMenu != E_QCKM_NONE) {
     ClearVisitedMenus();
     bSpecialMenu = TRUE;
 
-    if (str == "load") {
-      extern void StartCurrentLoadMenu(void);
-      StartCurrentLoadMenu();
+    switch (eMenu) {
+      case E_QCKM_LOAD: {
+        extern void StartCurrentLoadMenu(void);
+        StartCurrentLoadMenu();
+      } break;
 
-    } else if (str == "save") {
-      extern void StartCurrentSaveMenu(void);
-      StartCurrentSaveMenu();
+      case E_QCKM_SAVE: {
+        extern void StartCurrentSaveMenu(void);
+        StartCurrentSaveMenu();
+      } break;
 
-    } else if (str == "controls") {
-      CControlsMenu::ChangeTo();
+      case E_QCKM_CONTROLS: {
+        CControlsMenu::ChangeTo();
+      } break;
 
-    } else if (str == "join") {
-      extern void StartSelectPlayersMenuFromOpen(void);
-      StartSelectPlayersMenuFromOpen();
+      case E_QCKM_JOIN: {
+        extern void StartSelectPlayersMenuFromOpen(void);
+        StartSelectPlayersMenuFromOpen();
+      } break;
 
-    } else if (str == "hiscore") {
-      CHighScoreMenu::ChangeTo();
+      case E_QCKM_HIGHSCORE: {
+        CHighScoreMenu::ChangeTo();
+      } break;
 
-    } else {
-      ASSERTALWAYS("No special menu to open for this type!");
-      bSpecialMenu = FALSE;
+      default: {
+        ASSERTALWAYS("No special menu to open for this type!");
+        bSpecialMenu = FALSE;
+      }
     }
   }
 

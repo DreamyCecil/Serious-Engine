@@ -71,7 +71,7 @@ void CMenuGadget::OnSetFocus(void)
 
   if (!IsSeparator()) {
     // [Cecil] Don't play over other sounds
-    _pGUIM->PlayMenuSound(CMenuManager::E_MSNG_SELECT, FALSE);
+    _pGUIM->PlayMenuSound(CMenuManager::E_MSND_SELECT, FALSE);
   }
 }
 

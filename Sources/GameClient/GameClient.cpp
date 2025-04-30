@@ -514,7 +514,7 @@ static BOOL InitClient(HINSTANCE hInstance, const CommandLineSetup &cmd) {
       extern void JoinNetworkGame(void);
       JoinNetworkGame();
     } else {
-      _pGUIM->StartMenus("join");
+      _pGUIM->StartMenus(CMenuManager::E_QCKM_JOIN);
     }
   // if starting world from command line
   } else if (cmd_strWorld!="") {
@@ -1102,22 +1102,22 @@ void CMenuManager::Process(void) {
       {
         if (sam_bMenuSave) {
           sam_bMenuSave = FALSE;
-          StartMenus("save");
+          StartMenus(E_QCKM_SAVE);
         }
 
         if (sam_bMenuLoad) {
           sam_bMenuLoad = FALSE;
-          StartMenus("load");
+          StartMenus(E_QCKM_LOAD);
         }
 
         if (sam_bMenuControls) {
           sam_bMenuControls = FALSE;
-          StartMenus("controls");
+          StartMenus(E_QCKM_CONTROLS);
         }
 
         if (sam_bMenuHiScore) {
           sam_bMenuHiScore = FALSE;
-          StartMenus("hiscore");
+          StartMenus(E_QCKM_HIGHSCORE);
         }
       }
 

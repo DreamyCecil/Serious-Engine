@@ -125,11 +125,22 @@ class CMenuManager {
   public:
     // Menu sound types
     enum EMenuSound {
-      E_MSNG_SELECT,
+      E_MSND_SELECT,
       E_MSND_PRESS,
       // New types
       E_MSND_RETURN,
       E_MSND_DISABLED,
+    };
+
+    // Menu types for quick opening
+    enum EQuickMenu {
+      E_QCKM_NONE,
+
+      E_QCKM_JOIN,
+      E_QCKM_SAVE,
+      E_QCKM_LOAD,
+      E_QCKM_CONTROLS,
+      E_QCKM_HIGHSCORE,
     };
 
   private:
@@ -313,7 +324,7 @@ class CMenuManager {
     BOOL DoMenu(CDrawPort *pdp);
 
     // Open a specific game menu
-    void StartMenus(const CTString &str = "");
+    void StartMenus(EQuickMenu eMenu = E_QCKM_NONE);
 
     // Close the current menu
     void StopMenus(BOOL bGoToRoot = TRUE);
