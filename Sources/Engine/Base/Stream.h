@@ -215,7 +215,7 @@ public:
   virtual CChunkID PeekID_t(void); // throw char *
   virtual void ExpectID_t(const CChunkID &cidExpected); // throw char *
   virtual void ExpectKeyword_t(const CTString &strKeyword); // throw char *
-  virtual SLONG GetSize_t(void); // throw char *
+  virtual SLONG ReadChunkSize_t(void); // throw char *
   virtual void ReadRawChunk_t(void *pvBuffer, SLONG slSize); // throw char *
   virtual void ReadChunk_t(void *pvBuffer, SLONG slExpectedSize); // throw char *
   virtual void ReadFullChunk_t(const CChunkID &cidExpected, void *pvBuffer, SLONG slExpectedSize); // throw char *
@@ -367,8 +367,6 @@ public:
   void SetPos_t(SLONG slPosition); // throw char *
   /* Get absolute position in stream. */
   SLONG GetPos_t(void); // throw char *
-  /* Get size of stream. */
-  SLONG GetSize_t(void); // throw char *
   /* Get size of stream */
   SLONG GetStreamSize(void);
   /* Get CRC32 of stream */

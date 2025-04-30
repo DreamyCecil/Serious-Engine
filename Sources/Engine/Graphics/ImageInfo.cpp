@@ -91,7 +91,7 @@ void CImageInfo::Read_t( CTStream *inFile)   // throw char *
 
   // read image info header
   inFile->ExpectID_t( CChunkID("CTII"));
-  if( inFile->GetSize_t() != 5*4) throw( "Invalid image info file.");
+  if( inFile->ReadChunkSize_t() != 5*4) throw( "Invalid image info file.");
 
   *inFile >> ii_Width;
   *inFile >> ii_Height;

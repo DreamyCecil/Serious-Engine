@@ -340,7 +340,7 @@ void CShadowMap::Read_old_t(CTStream *pstrm) // throw char *
   Clear();
   // read shadow map header
   //  pstrm->ExpectID_t( CChunkID("CTSM")); // read in Read_t()
-  if( pstrm->GetSize_t() != 5*4) throw( TRANS("Invalid shadow cluster map file."));
+  if( pstrm->ReadChunkSize_t() != 5*4) throw( TRANS("Invalid shadow cluster map file."));
 
   *pstrm >> sm_iFirstMipLevel;
   INDEX iNoOfMipmaps;

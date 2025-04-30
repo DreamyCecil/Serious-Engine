@@ -574,7 +574,7 @@ void CTStream::ExpectKeyword_t(const CTString &strKeyword) // throw char *
 }
 
 
-SLONG CTStream::GetSize_t(void) // throws char *
+SLONG CTStream::ReadChunkSize_t(void) // throws char *
 {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
 
@@ -595,7 +595,7 @@ void CTStream::ReadChunk_t(void *pvBuffer, SLONG slExpectedSize) // throws char 
 {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
 
-	if( slExpectedSize != GetSize_t())
+	if( slExpectedSize != ReadChunkSize_t())
 		throw TRANS("Chunk size not equal as expected size");
 	Read_t((char *)pvBuffer, slExpectedSize);
 }
@@ -619,7 +619,7 @@ void* CTStream::ReadChunkAlloc_t(SLONG slSize) // throws char *
 	if( slSize != 0)
 		chunkSize = slSize;
 	else
-		chunkSize = GetSize_t(); // throws char *
+		chunkSize = ReadChunkSize_t(); // throws char *
 	buffer = (UBYTE *) AllocMemory( chunkSize);
 	if( buffer == NULL)
 		throw TRANS("ReadChunkAlloc: Unable to allocate needed amount of memory.");
@@ -1006,9 +1006,17 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
         // open from zip
         fstrm_pZipHandle = IZip::Open_t(expath.fnmExpanded);
         fstrm_slZipSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
-        // load the file from the zip in the buffer
-        fstrm_pubZipBuffer = (UBYTE *)AllocMemory(fstrm_slZipSize);
-        IZip::ReadBlock_t(fstrm_pZipHandle, (UBYTE *)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
+
+        // [Cecil] Create a dummy buffer if it's an empty file
+        if (fstrm_slZipSize <= 0) {
+          fstrm_pubZipBuffer = (UBYTE *)AllocMemory(1);
+          *fstrm_pubZipBuffer = 0;
+
+        } else {
+          // load the file from the zip in the buffer
+          fstrm_pubZipBuffer = (UBYTE *)AllocMemory(fstrm_slZipSize);
+          IZip::ReadBlock_t(fstrm_pZipHandle, (UBYTE *)fstrm_pubZipBuffer, 0, fstrm_slZipSize);
+        }
 
       // if it is a physical file
       } else {
@@ -1179,7 +1187,7 @@ void CTFileStream::Seek_t(SLONG slOffset, enum SeekDir sd)
     switch(sd) {
     case SD_BEG: fstrm_iZipLocation = slOffset; break;
     case SD_CUR: fstrm_iZipLocation += slOffset; break;
-    case SD_END: fstrm_iZipLocation = GetSize_t() + slOffset; break;
+    case SD_END: fstrm_iZipLocation = GetStreamSize() + slOffset; break;
     }
   } else {
     fseek(fstrm_pFile, slOffset, sd);
@@ -1352,7 +1360,7 @@ void CTMemoryStream::LockBuffer(void **ppvBuffer, SLONG *pslSize)
   ASSERT(mstrm_ctLocked>0);
 
   *ppvBuffer = mstrm_pubBuffer;
-  *pslSize = GetSize_t();
+  *pslSize = GetStreamSize();
 }
 
 /*
@@ -1428,13 +1436,6 @@ SLONG CTMemoryStream::GetPos_t(void)
 {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
   return mstrm_slLocation;
-}
-
-/* Get size of stream. */
-SLONG CTMemoryStream::GetSize_t(void)
-{
-  CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
-  return GetStreamSize();
 }
 
 /* Get size of stream */
