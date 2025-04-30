@@ -20,12 +20,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern CTString sam_strNetworkSettings;
 
-BOOL _bPlayerMenuFromSinglePlayer = FALSE;
-
 static void StartChangePlayerMenuFromOptions(void) {
-  _bPlayerMenuFromSinglePlayer = FALSE;
-  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = &_pGame->gm_iSinglePlayer;
-  CPlayerProfileMenu::ChangeTo();
+  CPlayerProfileMenu::ChangeTo(&_pGame->gm_iSinglePlayer, FALSE);
 };
 
 static BOOL LSLoadNetSettings(CGameMenu *pgm, const CTString &fnm) {

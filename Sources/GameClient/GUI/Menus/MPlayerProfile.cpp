@@ -19,9 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuStuff.h"
 #include "MPlayerProfile.h"
 
-extern BOOL _bPlayerMenuFromSinglePlayer;
-static CTString _strLastPlayerAppearance = "";
-
 static void ChangeCrosshair(CMenuGadget *pmg, INDEX iNew) {
   CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
   INDEX iPlayer = *gmProfile.gm_piCurrentPlayer;
@@ -140,7 +137,9 @@ static BOOL LSLoadPlayerModel(CGameMenu *pgm, const CTString &fnm) {
   return TRUE;
 };
 
-static void StartPlayerModelLoadMenu(void) {
+static void StartPlayerModelLoadMenu(CMenuGadget *pmg) {
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
+
   CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
   gmCurrent.gm_mgTitle.SetText(TRANS("CHOOSE MODEL"));
   gmCurrent.gm_bAllowThumbnails = TRUE;
@@ -148,7 +147,7 @@ static void StartPlayerModelLoadMenu(void) {
   gmCurrent.gm_bSave = FALSE;
   gmCurrent.gm_bManage = FALSE;
   gmCurrent.gm_fnmDirectory = CTString("Models\\Player\\");
-  gmCurrent.gm_fnmSelected = _strLastPlayerAppearance;
+  gmCurrent.gm_fnmSelected = gmProfile.gm_strLastAppearance;
   gmCurrent.gm_fnmExt = CTString(".amc");
   gmCurrent.gm_pAfterFileChosen = &LSLoadPlayerModel;
   gmCurrent.gm_mgNotes.SetText("");
@@ -171,8 +170,9 @@ static void StartPlayerModelLoadMenu(void) {
 
 void CPlayerProfileMenu::Initialize_t(void)
 {
+  gm_bFromSinglePlayer = FALSE;
+
   // intialize player and controls menu
-  _bPlayerMenuFromSinglePlayer = FALSE;
   gm_mgProfileTitle.mg_boxOnScreen = BoxTitle();
   gm_mgProfileTitle.SetText(TRANS("PLAYER PROFILE"));
   AddChild(&gm_mgProfileTitle);
@@ -288,7 +288,7 @@ void CPlayerProfileMenu::Initialize_t(void)
 
   gm_mgModel.mg_boxOnScreen = BoxPlayerModel();
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
-  gm_mgModel.mg_pCallbackFunction = &StartPlayerModelLoadMenu;
+  gm_mgModel.mg_pActivatedFunction = &StartPlayerModelLoadMenu;
   gm_mgModel.mg_pmgDown = &gm_mgNameField;
   gm_mgModel.mg_pmgLeft = &gm_mgNameField;
   gm_mgModel.mg_strTip = TRANS("change model for this player");
@@ -370,7 +370,7 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
       (BOOL(*)(CModelObject *, CPlayerCharacter *, CTString &, BOOL))pss->ss_pvValue;
     CTString strName;
     BOOL bSet;
-    if (_gmRunningGameMode != GM_SINGLE_PLAYER && !_bPlayerMenuFromSinglePlayer) {
+    if (_gmRunningGameMode != GM_SINGLE_PLAYER && !gm_bFromSinglePlayer) {
       bSet = pFunc(&gm_mgModel.mg_moModel, &pc, strName, TRUE);
       gm_mgModel.mg_strTip = TRANS("change model for this player");
       gm_mgModel.mg_bEnabled = TRUE;
@@ -387,7 +387,7 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
     gm_mgModel.mg_plModel = CPlacement3D(FLOAT3D(0.1f, -1.0f, -3.5f), ANGLE3D(150, 0, 0));
     gm_mgModel.SetText(strName);
     CPlayerSettings *pps = (CPlayerSettings *)pc.pc_aubAppearance;
-    _strLastPlayerAppearance = pps->GetModelFilename();
+    gm_strLastAppearance = pps->GetModelFilename();
     try {
       gm_mgModel.mg_moFloor.SetData_t(CTFILENAME("Models\\Computer\\Floor.mdl"));
       gm_mgModel.mg_moFloor.mo_toTexture.SetData_t(CTFILENAME("Models\\Computer\\Floor.tex"));
@@ -436,6 +436,8 @@ void CPlayerProfileMenu::EndMenu(void)
 }
 
 // [Cecil] Change to the menu
-void CPlayerProfileMenu::ChangeTo(void) {
+void CPlayerProfileMenu::ChangeTo(INDEX *piProfile, BOOL bSinglePlayer) {
+  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = piProfile;
+  _pGUIM->gmPlayerProfile.gm_bFromSinglePlayer = bSinglePlayer;
   _pGUIM->ChangeToMenu(&_pGUIM->gmPlayerProfile);
 };

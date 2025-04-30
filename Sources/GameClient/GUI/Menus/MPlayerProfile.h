@@ -30,6 +30,10 @@ class CPlayerProfileMenu : public CGameMenu {
 public:
   INDEX *gm_piCurrentPlayer;
 
+  // [Cecil] Temporary variables from global scope
+  BOOL gm_bFromSinglePlayer;
+  CTString gm_strLastAppearance;
+
   CMGTitle gm_mgProfileTitle;
   CMGButton gm_mgNoLabel;
   CMGButton gm_mgNumber[MAX_PLAYER_PROFILES];
@@ -68,7 +72,7 @@ public:
   void EndMenu(void);
 
   // [Cecil] Change to the menu
-  static void ChangeTo(void);
+  static void ChangeTo(INDEX *piProfile, BOOL bSinglePlayer);
 };
 
 #endif  /* include-once check. */

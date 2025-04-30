@@ -26,13 +26,7 @@ void CMGChangePlayer::OnActivate(void)
     _pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer] = 0;
   }
 
-  ASSERT(GetParentMenu()->GetName() == CTString("PlayerProfile"));
-  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)GetParentMenu();
-  gmProfile.gm_piCurrentPlayer = &_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer];
-
-  extern BOOL _bPlayerMenuFromSinglePlayer;
-  _bPlayerMenuFromSinglePlayer = FALSE;
-  CPlayerProfileMenu::ChangeTo();
+  CPlayerProfileMenu::ChangeTo(&_pGame->gm_aiMenuLocalPlayers[mg_iLocalPlayer], FALSE);
 }
 
 void CMGChangePlayer::SetPlayerText(void)

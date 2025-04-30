@@ -127,12 +127,7 @@ static void StartTechTest(void) {
 
 static void StartChangePlayerMenuFromSinglePlayer(void) {
   _iLocalPlayer = -1;
-
-  extern BOOL _bPlayerMenuFromSinglePlayer;
-  _bPlayerMenuFromSinglePlayer = TRUE;
-
-  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = &_pGame->gm_iSinglePlayer;
-  CPlayerProfileMenu::ChangeTo();
+  CPlayerProfileMenu::ChangeTo(&_pGame->gm_iSinglePlayer, TRUE);
 };
 
 static void StartSinglePlayerGameOptions(void) {
