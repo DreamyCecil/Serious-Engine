@@ -153,7 +153,7 @@ static BOOL LSSaveDemo(CGameMenu *pgm, const CTString &fnm) {
   return FALSE;
 };
 
-static void StartDemoSaveMenu(void) {
+static void StartDemoSaveMenu(CMenuGadget *pmg) {
   if (_gmRunningGameMode == GM_NONE) return;
   _gmMenuGameMode = GM_DEMO;
 
@@ -190,7 +190,7 @@ void SetDemoStartStopRecText(CMenuGadget *pmg) {
   } else {
     mgRec.SetText(TRANS("RECORD DEMO"));
     mgRec.mg_strTip = TRANS("start recording current game");
-    mgRec.mg_pCallbackFunction = &StartDemoSaveMenu;
+    mgRec.mg_pActivatedFunction = &StartDemoSaveMenu;
   }
 };
 

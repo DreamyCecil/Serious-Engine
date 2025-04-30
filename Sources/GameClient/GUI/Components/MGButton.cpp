@@ -40,13 +40,17 @@ void CMGButton::OnActivate(void)
   {
     _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
 
-    if (mg_pActivatedFunction != NULL) {
-      (*mg_pActivatedFunction)(this);
+    // [Cecil] Remember setup callbacks in case they change during their calls
+    FActivate pActivate = mg_pActivatedFunction;
+    FCallback pCallback = mg_pCallbackFunction;
+
+    if (pActivate != NULL) {
+      (*pActivate)(this);
     }
 
     // [Cecil] Execute generic callback
-    if (mg_pCallbackFunction != NULL) {
-      (*mg_pCallbackFunction)();
+    if (pCallback != NULL) {
+      (*pCallback)();
     }
 
   } else {
