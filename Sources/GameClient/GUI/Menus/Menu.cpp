@@ -40,16 +40,6 @@ CMenuManager *_pGUIM = NULL;
 // last tick done
 static TICK _tckMenuLastTickDone = -1;
 
-// mouse cursor position
-FLOAT _fCursorPosI = 0;
-FLOAT _fCursorPosJ = 0;
-FLOAT _fCursorExternPosI = 0;
-FLOAT _fCursorExternPosJ = 0;
-BOOL _bMouseUsedLast = FALSE;
-CMenuGadget *_pmgUnderCursor =  NULL;
-extern BOOL _bDefiningKey;
-extern BOOL _bEditingString;
-
 #if SE1_PREFER_SDL
 
 // [Cecil] Custom game cursor
@@ -295,6 +285,15 @@ CMenuManager::CMenuManager() {
   m_bMenuActive = FALSE;
   m_bMenuRendering = FALSE;
 
+  m_bDefiningKey = FALSE;
+  m_bEditingString = FALSE;
+
+  m_aCursorPos[0] = m_aCursorPos[1] = 0;
+  m_aCursorExternPos[0] = m_aCursorExternPos[1] = 0;
+
+  m_bMouseUsedLast = FALSE;
+  m_pmgUnderCursor = NULL;
+
   m_bThumbnailOn = FALSE;
   m_psdSelect = NULL;
   m_psdPress = NULL;
@@ -415,11 +414,11 @@ void CMenuManager::MenuGoToParent(void) {
 void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb)
 {
   // [Cecil] Check if mouse buttons are used separately
-  _bMouseUsedLast = (pmb.iMouse != -1);
+  m_bMouseUsedLast = (pmb.iMouse != -1);
 
   // ignore mouse when editing
-  if (_bEditingString && _bMouseUsedLast) {
-    _bMouseUsedLast = FALSE;
+  if (m_bEditingString && m_bMouseUsedLast) {
+    m_bMouseUsedLast = FALSE;
     return;
   }
 
@@ -427,7 +426,7 @@ void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb)
   BOOL bHandled = FALSE;
 
   // if not a mouse button, or mouse is over some gadget
-  if (!_bMouseUsedLast || _pmgUnderCursor!=NULL) {
+  if (!m_bMouseUsedLast || m_pmgUnderCursor != NULL) {
     // ask current menu to handle the key
     bHandled = GetCurrentMenu()->OnKeyDown(pmb);
   }
@@ -441,26 +440,26 @@ void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb)
   }
 }
 
-void CMenuManager::MenuOnChar(const OS::SE1Event &event)
-{
+void CMenuManager::MenuOnChar(const OS::SE1Event &event) {
   // check if mouse buttons used
-  _bMouseUsedLast = FALSE;
+  m_bMouseUsedLast = FALSE;
 
   // ask current menu to handle the key
   GetCurrentMenu()->OnChar(event);
-}
+};
 
-void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ)
-{
+void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ) {
   static PIX pixLastI = 0;
   static PIX pixLastJ = 0;
-  if (pixLastI==pixI && pixLastJ==pixJ) {
-    return;
-  }
+
+  // No movement since last time
+  if (pixLastI == pixI && pixLastJ == pixJ) return;
+
   pixLastI = pixI;
   pixLastJ = pixJ;
-  _bMouseUsedLast = !_bEditingString && !_bDefiningKey && !_pInput->IsInputEnabled();
-}
+
+  m_bMouseUsedLast = !m_bEditingString && !m_bDefiningKey && !_pInput->IsInputEnabled();
+};
 
 void CMenuManager::MenuUpdateMouseFocus(void)
 {
@@ -473,13 +472,13 @@ void CMenuManager::MenuUpdateMouseFocus(void)
     const PIX pixHeight = pdp->GetHeight();
     fMouseY -= (pixHeight / 0.75f - pixHeight) / 2;
   }
-  _fCursorPosI += fMouseX - _fCursorExternPosI;
-  _fCursorPosJ  = _fCursorExternPosJ;
-  _fCursorExternPosI = fMouseX;
-  _fCursorExternPosJ = fMouseY;
+  m_aCursorPos[0] += fMouseX - m_aCursorExternPos[0];
+  m_aCursorPos[1]  = m_aCursorExternPos[1];
+  m_aCursorExternPos[0] = fMouseX;
+  m_aCursorExternPos[1] = fMouseY;
 
   // if mouse not used last
-  if (!_bMouseUsedLast||_bDefiningKey||_bEditingString) {
+  if (!m_bMouseUsedLast || m_bDefiningKey || m_bEditingString) {
     // do nothing
     return;
   }
@@ -496,25 +495,25 @@ void CMenuManager::MenuUpdateMouseFocus(void)
   }
 
   // if there is some under cursor
-  if (_pmgUnderCursor!=NULL) {
-    _pmgUnderCursor->OnMouseOver(_fCursorPosI, _fCursorPosJ);
+  if (m_pmgUnderCursor != NULL) {
+    m_pmgUnderCursor->OnMouseOver(m_aCursorPos[0], m_aCursorPos[1]);
     // if the one under cursor has no neighbours
-    if (_pmgUnderCursor->mg_pmgLeft ==NULL 
-      &&_pmgUnderCursor->mg_pmgRight==NULL 
-      &&_pmgUnderCursor->mg_pmgUp   ==NULL 
-      &&_pmgUnderCursor->mg_pmgDown ==NULL) {
+    if (m_pmgUnderCursor->mg_pmgLeft  == NULL
+     && m_pmgUnderCursor->mg_pmgRight == NULL
+     && m_pmgUnderCursor->mg_pmgUp    == NULL
+     && m_pmgUnderCursor->mg_pmgDown  == NULL) {
       // it cannot be focused
-      _pmgUnderCursor = NULL;
+      m_pmgUnderCursor = NULL;
       return;
     }
 
     // if the one under cursor is not active and not disappearing
-    if (pmgActive!=_pmgUnderCursor && _pmgUnderCursor->mg_bVisible) {
+    if (pmgActive != m_pmgUnderCursor && m_pmgUnderCursor->mg_bVisible) {
       // change focus
       if (pmgActive!=NULL) {
         pmgActive->OnKillFocus();
       }
-      _pmgUnderCursor->OnSetFocus();
+      m_pmgUnderCursor->OnSetFocus();
     }
   }
 }
@@ -558,12 +557,11 @@ void SetMenuLerping(void) {
   _pTimer->SetLerp(fFactor);
 }
 
-
-// render mouse cursor if needed
-void RenderMouseCursor(CDrawPort *pdp)
+// Render mouse cursor if needed
+void CMenuManager::RenderMouseCursor(CDrawPort *pdp)
 {
   // if mouse not used last
-  if (!_bMouseUsedLast|| _bDefiningKey || _bEditingString) {
+  if (!m_bMouseUsedLast || m_bDefiningKey || m_bEditingString) {
     // don't render cursor
     return;
   }
@@ -571,10 +569,9 @@ void RenderMouseCursor(CDrawPort *pdp)
 
   // [Cecil] Render the in-game cursor the old-fashioned way under Win32
 #if !SE1_PREFER_SDL
-  _pGame->LCDDrawPointer(_fCursorPosI, _fCursorPosJ);
+  _pGame->LCDDrawPointer(m_aCursorPos[0], m_aCursorPos[1]);
 #endif
-}
-
+};
 
 BOOL CMenuManager::DoMenu(CDrawPort *pdp)
 {
@@ -592,13 +589,13 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   _pGfx->GetCurrentDisplayMode(dmCurrent);
   if (dmCurrent.IsFullScreen()) {
     // clamp mouse pointer
-    _fCursorPosI = Clamp(_fCursorPosI, 0L, dpMenu.GetWidth());
-    _fCursorPosJ = Clamp(_fCursorPosJ, 0L, dpMenu.GetHeight());
+    m_aCursorPos[0] = Clamp(m_aCursorPos[0], 0L, dpMenu.GetWidth());
+    m_aCursorPos[1] = Clamp(m_aCursorPos[1], 0L, dpMenu.GetHeight());
   // if in window
   } else {
     // use same mouse pointer as windows
-    _fCursorPosI = _fCursorExternPosI;
-    _fCursorPosJ = _fCursorExternPosJ;
+    m_aCursorPos[0] = m_aCursorExternPos[0];
+    m_aCursorPos[1] = m_aCursorExternPos[1];
   }
 
   GetCurrentMenu()->Think();
@@ -783,7 +780,7 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   }
 
   // no entity is under cursor initially
-  _pmgUnderCursor = NULL;
+  m_pmgUnderCursor = NULL;
 
   BOOL bStilInMenus = FALSE;
   _pGame->MenuPreRenderMenu(GetCurrentMenu()->GetName());
@@ -793,8 +790,11 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
     if( itmg->mg_bVisible) {
       bStilInMenus = TRUE;
       itmg->Render( &dpMenu);
-      if (FloatBoxToPixBox(&dpMenu, itmg->mg_boxOnScreen) >= PIX2D(_fCursorPosI, _fCursorPosJ)) {
-        _pmgUnderCursor = itmg;
+
+      PIXaabbox2D boxGadget = FloatBoxToPixBox(&dpMenu, itmg->mg_boxOnScreen);
+
+      if (IsCursorInside(boxGadget)) {
+        m_pmgUnderCursor = itmg;
       }
     }
   }
@@ -803,7 +803,7 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   // no currently active gadget initially
   CMenuGadget *pmgActive = NULL;
   // if mouse was not active last
-  if (!_bMouseUsedLast) {
+  if (!m_bMouseUsedLast || m_bDefiningKey || m_bEditingString) {
     // find focused gadget
     FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
       CMenuGadget &mg = *itmg;
@@ -817,11 +817,11 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   // if mouse was active last
   } else {
     // gadget under cursor is active
-    pmgActive = _pmgUnderCursor;
+    pmgActive = m_pmgUnderCursor;
   }
 
   // if editing
-  if (_bEditingString && pmgActive!=NULL) {
+  if (m_bEditingString && pmgActive!=NULL) {
     // dim the menu  bit
     dpMenu.Fill(C_BLACK|0x40);
     // render the edit gadget again
@@ -829,9 +829,9 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   }
   
   // if there is some active gadget and it has tips
-  if (pmgActive!=NULL && (pmgActive->mg_strTip!="" || _bEditingString)) {
+  if (pmgActive!=NULL && (pmgActive->mg_strTip!="" || m_bEditingString)) {
     CTString strTip = pmgActive->mg_strTip;
-    if (_bEditingString) {
+    if (m_bEditingString) {
       strTip = TRANS("Enter - OK, Escape - Cancel");
     }
     // print the tip
@@ -905,7 +905,7 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
   ClearThumbnail();
 
   // [Cecil] Reset gadget under the cursor
-  _pmgUnderCursor = NULL;
+  m_pmgUnderCursor = NULL;
 
   // [Cecil] If no new menu specified
   if (pgmNewMenu == NULL) {

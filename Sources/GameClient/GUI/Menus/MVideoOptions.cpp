@@ -286,15 +286,6 @@ static void StartRenderingOptionsMenu(void) {
 static void RevertVideoSettings(void);
 
 static void VideoConfirm(void) {
-  CConfirmMenu &gmCurrent = _pGUIM->gmConfirmMenu;
-
-  // FIXUP: keyboard focus lost when going from full screen to window mode
-  // due to WM_MOUSEMOVE being sent
-  extern BOOL _bMouseUsedLast;
-  extern CMenuGadget *_pmgUnderCursor;
-  _bMouseUsedLast = FALSE;
-  _pmgUnderCursor = gmCurrent.GetDefaultGadget();
-
   CConfirmMenu::ChangeTo(TRANS("KEEP THIS SETTING?"), NULL, &RevertVideoSettings, TRUE);
 };
 

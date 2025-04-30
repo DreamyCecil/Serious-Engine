@@ -17,8 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGEdit.h"
 
-extern BOOL _bEditingString;
-
 CMGEdit::CMGEdit(void)
 {
   mg_pstrToChange = NULL;
@@ -30,7 +28,11 @@ void CMGEdit::Clear(void)
 {
   mg_iCursorPos = 0;
   mg_bEditing = FALSE;
-  _bEditingString = FALSE;
+
+  // [Cecil] Because of constructor
+  if (_pGUIM != NULL) {
+    _pGUIM->m_bEditingString = FALSE;
+  }
 }
 
 void CMGEdit::OnActivate(void)
@@ -44,7 +46,7 @@ void CMGEdit::OnActivate(void)
   _pGUIM->PlayMenuSound(CMenuManager::E_MSND_PRESS);
   mg_iCursorPos = GetText().Length();
   mg_bEditing = TRUE;
-  _bEditingString = TRUE;
+  _pGUIM->m_bEditingString = TRUE;
 }
 
 // focus lost

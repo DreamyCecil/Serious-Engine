@@ -137,6 +137,13 @@ class CMenuManager {
     BOOL m_bMenuActive;
     BOOL m_bMenuRendering;
 
+    // Mouse cursor position
+    FLOAT m_aCursorPos[2];
+    FLOAT m_aCursorExternPos[2];
+
+    BOOL m_bMouseUsedLast;
+    CMenuGadget *m_pmgUnderCursor;
+
     // [Cecil] List of previously visited menus with the last one being the current one
     // Each time the "Back" button is pressed, it pops the current menu and switches to
     // the previous one, otherwise returns to game (if it's active) or to the main menu
@@ -195,12 +202,30 @@ class CMenuManager {
     // [Cecil] Global back button from the global scope
     CMGButton m_mgBack;
 
+    // Menu interactions
+    BOOL m_bDefiningKey;
+    BOOL m_bEditingString;
+
   public:
     // Constructor (used to be InitializeMenus() method)
     CMenuManager();
 
     // Destructor (used to be DestroyMenus() method)
     ~CMenuManager();
+
+    // Check if the mouse cursor is inside some box
+    inline bool IsCursorInside(const PIXaabbox2D &box) {
+      return box >= PIX2D(m_aCursorPos[0], m_aCursorPos[1]);
+    };
+
+    // Get ratio of the cursor inside some box
+    inline FLOAT2D CursorRatio(const PIXaabbox2D &box) {
+      FLOAT2D vRatio(
+        (m_aCursorPos[0] - box.Min()(1)) / box.Size()(1),
+        (m_aCursorPos[1] - box.Min()(2)) / box.Size()(2)
+      );
+      return vRatio;
+    };
 
     // Get amount of visited menus
     inline INDEX GetMenuCount(void) {
@@ -280,6 +305,9 @@ class CMenuManager {
 
     // Select menu gadget under the mouse cursor
     void MenuUpdateMouseFocus(void);
+
+    // Render mouse cursor if needed
+    void RenderMouseCursor(CDrawPort *pdp);
 
     // Returns TRUE if any menu is still active
     BOOL DoMenu(CDrawPort *pdp);

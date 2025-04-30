@@ -17,8 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGKeyDefinition.h"
 
-extern BOOL _bDefiningKey;
-
 CMGKeyDefinition::CMGKeyDefinition(void)
 {
   mg_iState = DOING_NOTHING;
@@ -156,9 +154,7 @@ void CMGKeyDefinition::Think(void)
 {
   if (mg_iState == RELEASE_RETURN_WAITING)
   {
-    _bDefiningKey = TRUE;
-    extern BOOL _bMouseUsedLast;
-    _bMouseUsedLast = FALSE;
+    _pGUIM->m_bDefiningKey = TRUE;
     _pInput->SetJoyPolling(TRUE);
     _pInput->GetInput(FALSE);
 
@@ -204,7 +200,7 @@ void CMGKeyDefinition::Think(void)
 
         // end defining loop
         mg_iState = DOING_NOTHING;
-        _bDefiningKey = FALSE;
+        _pGUIM->m_bDefiningKey = FALSE;
         // refresh all buttons
         _pGUIM->GetCurrentMenu()->FillListItems();
         break;

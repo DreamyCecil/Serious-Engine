@@ -35,7 +35,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 BOOL _bRunning = TRUE;
 BOOL _bQuitScreen = TRUE;
 
-extern BOOL _bDefiningKey;
 static BOOL _bReconsiderInput = FALSE;
 
 // [Cecil] Computer screen resolution
@@ -202,9 +201,8 @@ void CMenuManager::UpdateInputEnabledState(void) {
 
   // input should be enabled if application is active
   // and no menu is active and no console is active
-  BOOL bShouldBeEnabled = (!OS::IsIconic(_hwndMain) && !m_bMenuActive && _pGame->gm_csConsoleState == CS_OFF
-                       && (_pGame->gm_csComputerState == CS_OFF || _pGame->gm_csComputerState == CS_ONINBACKGROUND))
-                       || _bDefiningKey;
+  BOOL bShouldBeEnabled = m_bDefiningKey || (!OS::IsIconic(_hwndMain) && !m_bMenuActive && _pGame->gm_csConsoleState == CS_OFF
+    && (_pGame->gm_csComputerState == CS_OFF || _pGame->gm_csComputerState == CS_ONINBACKGROUND));
 
   // if should be turned off
   if( (!bShouldBeEnabled && _bInputEnabled) || _bReconsiderInput) {
@@ -1155,7 +1153,7 @@ void CMenuManager::Process(void) {
         || (_pGame->IsEscapeKeyPressed(event) && _iAddonExecState == 3));
 
       // Wanting to toggle console on key when not defining keys for controls
-      if (bToggleConsole && !_bDefiningKey) {
+      if (bToggleConsole && !m_bDefiningKey) {
         // Reset different states
         sam_bToggleConsole = FALSE;
         if (_iAddonExecState == 3) _iAddonExecState = 0;

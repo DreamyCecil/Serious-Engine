@@ -17,8 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "MGSlider.h"
 
-extern FLOAT _fCursorPosI;
-extern FLOAT _fCursorPosJ;
 extern INDEX sam_bWideScreen;
 
 CMGSlider::CMGSlider()
@@ -65,9 +63,9 @@ BOOL CMGSlider::OnKeyDown(PressedMenuButton pmb)
     // get position of slider box on screen
     PIXaabbox2D boxSlider = GetSliderBox();
     // if mouse is within
-    if (boxSlider >= PIX2D(_fCursorPosI, _fCursorPosJ)) {
+    if (_pGUIM->IsCursorInside(boxSlider)) {
       // set new position exactly where mouse pointer is
-      FLOAT fRatio = FLOAT(_fCursorPosI - boxSlider.Min()(1)) / boxSlider.Size()(1);
+      FLOAT fRatio = _pGUIM->CursorRatio(boxSlider)(1);
       fRatio = (fRatio - 0.01f) / (0.99f - 0.01f);
       fRatio = Clamp(fRatio, 0.0f, 1.0f);
       mg_iCurPos = fRatio*(mg_iMaxPos - mg_iMinPos) + mg_iMinPos;
