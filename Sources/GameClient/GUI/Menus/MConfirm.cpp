@@ -95,9 +95,11 @@ void CConfirmMenu::BeSmall(void)
 // return TRUE if handled
 BOOL CConfirmMenu::OnKeyDown(PressedMenuButton pmb)
 {
-  if (pmb.Back(TRUE) && gm_mgConfirmNo.mg_pActivatedFunction != NULL) {
-    gm_mgConfirmNo.OnActivate();
-    return TRUE;
+  if (pmb.Back(TRUE)) {
+    if (gm_mgConfirmNo.mg_pActivatedFunction != NULL || gm_mgConfirmNo.mg_pCallbackFunction != NULL) {
+      gm_mgConfirmNo.OnActivate();
+      return TRUE;
+    }
   }
 
   return CGameMenu::OnKeyDown(pmb);
