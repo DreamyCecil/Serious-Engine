@@ -80,7 +80,7 @@ void CMGButton::Render(CDrawPort *pdp)
   COLOR colRectangle = col;
   if (mg_bHighlighted) {
     col = _pGame->LCDGetColor(C_WHITE | 0xFF, "hilited");
-    if (!mg_bFocused) {
+    if (!IsFocused()) {
       colRectangle = _pGame->LCDGetColor(C_WHITE | 0xFF, "hilited rectangle");
     }
   }

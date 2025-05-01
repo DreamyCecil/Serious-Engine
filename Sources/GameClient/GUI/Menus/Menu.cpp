@@ -490,19 +490,6 @@ void CMenuManager::MenuUpdateMouseFocus(void)
     return;
   }
 
-  CMenuGadget *pmgActive = NULL;
-  // for all gadgets in menu
-  FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
-    if (itme->IsMenu()) continue;
-
-    CMenuGadget &mg = (CMenuGadget &)itme.Current();
-    // if focused
-    if (mg.mg_bFocused) {
-      // remember it
-      pmgActive = &mg;
-    }
-  }
-
   // if there is some under cursor
   if (m_pmgUnderCursor != NULL) {
     m_pmgUnderCursor->OnMouseOver(m_aCursorPos[0], m_aCursorPos[1]);
@@ -516,13 +503,9 @@ void CMenuManager::MenuUpdateMouseFocus(void)
       return;
     }
 
-    // if the one under cursor is not active and not disappearing
-    if (pmgActive != m_pmgUnderCursor && m_pmgUnderCursor->mg_bVisible) {
-      // change focus
-      if (pmgActive!=NULL) {
-        pmgActive->OnKillFocus();
-      }
-      m_pmgUnderCursor->OnSetFocus();
+    // [Cecil] Change focus to the gadget under the cursor in the current menu
+    if (m_pmgUnderCursor->mg_bVisible) {
+      GetCurrentMenu()->FocusGadget(m_pmgUnderCursor);
     }
   }
 }
@@ -822,20 +805,11 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
 
   // no currently active gadget initially
   CMenuGadget *pmgActive = NULL;
+
   // if mouse was not active last
   if (!m_bMouseUsedLast || m_bDefiningKey || m_bEditingString) {
-    // find focused gadget
-    FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
-      if (itme->IsMenu()) continue;
+    pmgActive = GetCurrentMenu()->GetFocused();
 
-      CMenuGadget &mg = (CMenuGadget &)itme.Current();
-      // if focused
-      if (mg.mg_bFocused) {
-        // it is active
-        pmgActive = &mg;
-        break;
-      }
-    }
   // if mouse was active last
   } else {
     // gadget under cursor is active
@@ -984,12 +958,8 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
     if (pgmNewMenu->gm_bPopup) {
       GetCurrentMenu()->StartMenu();
 
-      FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
-        if (itme->IsMenu()) continue;
-
-        CMenuGadget &mg = (CMenuGadget &)itme.Current();
-        mg.OnKillFocus();
-      }
+      // [Cecil] Don't focus on any potential gadget in the background menu
+      GetCurrentMenu()->ResetGadgetFocus();
     }
 
     // Push the new menu to the top
@@ -999,14 +969,11 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
   // Start the new menu
   pgmNewMenu->StartMenu();
 
-  // Change focus to the default gadget
+  // [Cecil] Change focus to the default gadget in the new menu
   CMenuGadget *pmgDefault = pgmNewMenu->GetDefaultGadget();
 
   if (pmgDefault != NULL) {
-    if (m_mgBack.mg_bFocused) {
-      m_mgBack.OnKillFocus();
-    }
-    pmgDefault->OnSetFocus();
+    pgmNewMenu->FocusGadget(pmgDefault);
   }
 
   // Add the back button

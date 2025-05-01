@@ -24,6 +24,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class CMenuGadget;
 
 class CGameMenu : public CAbstractMenuElement {
+private:
+  // [Cecil] Currently focused gadget in this menu (instead of managing CMenuGadget::mg_bFocused per gadget)
+  CMenuGadget *gm_pmgFocused;
+
 public:
   BOOL gm_bPopup;
   CMenuGadget *gm_pmgArrowUp;
@@ -54,11 +58,24 @@ public:
   // [Cecil] Selected gadget by default (used to be a gm_pmgSelectedByDefault field)
   virtual CMenuGadget *GetDefaultGadget(void) = 0;
 
+  // [Cecil] Get currently focused gadget
+  inline CMenuGadget *GetFocused(void) {
+    return gm_pmgFocused;
+  };
+
+  // [Cecil] Focus on a specific gadget
+  void FocusGadget(CMenuGadget *pmg);
+
+  // [Cecil] Reset focus from specific gadget
+  void UnfocusGadget(CMenuGadget *pmg);
+
+  // [Cecil] Reset focus from all gadgets (similar to the old KillAllFocuses() function)
+  void ResetGadgetFocus(void);
+
   // [Cecil] Find gadget in a list by its index
   CMenuGadget *FindListGadget(INDEX iInList);
 
   void ScrollList(INDEX iDir);
-  void KillAllFocuses(void);
 
   virtual void Initialize_t(void) {};
   virtual void Destroy(void) {};

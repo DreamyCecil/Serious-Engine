@@ -18,8 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MenuPrinting.h"
 #include "GameMenu.h"
 
-CGameMenu::CGameMenu(void)
-{
+CGameMenu::CGameMenu(void) {
+  gm_pmgFocused = NULL;
+
   gm_pmgArrowUp = NULL;
   gm_pmgArrowDn = NULL;
   gm_pmgListTop = NULL;
@@ -29,6 +30,37 @@ CGameMenu::CGameMenu(void)
   gm_ctListTotal = 0;
   gm_bPopup = FALSE;
 }
+
+// [Cecil] Focus a specific gadget
+void CGameMenu::FocusGadget(CMenuGadget *pmg) {
+  // Already focused
+  if (gm_pmgFocused == pmg) return;
+
+  if (gm_pmgFocused != NULL) {
+    gm_pmgFocused->OnKillFocus();
+  }
+
+  gm_pmgFocused = pmg;
+  gm_pmgFocused->OnSetFocus();
+};
+
+// [Cecil] Reset focus from specific gadget
+void CGameMenu::UnfocusGadget(CMenuGadget *pmg) {
+  // Already unfocused
+  if (gm_pmgFocused != pmg) return;
+
+  gm_pmgFocused->OnKillFocus();
+  gm_pmgFocused = NULL;
+};
+
+// [Cecil] Reset focus from all gadgets (similar to the old KillAllFocuses() function)
+void CGameMenu::ResetGadgetFocus(void) {
+  // Already unfocused
+  if (gm_pmgFocused == NULL) return;
+
+  gm_pmgFocused->OnKillFocus();
+  gm_pmgFocused = NULL;
+};
 
 // [Cecil] Find gadget in a list by its index
 CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
@@ -44,17 +76,6 @@ CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
 
   return NULL;
 };
-
-void CGameMenu::KillAllFocuses(void)
-{
-  // for each menu gadget in menu
-  FOREACHNODE(this, CAbstractMenuElement, itme) {
-    if (itme->IsMenu()) continue;
-
-    CMenuGadget &mg = (CMenuGadget &)itme.Current();
-    mg.mg_bFocused = FALSE;
-  }
-}
 
 // +-1 -> hit top/bottom when pressing up/down on keyboard
 // +-2 -> pressed pageup/pagedown on keyboard
@@ -73,34 +94,40 @@ void CGameMenu::ScrollList(INDEX iDir)
   INDEX iOldTopKey = gm_iListOffset;
   // change offset
   switch (iDir) {
-  case -1:
-    gm_iListOffset -= 1;
-    break;
-  case -4:
-    gm_iListOffset -= 3;
-    break;
-  case -2:
-  case -3:
-    gm_iListOffset -= gm_ctListVisible;
-    break;
-  case +1:
-    gm_iListOffset += 1;
-    break;
-  case +4:
-    gm_iListOffset += 3;
-    break;
-  case +2:
-  case +3:
-    gm_iListOffset += gm_ctListVisible;
-    break;
-  default:
-    ASSERT(FALSE);
-    return;
+    case -1:
+      gm_iListOffset -= 1;
+      break;
+
+    case -4:
+      gm_iListOffset -= 3;
+      break;
+
+    case -2:
+    case -3:
+      gm_iListOffset -= gm_ctListVisible;
+      break;
+
+    case +1:
+      gm_iListOffset += 1;
+      break;
+
+    case +4:
+      gm_iListOffset += 3;
+      break;
+
+    case +2:
+    case +3:
+      gm_iListOffset += gm_ctListVisible;
+      break;
+
+    default:
+      ASSERT(FALSE);
+      return;
   }
+
   if (gm_ctListTotal <= gm_ctListVisible) {
     gm_iListOffset = 0;
-  }
-  else {
+  } else {
     gm_iListOffset = Clamp(gm_iListOffset, INDEX(0), INDEX(gm_ctListTotal - gm_ctListVisible));
   }
 
@@ -113,60 +140,44 @@ void CGameMenu::ScrollList(INDEX iDir)
     return;
   }
 
-  // delete all focuses
-  FOREACHNODE(this, CAbstractMenuElement, itme) {
-    if (itme->IsMenu()) continue;
-
-    CMenuGadget &mg = (CMenuGadget &)itme.Current();
-    mg.OnKillFocus();
-  }
-
-  // set new focus
   const INDEX iFirst = 0;
   const INDEX iLast = gm_ctListVisible - 1;
+
+  // [Cecil] Set focus to another gadget in the menu
   switch (iDir) {
-  case +1:
-    gm_pmgListBottom->OnSetFocus();
-    break;
-  case +2:
-    if (gm_iListOffset != iOldTopKey) {
-      gm_pmgListTop->OnSetFocus();
-    }
-    else {
-      gm_pmgListBottom->OnSetFocus();
-    }
-    break;
-  case +3:
-    gm_pmgArrowDn->OnSetFocus();
-    break;
-  case -1:
-    gm_pmgListTop->OnSetFocus();
-    break;
-  case -2:
-    gm_pmgListTop->OnSetFocus();
-    break;
-  case -3:
-    gm_pmgArrowUp->OnSetFocus();
-    break;
+    case +1:
+      FocusGadget(gm_pmgListBottom);
+      break;
+
+    case +2:
+      if (gm_iListOffset != iOldTopKey) {
+        FocusGadget(gm_pmgListTop);
+      } else {
+        FocusGadget(gm_pmgListBottom);
+      }
+      break;
+
+    case +3:
+      FocusGadget(gm_pmgArrowDn);
+      break;
+
+    case -1:
+      FocusGadget(gm_pmgListTop);
+      break;
+
+    case -2:
+      FocusGadget(gm_pmgListTop);
+      break;
+
+    case -3:
+      FocusGadget(gm_pmgArrowUp);
+      break;
   }
 }
 
 BOOL CGameMenu::OnChar(const OS::SE1Event &event)
 {
-  // find curently active gadget
-  CMenuGadget *pmgActive = NULL;
-  // for each menu gadget in menu
-  FOREACHNODE(this, CAbstractMenuElement, itme) {
-    if (itme->IsMenu()) continue;
-
-    CMenuGadget &mg = (CMenuGadget &)itme.Current();
-
-    // if focused
-    if (mg.mg_bFocused) {
-      // remember as active
-      pmgActive = &mg;
-    }
-  }
+  CMenuGadget *pmgActive = GetFocused();
 
   // if none focused
   if (pmgActive == NULL) {
@@ -187,20 +198,7 @@ BOOL CGameMenu::OnChar(const OS::SE1Event &event)
 // return TRUE if handled
 BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
 {
-  // find curently active gadget
-  CMenuGadget *pmgActive = NULL;
-  // for each menu gadget in menu
-  FOREACHNODE(this, CAbstractMenuElement, itme) {
-    if (itme->IsMenu()) continue;
-
-    CMenuGadget &mg = (CMenuGadget &)itme.Current();
-
-    // if focused
-    if (mg.mg_bFocused) {
-      // remember as active
-      pmgActive = &mg;
-    }
-  }
+  CMenuGadget *pmgActive = GetFocused();
 
   // if none focused
   if (pmgActive == NULL) {
@@ -233,11 +231,8 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
     }
     // if we can go up
     if (pmgActive->mg_pmgUp != NULL && pmgActive->mg_pmgUp->mg_bVisible) {
-      // call lose focus to still active gadget and
-      pmgActive->OnKillFocus();
-      // set focus to new one
-      pmgActive = pmgActive->mg_pmgUp;
-      pmgActive->OnSetFocus();
+      // [Cecil] Focus on the new gadget in the menu
+      FocusGadget(pmgActive->mg_pmgUp);
       // key is handled
       return TRUE;
     }
@@ -254,11 +249,8 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
     }
     // if we can go down
     if (pmgActive->mg_pmgDown != NULL && pmgActive->mg_pmgDown->mg_bVisible) {
-      // call lose focus to still active gadget and
-      pmgActive->OnKillFocus();
-      // set focus to new one
-      pmgActive = pmgActive->mg_pmgDown;
-      pmgActive->OnSetFocus();
+      // [Cecil] Focus on the new gadget in the menu
+      FocusGadget(pmgActive->mg_pmgDown);
       // key is handled
       return TRUE;
     }
@@ -270,16 +262,13 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
   if (pmb.Left()) {
     // if we can go left
     if (pmgActive->mg_pmgLeft != NULL) {
-      // call lose focus to still active gadget and
-      pmgActive->OnKillFocus();
-      // set focus to new one
+      // [Cecil] Focus on the new gadget in the menu
       if (!pmgActive->mg_pmgLeft->mg_bVisible && pmgDefault != NULL) {
         pmgActive = pmgDefault;
-      }
-      else {
+      } else {
         pmgActive = pmgActive->mg_pmgLeft;
       }
-      pmgActive->OnSetFocus();
+      FocusGadget(pmgActive);
       // key is handled
       return TRUE;
     }
@@ -289,16 +278,13 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
   if (pmb.Right()) {
     // if we can go right
     if (pmgActive->mg_pmgRight != NULL) {
-      // call lose focus to still active gadget and
-      pmgActive->OnKillFocus();
-      // set focus to new one
+      // [Cecil] Focus on the new gadget in the menu
       if (!pmgActive->mg_pmgRight->mg_bVisible && pmgDefault != NULL) {
         pmgActive = pmgDefault;
-      }
-      else {
+      } else {
         pmgActive = pmgActive->mg_pmgRight;
       }
-      pmgActive->OnSetFocus();
+      FocusGadget(pmgActive);
       // key is handled
       return TRUE;
     }
@@ -317,7 +303,6 @@ void CGameMenu::StartMenu(void)
 
     CMenuGadget &mg = (CMenuGadget &)itme.Current();
 
-    mg.mg_bFocused = FALSE;
     // call appear
     mg.Appear();
   }

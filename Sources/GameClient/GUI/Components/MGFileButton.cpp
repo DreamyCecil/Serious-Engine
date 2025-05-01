@@ -170,7 +170,7 @@ BOOL CMGFileButton::OnKeyDown(PressedMenuButton pmb)
           RemoveFile(mg_fnm.NoExt() + "Tbn.tex");
           // refresh menu
           pgmLoadSave->ReloadMenu();
-          OnSetFocus();
+          pgmLoadSave->FocusGadget(this);
         }
         return TRUE;
       }
@@ -198,7 +198,6 @@ void CMGFileButton::OnSetFocus(void)
     _pGUIM->ClearThumbnail();
   }
 
-  _pGUIM->GetCurrentMenu()->KillAllFocuses();
   CMGButton::OnSetFocus();
 }
 
@@ -229,7 +228,7 @@ void CMGFileButton::OnStringChanged(void)
     SaveDescription();
     // refresh menu
     pgmLoadSave->ReloadMenu();
-    OnSetFocus();
+    pgmLoadSave->FocusGadget(this);
   }
 }
 
@@ -244,7 +243,7 @@ void CMGFileButton::Render(CDrawPort *pdp)
   CMGEdit::Render(pdp);
 
   // if currently selected
-  if (mg_bFocused && mg_bEnabled) {
+  if (IsFocused() && mg_bEnabled) {
     // add info at the bottom if screen
     SetFontMedium(pdp);
 

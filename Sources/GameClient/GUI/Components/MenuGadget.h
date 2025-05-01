@@ -36,7 +36,6 @@ public:
   BOOL mg_bVisible;
   BOOL mg_bEnabled;
   BOOL mg_bLabel;
-  BOOL mg_bFocused;
   INDEX mg_iInList; // for scrollable gadget lists
 
   CTString mg_strTip;
@@ -55,9 +54,15 @@ public:
 
   // [Cecil] Get parent menu
   inline CGameMenu *GetParentMenu(void) const {
-    ASSERT(GetParentElement()->IsMenu());
-    return (CGameMenu *)GetParent();
+    CAbstractMenuElement *pParent = GetParentElement();
+    if (pParent == NULL) return NULL;
+
+    ASSERT(pParent->IsMenu());
+    return (CGameMenu *)pParent;
   };
+
+  // [Cecil] Check if the gadget is currently focused
+  BOOL IsFocused(void);
 
   // [Cecil] Get gadget name/label
   virtual const CTString &GetName(void) const {
@@ -83,18 +88,28 @@ public:
 
   // return TRUE if handled
   virtual BOOL OnKeyDown(PressedMenuButton pmb);
-  virtual BOOL OnChar(const OS::SE1Event &event);
-  virtual void OnActivate(void);
+  virtual BOOL OnChar(const OS::SE1Event &event) { return FALSE; };
+  virtual void OnActivate(void) {};
+
+  // [Cecil] NOTE: These callbacks are to be called *only* from FocusGadget(), UnfocusGadget() & ResetGadgetFocus() of CGameMenu!
   virtual void OnSetFocus(void);
-  virtual void OnKillFocus(void);
+  virtual void OnKillFocus(void) {};
+
   virtual void Appear(void);
   virtual void Disappear(void);
-  virtual void Think(void);
-  virtual void OnMouseOver(PIX pixI, PIX pixJ);
+  virtual void Think(void) {};
+  virtual void OnMouseOver(PIX pixI, PIX pixJ) {};
 
-  virtual COLOR GetCurrentColor(void);
-  virtual void  Render(CDrawPort *pdp);
-  virtual BOOL  IsSeparator(void) { return FALSE; };
+  // [Cecil] Manual flag for whether the color is of a focused gadget or not
+  COLOR GetCurrentColor(BOOL bFocused);
+
+  // [Cecil] Wrapper for convenience
+  inline COLOR GetCurrentColor(void) {
+    return GetCurrentColor(IsFocused());
+  };
+
+  virtual void Render(CDrawPort *pdp) {};
+  virtual BOOL IsSeparator(void) { return FALSE; };
 };
 
 enum ButtonFontSize {

@@ -22,8 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 BOOL _bDefiningKey = FALSE;
 BOOL _bEditingString = FALSE;
 
-CMenuGadget::CMenuGadget()
-{
+CMenuGadget::CMenuGadget() {
   mg_pmgLeft = NULL;
   mg_pmgRight = NULL;
   mg_pmgUp = NULL;
@@ -32,14 +31,13 @@ CMenuGadget::CMenuGadget()
   mg_bVisible = TRUE;
   mg_bEnabled = TRUE;
   mg_bLabel = FALSE;
-  mg_bFocused = FALSE;
   mg_iInList = -1;    // not in list
-}
+};
 
-void CMenuGadget::OnActivate(void)
-{
-  NOTHING;
-}
+// [Cecil] Check if the gadget is currently focused
+BOOL CMenuGadget::IsFocused(void) {
+  return GetParentMenu()->GetFocused() == this;
+};
 
 // return TRUE if handled
 BOOL CMenuGadget::OnKeyDown(PressedMenuButton pmb)
@@ -53,79 +51,55 @@ BOOL CMenuGadget::OnKeyDown(PressedMenuButton pmb)
   }
   // key is not handled
   return FALSE;
-}
+};
 
-
-BOOL CMenuGadget::OnChar(const OS::SE1Event &event)
-{
-  // key is not handled
-  return FALSE;
-}
-
-
-void CMenuGadget::OnSetFocus(void)
-{
-  mg_bFocused = TRUE;
-
+void CMenuGadget::OnSetFocus(void) {
   if (!IsSeparator()) {
     // [Cecil] Don't play over other sounds
     _pGUIM->PlayMenuSound(CMenuManager::E_MSND_SELECT, FALSE);
   }
-}
+};
 
-void CMenuGadget::OnKillFocus(void)
-{
-  mg_bFocused = FALSE;
-}
-
-void CMenuGadget::Appear(void)
-{
+void CMenuGadget::Appear(void) {
   mg_bVisible = TRUE;
-}
+};
 
-void CMenuGadget::Disappear(void)
-{
+void CMenuGadget::Disappear(void) {
   mg_bVisible = FALSE;
-  mg_bFocused = FALSE;
-}
 
-void CMenuGadget::Think(void)
-{
-}
-
-void CMenuGadget::OnMouseOver(PIX pixI, PIX pixJ)
-{
-}
+  if (GetParentMenu() != NULL) {
+    GetParentMenu()->UnfocusGadget(this);
+  }
+};
 
 // get current color for the gadget
-COLOR CMenuGadget::GetCurrentColor(void)
-{
+COLOR CMenuGadget::GetCurrentColor(BOOL bFocused) {
   // use normal colors
   COLOR colUnselected = _pGame->LCDGetColor(C_GREEN, "unselected");
   COLOR colSelected = _pGame->LCDGetColor(C_WHITE, "selected");
+
   // if disabled
   if (!mg_bEnabled) {
     // use a bit darker colors
     colUnselected = _pGame->LCDGetColor(C_dGREEN, "disabled unselected");
     colSelected = _pGame->LCDGetColor(C_GRAY, "disabled selected");
+
     // if label
     if (mg_bLabel) {
       // use white
       colUnselected = colSelected = _pGame->LCDGetColor(C_WHITE, "label");
     }
   }
+
   // use unselected color
   COLOR colRet = colUnselected;
+
   // if selected
-  if (mg_bFocused) {
+  if (bFocused) {
     // oscilate towards selected color
     FLOAT tmNow = _pTimer->GetHighPrecisionTimer().GetSeconds();
     colRet = LerpColor((colUnselected >> 1) & 0x7F7F7F7F, colSelected, sin(tmNow*10.0f)*0.5f + 0.5f);
   }
 
   return colRet | CT_OPAQUE;
-}
-
-void CMenuGadget::Render(CDrawPort *pdp)
-{
-}
+};

@@ -178,7 +178,7 @@ void CMGEdit::Render(CDrawPort *pdp)
 {
   if (mg_bEditing) {
     mg_iTextMode = -1;
-  } else if (mg_bFocused) {
+  } else if (IsFocused()) {
     mg_iTextMode = 0;
   } else {
     mg_iTextMode = 1;

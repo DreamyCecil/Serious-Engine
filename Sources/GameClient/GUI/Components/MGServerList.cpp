@@ -148,11 +148,9 @@ void CMGServerList::Render(CDrawPort *pdp) {
   SortAndFilterServers(gmServers);
 
   SetFontSmall(pdp);
-  BOOL bFocusedBefore = mg_bFocused;
-  mg_bFocused = FALSE;
 
   PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
-  COLOR col = GetCurrentColor();
+  COLOR col = GetCurrentColor(FALSE);
 
   PIX pixDPSizeI = pdp->GetWidth();
   PIX pixDPSizeJ = pdp->GetHeight();
@@ -236,8 +234,7 @@ void CMGServerList::Render(CDrawPort *pdp) {
 
   if (_lhServers.Count() == 0) {
     if (_pNetwork->ga_strEnumerationStatus != "") {
-      mg_bFocused = TRUE;
-      COLOR colItem = GetCurrentColor();
+      COLOR colItem = GetCurrentColor(TRUE);
       PrintInBox(pdp, apixSeparatorI[0] + pixCharSizeI, pixListTopJ + pixCharSizeJ + pixLineSize + 1, apixSeparatorI[1] - apixSeparatorI[0],
         TRANS("searching..."), colItem);
     }
@@ -252,8 +249,8 @@ void CMGServerList::Render(CDrawPort *pdp) {
 
       PIX pixJ = pixListTopJ + (iSession - mg_iFirstOnScreen)*pixCharSizeJ + pixLineSize + 1;
 
-      mg_bFocused = bFocusedBefore&&iSession == mg_iSelected;
-      COLOR colItem = GetCurrentColor();
+      const BOOL bFocused = (IsFocused() && iSession == mg_iSelected);
+      COLOR colItem = GetCurrentColor(bFocused);
 
       if (ns.ns_strVer != _SE_VER_STRING) {
         colItem = MulColors(colItem, 0xA0A0A0FF);
@@ -276,8 +273,6 @@ void CMGServerList::Render(CDrawPort *pdp) {
       iSession++;
     }
   }
-
-  mg_bFocused = bFocusedBefore;
 }
 
 static INDEX SliderPixToIndex(PIX pixOffset, INDEX iVisible, INDEX iTotal, PIXaabbox2D boxFull)
@@ -443,12 +438,7 @@ BOOL CMGServerList::OnKeyDown(PressedMenuButton pmb)
   return FALSE;
 }
 
+// [Cecil] NOTE: Focused with no "selection" menu sound
 void CMGServerList::OnSetFocus(void)
 {
-  mg_bFocused = TRUE;
-}
-
-void CMGServerList::OnKillFocus(void)
-{
-  mg_bFocused = FALSE;
-}
+};

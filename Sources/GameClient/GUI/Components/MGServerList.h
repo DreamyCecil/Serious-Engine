@@ -57,7 +57,6 @@ public:
   PIXaabbox2D GetScrollBarFullBox(void);
   PIXaabbox2D GetScrollBarHandleBox(void);
   void OnSetFocus(void);
-  void OnKillFocus(void);
   void Render(CDrawPort *pdp);
   void AdjustFirstOnScreen(void);
   void OnMouseOver(PIX pixI, PIX pixJ);
