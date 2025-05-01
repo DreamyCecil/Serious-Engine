@@ -19,11 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-#include <Engine/Base/LinkedNode.h>
+#include "GUI/MenuElement.h"
 
 class CMenuGadget;
 
-class CGameMenu : public CLinkedNode {
+class CGameMenu : public CAbstractMenuElement {
 public:
   BOOL gm_bPopup;
   CMenuGadget *gm_pmgArrowUp;
@@ -41,6 +41,11 @@ public:
   // [Cecil] Destructor for derived menus
   virtual ~CGameMenu() {
     Destroy();
+  };
+
+  // [Cecil] This is a menu
+  virtual bool IsMenu(void) const {
+    return true;
   };
 
   // [Cecil] Menu name for the mod interface (used to be a gm_strName field)

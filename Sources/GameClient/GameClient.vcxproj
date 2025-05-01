@@ -537,6 +537,7 @@
     <ClCompile Include="GUI\Components\MGTitle.cpp" />
     <ClCompile Include="GUI\Components\MGTrigger.cpp" />
     <ClCompile Include="GUI\Components\MGVarButton.cpp" />
+    <ClCompile Include="GUI\MenuElement.cpp" />
     <ClCompile Include="GUI\Menus\GameMenu.cpp" />
     <ClCompile Include="GUI\Menus\MAudioOptions.cpp" />
     <ClCompile Include="GUI\Menus\MConfirm.cpp" />
@@ -583,6 +584,7 @@
     <ClInclude Include="GUI\Components\MGTitle.h" />
     <ClInclude Include="GUI\Components\MGTrigger.h" />
     <ClInclude Include="GUI\Components\MGVarButton.h" />
+    <ClInclude Include="GUI\MenuElement.h" />
     <ClInclude Include="GUI\Menus\GameMenu.h" />
     <ClInclude Include="GUI\Menus\MAudioOptions.h" />
     <ClInclude Include="GUI\Menus\MConfirm.h" />

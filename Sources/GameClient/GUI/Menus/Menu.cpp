@@ -492,12 +492,14 @@ void CMenuManager::MenuUpdateMouseFocus(void)
 
   CMenuGadget *pmgActive = NULL;
   // for all gadgets in menu
-  FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
-    CMenuGadget &mg = *itmg;
+  FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
     // if focused
-    if( itmg->mg_bFocused) {
+    if (mg.mg_bFocused) {
       // remember it
-      pmgActive = &itmg.Current();
+      pmgActive = &mg;
     }
   }
 
@@ -613,8 +615,11 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   {
     _pTimer->SetGameTick(_tckMenuLastTickDone);
     // call think for all gadgets in menu
-    FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
-      itmg->Think();
+    FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
+      if (itme->IsMenu()) continue;
+
+      CMenuGadget &mg = (CMenuGadget &)itme.Current();
+      mg.Think();
     }
     _tckMenuLastTickDone++;
   }
@@ -759,9 +764,13 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
     if (pgmLast != NULL) {
       _pGame->MenuPreRenderMenu(pgmLast->GetName());
 
-      FOREACHNODE(pgmLast, CMenuGadget, itmg) {
-        if (itmg->mg_bVisible) {
-          itmg->Render(&dpMenu);
+      FOREACHNODE(pgmLast, CAbstractMenuElement, itme) {
+        if (itme->IsMenu()) continue;
+
+        CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
+        if (mg.mg_bVisible) {
+          mg.Render(&dpMenu);
         }
       }
 
@@ -792,16 +801,20 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   BOOL bStilInMenus = FALSE;
   _pGame->MenuPreRenderMenu(GetCurrentMenu()->GetName());
   // for each menu gadget
-  FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
-    // if gadget is visible
-    if( itmg->mg_bVisible) {
-      bStilInMenus = TRUE;
-      itmg->Render( &dpMenu);
+  FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
 
-      PIXaabbox2D boxGadget = FloatBoxToPixBox(&dpMenu, itmg->mg_boxOnScreen);
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
+    // if gadget is visible
+    if (mg.mg_bVisible) {
+      bStilInMenus = TRUE;
+      mg.Render(&dpMenu);
+
+      PIXaabbox2D boxGadget = FloatBoxToPixBox(&dpMenu, mg.mg_boxOnScreen);
 
       if (IsCursorInside(boxGadget)) {
-        m_pmgUnderCursor = itmg;
+        m_pmgUnderCursor = &mg;
       }
     }
   }
@@ -812,12 +825,14 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   // if mouse was not active last
   if (!m_bMouseUsedLast || m_bDefiningKey || m_bEditingString) {
     // find focused gadget
-    FOREACHNODE(GetCurrentMenu(), CMenuGadget, itmg) {
-      CMenuGadget &mg = *itmg;
+    FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
+      if (itme->IsMenu()) continue;
+
+      CMenuGadget &mg = (CMenuGadget &)itme.Current();
       // if focused
-      if( itmg->mg_bFocused) {
+      if (mg.mg_bFocused) {
         // it is active
-        pmgActive = &itmg.Current();
+        pmgActive = &mg;
         break;
       }
     }
@@ -969,8 +984,11 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
     if (pgmNewMenu->gm_bPopup) {
       GetCurrentMenu()->StartMenu();
 
-      FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
-        itmg->OnKillFocus();
+      FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
+        if (itme->IsMenu()) continue;
+
+        CMenuGadget &mg = (CMenuGadget &)itme.Current();
+        mg.OnKillFocus();
       }
     }
 

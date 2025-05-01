@@ -22,8 +22,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 BOOL _bDefiningKey = FALSE;
 BOOL _bEditingString = FALSE;
 
-const CTString CMenuGadget::mg_strDummyString;
-
 CMenuGadget::CMenuGadget()
 {
   mg_pmgLeft = NULL;

@@ -32,9 +32,13 @@ CGameMenu::CGameMenu(void)
 
 // [Cecil] Find gadget in a list by its index
 CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
-  FOREACHNODE(this, CMenuGadget, itmg) {
-    if (itmg->mg_iInList == iInList) {
-      return itmg;
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
+    if (mg.mg_iInList == iInList) {
+      return &mg;
     }
   }
 
@@ -44,8 +48,11 @@ CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
 void CGameMenu::KillAllFocuses(void)
 {
   // for each menu gadget in menu
-  FOREACHNODE(this, CMenuGadget, itmg) {
-    itmg->mg_bFocused = FALSE;
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+    mg.mg_bFocused = FALSE;
   }
 }
 
@@ -107,8 +114,11 @@ void CGameMenu::ScrollList(INDEX iDir)
   }
 
   // delete all focuses
-  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
-    itmg->OnKillFocus();
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+    mg.OnKillFocus();
   }
 
   // set new focus
@@ -146,11 +156,15 @@ BOOL CGameMenu::OnChar(const OS::SE1Event &event)
   // find curently active gadget
   CMenuGadget *pmgActive = NULL;
   // for each menu gadget in menu
-  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
     // if focused
-    if (itmg->mg_bFocused) {
+    if (mg.mg_bFocused) {
       // remember as active
-      pmgActive = &itmg.Current();
+      pmgActive = &mg;
     }
   }
 
@@ -176,11 +190,15 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
   // find curently active gadget
   CMenuGadget *pmgActive = NULL;
   // for each menu gadget in menu
-  FOREACHNODE(_pGUIM->GetCurrentMenu(), CMenuGadget, itmg) {
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
     // if focused
-    if (itmg->mg_bFocused) {
+    if (mg.mg_bFocused) {
       // remember as active
-      pmgActive = &itmg.Current();
+      pmgActive = &mg;
     }
   }
 
@@ -293,11 +311,15 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
 void CGameMenu::StartMenu(void)
 {
   // for each menu gadget in menu
-  FOREACHNODE(this, CMenuGadget, itmg)
+  FOREACHNODE(this, CAbstractMenuElement, itme)
   {
-    itmg->mg_bFocused = FALSE;
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
+    mg.mg_bFocused = FALSE;
     // call appear
-    itmg->Appear();
+    mg.Appear();
   }
 
   // if there is a list
@@ -311,16 +333,20 @@ void CGameMenu::StartMenu(void)
     FillListItems();
 
     // for each menu gadget in menu
-    FOREACHNODE(this, CMenuGadget, itmg) {
+    FOREACHNODE(this, CAbstractMenuElement, itme) {
+      if (itme->IsMenu()) continue;
+
+      CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
       // if in list, but disabled
-      if (itmg->mg_iInList == -2) {
+      if (mg.mg_iInList == -2) {
         // hide it
-        itmg->mg_bVisible = FALSE;
+        mg.mg_bVisible = FALSE;
 
       // if in list
-      } else if (itmg->mg_iInList >= 0) {
+      } else if (mg.mg_iInList >= 0) {
         // show it
-        itmg->mg_bVisible = TRUE;
+        mg.mg_bVisible = TRUE;
       }
     }
   }
@@ -329,9 +355,13 @@ void CGameMenu::StartMenu(void)
 void CGameMenu::EndMenu(void)
 {
   // for each menu gadget in menu
-  FOREACHNODE(this, CMenuGadget, itmg)
+  FOREACHNODE(this, CAbstractMenuElement, itme)
   {
+    if (itme->IsMenu()) continue;
+
+    CMenuGadget &mg = (CMenuGadget &)itme.Current();
+
     // call disappear
-    itmg->Disappear();
+    mg.Disappear();
   }
 }

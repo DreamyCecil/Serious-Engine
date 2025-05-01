@@ -19,8 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-#include <Engine/Base/LinkedNode.h>
-
+#include "GUI/MenuElement.h"
 #include "GUI/Menus/MenuPrinting.h"
 
 #define DOING_NOTHING 0
@@ -31,10 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class CGameMenu;
 
-class CMenuGadget : public CLinkedNode {
-private:
-  static const CTString mg_strDummyString;
-
+class CMenuGadget : public CAbstractMenuElement {
 public:
   FLOATaabbox2D mg_boxOnScreen;
   BOOL mg_bVisible;
@@ -52,18 +48,21 @@ public:
   // Constructor
   CMenuGadget();
 
-  // [Cecil] Destructor for derived gadgets
-  virtual ~CMenuGadget() {};
+  // [Cecil] This is not a menu
+  virtual bool IsMenu(void) const {
+    return false;
+  };
 
   // [Cecil] Get parent menu
   inline CGameMenu *GetParentMenu(void) const {
+    ASSERT(GetParentElement()->IsMenu());
     return (CGameMenu *)GetParent();
   };
 
   // [Cecil] Get gadget name/label
   virtual const CTString &GetName(void) const {
     ASSERTALWAYS("CMenuGadget::GetName() isn't redefined for this gadget!");
-    return mg_strDummyString;
+    return me_strDummyString;
   };
 
   // [Cecil] Set gadget name/label
@@ -74,7 +73,7 @@ public:
   // [Cecil] Get gadget text
   virtual const CTString &GetText(void) const {
     ASSERTALWAYS("CMenuGadget::GetText() isn't redefined for this gadget!");
-    return mg_strDummyString;
+    return me_strDummyString;
   };
 
   // [Cecil] Set gadget text

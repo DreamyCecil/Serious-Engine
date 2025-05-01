@@ -45,6 +45,7 @@ set(GAMECLIENT_SRCS
   "GUI/Menus/MSplitStart.cpp"
   "GUI/Menus/MVar.cpp"
   "GUI/Menus/MVideoOptions.cpp"
+  "GUI/MenuElement.cpp"
   "CmdLine.cpp"
   "Credits.cpp"
   "GameClient.cpp"
