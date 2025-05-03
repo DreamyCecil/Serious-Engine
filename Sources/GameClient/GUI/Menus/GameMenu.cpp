@@ -77,6 +77,26 @@ CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
   return NULL;
 };
 
+// [Cecil] Retrieve the last possible menu in the current hierarchy
+CGameMenu *CGameMenu::GetLastMenu(void) {
+  // Find the last submenu
+  CGameMenu *pgmSub = NULL;
+
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (itme->IsMenu()) {
+      pgmSub = (CGameMenu *)&itme.Current();
+    }
+  }
+
+  // Go through that menu, if found
+  if (pgmSub != NULL) {
+    return pgmSub->GetLastMenu();
+  }
+
+  // Otherwise this is the last menu
+  return this;
+};
+
 // +-1 -> hit top/bottom when pressing up/down on keyboard
 // +-2 -> pressed pageup/pagedown on keyboard
 // +-3 -> pressed arrow up/down  button in menu
@@ -294,16 +314,12 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
   return FALSE;
 }
 
-void CGameMenu::StartMenu(void)
-{
-  // for each menu gadget in menu
-  FOREACHNODE(this, CAbstractMenuElement, itme)
-  {
+void CGameMenu::StartMenu(void) {
+  // Show all menu gadgets by default
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
     if (itme->IsMenu()) continue;
 
     CMenuGadget &mg = (CMenuGadget &)itme.Current();
-
-    // call appear
     mg.Appear();
   }
 
@@ -317,36 +333,86 @@ void CGameMenu::StartMenu(void)
     // fill the list
     FillListItems();
 
-    // for each menu gadget in menu
+    // Show and hide respective gadgets in a list
     FOREACHNODE(this, CAbstractMenuElement, itme) {
       if (itme->IsMenu()) continue;
 
       CMenuGadget &mg = (CMenuGadget &)itme.Current();
 
-      // if in list, but disabled
+      // In a list, but disabled
       if (mg.mg_iInList == -2) {
-        // hide it
         mg.mg_bVisible = FALSE;
 
-      // if in list
+      // In a list
       } else if (mg.mg_iInList >= 0) {
-        // show it
         mg.mg_bVisible = TRUE;
       }
     }
   }
-}
 
-void CGameMenu::EndMenu(void)
-{
-  // for each menu gadget in menu
-  FOREACHNODE(this, CAbstractMenuElement, itme)
-  {
+  // [Cecil] Start all submenus
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (!itme->IsMenu()) continue;
+
+    CGameMenu &gm = (CGameMenu &)itme.Current();
+    gm.StartMenu();
+  }
+};
+
+void CGameMenu::EndMenu(void) {
+  CDynamicContainer<CAbstractMenuElement> cMenus;
+
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    // [Cecil] End all submenus
+    if (itme->IsMenu()) {
+      CGameMenu &gm = (CGameMenu &)itme.Current();
+      gm.EndMenu();
+      cMenus.Add(&gm);
+
+    // Hide all gadgets
+    } else {
+      CMenuGadget &mg = (CMenuGadget &)itme.Current();
+      mg.Disappear();
+    }
+  }
+};
+
+// [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
+void CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
+  // Clear gadget from the previous menu to only focus on the submenu gadgets
+  if (ppmgUnderCursor != NULL) {
+    *ppmgUnderCursor = NULL;
+  }
+
+  _pGame->MenuPreRenderMenu(GetName());
+
+  // Render menu gadgets
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
     if (itme->IsMenu()) continue;
 
     CMenuGadget &mg = (CMenuGadget &)itme.Current();
 
-    // call disappear
-    mg.Disappear();
+    if (mg.mg_bVisible) {
+      mg.Render(pdp);
+
+      // Check if this gadget is under the cursor
+      if (ppmgUnderCursor != NULL) {
+        PIXaabbox2D boxGadget = FloatBoxToPixBox(pdp, mg.mg_boxOnScreen);
+
+        if (_pGUIM->IsCursorInside(boxGadget)) {
+          *ppmgUnderCursor = &mg;
+        }
+      }
+    }
   }
-}
+
+  _pGame->MenuPostRenderMenu(GetName());
+
+  // Render submenus
+  FOREACHNODE(this, CAbstractMenuElement, itme) {
+    if (!itme->IsMenu()) continue;
+
+    CGameMenu &gm = (CGameMenu &)itme.Current();
+    gm.Render(pdp, ppmgUnderCursor);
+  }
+};

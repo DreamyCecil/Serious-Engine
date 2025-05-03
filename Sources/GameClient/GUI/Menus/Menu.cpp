@@ -435,7 +435,7 @@ void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb)
   // if not a mouse button, or mouse is over some gadget
   if (!m_bMouseUsedLast || m_pmgUnderCursor != NULL) {
     // ask current menu to handle the key
-    bHandled = GetCurrentMenu()->OnKeyDown(pmb);
+    bHandled = GetCurrentMenu()->GetLastMenu()->OnKeyDown(pmb);
   }
 
   // if not handled
@@ -452,7 +452,7 @@ void CMenuManager::MenuOnChar(const OS::SE1Event &event) {
   m_bMouseUsedLast = FALSE;
 
   // ask current menu to handle the key
-  GetCurrentMenu()->OnChar(event);
+  GetCurrentMenu()->GetLastMenu()->OnChar(event);
 };
 
 void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ) {
@@ -468,7 +468,7 @@ void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ) {
   m_bMouseUsedLast = !m_bEditingString && !m_bDefiningKey && !_pInput->IsInputEnabled();
 };
 
-void CMenuManager::MenuUpdateMouseFocus(void)
+void CMenuManager::MenuUpdateMouseFocus(CGameMenu *pgm)
 {
   // get real cursor position
   float fMouseX, fMouseY;
@@ -505,7 +505,7 @@ void CMenuManager::MenuUpdateMouseFocus(void)
 
     // [Cecil] Change focus to the gadget under the cursor in the current menu
     if (m_pmgUnderCursor->mg_bVisible) {
-      GetCurrentMenu()->FocusGadget(m_pmgUnderCursor);
+      pgm->FocusGadget(m_pmgUnderCursor);
     }
   }
 }
@@ -574,7 +574,10 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   CDrawPort dpMenu(pdp, TRUE);
   dpMenu.Lock();
 
-  MenuUpdateMouseFocus();
+  // [Cecil] Only process the last possible submenu
+  CGameMenu *pgmThink = GetCurrentMenu()->GetLastMenu();
+
+  MenuUpdateMouseFocus(pgmThink);
 
   // if in fullscreen
   CDisplayMode dmCurrent;
@@ -590,20 +593,21 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
     m_aCursorPos[1] = m_aCursorExternPos[1];
   }
 
-  GetCurrentMenu()->Think();
+  pgmThink->Think();
 
   const TICK tckTickNow = _pTimer->GetRealTime();
 
   while (_tckMenuLastTickDone < tckTickNow)
   {
     _pTimer->SetGameTick(_tckMenuLastTickDone);
-    // call think for all gadgets in menu
-    FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
+
+    FOREACHNODE(pgmThink, CAbstractMenuElement, itme) {
       if (itme->IsMenu()) continue;
 
       CMenuGadget &mg = (CMenuGadget &)itme.Current();
       mg.Think();
     }
+
     _tckMenuLastTickDone++;
   }
 
@@ -744,20 +748,9 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
       }
     }
 
+    // [Cecil] Render the menu
     if (pgmLast != NULL) {
-      _pGame->MenuPreRenderMenu(pgmLast->GetName());
-
-      FOREACHNODE(pgmLast, CAbstractMenuElement, itme) {
-        if (itme->IsMenu()) continue;
-
-        CMenuGadget &mg = (CMenuGadget &)itme.Current();
-
-        if (mg.mg_bVisible) {
-          mg.Render(&dpMenu);
-        }
-      }
-
-      _pGame->MenuPostRenderMenu(pgmLast->GetName());
+      pgmLast->Render(&dpMenu, NULL);
     }
 
     // gray it out
@@ -781,27 +774,18 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   // no entity is under cursor initially
   m_pmgUnderCursor = NULL;
 
+  // [Cecil] Render the current menu
+  GetCurrentMenu()->Render(&dpMenu, &m_pmgUnderCursor);
+
+  // [Cecil] TODO: Remove this variable and the loop
   BOOL bStilInMenus = FALSE;
-  _pGame->MenuPreRenderMenu(GetCurrentMenu()->GetName());
-  // for each menu gadget
+
   FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
     if (itme->IsMenu()) continue;
 
     CMenuGadget &mg = (CMenuGadget &)itme.Current();
-
-    // if gadget is visible
-    if (mg.mg_bVisible) {
-      bStilInMenus = TRUE;
-      mg.Render(&dpMenu);
-
-      PIXaabbox2D boxGadget = FloatBoxToPixBox(&dpMenu, mg.mg_boxOnScreen);
-
-      if (IsCursorInside(boxGadget)) {
-        m_pmgUnderCursor = &mg;
-      }
-    }
+    if (mg.mg_bVisible) bStilInMenus = TRUE;
   }
-  _pGame->MenuPostRenderMenu(GetCurrentMenu()->GetName());
 
   // no currently active gadget initially
   CMenuGadget *pmgActive = NULL;

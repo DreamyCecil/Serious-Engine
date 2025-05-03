@@ -315,7 +315,7 @@ class CMenuManager {
     void MenuOnMouseMove(PIX pixI, PIX pixJ);
 
     // Select menu gadget under the mouse cursor
-    void MenuUpdateMouseFocus(void);
+    void MenuUpdateMouseFocus(CGameMenu *pgm);
 
     // Render mouse cursor if needed
     void RenderMouseCursor(CDrawPort *pdp);
