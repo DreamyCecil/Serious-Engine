@@ -617,15 +617,7 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   PIX pixH = dpMenu.GetHeight();
 
   // blend background if menu is on
-  if (m_bMenuActive)
-  {
-    // get current time
-    TIME  tmNow = _pTimer->GetLerpedCurrentTick();
-    UBYTE ubH1  = (INDEX)(tmNow*08.7f) & 255;
-    UBYTE ubH2  = (INDEX)(tmNow*27.6f) & 255;
-    UBYTE ubH3  = (INDEX)(tmNow*16.5f) & 255;
-    UBYTE ubH4  = (INDEX)(tmNow*35.4f) & 255;
-
+  if (m_bMenuActive) {
     // clear screen with background texture
     _pGame->LCDPrepare(1.0f);
     _pGame->LCDSetDrawport(&dpMenu);
@@ -775,17 +767,7 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   m_pmgUnderCursor = NULL;
 
   // [Cecil] Render the current menu
-  GetCurrentMenu()->Render(&dpMenu, &m_pmgUnderCursor);
-
-  // [Cecil] TODO: Remove this variable and the loop
-  BOOL bStilInMenus = FALSE;
-
-  FOREACHNODE(GetCurrentMenu(), CAbstractMenuElement, itme) {
-    if (itme->IsMenu()) continue;
-
-    CMenuGadget &mg = (CMenuGadget &)itme.Current();
-    if (mg.mg_bVisible) bStilInMenus = TRUE;
-  }
+  const BOOL bStilInMenus = GetCurrentMenu()->Render(&dpMenu, &m_pmgUnderCursor);
 
   // no currently active gadget initially
   CMenuGadget *pmgActive = NULL;

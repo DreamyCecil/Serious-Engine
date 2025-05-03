@@ -146,6 +146,10 @@ class CMenuManager {
   private:
     // Current menu states
     BOOL m_bMenuActive;
+
+    // [Cecil] NOTE: This variable is a remainder from the early "alpha" days when returning
+    // to the game would still render the 3D menu elements until all of them disappeared via
+    // a special animation but it's otherwise useless and may be replaced with m_bMenuActive
     BOOL m_bMenuRendering;
 
     // Mouse cursor position

@@ -378,13 +378,15 @@ void CGameMenu::EndMenu(void) {
 };
 
 // [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
-void CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
+BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
   // Clear gadget from the previous menu to only focus on the submenu gadgets
   if (ppmgUnderCursor != NULL) {
     *ppmgUnderCursor = NULL;
   }
 
   _pGame->MenuPreRenderMenu(GetName());
+
+  BOOL bDrawnAnything = FALSE;
 
   // Render menu gadgets
   FOREACHNODE(this, CAbstractMenuElement, itme) {
@@ -393,6 +395,7 @@ void CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
     CMenuGadget &mg = (CMenuGadget &)itme.Current();
 
     if (mg.mg_bVisible) {
+      bDrawnAnything = TRUE;
       mg.Render(pdp);
 
       // Check if this gadget is under the cursor
@@ -413,6 +416,8 @@ void CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
     if (!itme->IsMenu()) continue;
 
     CGameMenu &gm = (CGameMenu &)itme.Current();
-    gm.Render(pdp, ppmgUnderCursor);
+    bDrawnAnything |= gm.Render(pdp, ppmgUnderCursor);
   }
+
+  return bDrawnAnything;
 };

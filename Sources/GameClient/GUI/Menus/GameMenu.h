@@ -102,7 +102,8 @@ public:
   };
 
   // [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
-  void Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor);
+  // Returns TRUE if any gadgets or submenus have been drawn
+  BOOL Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor);
 };
 
 #endif  /* include-once check. */
