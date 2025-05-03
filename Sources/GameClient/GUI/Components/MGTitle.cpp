@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 void CMGTitle::Render(CDrawPort *pdp)
 {
-  SetFontTitle(pdp);
+  SetFontTitle(pdp, 1.25f);
 
   PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
   PIX pixI = box.Center()(1);

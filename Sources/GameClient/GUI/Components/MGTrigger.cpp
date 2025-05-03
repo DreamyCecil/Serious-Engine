@@ -76,7 +76,7 @@ BOOL CMGTrigger::OnKeyDown(PressedMenuButton pmb)
 
 void CMGTrigger::Render(CDrawPort *pdp)
 {
-  SetFontMedium(pdp);
+  SetFontMedium(pdp, 1.0f);
 
   PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
   PIX pixIL = box.Min()(1) + box.Size()(1)*0.45f;

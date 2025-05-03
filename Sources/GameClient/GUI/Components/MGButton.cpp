@@ -62,12 +62,12 @@ void CMGButton::OnActivate(void)
 void CMGButton::Render(CDrawPort *pdp)
 {
   if (mg_bfsFontSize == BFS_LARGE) {
-    SetFontBig(pdp);
+    SetFontBig(pdp, 1.0f);
   } else if (mg_bfsFontSize == BFS_MEDIUM) {
-    SetFontMedium(pdp);
+    SetFontMedium(pdp, 1.0f);
   } else {
     ASSERT(mg_bfsFontSize == BFS_SMALL);
-    SetFontSmall(pdp);
+    SetFontSmall(pdp, 1.0f);
   }
   pdp->SetTextMode(mg_iTextMode);
 

@@ -147,7 +147,7 @@ void CMGServerList::Render(CDrawPort *pdp) {
   _bSortDown = mg_bSortDown;
   SortAndFilterServers(gmServers);
 
-  SetFontSmall(pdp);
+  SetFontSmall(pdp, 1.0f);
 
   PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
   COLOR col = GetCurrentColor(FALSE);

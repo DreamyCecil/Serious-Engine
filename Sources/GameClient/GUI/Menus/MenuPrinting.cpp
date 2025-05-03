@@ -268,30 +268,48 @@ FLOATaabbox2D PixBoxToFloatBox(const CDrawPort *pdp, const PIXaabbox2D &boxP)
     FLOAT2D(boxP.Max()(1)/fpixW, boxP.Max()(2)/fpixH));
 }
 
-void SetFontTitle(CDrawPort *pdp)
-{
+// [Cecil] Determine base text scaling
+__forceinline FLOAT BaseScaling(CDrawPort *pdp) {
+  // Custom text scale multiplied by vanilla scaling
+  return ((FLOAT)pdp->GetWidth() / 640.0f) * pdp->dp_fWideAdjustment;
+};
+
+// [Cecil] Added text scale
+void SetFontTitle(CDrawPort *pdp, FLOAT fScale) {
   pdp->SetFont(&_pGUIM->m_fdTitle);
-  pdp->SetTextScaling( 1.25f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
-  pdp->SetTextAspect(1.0f);
-}
 
-void SetFontBig(CDrawPort *pdp)
-{
+  // [Cecil] Disallow fonts bigger than normal by scaling them relative to vanilla
+  const FLOAT fRelScale = ClampUp(32.0f / (FLOAT)_pGUIM->m_fdTitle.GetHeight(), 1.0f);
+
+  pdp->SetTextScaling(fRelScale * fScale * BaseScaling(pdp));
+  pdp->SetTextAspect(1.0f);
+};
+
+// [Cecil] Added text scale
+void SetFontBig(CDrawPort *pdp, FLOAT fScale) {
   pdp->SetFont(&_pGUIM->m_fdBig);
-  pdp->SetTextScaling( 1.0f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
-  pdp->SetTextAspect(1.0f);
-}
 
-void SetFontMedium(CDrawPort *pdp)
-{
+  // [Cecil] Disallow fonts bigger than normal by scaling them relative to vanilla
+  const FLOAT fRelScale = ClampUp(32.0f / (FLOAT)_pGUIM->m_fdBig.GetHeight(), 1.0f);
+
+  pdp->SetTextScaling(fRelScale * fScale * BaseScaling(pdp));
+  pdp->SetTextAspect(1.0f);
+};
+
+// [Cecil] Added text scale
+void SetFontMedium(CDrawPort *pdp, FLOAT fScale) {
   pdp->SetFont(&_pGUIM->m_fdMedium);
-  pdp->SetTextScaling( 1.0f * pdp->GetWidth() /640 *pdp->dp_fWideAdjustment);
-  pdp->SetTextAspect(0.75f);
-}
 
-void SetFontSmall(CDrawPort *pdp)
-{
-  pdp->SetFont( _pfdConsoleFont);
-  pdp->SetTextScaling( 1.0f);
+  // [Cecil] Disallow fonts bigger than normal by scaling them relative to vanilla
+  const FLOAT fRelScale = ClampUp(16.0f / (FLOAT)_pGUIM->m_fdMedium.GetHeight(), 1.0f);
+
+  pdp->SetTextScaling(fRelScale * fScale * BaseScaling(pdp));
+  pdp->SetTextAspect(0.75f);
+};
+
+// [Cecil] Added text scale
+void SetFontSmall(CDrawPort *pdp, FLOAT fScale) {
+  pdp->SetFont(_pfdConsoleFont);
+  pdp->SetTextScaling(fScale);
   pdp->SetTextAspect(1.0f);
-}
+};
