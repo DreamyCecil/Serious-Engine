@@ -245,7 +245,7 @@ void CMGFileButton::Render(CDrawPort *pdp)
   // if currently selected
   if (IsFocused() && mg_bEnabled) {
     // add info at the bottom if screen
-    SetFontMedium(pdp, 1.0f);
+    SetFontMedium(pdp, mg_fTextScale);
 
     PIXaabbox2D box = FloatBoxToPixBox(pdp, BoxSaveLoad(15.0));
     PIX pixI = box.Min()(1);

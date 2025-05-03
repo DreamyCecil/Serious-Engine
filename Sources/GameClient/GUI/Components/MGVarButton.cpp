@@ -123,7 +123,7 @@ void CMGVarButton::Render(CDrawPort *pdp)
     return;
   }
 
-  SetFontMedium(pdp, 1.0f);
+  SetFontMedium(pdp, mg_fTextScale);
 
   PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
   PIX pixIL = box.Min()(1) + box.Size()(1)*0.45f;

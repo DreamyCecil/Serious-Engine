@@ -19,7 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 void CMGArrow::Render(CDrawPort *pdp)
 {
-  SetFontMedium(pdp, 1.0f);
+  SetFontMedium(pdp, mg_fTextScale);
 
   PIXaabbox2D box = FloatBoxToPixBox(pdp, mg_boxOnScreen);
   COLOR col = GetCurrentColor();

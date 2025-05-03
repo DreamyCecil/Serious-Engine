@@ -91,7 +91,7 @@ PIXaabbox2D CMGSlider::GetSliderBox(void)
 
 void CMGSlider::Render(CDrawPort *pdp)
 {
-  SetFontMedium(pdp, 1.0f);
+  SetFontMedium(pdp, mg_fTextScale);
 
   // get geometry
   COLOR col = GetCurrentColor();
