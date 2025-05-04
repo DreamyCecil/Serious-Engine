@@ -170,8 +170,8 @@ void CAudioOptionsMenu::StartMenu(void)
 }
 
 // [Cecil] Render menu background
-void CAudioOptionsMenu::RenderBackground(CDrawPort *pdp) {
-  CGameMenu::RenderBackground(pdp);
+void CAudioOptionsMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {
+  CGameMenu::RenderBackground(pdp, bSubmenu);
 
   const FLOAT fScaleW = (FLOAT)pdp->GetWidth() / 640.0f;
   const FLOAT fScaleH = (FLOAT)pdp->GetHeight() / 480.0f;

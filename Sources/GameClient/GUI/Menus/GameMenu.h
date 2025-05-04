@@ -29,7 +29,10 @@ private:
   CMenuGadget *gm_pmgFocused;
 
 public:
-  BOOL gm_bPopup;
+  // [Cecil] Submenu render area (as a ratio) that creates a box of this size inside the parent menu
+  // Setting it to BoxPopup() mimics the vanilla confirm menus via the old 'gm_bPopup' field
+  FLOATaabbox2D gm_boxSubArea;
+
   CMenuGadget *gm_pmgArrowUp;
   CMenuGadget *gm_pmgArrowDn;
   CMenuGadget *gm_pmgListTop;
@@ -102,7 +105,7 @@ public:
   };
 
   // [Cecil] Render menu background
-  virtual void RenderBackground(CDrawPort *pdp);
+  virtual void RenderBackground(CDrawPort *pdp, bool bSubmenu);
 
   // [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
   // Returns TRUE if any gadgets or submenus have been drawn

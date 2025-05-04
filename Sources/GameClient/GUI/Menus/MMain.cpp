@@ -196,11 +196,11 @@ void CMainMenu::StartMenu(void)
 }
 
 // [Cecil] Render menu background
-void CMainMenu::RenderBackground(CDrawPort *pdp) {
+void CMainMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {
   // Skip background if the menu isn't active
   if (!_pGUIM->IsActive()) return;
 
-  CGameMenu::RenderBackground(pdp);
+  CGameMenu::RenderBackground(pdp, bSubmenu);
 
   const PIX pixW = pdp->GetWidth();
   const PIX pixH = pdp->GetHeight();

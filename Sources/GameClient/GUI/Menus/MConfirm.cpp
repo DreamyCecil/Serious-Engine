@@ -40,13 +40,15 @@ static void ConfirmNo(CMenuGadget *pmg) {
 
 void CConfirmMenu::Initialize_t(void)
 {
-  gm_bPopup = TRUE;
+  gm_boxSubArea = BoxPopup();
+  const FLOAT fHeightRatio = 1.0f / gm_boxSubArea.Size()(2);
 
   gm_mgConfirmLabel.SetText("");
   AddChild(&gm_mgConfirmLabel);
   gm_mgConfirmLabel.mg_boxOnScreen = BoxPopupLabel();
   gm_mgConfirmLabel.mg_iCenterI = 0;
   gm_mgConfirmLabel.mg_bfsFontSize = BFS_LARGE;
+  gm_mgConfirmLabel.mg_fTextScale = fHeightRatio;
 
   gm_mgConfirmYes.SetText(TRANS("YES"));
   AddChild(&gm_mgConfirmYes);
@@ -56,6 +58,7 @@ void CConfirmMenu::Initialize_t(void)
     gm_mgConfirmYes.mg_pmgRight = &gm_mgConfirmNo;
   gm_mgConfirmYes.mg_iCenterI = 1;
   gm_mgConfirmYes.mg_bfsFontSize = BFS_LARGE;
+  gm_mgConfirmYes.mg_fTextScale = fHeightRatio;
 
   gm_mgConfirmNo.SetText(TRANS("NO"));
   AddChild(&gm_mgConfirmNo);
@@ -65,6 +68,7 @@ void CConfirmMenu::Initialize_t(void)
     gm_mgConfirmNo.mg_pmgRight = &gm_mgConfirmYes;
   gm_mgConfirmNo.mg_iCenterI = -1;
   gm_mgConfirmNo.mg_bfsFontSize = BFS_LARGE;
+  gm_mgConfirmNo.mg_fTextScale = fHeightRatio;
 
   gm_pConfirmedYes = NULL;
   gm_pConfirmedNo = NULL;

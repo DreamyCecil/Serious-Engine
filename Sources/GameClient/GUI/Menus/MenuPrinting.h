@@ -50,6 +50,9 @@ FLOATaabbox2D BoxNoUp(FLOAT fRow);
 FLOATaabbox2D BoxNoDown(FLOAT fRow);
 FLOATaabbox2D BoxPlayerModel(void);
 FLOATaabbox2D BoxPlayerModelName(void);
+
+// [Cecil] NOTE: These functions always convert bounding boxes relative to the drawport,
+// regardless of its offset within a parent drawport, if there's any (e.g. in submenus)
 PIXaabbox2D FloatBoxToPixBox(const CDrawPort *pdp, const FLOATaabbox2D &boxF);
 FLOATaabbox2D PixBoxToFloatBox(const CDrawPort *pdp, const PIXaabbox2D &boxP);
 

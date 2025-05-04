@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CGameMenu::CGameMenu(void) {
   gm_pmgFocused = NULL;
+  gm_boxSubArea = FLOATaabbox2D(FLOAT2D(0, 0), FLOAT2D(1, 1));
 
   gm_pmgArrowUp = NULL;
   gm_pmgArrowDn = NULL;
@@ -28,7 +29,6 @@ CGameMenu::CGameMenu(void) {
   gm_iListOffset = 0;
   gm_ctListVisible = 0;
   gm_ctListTotal = 0;
-  gm_bPopup = FALSE;
 }
 
 // [Cecil] Focus a specific gadget
@@ -384,38 +384,16 @@ void CGameMenu::EndMenu(void) {
 };
 
 // [Cecil] Render menu background
-void CGameMenu::RenderBackground(CDrawPort *pdp) {
-  // Popup background
-  if (gm_bPopup) {
-    // Darken the parent menu
-    pdp->Fill(C_BLACK | 0x7F);
-
-    // Create popup render space
-    pdp->Unlock();
-    CDrawPort dpPopup(pdp, FloatBoxToPixBox(pdp, BoxPopup()));
-    dpPopup.Lock();
-
-    // Clear background
-    _pGame->LCDSetDrawport(&dpPopup);
-    dpPopup.Fill(C_BLACK | 0xFF);
-
-    // Render background
+void CGameMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {
+  // Submenu background
+  if (bSubmenu) {
     _pGame->LCDRenderClouds1();
     _pGame->LCDRenderGrid();
     //_pGame->LCDRenderClouds2();
     _pGame->LCDScreenBox(_pGame->LCDGetColor(C_GREEN | 0xFF, "popup box"));
 
-    // Restore parent render space
-    dpPopup.Unlock();
-    pdp->Lock();
-
   // Regular background
   } else {
-    // Clear background
-    _pGame->LCDSetDrawport(pdp);
-    pdp->Fill(C_BLACK | 0xFF);
-
-    // Render background
     _pGame->LCDRenderClouds1();
     _pGame->LCDRenderGrid();
     _pGame->LCDRenderClouds2();
@@ -429,8 +407,24 @@ BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
     *ppmgUnderCursor = NULL;
   }
 
+  const bool bSubmenu = (gm_boxSubArea.Size() != FLOAT2D(1, 1));
+
+  // Darken the parent menu
+  if (bSubmenu) {
+    pdp->Fill(C_BLACK | 0x7F);
+  }
+
+  // Create render subarea for this menu
+  pdp->Unlock();
+  CDrawPort dpSub(pdp, FloatBoxToPixBox(pdp, gm_boxSubArea));
+  dpSub.Lock();
+
+  // Clear background
+  _pGame->LCDSetDrawport(&dpSub);
+  dpSub.Fill(C_BLACK | 0xFF);
+
   // Render menu background
-  RenderBackground(pdp);
+  RenderBackground(&dpSub, bSubmenu);
 
   // Begin rendering gadgets of the current menu
   _pGame->MenuPreRenderMenu(GetName());
@@ -444,11 +438,12 @@ BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
 
     if (mg.mg_bVisible) {
       bDrawnAnything = TRUE;
-      mg.Render(pdp);
+      mg.Render(&dpSub);
 
       // Check if this gadget is under the cursor
       if (ppmgUnderCursor != NULL) {
-        PIXaabbox2D boxGadget = FloatBoxToPixBox(pdp, mg.mg_boxOnScreen);
+        PIXaabbox2D boxGadget = FloatBoxToPixBox(&dpSub, mg.mg_boxOnScreen);
+        boxGadget += PIX2D(dpSub.dp_MinI, dpSub.dp_MinJ);
 
         if (_pGUIM->IsCursorInside(boxGadget)) {
           *ppmgUnderCursor = &mg;
@@ -465,8 +460,12 @@ BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
     if (!itme->IsMenu()) continue;
 
     CGameMenu &gm = (CGameMenu &)itme.Current();
-    bDrawnAnything |= gm.Render(pdp, ppmgUnderCursor);
+    bDrawnAnything |= gm.Render(&dpSub, ppmgUnderCursor);
   }
+
+  // Restore the parent render area
+  dpSub.Unlock();
+  pdp->Lock();
 
   return bDrawnAnything;
 };
