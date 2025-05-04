@@ -95,20 +95,16 @@ void CCustomizeKeyboardMenu::Initialize_t(void)
   gm_pmgListBottom = &gm_mgKey[KEYS_ON_SCREEN - 1];
 }
 
-void CCustomizeKeyboardMenu::StartMenu(void)
-{
+void CCustomizeKeyboardMenu::OnStart(void) {
   ControlsMenuOn();
   gm_iListOffset = 0;
   gm_ctListTotal = _pGame->gm_ctrlControlsExtra.ctrl_lhButtonActions.Count();
   gm_iListWantedItem = 0;
-  CGameMenu::StartMenu();
-}
+};
 
-void CCustomizeKeyboardMenu::EndMenu(void)
-{
+void CCustomizeKeyboardMenu::OnEnd(void) {
   ControlsMenuOff();
-  CGameMenu::EndMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CCustomizeKeyboardMenu::ChangeTo(void) {

@@ -89,8 +89,7 @@ void CLevelsMenu::FillListItems(void)
   gm_mgArrowDn.mg_bEnabled = !bHasLast  && ctLabels>0;
 }
 
-void CLevelsMenu::StartMenu(void)
-{
+void CLevelsMenu::OnStart(void) {
   // [Cecil] Filter levels using local spawn flags
   FilterLevels(gm_ulSpawnFlags);
 
@@ -110,8 +109,7 @@ void CLevelsMenu::StartMenu(void)
     }
     i++;
   }
-  CGameMenu::StartMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CLevelsMenu::ChangeTo(ULONG ulSpawnFlags) {

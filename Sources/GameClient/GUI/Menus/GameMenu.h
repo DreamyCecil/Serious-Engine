@@ -28,6 +28,9 @@ private:
   // [Cecil] Currently focused gadget in this menu (instead of managing CMenuGadget::mg_bFocused per gadget)
   CMenuGadget *gm_pmgFocused;
 
+  // [Cecil] Current menu state toggled by StartMenu() and EndMenu()
+  bool gm_bActive;
+
 public:
   // [Cecil] Submenu render area (as a ratio) that creates a box of this size inside the parent menu
   // Setting it to BoxPopup() mimics the vanilla confirm menus via the old 'gm_bPopup' field
@@ -55,6 +58,11 @@ public:
     return true;
   };
 
+  // [Cecil] Check if the menu is active
+  inline bool IsActive(void) const {
+    return gm_bActive;
+  };
+
   // [Cecil] Menu name for the mod interface (used to be a gm_strName field)
   virtual const char *GetName(void) const = 0;
 
@@ -78,7 +86,7 @@ public:
   // [Cecil] Find gadget in a list by its index
   CMenuGadget *FindListGadget(INDEX iInList);
 
-  // [Cecil] Retrieve the last possible menu in the current hierarchy
+  // [Cecil] Retrieve the last possible active menu in the current hierarchy, including itself
   CGameMenu *GetLastMenu(void);
 
   void ScrollList(INDEX iDir);
@@ -95,14 +103,18 @@ public:
   virtual BOOL OnKeyDown(PressedMenuButton pmb);
   virtual BOOL OnChar(const OS::SE1Event &event);
 
-  virtual void StartMenu(void);
-  virtual void EndMenu(void);
+  void StartMenu(void);
+  void EndMenu(void);
 
   // [Cecil] Reload this menu, if needed
   inline void ReloadMenu(void) {
     EndMenu();
     StartMenu();
   };
+
+  // [Cecil] Separate callbacks for starting & ending the menu
+  virtual void OnStart(void) {};
+  virtual void OnEnd(void) {};
 
   // [Cecil] Render menu background
   virtual void RenderBackground(CDrawPort *pdp, bool bSubmenu);

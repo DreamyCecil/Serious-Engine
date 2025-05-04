@@ -50,8 +50,8 @@ public:
   };
 
   void Initialize_t(void);
-  void StartMenu(void);
-  void EndMenu(void);
+  virtual void OnStart(void);
+  virtual void OnEnd(void);
   void ObtainActionSettings(void);
   void ApplyActionSettings(void);
 

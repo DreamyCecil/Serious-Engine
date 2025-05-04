@@ -311,8 +311,7 @@ void CInGameMenu::Initialize_t(void)
   gm_mgQuit.mg_pCallbackFunction = &ExitConfirm;
 }
 
-void CInGameMenu::StartMenu(void)
-{
+void CInGameMenu::OnStart(void) {
   gm_mgQuickLoad.mg_bEnabled = _pNetwork->IsServer();
   gm_mgQuickSave.mg_bEnabled = _pNetwork->IsServer();
   gm_mgLoad.mg_bEnabled = _pNetwork->IsServer();
@@ -355,9 +354,7 @@ void CInGameMenu::StartMenu(void)
       gm_mgLabel2.SetText(TRANS("Connection: ") + strConfig);
     }
   }
-
-  CGameMenu::StartMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CInGameMenu::ChangeTo(void) {

@@ -52,7 +52,7 @@ public:
   virtual void Initialize_t(void);
 
   // [Cecil] End menu
-  virtual void EndMenu(void);
+  virtual void OnEnd(void);
 
   // return TRUE if handled
   virtual BOOL OnKeyDown(PressedMenuButton pmb);

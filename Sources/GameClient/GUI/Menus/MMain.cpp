@@ -186,14 +186,12 @@ void CMainMenu::Initialize_t(void)
   gm_mgQuit.mg_pCallbackFunction = &ExitConfirm;
 }
 
-void CMainMenu::StartMenu(void)
-{
+void CMainMenu::OnStart(void) {
   gm_mgSingle.mg_bEnabled = IsMenuEnabled("Single Player");
   gm_mgNetwork.mg_bEnabled = IsMenuEnabled("Network");
   gm_mgSplitScreen.mg_bEnabled = IsMenuEnabled("Split Screen");
   gm_mgHighScore.mg_bEnabled = IsMenuEnabled("High Score");
-  CGameMenu::StartMenu();
-}
+};
 
 // [Cecil] Render menu background
 void CMainMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {

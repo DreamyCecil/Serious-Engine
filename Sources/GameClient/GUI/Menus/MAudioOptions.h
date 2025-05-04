@@ -45,7 +45,7 @@ public:
     return &gm_mgFrequencyTrigger;
   };
 
-  void StartMenu(void);
+  virtual void OnStart(void);
   void Initialize_t(void);
 
   // [Cecil] Render menu background

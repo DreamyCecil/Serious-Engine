@@ -41,7 +41,6 @@ public:
   };
 
   void Initialize_t(void);
-  void StartMenu(void);
 
   // [Cecil] Change to the menu
   static void ChangeTo(void);

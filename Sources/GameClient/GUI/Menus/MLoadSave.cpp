@@ -60,8 +60,7 @@ void CLoadSaveMenu::Initialize_t(void)
   gm_pmgListBottom = &gm_amgButton[SAVELOAD_BUTTONS_CT - 1];
 }
 
-void CLoadSaveMenu::StartMenu(void)
-{
+void CLoadSaveMenu::OnStart(void) {
   // delete all file infos
   FORDELETELIST(CFileInfo, fi_lnNode, gm_lhFileInfos, itfi) {
     delete &itfi.Current();
@@ -135,18 +134,14 @@ void CLoadSaveMenu::StartMenu(void)
       i++;
     }
   }
+};
 
-  CGameMenu::StartMenu();
-}
-
-void CLoadSaveMenu::EndMenu(void)
-{
+void CLoadSaveMenu::OnEnd(void) {
   // delete all file infos
   FORDELETELIST(CFileInfo, fi_lnNode, gm_lhFileInfos, itfi) {
     delete &itfi.Current();
   }
-  CGameMenu::EndMenu();
-}
+};
 
 void CLoadSaveMenu::FillListItems(void)
 {

@@ -235,12 +235,15 @@ void CMenuManager::StartMenus(EQuickMenu eMenu) {
       } else {
         pgmCurrent = &gmInGameMenu;
       }
+
+    // [Cecil] Otherwise reactivate the last menu
+    } else {
+      pgmCurrent->StartMenu();
     }
 
     // Start the menu
-    if (pgmCurrent != NULL) {
-      ChangeToMenu(pgmCurrent);
-    }
+    ASSERT(pgmCurrent != NULL);
+    ChangeToMenu(pgmCurrent);
   }
 
   m_bMenuActive = TRUE;
@@ -429,7 +432,8 @@ void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb) {
   }
 
   // [Cecil] Let the menu handle the button regardless of anything
-  const BOOL bHandled = GetCurrentMenu()->GetLastMenu()->OnKeyDown(pmb);
+  CGameMenu *pgm = GetCurrentMenu()->GetLastMenu();
+  const BOOL bHandled = (pgm != NULL ? pgm->OnKeyDown(pmb) : FALSE);
 
   // Return to the previous menu if the back button wasn't handled
   if (!bHandled && pmb.Back(TRUE)) {
@@ -442,7 +446,8 @@ void CMenuManager::MenuOnChar(const OS::SE1Event &event) {
   m_bMouseUsedLast = FALSE;
 
   // ask current menu to handle the key
-  GetCurrentMenu()->GetLastMenu()->OnChar(event);
+  CGameMenu *pgm = GetCurrentMenu()->GetLastMenu();
+  if (pgm != NULL) pgm->OnChar(event);
 };
 
 void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ) {
@@ -567,38 +572,40 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   // [Cecil] Only process the last possible submenu
   CGameMenu *pgmThink = GetCurrentMenu()->GetLastMenu();
 
-  MenuUpdateMouseFocus(pgmThink);
+  if (pgmThink != NULL) {
+    MenuUpdateMouseFocus(pgmThink);
 
-  // if in fullscreen
-  CDisplayMode dmCurrent;
-  _pGfx->GetCurrentDisplayMode(dmCurrent);
-  if (dmCurrent.IsFullScreen()) {
-    // clamp mouse pointer
-    m_aCursorPos[0] = Clamp(m_aCursorPos[0], 0L, dpMenu.GetWidth());
-    m_aCursorPos[1] = Clamp(m_aCursorPos[1], 0L, dpMenu.GetHeight());
-  // if in window
-  } else {
-    // use same mouse pointer as windows
-    m_aCursorPos[0] = m_aCursorExternPos[0];
-    m_aCursorPos[1] = m_aCursorExternPos[1];
-  }
-
-  pgmThink->Think();
-
-  const TICK tckTickNow = _pTimer->GetRealTime();
-
-  while (_tckMenuLastTickDone < tckTickNow)
-  {
-    _pTimer->SetGameTick(_tckMenuLastTickDone);
-
-    FOREACHNODE(pgmThink, CAbstractMenuElement, itme) {
-      if (itme->IsMenu()) continue;
-
-      CMenuGadget &mg = (CMenuGadget &)itme.Current();
-      mg.Think();
+    // if in fullscreen
+    CDisplayMode dmCurrent;
+    _pGfx->GetCurrentDisplayMode(dmCurrent);
+    if (dmCurrent.IsFullScreen()) {
+      // clamp mouse pointer
+      m_aCursorPos[0] = Clamp(m_aCursorPos[0], 0L, dpMenu.GetWidth());
+      m_aCursorPos[1] = Clamp(m_aCursorPos[1], 0L, dpMenu.GetHeight());
+    // if in window
+    } else {
+      // use same mouse pointer as windows
+      m_aCursorPos[0] = m_aCursorExternPos[0];
+      m_aCursorPos[1] = m_aCursorExternPos[1];
     }
 
-    _tckMenuLastTickDone++;
+    pgmThink->Think();
+
+    const TICK tckTickNow = _pTimer->GetRealTime();
+
+    while (_tckMenuLastTickDone < tckTickNow)
+    {
+      _pTimer->SetGameTick(_tckMenuLastTickDone);
+
+      FOREACHNODE(pgmThink, CAbstractMenuElement, itme) {
+        if (itme->IsMenu()) continue;
+
+        CMenuGadget &mg = (CMenuGadget &)itme.Current();
+        mg.Think();
+      }
+
+      _tckMenuLastTickDone++;
+    }
   }
 
   SetMenuLerping();
@@ -776,9 +783,14 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
 
   // Otherwise if some new menu is specified
   } else {
-    // [Cecil] Check whether this menu has already been visited
     INDEX iVisited = GetMenuCount();
 
+    // End the current menu, if there is one
+    if (iVisited != 0) {
+      GetCurrentMenu()->EndMenu();
+    }
+
+    // [Cecil] Check whether this menu has already been visited
     while (--iVisited >= 0) {
       CGameMenu *pgm = GetMenu(iVisited);
 
@@ -790,9 +802,6 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
 
     // If this menu has already been visited before
     if (iVisited >= 0) {
-      // End the current menu
-      GetCurrentMenu()->EndMenu();
-
       // Then rewind to the visited one and pop it too
       PopMenusUntil(iVisited - 1);
     }

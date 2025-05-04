@@ -50,7 +50,7 @@ public:
   };
 
   void Initialize_t(void);
-  void StartMenu(void);
+  virtual void OnStart(void);
   void Think(void);
 
   // [Cecil] Change to the menu

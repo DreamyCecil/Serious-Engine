@@ -220,17 +220,14 @@ void CSinglePlayerMenu::Initialize_t(void)
   gm_mgOptions.mg_pCallbackFunction = &StartSinglePlayerGameOptions;
 }
 
-void CSinglePlayerMenu::StartMenu(void)
-{
+void CSinglePlayerMenu::OnStart(void) {
   // [Cecil] Simply toggle the training button if the level exists
   gm_mgTraining.mg_bEnabled = FileExists(sam_strTrainingLevel);
   gm_mgTechTest.mg_bEnabled = IsMenuEnabled("Technology Test");
 
-  CGameMenu::StartMenu();
-
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[_pGame->gm_iSinglePlayer];
   gm_mgPlayerLabel.SetText(CTString(0, TRANS("Player: %s\n"), pc.GetNameForPrinting().ConstData()));
-}
+};
 
 // [Cecil] Change to the menu
 void CSinglePlayerMenu::ChangeTo(void) {

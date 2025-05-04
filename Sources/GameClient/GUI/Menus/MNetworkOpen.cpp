@@ -151,16 +151,14 @@ void CNetworkOpenMenu::Initialize_t(void)
   gm_mgJoin.mg_pCallbackFunction = &StartSelectPlayersMenuFromOpen;
 }
 
-void CNetworkOpenMenu::StartMenu(void)
-{
+void CNetworkOpenMenu::OnStart(void) {
   gm_strPort = _pShell->GetValue("net_iPort");
   gm_mgPort.SetText(gm_strPort);
-}
+};
 
-void CNetworkOpenMenu::EndMenu(void)
-{
+void CNetworkOpenMenu::OnEnd(void) {
   _pShell->SetValue("net_iPort", gm_strPort);
-}
+};
 
 // [Cecil] Change to the menu
 void CNetworkOpenMenu::ChangeTo(void) {

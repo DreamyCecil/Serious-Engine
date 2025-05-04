@@ -50,8 +50,8 @@ public:
 
   void Initialize_t(void);
   void FillListItems(void);
-  void StartMenu(void);
-  void EndMenu(void);
+  virtual void OnStart(void);
+  virtual void OnEnd(void);
   void Think(void);
 
   // [Cecil] Change to the menu

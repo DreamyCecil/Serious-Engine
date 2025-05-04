@@ -128,11 +128,6 @@ void CNetworkMenu::Initialize_t(void)
   gm_mgLoad.mg_pCallbackFunction = &StartNetworkLoadMenu;
 }
 
-void CNetworkMenu::StartMenu(void)
-{
-  CGameMenu::StartMenu();
-}
-
 // [Cecil] Change to the menu
 void CNetworkMenu::ChangeTo(void) {
   _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkMenu);

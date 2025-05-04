@@ -151,18 +151,13 @@ void CCustomizeAxisMenu::ApplyActionSettings(void)
   ControlsMenuOff();
 }
 
-void CCustomizeAxisMenu::StartMenu(void)
-{
+void CCustomizeAxisMenu::OnStart(void) {
   ObtainActionSettings();
+};
 
-  CGameMenu::StartMenu();
-}
-
-void CCustomizeAxisMenu::EndMenu(void)
-{
+void CCustomizeAxisMenu::OnEnd(void) {
   ApplyActionSettings();
-  CGameMenu::EndMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CCustomizeAxisMenu::ChangeTo(void) {

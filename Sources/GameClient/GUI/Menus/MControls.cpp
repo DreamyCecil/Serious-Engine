@@ -143,12 +143,13 @@ void CControlsMenu::Initialize_t(void)
   gm_mgPredefined.mg_strTip = TRANS("load one of several predefined control settings");
 }
 
-void CControlsMenu::StartMenu(void)
-{
+void CControlsMenu::OnStart(void) {
   INDEX iPlayer = _pGame->gm_iSinglePlayer;
+
   if (_iLocalPlayer >= 0 && _iLocalPlayer < NET_MAXLOCALPLAYERS) {
     iPlayer = _pGame->gm_aiMenuLocalPlayers[_iLocalPlayer];
   }
+
   _fnmControlsToCustomize.PrintF("Controls\\Controls%d.ctl", iPlayer);
   _fnmControlsToCustomize = ExpandPath::ToUser(_fnmControlsToCustomize); // [Cecil] From user data
 
@@ -157,17 +158,12 @@ void CControlsMenu::StartMenu(void)
   gm_mgNameLabel.SetText(CTString(0, TRANS("CONTROLS FOR: %s"), _pGame->gm_apcPlayers[iPlayer].GetNameForPrinting().ConstData()));
 
   ObtainActionSettings();
-  CGameMenu::StartMenu();
-}
+};
 
-void CControlsMenu::EndMenu(void)
-{
+void CControlsMenu::OnEnd(void) {
   ApplyActionSettings();
-
   ControlsMenuOff();
-
-  CGameMenu::EndMenu();
-}
+};
 
 void CControlsMenu::ObtainActionSettings(void)
 {

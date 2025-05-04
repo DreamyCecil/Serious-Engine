@@ -154,8 +154,7 @@ void CNetworkStartMenu::Initialize_t(void)
   gm_mgStart.mg_pCallbackFunction = &StartSelectPlayersMenuFromNetwork;
 }
 
-void CNetworkStartMenu::StartMenu(void)
-{
+void CNetworkStartMenu::OnStart(void) {
   extern INDEX sam_bMentalActivated;
   gm_mgDifficulty.mg_ctTexts = sam_bMentalActivated ? 6 : 5;
 
@@ -182,20 +181,15 @@ void CNetworkStartMenu::StartMenu(void)
   gm_mgVisible.ApplyCurrentSelection();
 
   UpdateNetworkLevel(&gm_mgGameType, 0);
+};
 
-  CGameMenu::StartMenu();
-}
-
-void CNetworkStartMenu::EndMenu(void)
-{
+void CNetworkStartMenu::OnEnd(void) {
   _pShell->SetINDEX("gam_iStartDifficulty", gm_mgDifficulty.mg_iSelected - 1);
   _pShell->SetINDEX("gam_iStartMode", gm_mgGameType.mg_iSelected);
   _pShell->SetINDEX("gam_bWaitAllPlayers", gm_mgWaitAllPlayers.mg_iSelected);
   _pShell->SetINDEX("gam_ctMaxPlayers", gm_mgMaxPlayers.mg_iSelected + 2);
   ser_bEnumeration = gm_mgVisible.mg_iSelected;
-
-  CGameMenu::EndMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CNetworkStartMenu::ChangeTo(void) {

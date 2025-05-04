@@ -432,14 +432,10 @@ void CVideoOptionsMenu::Initialize_t(void)
   gm_mgApply.mg_pActivatedFunction = &ApplyVideoOptions;
 }
 
-void CVideoOptionsMenu::StartMenu(void)
-{
+void CVideoOptionsMenu::OnStart(void) {
   InitVideoOptionsButtons(*this);
-
-  CGameMenu::StartMenu();
-
   UpdateVideoOptionsButtons(&gm_mgDisplayPrefsTrigger, -1);
-}
+};
 
 // [Cecil] Change to the menu
 void CVideoOptionsMenu::ChangeTo(void) {

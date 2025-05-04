@@ -112,11 +112,9 @@ void CServersMenu::Initialize_t(void)
   gm_amgServerFilter[6].mg_strTip = TRANS("filter by version");
 }
 
-void CServersMenu::StartMenu(void)
-{
+void CServersMenu::OnStart(void) {
   RefreshServerList(&gm_mgRefresh);
-  CGameMenu::StartMenu();
-}
+};
 
 void CServersMenu::Think(void)
 {

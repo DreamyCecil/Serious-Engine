@@ -398,8 +398,7 @@ void CPlayerProfileMenu::SelectPlayer(INDEX iPlayer)
   }
 }
 
-void CPlayerProfileMenu::StartMenu(void)
-{
+void CPlayerProfileMenu::OnStart(void) {
   if (_gmRunningGameMode == GM_NONE || _gmRunningGameMode == GM_DEMO) {
     for (INDEX i = 0; i < MAX_PLAYER_PROFILES; i++) {
       gm_mgNumber[i].mg_bEnabled = TRUE;
@@ -424,16 +423,14 @@ void CPlayerProfileMenu::StartMenu(void)
     // backup to first player in case current player is disabled
     if (!gm_mgNumber[*gm_piCurrentPlayer].mg_bEnabled) *gm_piCurrentPlayer = iFirstEnabled;
   }
+
   // done
   SelectPlayer(*gm_piCurrentPlayer);
-  CGameMenu::StartMenu();
-}
+};
 
-void CPlayerProfileMenu::EndMenu(void)
-{
+void CPlayerProfileMenu::OnEnd(void) {
   _pGame->SavePlayersAndControls();
-  CGameMenu::EndMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CPlayerProfileMenu::ChangeTo(INDEX *piProfile, BOOL bSinglePlayer) {

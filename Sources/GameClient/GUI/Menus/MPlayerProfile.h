@@ -68,8 +68,8 @@ public:
   INDEX PlayerFromCombo(INDEX iCombo);
   void SelectPlayer(INDEX iPlayer);
   void ApplyComboPlayer(INDEX iPlayer);
-  void StartMenu(void);
-  void EndMenu(void);
+  virtual void OnStart(void);
+  virtual void OnEnd(void);
 
   // [Cecil] Change to the menu
   static void ChangeTo(INDEX *piProfile, BOOL bSinglePlayer);

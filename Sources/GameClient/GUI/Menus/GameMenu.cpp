@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 CGameMenu::CGameMenu(void) {
   gm_pmgFocused = NULL;
+  gm_bActive = false;
   gm_boxSubArea = FLOATaabbox2D(FLOAT2D(0, 0), FLOAT2D(1, 1));
 
   gm_pmgArrowUp = NULL;
@@ -77,8 +78,11 @@ CMenuGadget *CGameMenu::FindListGadget(INDEX iInList) {
   return NULL;
 };
 
-// [Cecil] Retrieve the last possible menu in the current hierarchy
+// [Cecil] Retrieve the last possible active menu in the current hierarchy, including itself
 CGameMenu *CGameMenu::GetLastMenu(void) {
+  // Menu is inactive
+  if (!gm_bActive) return NULL;
+
   // Find the last submenu
   CGameMenu *pgmSub = NULL;
 
@@ -90,7 +94,10 @@ CGameMenu *CGameMenu::GetLastMenu(void) {
 
   // Go through that menu, if found
   if (pgmSub != NULL) {
-    return pgmSub->GetLastMenu();
+    pgmSub = pgmSub->GetLastMenu();
+
+    // Return this submenu if it exists
+    if (pgmSub != NULL) return pgmSub;
   }
 
   // Otherwise this is the last menu
@@ -317,6 +324,10 @@ BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb) {
 }
 
 void CGameMenu::StartMenu(void) {
+  // [Cecil] Activate the menu
+  ASSERT(!gm_bActive);
+  gm_bActive = true;
+
   // Show all menu gadgets by default
   FOREACHNODE(this, CAbstractMenuElement, itme) {
     if (itme->IsMenu()) continue;
@@ -324,6 +335,9 @@ void CGameMenu::StartMenu(void) {
     CMenuGadget &mg = (CMenuGadget &)itme.Current();
     mg.Appear();
   }
+
+  // [Cecil] Execute custom callback
+  OnStart();
 
   // if there is a list
   if (gm_pmgListTop != NULL) {
@@ -362,6 +376,13 @@ void CGameMenu::StartMenu(void) {
 };
 
 void CGameMenu::EndMenu(void) {
+  // [Cecil] Deactivate the menu
+  ASSERT(gm_bActive);
+  gm_bActive = false;
+
+  // [Cecil] Execute custom callback
+  OnEnd();
+
   CDynamicContainer<CGameMenu> cMenus;
 
   FOREACHNODE(this, CAbstractMenuElement, itme) {
@@ -381,6 +402,9 @@ void CGameMenu::EndMenu(void) {
   FOREACHINDYNAMICCONTAINER(cMenus, CGameMenu, itgm) {
     itgm->EndMenu();
   }
+
+  // [Cecil] Reset focused gadget
+  gm_pmgFocused = NULL;
 };
 
 // [Cecil] Render menu background
@@ -402,6 +426,9 @@ void CGameMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {
 
 // [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
 BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
+  // Menu is inactive
+  if (!gm_bActive) return FALSE;
+
   // Clear gadget from the previous menu to only focus on the submenu gadgets
   if (ppmgUnderCursor != NULL) {
     *ppmgUnderCursor = NULL;

@@ -139,10 +139,9 @@ void CSinglePlayerNewMenu::Initialize_t(void)
   gm_mgMental.mg_bMental = TRUE;
 }
 
-void CSinglePlayerNewMenu::StartMenu(void)
-{
-  CGameMenu::StartMenu();
+void CSinglePlayerNewMenu::OnStart(void) {
   extern INDEX sam_bMentalActivated;
+
   if (sam_bMentalActivated) {
     gm_mgMental.Appear();
     gm_mgSerious.mg_pmgDown = &gm_mgMental;
@@ -152,7 +151,7 @@ void CSinglePlayerNewMenu::StartMenu(void)
     gm_mgSerious.mg_pmgDown = &gm_mgTourist;
     gm_mgTourist.mg_pmgUp = &gm_mgSerious;
   }
-}
+};
 
 // [Cecil] Change to the menu
 void CSinglePlayerNewMenu::ChangeTo(void) {

@@ -46,7 +46,7 @@ public:
   };
 
   void Initialize_t(void);
-  void StartMenu(void);
+  virtual void OnStart(void);
 
   // [Cecil] Render menu background
   virtual void RenderBackground(CDrawPort *pdp, bool bSubmenu);

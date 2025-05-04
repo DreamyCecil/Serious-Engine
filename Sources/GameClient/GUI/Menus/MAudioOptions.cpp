@@ -163,11 +163,9 @@ void CAudioOptionsMenu::Initialize_t(void)
   gm_mgApply.mg_pActivatedFunction = &ApplyAudioOptions;
 }
 
-void CAudioOptionsMenu::StartMenu(void)
-{
+void CAudioOptionsMenu::OnStart(void) {
   RefreshSoundFormat(*this);
-  CGameMenu::StartMenu();
-}
+};
 
 // [Cecil] Render menu background
 void CAudioOptionsMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {

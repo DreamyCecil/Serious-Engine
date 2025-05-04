@@ -118,11 +118,6 @@ void CSplitScreenMenu::Initialize_t(void)
   gm_mgLoad.mg_pCallbackFunction = &StartSplitScreenLoadMenu;
 }
 
-void CSplitScreenMenu::StartMenu(void)
-{
-  CGameMenu::StartMenu();
-}
-
 // [Cecil] Change to the menu
 void CSplitScreenMenu::ChangeTo(void) {
   _pGUIM->ChangeToMenu(&_pGUIM->gmSplitScreenMenu);

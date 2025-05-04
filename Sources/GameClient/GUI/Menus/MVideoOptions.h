@@ -44,7 +44,7 @@ public:
     return &gm_mgDisplayAPITrigger;
   };
 
-  void StartMenu(void);
+  virtual void OnStart(void);
   void Initialize_t(void);
 
   // [Cecil] Change to the menu

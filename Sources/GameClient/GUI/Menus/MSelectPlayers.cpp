@@ -258,18 +258,14 @@ void CSelectPlayersMenu::Initialize_t(void)
   gm_mgStart.mg_iCenterI = 0;
 }
 
-void CSelectPlayersMenu::StartMenu(void)
-{
-  CGameMenu::StartMenu();
+void CSelectPlayersMenu::OnStart(void) {
   SelectPlayersFillMenu(*this);
   SelectPlayersApplyMenu(*this);
-}
+};
 
-void CSelectPlayersMenu::EndMenu(void)
-{
+void CSelectPlayersMenu::OnEnd(void) {
   SelectPlayersApplyMenu(*this);
-  CGameMenu::EndMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CSelectPlayersMenu::ChangeTo(void) {

@@ -110,17 +110,16 @@ void CVarMenu::FillListItems(void)
   gm_mgArrowDn.mg_bEnabled = !bHasLast  && ctLabels>0;
 }
 
-void CVarMenu::StartMenu(void)
+void CVarMenu::OnStart(void)
 {
   LoadVarSettings(gm_fnmMenuCFG);
   // set default parameters for the list
   gm_iListOffset = 0;
   gm_ctListTotal = _lhVarSettings.Count();
   gm_iListWantedItem = 0;
-  CGameMenu::StartMenu();
 }
 
-void CVarMenu::EndMenu(void)
+void CVarMenu::OnEnd(void)
 {
   // disable all items first
   for (INDEX i = 0; i<VARS_ON_SCREEN; i++) {

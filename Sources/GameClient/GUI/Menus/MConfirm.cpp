@@ -75,9 +75,7 @@ void CConfirmMenu::Initialize_t(void)
 }
 
 // [Cecil] End menu
-void CConfirmMenu::EndMenu(void) {
-  CGameMenu::EndMenu();
-
+void CConfirmMenu::OnEnd(void) {
   // Detach from the current menu
   SetParent(NULL);
 };

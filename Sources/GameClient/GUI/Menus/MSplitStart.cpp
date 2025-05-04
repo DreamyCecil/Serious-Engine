@@ -118,8 +118,7 @@ void CSplitStartMenu::Initialize_t(void)
   gm_mgStart.mg_pCallbackFunction = &StartSelectPlayersMenuFromSplit;
 }
 
-void CSplitStartMenu::StartMenu(void)
-{
+void CSplitStartMenu::OnStart(void) {
   extern INDEX sam_bMentalActivated;
   gm_mgDifficulty.mg_ctTexts = sam_bMentalActivated ? 6 : 5;
 
@@ -132,16 +131,12 @@ void CSplitStartMenu::StartMenu(void)
   _pShell->SetINDEX("gam_ctMaxPlayers", ClampDn(_pShell->GetINDEX("gam_ctMaxPlayers"), 4L));
 
   UpdateSplitLevel(&gm_mgGameType, 0);
-  CGameMenu::StartMenu();
-}
+};
 
-void CSplitStartMenu::EndMenu(void)
-{
+void CSplitStartMenu::OnEnd(void) {
   _pShell->SetINDEX("gam_iStartDifficulty", gm_mgDifficulty.mg_iSelected - 1);
   _pShell->SetINDEX("gam_iStartMode", gm_mgGameType.mg_iSelected);
-
-  CGameMenu::EndMenu();
-}
+};
 
 // [Cecil] Change to the menu
 void CSplitStartMenu::ChangeTo(void) {

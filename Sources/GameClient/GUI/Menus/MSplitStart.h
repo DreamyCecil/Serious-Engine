@@ -44,8 +44,8 @@ public:
   };
 
   void Initialize_t(void);
-  void StartMenu(void);
-  void EndMenu(void);
+  virtual void OnStart(void);
+  virtual void OnEnd(void);
 
   // [Cecil] Change to the menu
   static void ChangeTo(void);
