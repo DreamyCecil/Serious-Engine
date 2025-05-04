@@ -175,6 +175,7 @@ class CMenuManager {
     CSoundData *m_psdReturn;
     CSoundData *m_psdDisabled;
 
+  public:
     // Extra menu textures
     CTextureObject m_toLogoMenuA;
     CTextureObject m_toLogoMenuB;
@@ -182,7 +183,6 @@ class CMenuManager {
     CTextureObject m_toLogoODI;
     CTextureObject m_toLogoEAX;
 
-  public:
     // Fonts used in the menu
     CFontData m_fdBig;
     CFontData m_fdMedium;
@@ -227,6 +227,16 @@ class CMenuManager {
 
     // Destructor (used to be DestroyMenus() method)
     ~CMenuManager();
+
+    // [Cecil] Check if menu is currently active
+    inline BOOL IsActive(void) {
+      return m_bMenuActive;
+    };
+
+    // [Cecil] Check if menu is currently rendering
+    inline BOOL IsRendering(void) {
+      return m_bMenuRendering;
+    };
 
     // Check if the mouse cursor is inside some box
     inline bool IsCursorInside(const PIXaabbox2D &box) {

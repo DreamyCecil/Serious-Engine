@@ -377,6 +377,45 @@ void CGameMenu::EndMenu(void) {
   }
 };
 
+// [Cecil] Render menu background
+void CGameMenu::RenderBackground(CDrawPort *pdp) {
+  // Popup background
+  if (gm_bPopup) {
+    // Darken the parent menu
+    pdp->Fill(C_BLACK | 0x7F);
+
+    // Create popup render space
+    pdp->Unlock();
+    CDrawPort dpPopup(pdp, FloatBoxToPixBox(pdp, BoxPopup()));
+    dpPopup.Lock();
+
+    // Clear background
+    _pGame->LCDSetDrawport(&dpPopup);
+    dpPopup.Fill(C_BLACK | 0xFF);
+
+    // Render background
+    _pGame->LCDRenderClouds1();
+    _pGame->LCDRenderGrid();
+    //_pGame->LCDRenderClouds2();
+    _pGame->LCDScreenBox(_pGame->LCDGetColor(C_GREEN | 0xFF, "popup box"));
+
+    // Restore parent render space
+    dpPopup.Unlock();
+    pdp->Lock();
+
+  // Regular background
+  } else {
+    // Clear background
+    _pGame->LCDSetDrawport(pdp);
+    pdp->Fill(C_BLACK | 0xFF);
+
+    // Render background
+    _pGame->LCDRenderClouds1();
+    _pGame->LCDRenderGrid();
+    _pGame->LCDRenderClouds2();
+  }
+};
+
 // [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
 BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
   // Clear gadget from the previous menu to only focus on the submenu gadgets
@@ -384,11 +423,14 @@ BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
     *ppmgUnderCursor = NULL;
   }
 
+  // Render menu background
+  RenderBackground(pdp);
+
+  // Begin rendering gadgets of the current menu
   _pGame->MenuPreRenderMenu(GetName());
 
   BOOL bDrawnAnything = FALSE;
 
-  // Render menu gadgets
   FOREACHNODE(this, CAbstractMenuElement, itme) {
     if (itme->IsMenu()) continue;
 
@@ -409,6 +451,7 @@ BOOL CGameMenu::Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor) {
     }
   }
 
+  // Finish rendering gadgets of the current menu
   _pGame->MenuPostRenderMenu(GetName());
 
   // Render submenus

@@ -48,6 +48,9 @@ public:
   void StartMenu(void);
   void Initialize_t(void);
 
+  // [Cecil] Render menu background
+  virtual void RenderBackground(CDrawPort *pdp);
+
   // [Cecil] Change to the menu
   static void ChangeTo(void);
 };

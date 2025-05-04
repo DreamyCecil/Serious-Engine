@@ -195,6 +195,72 @@ void CMainMenu::StartMenu(void)
   CGameMenu::StartMenu();
 }
 
+// [Cecil] Render menu background
+void CMainMenu::RenderBackground(CDrawPort *pdp) {
+  // Skip background if the menu isn't active
+  if (!_pGUIM->IsActive()) return;
+
+  CGameMenu::RenderBackground(pdp);
+
+  const PIX pixW = pdp->GetWidth();
+  const PIX pixH = pdp->GetHeight();
+  const FLOAT fScaleW = (FLOAT)pixW / 640.0f;
+  const FLOAT fScaleH = (FLOAT)pixH / 480.0f;
+
+  PIX2D vStart, vSize;
+
+  // Render extra logo
+  if (_pGUIM->m_toLogoODI.GetData() != NULL) {
+    CTextureData &td = (CTextureData &)*_pGUIM->m_toLogoODI.GetData();
+
+    const FLOAT fLogoSize = 50;
+    const PIX pixLogoW = fLogoSize * pdp->dp_fWideAdjustment;
+    const PIX pixLogoH = fLogoSize * td.GetHeight() / td.GetWidth();
+
+    vStart = PIX2D((640 - pixLogoW - 16) * fScaleW, (480 - pixLogoH - 16) * fScaleH);
+    vSize = PIX2D(pixLogoW * fScaleW, pixLogoH * fScaleH);
+
+    pdp->PutTexture(&_pGUIM->m_toLogoODI, PIXaabbox2D(vStart, vStart + vSize));
+  }
+
+  // Render developer logo
+  if (_pGUIM->m_toLogoCT.GetData() != NULL) {
+    CTextureData &td = (CTextureData &)*_pGUIM->m_toLogoCT.GetData();
+
+    const FLOAT fLogoSize = 50;
+    const PIX pixLogoW = fLogoSize * pdp->dp_fWideAdjustment;
+    const PIX pixLogoH = fLogoSize * td.GetHeight() / td.GetWidth();
+
+    vStart = PIX2D(12 * fScaleW, (480 - pixLogoH - 16) * fScaleH);
+    vSize = PIX2D(pixLogoW * fScaleW, pixLogoH * fScaleH);
+
+    pdp->PutTexture(&_pGUIM->m_toLogoCT, PIXaabbox2D(vStart, vStart + vSize));
+  }
+
+  // Render game logo
+  {
+    const FLOAT fResize = Min(fScaleW, fScaleH);
+
+    vStart = PIX2D(pixW / 2, 10 * fResize);
+    vSize = PIX2D(256 * fResize, 64 * fResize);
+
+    pdp->PutTexture(&_pGUIM->m_toLogoMenuB, PIXaabbox2D(vStart, vStart + vSize));
+    vStart(1) -= vSize(1);
+    pdp->PutTexture(&_pGUIM->m_toLogoMenuA, PIXaabbox2D(vStart, vStart + vSize));
+  }
+
+  // [Cecil] Display build version
+  {
+    pdp->SetFont(_pfdConsoleFont);
+    pdp->SetTextScaling(1.0f);
+    pdp->SetTextCharSpacing(-1);
+
+    const PIX pixBuildX = pixW - 16;
+    const PIX pixBuildY = pixH - _pfdConsoleFont->fd_pixCharHeight;
+    pdp->PutTextR(SE_GetBuildVersion(), pixBuildX, pixBuildY, 0xFFFFFFFF);
+  }
+};
+
 // [Cecil] Change to the menu
 void CMainMenu::ChangeTo(void) {
   _pGUIM->ChangeToMenu(&_pGUIM->gmMainMenu);

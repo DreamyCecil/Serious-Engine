@@ -101,6 +101,9 @@ public:
     StartMenu();
   };
 
+  // [Cecil] Render menu background
+  virtual void RenderBackground(CDrawPort *pdp);
+
   // [Cecil] Render the menu in its entirety and optionally find a gadget under the cursor
   // Returns TRUE if any gadgets or submenus have been drawn
   BOOL Render(CDrawPort *pdp, CMenuGadget **ppmgUnderCursor);

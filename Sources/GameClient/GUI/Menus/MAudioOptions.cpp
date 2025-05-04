@@ -169,6 +169,26 @@ void CAudioOptionsMenu::StartMenu(void)
   CGameMenu::StartMenu();
 }
 
+// [Cecil] Render menu background
+void CAudioOptionsMenu::RenderBackground(CDrawPort *pdp) {
+  CGameMenu::RenderBackground(pdp);
+
+  const FLOAT fScaleW = (FLOAT)pdp->GetWidth() / 640.0f;
+  const FLOAT fScaleH = (FLOAT)pdp->GetHeight() / 480.0f;
+
+  if (_pGUIM->m_toLogoEAX.GetData() != NULL) {
+    CTextureData &td = (CTextureData &)*_pGUIM->m_toLogoEAX.GetData();
+    const FLOAT fLogoSize = 95;
+    const PIX pixLogoW = fLogoSize * pdp->dp_fWideAdjustment;
+    const PIX pixLogoH = fLogoSize * td.GetHeight() / td.GetWidth();
+
+    PIX2D vStart((640 - pixLogoW - 35) * fScaleW, (480 - pixLogoH - 7) * fScaleH);
+    PIX2D vSize(pixLogoW * fScaleW, pixLogoH * fScaleH);
+
+    pdp->PutTexture(&_pGUIM->m_toLogoEAX, PIXaabbox2D(vStart, vStart + vSize));
+  }
+};
+
 // [Cecil] Change to the menu
 void CAudioOptionsMenu::ChangeTo(void) {
   _pGUIM->ChangeToMenu(&_pGUIM->gmAudioOptionsMenu);
