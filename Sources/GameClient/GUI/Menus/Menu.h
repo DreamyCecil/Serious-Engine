@@ -252,6 +252,11 @@ class CMenuManager {
       return vRatio;
     };
 
+    // [Cecil] Check whether last mouse input was over no gadget
+    inline bool MouseUsedOverNothing(void) {
+      return (m_bMouseUsedLast && m_pmgUnderCursor == NULL);
+    };
+
     // Get amount of visited menus
     inline INDEX GetMenuCount(void) {
       return m_aVisitedMenus.Count();

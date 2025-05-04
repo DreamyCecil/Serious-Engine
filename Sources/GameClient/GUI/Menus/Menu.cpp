@@ -418,34 +418,24 @@ void CMenuManager::MenuGoToParent(void) {
   _pGUIM->PlayMenuSound(E_MSND_RETURN);
 };
 
-void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb)
-{
+void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb) {
   // [Cecil] Check if mouse buttons are used separately
   m_bMouseUsedLast = (pmb.iMouse != -1);
 
-  // ignore mouse when editing
+  // Ignore the mouse when editing
   if (m_bEditingString && m_bMouseUsedLast) {
     m_bMouseUsedLast = FALSE;
     return;
   }
 
-  // initially the message is not handled
-  BOOL bHandled = FALSE;
+  // [Cecil] Let the menu handle the button regardless of anything
+  const BOOL bHandled = GetCurrentMenu()->GetLastMenu()->OnKeyDown(pmb);
 
-  // if not a mouse button, or mouse is over some gadget
-  if (!m_bMouseUsedLast || m_pmgUnderCursor != NULL) {
-    // ask current menu to handle the key
-    bHandled = GetCurrentMenu()->GetLastMenu()->OnKeyDown(pmb);
+  // Return to the previous menu if the back button wasn't handled
+  if (!bHandled && pmb.Back(TRUE)) {
+    MenuGoToParent();
   }
-
-  // if not handled
-  if(!bHandled) {
-    if (pmb.Back(TRUE)) {
-      // go to parent menu if possible
-      MenuGoToParent();
-    }
-  }
-}
+};
 
 void CMenuManager::MenuOnChar(const OS::SE1Event &event) {
   // check if mouse buttons used
@@ -616,30 +606,6 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   // [Cecil] Prepare game for rendering the menu background
   _pGame->LCDPrepare(1.0f);
 
-  // if this is popup menu
-  if (GetCurrentMenu()->gm_bPopup) {
-    // [Cecil] Render last visited proper menu
-    CGameMenu *pgmLast = NULL;
-
-    // Go from the end (minus the current one)
-    INDEX iMenu = GetMenuCount() - 1;
-
-    while (--iMenu >= 0) {
-      CGameMenu *pgmVisited = GetMenu(iMenu);
-
-      // Not a popup menu
-      if (!pgmVisited->gm_bPopup) {
-        pgmLast = pgmVisited;
-        break;
-      }
-    }
-
-    // [Cecil] Render the menu
-    if (pgmLast != NULL) {
-      pgmLast->Render(&dpMenu, NULL);
-    }
-  }
-
   // no entity is under cursor initially
   m_pmgUnderCursor = NULL;
 
@@ -730,10 +696,6 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
 void CMenuManager::FixupBackButton(CGameMenu *pgm) {
   BOOL bResume = FALSE;
   BOOL bHasBack = TRUE;
-
-  if (pgm->gm_bPopup) {
-    bHasBack = FALSE;
-  }
 
   if (GetMenuCount() <= 1) {
     if (_gmRunningGameMode != GM_NONE) {
@@ -833,14 +795,6 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
 
       // Then rewind to the visited one and pop it too
       PopMenusUntil(iVisited - 1);
-    }
-
-    // Start that menu if there's supposed to be a popup on top of it
-    if (pgmNewMenu->gm_bPopup) {
-      GetCurrentMenu()->StartMenu();
-
-      // [Cecil] Don't focus on any potential gadget in the background menu
-      GetCurrentMenu()->ResetGadgetFocus();
     }
 
     // Push the new menu to the top

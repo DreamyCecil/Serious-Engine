@@ -49,9 +49,13 @@ public:
     return &gm_mgConfirmYes;
   };
 
-  void Initialize_t(void);
+  virtual void Initialize_t(void);
+
+  // [Cecil] End menu
+  virtual void EndMenu(void);
+
   // return TRUE if handled
-  BOOL OnKeyDown(PressedMenuButton pmb);
+  virtual BOOL OnKeyDown(PressedMenuButton pmb);
 
   void BeLarge(void);
   void BeSmall(void);

@@ -216,8 +216,10 @@ BOOL CGameMenu::OnChar(const OS::SE1Event &event)
 }
 
 // return TRUE if handled
-BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb)
-{
+BOOL CGameMenu::OnKeyDown(PressedMenuButton pmb) {
+  // [Cecil] Ignore button press if it came from a mouse hovering over nothing
+  if (_pGUIM->MouseUsedOverNothing()) return FALSE;
+
   CMenuGadget *pmgActive = GetFocused();
 
   // if none focused
@@ -360,13 +362,12 @@ void CGameMenu::StartMenu(void) {
 };
 
 void CGameMenu::EndMenu(void) {
-  CDynamicContainer<CAbstractMenuElement> cMenus;
+  CDynamicContainer<CGameMenu> cMenus;
 
   FOREACHNODE(this, CAbstractMenuElement, itme) {
-    // [Cecil] End all submenus
+    // [Cecil] Remember submenus
     if (itme->IsMenu()) {
       CGameMenu &gm = (CGameMenu &)itme.Current();
-      gm.EndMenu();
       cMenus.Add(&gm);
 
     // Hide all gadgets
@@ -374,6 +375,11 @@ void CGameMenu::EndMenu(void) {
       CMenuGadget &mg = (CMenuGadget &)itme.Current();
       mg.Disappear();
     }
+  }
+
+  // [Cecil] End submenus separately
+  FOREACHINDYNAMICCONTAINER(cMenus, CGameMenu, itgm) {
+    itgm->EndMenu();
   }
 };
 

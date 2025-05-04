@@ -25,7 +25,7 @@ static void ConfirmYes(CMenuGadget *pmg) {
     gmConfirm.gm_pConfirmedYes();
   }
 
-  _pGUIM->MenuGoToParent();
+  gmConfirm.EndMenu();
 };
 
 static void ConfirmNo(CMenuGadget *pmg) {
@@ -35,7 +35,7 @@ static void ConfirmNo(CMenuGadget *pmg) {
     gmConfirm.gm_pConfirmedNo();
   }
 
-  _pGUIM->MenuGoToParent();
+  gmConfirm.EndMenu();
 };
 
 void CConfirmMenu::Initialize_t(void)
@@ -69,6 +69,14 @@ void CConfirmMenu::Initialize_t(void)
   gm_pConfirmedYes = NULL;
   gm_pConfirmedNo = NULL;
 }
+
+// [Cecil] End menu
+void CConfirmMenu::EndMenu(void) {
+  CGameMenu::EndMenu();
+
+  // Detach from the current menu
+  SetParent(NULL);
+};
 
 void CConfirmMenu::BeLarge(void)
 {
@@ -120,5 +128,7 @@ void CConfirmMenu::ChangeTo(const CTString &strLabel, FConfirm pFuncYes, FConfir
     gm.BeSmall();
   }
 
-  _pGUIM->ChangeToMenu(&gm);
+  // Attach to the current menu
+  _pGUIM->GetCurrentMenu()->AddChild(&gm);
+  gm.StartMenu();
 };
