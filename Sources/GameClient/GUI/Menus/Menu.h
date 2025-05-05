@@ -159,10 +159,17 @@ class CMenuManager {
     BOOL m_bMouseUsedLast;
     CMenuGadget *m_pmgUnderCursor;
 
-    // [Cecil] List of previously visited menus with the last one being the current one
-    // Each time the "Back" button is pressed, it pops the current menu and switches to
-    // the previous one, otherwise returns to game (if it's active) or to the main menu
+    // [Cecil] List of previously visited menus
+    // Each time a new menu is changed to, it's pushed on top of this stack and and the new
+    // stack count is remembered in m_ctVisitedMenus
+    // When going back to the previous menu, m_ctVisitedMenus is decremented once without
+    // popping the top menu, in case it's still needed for rendering or processing purposes
+    // If it changes to a new menu after that, all menus since m_ctVisitedMenus are popped
+    // to allow the new menu to be pushed on top to become the last visited one
     CStaticStackArray<CGameMenu *> m_aVisitedMenus;
+
+    // [Cecil] Amount of visited menus with no regard for the rest of the stack after it
+    INDEX m_ctVisitedMenus;
 
     // Thumbnail for showing in the menu
     CTextureObject m_toThumbnail;
@@ -252,24 +259,9 @@ class CMenuManager {
       return vRatio;
     };
 
-    // [Cecil] Check whether last mouse input was over no gadget
+    // Check whether last mouse input was over no gadget
     inline bool MouseUsedOverNothing(void) {
       return (m_bMouseUsedLast && m_pmgUnderCursor == NULL);
-    };
-
-    // Get amount of visited menus
-    inline INDEX GetMenuCount(void) {
-      return m_aVisitedMenus.Count();
-    };
-
-    // Get a visited menu from the stack
-    inline CGameMenu *GetMenu(INDEX i) {
-      const INDEX ct = GetMenuCount();
-
-      ASSERT(i >= 0 && i < ct);
-      if (i < 0 || i >= ct) return NULL;
-
-      return m_aVisitedMenus[i];
     };
 
     // Get the currently active menu
@@ -280,24 +272,61 @@ class CMenuManager {
       return m_aVisitedMenus[ct - 1];
     };
 
+  private:
+    // Get amount of visited menus in the stack
+    inline INDEX GetMenuStackCount(void) {
+      return m_aVisitedMenus.Count();
+    };
+
+    // Get amount of visited menus
+    inline INDEX GetMenuCount(void) {
+      return m_ctVisitedMenus;
+    };
+
+    // Get a visited menu from the stack
+    inline CGameMenu *GetMenu(INDEX i) {
+      const INDEX ct = GetMenuStackCount();
+
+      ASSERT(i >= 0 && i < ct);
+      if (i < 0 || i >= ct) return NULL;
+
+      return m_aVisitedMenus[i];
+    };
+
     // Push a new menu on top, making it the current one
     inline void PushMenu(CGameMenu *pgm) {
+      // Pop all the menus after the current amount
+      PopMenusUntil(GetMenuCount() - 1);
+
       m_aVisitedMenus.Add(pgm);
+      m_ctVisitedMenus = GetMenuStackCount();
     };
 
     // Pop the current menu from top, making the previous menu the current one
     inline void PopMenu(void) {
-      m_aVisitedMenus.Pop();
+      ASSERT(GetMenuCount() > 0);
+      if (GetMenuCount() <= 0) return;
+
+      // Instead of actually popping here, it's done via PopMenusUntil() when appropriate
+      m_ctVisitedMenus--;
     };
 
     // Pop the menus from top until a specific one
     inline void PopMenusUntil(INDEX i) {
-      m_aVisitedMenus.PopUntil(i);
+      if (i >= 0) {
+        m_aVisitedMenus.PopUntil(i);
+      } else {
+        m_aVisitedMenus.PopAll();
+      }
+
+      // Preserve current amount, unless the new amount is lower
+      m_ctVisitedMenus = Min(m_ctVisitedMenus, GetMenuStackCount());
     };
 
     // Pop all visited menus
     inline void ClearVisitedMenus(void) {
       m_aVisitedMenus.PopAll();
+      m_ctVisitedMenus = 0;
     };
 
     // Automaticaly manage input enable/disable toggling
@@ -306,11 +335,12 @@ class CMenuManager {
     // Automaticaly manage pause toggling
     void UpdatePauseState(void);
 
-    // Separate method for letting the menu manage the game client
-    void Process(void);
-
     // Do the main game loop and render the screen
     void DoGame(void);
+
+  public:
+    // Separate method for letting the menu manage the game client
+    void Process(void);
 
   // [Cecil] These methods have been moved from global scope
   public:

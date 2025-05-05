@@ -236,14 +236,14 @@ void CMenuManager::StartMenus(EQuickMenu eMenu) {
         pgmCurrent = &gmInGameMenu;
       }
 
+      // Start the menu
+      ASSERT(pgmCurrent != NULL);
+      ChangeToMenu(pgmCurrent);
+
     // [Cecil] Otherwise reactivate the last menu
     } else {
       pgmCurrent->StartMenu();
     }
-
-    // Start the menu
-    ASSERT(pgmCurrent != NULL);
-    ChangeToMenu(pgmCurrent);
   }
 
   m_bMenuActive = TRUE;
@@ -303,6 +303,8 @@ CMenuManager::CMenuManager() {
 
   m_bMouseUsedLast = FALSE;
   m_pmgUnderCursor = NULL;
+
+  m_ctVisitedMenus = 0;
 
   m_bThumbnailOn = FALSE;
   m_psdSelect = NULL;
@@ -786,7 +788,7 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
     INDEX iVisited = GetMenuCount();
 
     // End the current menu, if there is one
-    if (iVisited != 0) {
+    if (iVisited > 0) {
       GetCurrentMenu()->EndMenu();
     }
 
@@ -812,13 +814,6 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
 
   // Start the new menu
   pgmNewMenu->StartMenu();
-
-  // [Cecil] Change focus to the default gadget in the new menu
-  CMenuGadget *pmgDefault = pgmNewMenu->GetDefaultGadget();
-
-  if (pmgDefault != NULL) {
-    pgmNewMenu->FocusGadget(pmgDefault);
-  }
 
   // Add the back button
   FixupBackButton(pgmNewMenu);

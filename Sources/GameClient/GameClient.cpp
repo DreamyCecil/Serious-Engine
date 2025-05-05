@@ -1080,10 +1080,9 @@ void CMenuManager::Process(void) {
           // Clear key down message and start the menu
           event.type = WM_NULL;
           StartMenus();
-        }
 
-        // And if the console isn't active (or has been deactivated just now)
-        if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
+        // Otherwise if the console isn't active (or has been deactivated just now)
+        } else if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
           // Start the current menu if it's not the root one
           if (!IsMenuRoot(GetCurrentMenu())) {
             StartMenus();

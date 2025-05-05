@@ -373,6 +373,13 @@ void CGameMenu::StartMenu(void) {
     CGameMenu &gm = (CGameMenu &)itme.Current();
     gm.StartMenu();
   }
+
+  // [Cecil] Update focus to the default gadget
+  CMenuGadget *pmgDefault = GetDefaultGadget();
+
+  if (pmgDefault != NULL) {
+    FocusGadget(pmgDefault);
+  }
 };
 
 void CGameMenu::EndMenu(void) {
