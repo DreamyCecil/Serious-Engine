@@ -378,9 +378,6 @@ class CMenuManager {
     // Close the current menu
     void StopMenus(BOOL bGoToRoot = TRUE);
 
-    // Check if it's a root menu
-    BOOL IsMenuRoot(CGameMenu *pgm);
-
     // Go to a specific menu
     void ChangeToMenu(CGameMenu *pgmNew);
 

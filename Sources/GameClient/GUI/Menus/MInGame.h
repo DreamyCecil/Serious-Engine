@@ -38,6 +38,11 @@ public:
   CMGButton gm_mgStop;
   CMGButton gm_mgQuit;
 
+  // [Cecil] This is a root menu
+  virtual bool IsRootMenu(void) const {
+    return true;
+  };
+
   // [Cecil] Menu name for the mod interface
   virtual const char *GetName(void) const {
     return "InGame";

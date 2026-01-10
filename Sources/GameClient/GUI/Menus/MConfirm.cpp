@@ -77,7 +77,7 @@ void CConfirmMenu::Initialize_t(void)
 // [Cecil] End menu
 void CConfirmMenu::OnEnd(void) {
   // Detach from the current menu
-  SetParent(NULL);
+  Expunge();
 };
 
 void CConfirmMenu::BeLarge(void)

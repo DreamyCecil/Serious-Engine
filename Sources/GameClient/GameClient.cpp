@@ -1084,7 +1084,9 @@ void CMenuManager::Process(void) {
         // Otherwise if the console isn't active (or has been deactivated just now)
         } else if (_pGame->gm_csConsoleState == CS_OFF || _pGame->gm_csConsoleState == CS_TURNINGOFF) {
           // Start the current menu if it's not the root one
-          if (!IsMenuRoot(GetCurrentMenu())) {
+          // [Cecil] FIXME: I think this check and the IsRootMenu() method in general are completely redundant
+          // at this point but I'm not entirely sure what this chunk of code does here or when it even executes
+          if (GetCurrentMenu() != NULL && !GetCurrentMenu()->IsRootMenu()) {
             StartMenus();
           }
         }

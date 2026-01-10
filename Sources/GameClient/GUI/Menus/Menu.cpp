@@ -267,11 +267,6 @@ void CMenuManager::StopMenus(BOOL bGoToRoot) {
   }
 };
 
-// [Cecil] Check if it's a root menu
-BOOL CMenuManager::IsMenuRoot(class CGameMenu *pgm) {
-  return pgm == NULL || pgm == &gmMainMenu || pgm == &gmInGameMenu;
-};
-
 static void LoadAndForceTexture(CTextureObject &to, const CTFileName &fnm) {
   try {
     to.SetData_t(fnm);
@@ -711,7 +706,7 @@ void CMenuManager::FixupBackButton(CGameMenu *pgm) {
       bResume = TRUE;
 
     // [Cecil] Only remove the back button in root menus
-    } else if (IsMenuRoot(pgm)) {
+    } else if (pgm->IsRootMenu()) {
       bHasBack = FALSE;
     }
   }

@@ -58,6 +58,11 @@ public:
     return true;
   };
 
+  // [Cecil] Check if this is a root menu
+  virtual bool IsRootMenu(void) const {
+    return false;
+  };
+
   // [Cecil] Check if the menu is active
   inline bool IsActive(void) const {
     return gm_bActive;

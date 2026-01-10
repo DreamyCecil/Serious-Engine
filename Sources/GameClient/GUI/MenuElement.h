@@ -20,10 +20,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-#include <Engine/Base/LinkedNode.h>
+#include <Engine/Base/Node.h>
 
 // Abstract base for any menu element (an entire menu or one of its gadgets)
-class CAbstractMenuElement : public CLinkedNode {
+class CAbstractMenuElement : public CNode {
   protected:
     // Dummy string value for returning from specific methods
     static const CTString me_strDummyString;
@@ -31,6 +31,11 @@ class CAbstractMenuElement : public CLinkedNode {
   public:
     // Destructor for derived elements
     virtual ~CAbstractMenuElement() {};
+
+    // Wrapper method for compatibility
+    __forceinline void AddChild(CAbstractMenuElement *pNode) {
+      AddTail(pNode);
+    };
 
     // Get parent menu element that owns this element
     inline CAbstractMenuElement *GetParentElement(void) const {
