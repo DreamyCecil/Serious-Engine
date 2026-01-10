@@ -350,12 +350,8 @@ void CMGServerList::OnMouseOver(PIX pixI, PIX pixJ)
 extern void JoinNetworkGame(void);
 
 static void StartSelectPlayersMenuFromServers(void) {
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-  gmCurrent.gm_bAllowDedicated = FALSE;
-  gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pCallbackFunction = &JoinNetworkGame;
-  CSelectPlayersMenu::ChangeTo();
-  
+  CSelectPlayersMenu::ChangeTo(FALSE, TRUE, &JoinNetworkGame);
+
   extern void StartNetworkSettingsMenu(void);
   StartNetworkSettingsMenu();
 };

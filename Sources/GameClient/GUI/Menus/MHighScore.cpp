@@ -35,5 +35,7 @@ void CHighScoreMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void CHighScoreMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmHighScoreMenu);
+  CGameMenu *pgm = new CHighScoreMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

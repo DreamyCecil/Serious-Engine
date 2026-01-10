@@ -97,7 +97,14 @@ public:
   void ScrollList(INDEX iDir);
 
   virtual void Initialize_t(void) {};
-  virtual void Destroy(void) {};
+
+  virtual void Destroy(void) {
+    // [Cecil] Detach all menu gadgets
+    FOREACHNODE(this, CAbstractMenuElement, itme) {
+      itme->Expunge();
+    }
+  };
+
   virtual void Think(void) {};
 
   virtual void FillListItems(void) {

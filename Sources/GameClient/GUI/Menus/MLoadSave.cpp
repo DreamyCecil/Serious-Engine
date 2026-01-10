@@ -224,7 +224,95 @@ BOOL CLoadSaveMenu::ParseFile(const CTFileName &fnm, CTString &strName)
   return TRUE;
 }
 
-// [Cecil] Change to the menu
-void CLoadSaveMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmLoadSaveMenu);
+// [Cecil] Change to a generic list of files
+void CLoadSaveMenu::ChangeToFiles(const CTString &strTitle, ELSSortType eSorting, BOOL bThumbnails,
+  const CTString &strDir, const CTString &strExt, const CTString &strSelected, const CTString &strNotes,
+  CLoadSaveMenu::FAfterChoosing pCallback)
+{
+  CLoadSaveMenu *pgm = new CLoadSaveMenu;
+  pgm->Initialize_t();
+
+  pgm->gm_mgTitle.SetText(strTitle);
+  pgm->gm_iSortType = eSorting;
+  pgm->gm_bAllowThumbnails = bThumbnails;
+  pgm->gm_bSave = FALSE;
+  pgm->gm_bManage = FALSE;
+  pgm->gm_fnmDirectory = strDir;
+  pgm->gm_fnmSelected = strSelected;
+  pgm->gm_fnmExt = strExt;
+  pgm->gm_mgNotes.SetText(strNotes);
+  pgm->gm_pAfterFileChosen = pCallback;
+
+  _pGUIM->ChangeToMenu(pgm);
+};
+
+// [Cecil] Change to a list of demos
+void CLoadSaveMenu::ChangeToDemos(BOOL bRecord, ELSSortType eSorting,
+  const CTString &strSaveDes, CLoadSaveMenu::FAfterChoosing pCallback)
+{
+  CLoadSaveMenu *pgm = new CLoadSaveMenu;
+  pgm->Initialize_t();
+
+  pgm->gm_mgTitle.SetText(bRecord ? TRANS("RECORD DEMO") : TRANS("PLAY DEMO"));
+  pgm->gm_iSortType = eSorting;
+  pgm->gm_bAllowThumbnails = TRUE;
+  pgm->gm_bSave = bRecord;
+  pgm->gm_bManage = TRUE;
+  pgm->gm_fnmDirectory = "Demos\\";
+  pgm->gm_fnmSelected = "";
+  pgm->gm_fnmExt = ".dem";
+
+  if (bRecord) {
+    pgm->gm_fnmBaseName = "Demo";
+  }
+
+  pgm->gm_strSaveDes = strSaveDes;
+  pgm->gm_mgNotes.SetText("");
+  pgm->gm_pAfterFileChosen = pCallback;
+
+  _pGUIM->ChangeToMenu(pgm);
+};
+
+// [Cecil] Change to saving a game
+void CLoadSaveMenu::ChangeToSave(ELSSortType eSorting, const CTString &strDir, const CTString &strBase,
+  const CTString &strSaveDes, const CTString &strNotes, CLoadSaveMenu::FAfterChoosing pCallback)
+{
+  CLoadSaveMenu *pgm = new CLoadSaveMenu;
+  pgm->Initialize_t();
+
+  pgm->gm_mgTitle.SetText(TRANS("SAVE"));
+  pgm->gm_iSortType = eSorting;
+  pgm->gm_bAllowThumbnails = TRUE;
+  pgm->gm_bSave = TRUE;
+  pgm->gm_bManage = TRUE;
+  pgm->gm_fnmDirectory = ExpandPath::ToUser(strDir, TRUE); // [Cecil] From user data in a mod
+  pgm->gm_fnmSelected = "";
+  pgm->gm_fnmBaseName = strBase;
+  pgm->gm_fnmExt = ".sav";
+  pgm->gm_strSaveDes = strSaveDes;
+  pgm->gm_mgNotes.SetText(strNotes);
+  pgm->gm_pAfterFileChosen = pCallback;
+
+  _pGUIM->ChangeToMenu(pgm);
+};
+
+// [Cecil] Change to loading a game
+void CLoadSaveMenu::ChangeToLoad(BOOL bQuick, ELSSortType eSorting, const CTString &strDir,
+  const CTString &strNotes, CLoadSaveMenu::FAfterChoosing pCallback)
+{
+  CLoadSaveMenu *pgm = new CLoadSaveMenu;
+  pgm->Initialize_t();
+
+  pgm->gm_mgTitle.SetText(bQuick ? TRANS("QUICK LOAD") : TRANS("LOAD"));
+  pgm->gm_iSortType = eSorting;
+  pgm->gm_bAllowThumbnails = TRUE;
+  pgm->gm_bSave = FALSE;
+  pgm->gm_bManage = TRUE;
+  pgm->gm_fnmDirectory = ExpandPath::ToUser(strDir, TRUE); // [Cecil] From user data in a mod
+  pgm->gm_fnmSelected = "";
+  pgm->gm_fnmExt = ".sav";
+  pgm->gm_mgNotes.SetText(strNotes);
+  pgm->gm_pAfterFileChosen = pCallback;
+
+  _pGUIM->ChangeToMenu(pgm);
 };

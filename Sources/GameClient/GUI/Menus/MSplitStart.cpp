@@ -59,11 +59,7 @@ static void StartSplitScreenGame(void) {
 };
 
 static void StartSelectPlayersMenuFromSplit(void) {
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-  gmCurrent.gm_bAllowDedicated = FALSE;
-  gmCurrent.gm_bAllowObserving = FALSE;
-  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartSplitScreenGame;
-  CSelectPlayersMenu::ChangeTo();
+  CSelectPlayersMenu::ChangeTo(FALSE, FALSE, &StartSplitScreenGame);
 };
 
 void CSplitStartMenu::Initialize_t(void)
@@ -140,5 +136,7 @@ void CSplitStartMenu::OnEnd(void) {
 
 // [Cecil] Change to the menu
 void CSplitStartMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmSplitStartMenu);
+  CGameMenu *pgm = new CSplitStartMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

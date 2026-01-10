@@ -88,7 +88,9 @@ CGameMenu *CGameMenu::GetLastMenu(void) {
 
   FOREACHNODE(this, CAbstractMenuElement, itme) {
     if (itme->IsMenu()) {
-      pgmSub = (CGameMenu *)&itme.Current();
+      CGameMenu *pgmCheck = (CGameMenu *)&itme.Current();
+
+      if (pgmCheck->gm_bActive) pgmSub = pgmCheck;
     }
   }
 
@@ -407,7 +409,9 @@ void CGameMenu::EndMenu(void) {
 
   // [Cecil] End submenus separately
   FOREACHINDYNAMICCONTAINER(cMenus, CGameMenu, itgm) {
-    itgm->EndMenu();
+    if (itgm->IsActive()) {
+      itgm->EndMenu();
+    }
   }
 
   // [Cecil] Reset focused gadget

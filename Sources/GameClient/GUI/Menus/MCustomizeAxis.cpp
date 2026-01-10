@@ -161,5 +161,7 @@ void CCustomizeAxisMenu::OnEnd(void) {
 
 // [Cecil] Change to the menu
 void CCustomizeAxisMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmCustomizeAxisMenu);
+  CGameMenu *pgm = new CCustomizeAxisMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

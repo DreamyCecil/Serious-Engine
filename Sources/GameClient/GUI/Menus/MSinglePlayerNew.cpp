@@ -155,5 +155,7 @@ void CSinglePlayerNewMenu::OnStart(void) {
 
 // [Cecil] Change to the menu
 void CSinglePlayerNewMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmSinglePlayerNewMenu);
+  CGameMenu *pgm = new CSinglePlayerNewMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

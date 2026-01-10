@@ -134,12 +134,14 @@ void CVarMenu::OnEnd(void)
 void CVarMenu::Think(void)
 {
   gm_mgApply.mg_bEnabled = _bVarChanged;
-  _pGUIM->FixupBackButton(this);
+  _pGUIM->FixupBackButton();
 }
 
 // [Cecil] Change to the menu
 void CVarMenu::ChangeTo(const CTString &strTitle, const CTString &fnmConfig) {
-  _pGUIM->gmVarMenu.gm_mgTitle.SetText(strTitle);
-  _pGUIM->gmVarMenu.gm_fnmMenuCFG = fnmConfig;
-  _pGUIM->ChangeToMenu(&_pGUIM->gmVarMenu);
+  CVarMenu *pgm = new CVarMenu;
+  pgm->Initialize_t();
+  pgm->gm_mgTitle.SetText(strTitle);
+  pgm->gm_fnmMenuCFG = fnmConfig;
+  _pGUIM->ChangeToMenu(pgm);
 };

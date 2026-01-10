@@ -231,10 +231,11 @@ void CMenuManager::StartMenus(EQuickMenu eMenu) {
     if (pgmCurrent == NULL) {
       // Go to the root menu depending on the game state
       if (_gmRunningGameMode == GM_NONE) {
-        pgmCurrent = &gmMainMenu;
+        pgmCurrent = new CMainMenu;
       } else {
-        pgmCurrent = &gmInGameMenu;
+        pgmCurrent = new CInGameMenu;
       }
+      pgmCurrent->Initialize_t();
 
       // Start the menu
       ASSERT(pgmCurrent != NULL);
@@ -299,7 +300,7 @@ CMenuManager::CMenuManager() {
   m_bMouseUsedLast = FALSE;
   m_pmgUnderCursor = NULL;
 
-  m_ctVisitedMenus = 0;
+  m_pCurrentMenu = NULL;
 
   m_bThumbnailOn = FALSE;
   m_psdSelect = NULL;
@@ -357,32 +358,6 @@ CMenuManager::CMenuManager() {
     // initialize game type strings table
     InitGameTypes();
 
-    // Initialize menus
-    gmConfirmMenu.Initialize_t();
-    gmMainMenu.Initialize_t();
-    gmInGameMenu.Initialize_t();
-    gmSinglePlayerMenu.Initialize_t();
-    gmSinglePlayerNewMenu.Initialize_t();
-    gmPlayerProfile.Initialize_t();
-    gmControls.Initialize_t();
-    gmLoadSaveMenu.Initialize_t();
-    gmHighScoreMenu.Initialize_t();
-    gmCustomizeKeyboardMenu.Initialize_t();
-    gmCustomizeAxisMenu.Initialize_t();
-    gmOptionsMenu.Initialize_t();
-    gmVideoOptionsMenu.Initialize_t();
-    gmAudioOptionsMenu.Initialize_t();
-    gmLevelsMenu.Initialize_t();
-    gmVarMenu.Initialize_t();
-    gmServersMenu.Initialize_t();
-    gmNetworkMenu.Initialize_t();
-    gmNetworkStartMenu.Initialize_t();
-    gmNetworkJoinMenu.Initialize_t();
-    gmSelectPlayersMenu.Initialize_t();
-    gmNetworkOpenMenu.Initialize_t();
-    gmSplitScreenMenu.Initialize_t();
-    gmSplitStartMenu.Initialize_t();
-
   } catch (char *strError) {
     FatalError(strError);
   }
@@ -411,6 +386,24 @@ CMenuManager::~CMenuManager() {
   m_psdDisabled = NULL;
 };
 
+// Pop the menus from top until a specific one
+void CMenuManager::PopMenusUntil(CGameMenu *pMenu) {
+  CGameMenu *pCheck = (CGameMenu *)GetTail();
+
+  while (pCheck != NULL) {
+    if (pCheck == pMenu) break;
+
+    CGameMenu *pPrev = (CGameMenu *)pCheck->GetPrev();
+
+    pCheck->Expunge();
+    delete pCheck;
+
+    pCheck = pPrev;
+  }
+
+  m_pCurrentMenu = pCheck;
+};
+
 // go to parent menu if possible
 void CMenuManager::MenuGoToParent(void) {
   // [Cecil] Return to the previous menu with a sound
@@ -429,12 +422,17 @@ void CMenuManager::MenuOnKeyDown(PressedMenuButton pmb) {
   }
 
   // [Cecil] Let the menu handle the button regardless of anything
-  CGameMenu *pgm = GetCurrentMenu()->GetLastMenu();
-  const BOOL bHandled = (pgm != NULL ? pgm->OnKeyDown(pmb) : FALSE);
+  CGameMenu *pgm = GetCurrentMenu();
+  ASSERT(pgm != NULL);
 
-  // Return to the previous menu if the back button wasn't handled
-  if (!bHandled && pmb.Back(TRUE)) {
-    MenuGoToParent();
+  if (pgm != NULL) {
+    pgm = pgm->GetLastMenu();
+    const BOOL bHandled = (pgm != NULL ? pgm->OnKeyDown(pmb) : FALSE);
+
+    // Return to the previous menu if the back button wasn't handled
+    if (!bHandled && pmb.Back(TRUE)) {
+      MenuGoToParent();
+    }
   }
 };
 
@@ -443,8 +441,13 @@ void CMenuManager::MenuOnChar(const OS::SE1Event &event) {
   m_bMouseUsedLast = FALSE;
 
   // ask current menu to handle the key
-  CGameMenu *pgm = GetCurrentMenu()->GetLastMenu();
-  if (pgm != NULL) pgm->OnChar(event);
+  CGameMenu *pgm = GetCurrentMenu();
+  ASSERT(pgm != NULL);
+
+  if (pgm != NULL) {
+    pgm = pgm->GetLastMenu();
+    if (pgm != NULL) pgm->OnChar(event);
+  }
 };
 
 void CMenuManager::MenuOnMouseMove(PIX pixI, PIX pixJ) {
@@ -491,7 +494,7 @@ void CMenuManager::MenuUpdateMouseFocus(CGameMenu *pgm)
      && m_pmgUnderCursor->mg_pmgUp    == NULL
      && m_pmgUnderCursor->mg_pmgDown  == NULL) {
       // it cannot be focused
-      m_pmgUnderCursor = NULL;
+      ClearCurrentGadget();
       return;
     }
 
@@ -611,7 +614,7 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   _pGame->LCDPrepare(1.0f);
 
   // no entity is under cursor initially
-  m_pmgUnderCursor = NULL;
+  ClearCurrentGadget();
 
   // [Cecil] Render the current menu
   const BOOL bStilInMenus = GetCurrentMenu()->Render(&dpMenu, &m_pmgUnderCursor);
@@ -697,21 +700,23 @@ BOOL CMenuManager::DoMenu(CDrawPort *pdp)
   return bStilInMenus;
 }
 
-void CMenuManager::FixupBackButton(CGameMenu *pgm) {
+void CMenuManager::FixupBackButton(void) {
+  CGameMenu *pgm = GetCurrentMenu();
+  if (pgm == NULL) return;
+
   BOOL bResume = FALSE;
-  BOOL bHasBack = TRUE;
+  BOOL bHasBack = FALSE;
 
-  if (GetMenuCount() <= 1) {
-    if (_gmRunningGameMode != GM_NONE) {
-      bResume = TRUE;
+  // [Cecil] Show the back button if there are any menus to return to
+  if (pgm->GetPrev() != NULL) {
+    bHasBack = TRUE;
 
-    // [Cecil] Only remove the back button in root menus
-    } else if (pgm->IsRootMenu()) {
-      bHasBack = FALSE;
-    }
+  // [Cecil] Otherwise at least show the resume button if in a game
+  } else if (_gmRunningGameMode != GM_NONE) {
+    bResume = TRUE;
   }
 
-  if (!bHasBack) {
+  if (!bResume && !bHasBack) {
     m_mgBack.Disappear();
     return;
   }
@@ -731,15 +736,14 @@ void CMenuManager::FixupBackButton(CGameMenu *pgm) {
 
   m_mgBack.mg_iCenterI = -1;
   m_mgBack.mg_bfsFontSize = BFS_LARGE;
-  m_mgBack.mg_boxOnScreen = BoxBack();
   m_mgBack.mg_boxOnScreen = BoxLeftColumn(16.5f);
-  pgm->AddChild(&m_mgBack);
-
-  m_mgBack.mg_pmgLeft = m_mgBack.mg_pmgRight
-  = m_mgBack.mg_pmgUp = m_mgBack.mg_pmgDown = pgm->GetDefaultGadget();
-
   m_mgBack.mg_pCallbackFunction = &MenuGoToParent;
 
+  if (m_mgBack.GetParentMenu() != pgm) {
+    pgm->AddChild(&m_mgBack);
+  }
+
+  m_mgBack.mg_pmgLeft = m_mgBack.mg_pmgRight = m_mgBack.mg_pmgUp = m_mgBack.mg_pmgDown = pgm->GetDefaultGadget();
   m_mgBack.Appear();
 };
 
@@ -748,7 +752,10 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
   ClearThumbnail();
 
   // [Cecil] Reset gadget under the cursor
-  m_pmgUnderCursor = NULL;
+  ClearCurrentGadget();
+
+  // [Cecil] Detach the back button
+  m_mgBack.Expunge();
 
   // [Cecil] If no new menu specified
   if (pgmNewMenu == NULL) {
@@ -780,27 +787,27 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
 
   // Otherwise if some new menu is specified
   } else {
-    INDEX iVisited = GetMenuCount();
-
-    // End the current menu, if there is one
-    if (iVisited > 0) {
+    if (GetCurrentMenu() != NULL) {
+      // End the current menu
       GetCurrentMenu()->EndMenu();
-    }
 
-    // [Cecil] Check whether this menu has already been visited
-    while (--iVisited >= 0) {
-      CGameMenu *pgm = GetMenu(iVisited);
+      // [Cecil] Check whether this menu has already been visited
+      CGameMenu *pgm = (CGameMenu *)GetCurrentMenu()->GetPrev();
 
-      // Found the same menu
-      if (strcmp(pgm->GetName(), pgmNewMenu->GetName()) == 0) {
-        break;
+      while (pgm != NULL) {
+        // Found the same menu
+        if (strcmp(pgm->GetName(), pgmNewMenu->GetName()) == 0) {
+          break;
+        }
+
+        pgm = (CGameMenu *)pgm->GetPrev();
       }
-    }
 
-    // If this menu has already been visited before
-    if (iVisited >= 0) {
-      // Then rewind to the visited one and pop it too
-      PopMenusUntil(iVisited - 1);
+      // If this menu has already been visited before
+      if (pgm != NULL) {
+        // Then rewind to the visited one and pop it too
+        PopMenusUntil(pgm);
+      }
     }
 
     // Push the new menu to the top
@@ -811,5 +818,5 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
   pgmNewMenu->StartMenu();
 
   // Add the back button
-  FixupBackButton(pgmNewMenu);
+  FixupBackButton();
 };

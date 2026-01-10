@@ -45,19 +45,7 @@ BOOL LSLoadDemo(CGameMenu *pgm, const CTString &fnm) {
 
 static void StartDemoLoadMenu(void) {
   _gmMenuGameMode = GM_DEMO;
-
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("PLAY DEMO"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = CTString("Demos\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".dem");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadDemo;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToDemos(FALSE, LSSORT_FILEDN, "", &LSLoadDemo);
 };
 
 static void ModLoadYes(void) {
@@ -71,17 +59,7 @@ static BOOL LSLoadMod(CGameMenu *pgm, const CTString &fnm) {
 };
 
 static void StartModsLoadMenu(void) {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("CHOOSE MOD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = SE1_MODS_SUBDIR;
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".des");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadMod;
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToFiles(TRANS("CHOOSE MOD"), LSSORT_NAMEUP, TRUE, SE1_MODS_SUBDIR, ".des", "", "", &LSLoadMod);
 };
 
 static void ExitGame(void) {
@@ -261,5 +239,7 @@ void CMainMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {
 
 // [Cecil] Change to the menu
 void CMainMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmMainMenu);
+  CGameMenu *pgm = new CMainMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

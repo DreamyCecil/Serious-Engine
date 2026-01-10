@@ -57,7 +57,7 @@ public:
   virtual void OnEnd(void);
 
   // [Cecil] Change to the menu
-  static void ChangeTo(void);
+  static void ChangeTo(BOOL bAllowDedicated, BOOL bAllowObserving, CMGButton::FCallback pCallback);
 };
 
 #endif  /* include-once check. */

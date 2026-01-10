@@ -348,8 +348,8 @@ void RevertVideoSettings(void) {
 
   // refresh buttons
   // [Cecil] FIXME: Unable to retrieve a pointer to the video options menu here due to spaghetti
-  InitVideoOptionsButtons(_pGUIM->gmVideoOptionsMenu);
-  UpdateVideoOptionsButtons(&_pGUIM->gmVideoOptionsMenu.gm_mgDisplayPrefsTrigger, -1);
+  InitVideoOptionsButtons(*(CVideoOptionsMenu *)_pGUIM->GetCurrentMenu());
+  UpdateVideoOptionsButtons(&((CVideoOptionsMenu *)_pGUIM->GetCurrentMenu())->gm_mgDisplayPrefsTrigger, -1);
 };
 
 void CVideoOptionsMenu::Initialize_t(void)
@@ -439,5 +439,7 @@ void CVideoOptionsMenu::OnStart(void) {
 
 // [Cecil] Change to the menu
 void CVideoOptionsMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmVideoOptionsMenu);
+  CGameMenu *pgm = new CVideoOptionsMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

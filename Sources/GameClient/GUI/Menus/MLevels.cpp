@@ -113,6 +113,8 @@ void CLevelsMenu::OnStart(void) {
 
 // [Cecil] Change to the menu
 void CLevelsMenu::ChangeTo(ULONG ulSpawnFlags) {
-  _pGUIM->gmLevelsMenu.gm_ulSpawnFlags = ulSpawnFlags;
-  _pGUIM->ChangeToMenu(&_pGUIM->gmLevelsMenu);
+  CLevelsMenu *pgm = new CLevelsMenu;
+  pgm->Initialize_t();
+  pgm->gm_ulSpawnFlags = ulSpawnFlags;
+  _pGUIM->ChangeToMenu(pgm);
 };

@@ -68,40 +68,14 @@ static void StartNetworkSaveMenu(void) {
   if (_gmRunningGameMode != GM_NETWORK) return;
   _gmMenuGameMode = GM_NETWORK;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("SAVE"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = TRUE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\", TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmBaseName = CTString("SaveGame");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSSaveAnyGame;
-  gmCurrent.gm_mgNotes.SetText("");
-  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(TRUE);
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToSave(LSSORT_FILEDN, "SaveGame\\Network\\", "SaveGame", _pGame->GetDefaultGameDescription(TRUE), "", &LSSaveAnyGame);
 };
 
 static void StartSplitScreenSaveMenu(void) {
   if (_gmRunningGameMode != GM_SPLIT_SCREEN) return;
   _gmMenuGameMode = GM_SPLIT_SCREEN;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("SAVE"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = TRUE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\", TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmBaseName = CTString("SaveGame");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSSaveAnyGame;
-  gmCurrent.gm_mgNotes.SetText("");
-  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(TRUE);
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToSave(LSSORT_FILEDN, "SaveGame\\SplitScreen\\", "SaveGame", _pGame->GetDefaultGameDescription(TRUE), "", &LSSaveAnyGame);
 };
 
 static void StartSinglePlayerSaveMenu(void) {
@@ -114,21 +88,8 @@ static void StartSinglePlayerSaveMenu(void) {
 
   _gmMenuGameMode = GM_SINGLE_PLAYER;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("SAVE"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = TRUE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmBaseName = CTString("SaveGame");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSSaveAnyGame;
-  gmCurrent.gm_mgNotes.SetText("");
-  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(TRUE);
-  CLoadSaveMenu::ChangeTo();
+  CTString strDir(0, "SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
+  CLoadSaveMenu::ChangeToSave(LSSORT_FILEDN, strDir, "SaveGame", _pGame->GetDefaultGameDescription(TRUE), "", &LSSaveAnyGame);
 };
 
 void StartCurrentSaveMenu(void) {
@@ -157,20 +118,7 @@ static void StartDemoSaveMenu(CMenuGadget *pmg) {
   if (_gmRunningGameMode == GM_NONE) return;
   _gmMenuGameMode = GM_DEMO;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("RECORD DEMO"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEUP;
-  gmCurrent.gm_bSave = TRUE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = CTString("Demos\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmBaseName = CTString("Demo");
-  gmCurrent.gm_fnmExt = CTString(".dem");
-  gmCurrent.gm_pAfterFileChosen = &LSSaveDemo;
-  gmCurrent.gm_mgNotes.SetText("");
-  gmCurrent.gm_strSaveDes = _pGame->GetDefaultGameDescription(FALSE);
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToDemos(TRUE, LSSORT_FILEUP, _pGame->GetDefaultGameDescription(FALSE), &LSSaveDemo);
 };
 
 static void SetDemoStartStopRecText(CMenuGadget *pmg);
@@ -358,5 +306,7 @@ void CInGameMenu::OnStart(void) {
 
 // [Cecil] Change to the menu
 void CInGameMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmInGameMenu);
+  CGameMenu *pgm = new CInGameMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

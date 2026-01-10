@@ -35,29 +35,19 @@ static BOOL LSLoadNetSettings(CGameMenu *pgm, const CTString &fnm) {
 };
 
 void StartNetworkSettingsMenu(void) {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("CONNECTION SETTINGS"));
-  gmCurrent.gm_bAllowThumbnails = FALSE;
-  gmCurrent.gm_iSortType = LSSORT_FILEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Scripts\\NetSettings\\");
-  gmCurrent.gm_fnmSelected = sam_strNetworkSettings;
-  gmCurrent.gm_fnmExt = CTString(".ini");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadNetSettings;
+  CTString strNotes = "";
 
   if (sam_strNetworkSettings == "") {
-    gmCurrent.gm_mgNotes.SetText(TRANS(
+    strNotes = TRANS(
       "Before joining a network game,\n"
       "you have to adjust your connection parameters.\n"
       "Choose one option from the list.\n"
       "If you have problems with connection, you can adjust\n"
-      "these parameters again from the Options menu.\n"));
-  } else {
-    gmCurrent.gm_mgNotes.SetText("");
+      "these parameters again from the Options menu.\n"
+    );
   }
 
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToFiles(TRANS("CONNECTION SETTINGS"), LSSORT_FILEUP, FALSE, "Scripts\\NetSettings\\", ".ini", sam_strNetworkSettings, strNotes, &LSLoadNetSettings);
 };
 
 static BOOL LSLoadCustom(CGameMenu *pgm, const CTString &fnm) {
@@ -66,18 +56,7 @@ static BOOL LSLoadCustom(CGameMenu *pgm, const CTString &fnm) {
 };
 
 static void StartCustomLoadMenu(void) {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("ADVANCED OPTIONS"));
-  gmCurrent.gm_bAllowThumbnails = FALSE;
-  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Scripts\\CustomOptions\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".cfg");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadCustom;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToFiles(TRANS("ADVANCED OPTIONS"), LSSORT_NAMEUP, FALSE, "Scripts\\CustomOptions\\", ".cfg", "", "", &LSLoadCustom);
 };
 
 static BOOL LSLoadAddon(CGameMenu *pgm, const CTString &fnm) {
@@ -89,18 +68,7 @@ static BOOL LSLoadAddon(CGameMenu *pgm, const CTString &fnm) {
 };
 
 static void StartAddonsLoadMenu(void) {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("EXECUTE ADDON"));
-  gmCurrent.gm_bAllowThumbnails = FALSE;
-  gmCurrent.gm_iSortType = LSSORT_NAMEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Scripts\\Addons\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".ini");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadAddon;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToFiles(TRANS("EXECUTE ADDON"), LSSORT_NAMEUP, FALSE, "Scripts\\Addons\\", ".ini", "", "", &LSLoadAddon);
 };
 
 void COptionsMenu::Initialize_t(void)
@@ -167,5 +135,7 @@ void COptionsMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void COptionsMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmOptionsMenu);
+  CGameMenu *pgm = new COptionsMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

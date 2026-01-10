@@ -1092,7 +1092,7 @@ void CMenuManager::Process(void) {
         }
 
       // If currently in the menu and wanting to return to the previous menu
-      } else if (bMenuForced && bMenuToggle && GetMenuCount() == 0) {
+      } else if (bMenuForced && bMenuToggle && GetCurrentMenu() == NULL) {
         // Delete key down message because there's no previous menu
         if (event.type != WM_CTRLBUTTONDOWN) {
           event.type = WM_NULL;

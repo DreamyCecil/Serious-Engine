@@ -268,6 +268,11 @@ void CSelectPlayersMenu::OnEnd(void) {
 };
 
 // [Cecil] Change to the menu
-void CSelectPlayersMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmSelectPlayersMenu);
+void CSelectPlayersMenu::ChangeTo(BOOL bAllowDedicated, BOOL bAllowObserving, CMGButton::FCallback pCallback) {
+  CSelectPlayersMenu *pgm = new CSelectPlayersMenu;
+  pgm->Initialize_t();
+  pgm->gm_bAllowDedicated = bAllowDedicated;
+  pgm->gm_bAllowObserving = bAllowObserving;
+  pgm->gm_mgStart.mg_pCallbackFunction = pCallback;
+  _pGUIM->ChangeToMenu(pgm);
 };

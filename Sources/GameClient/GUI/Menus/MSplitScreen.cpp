@@ -39,48 +39,21 @@ static void StartSplitScreenGameLoad(void) {
 
 static BOOL LSLoadSplitScreen(CGameMenu *pgm, const CTString &fnm) {
   _fnGameToLoad = fnm;
-
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-  gmCurrent.gm_bAllowDedicated = FALSE;
-  gmCurrent.gm_bAllowObserving = FALSE;
-  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartSplitScreenGameLoad;
-  CSelectPlayersMenu::ChangeTo();
+  CSelectPlayersMenu::ChangeTo(FALSE, FALSE, &StartSplitScreenGameLoad);
   return TRUE;
 };
 
 void StartSplitScreenQuickLoadMenu(void) {
   _gmMenuGameMode = GM_SPLIT_SCREEN;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("QUICK LOAD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\Quick\\", TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadSplitScreen;
-  extern void SetQuickLoadNotes(void);
-  SetQuickLoadNotes();
-  CLoadSaveMenu::ChangeTo();
+  extern CTString GetQuickLoadNotes(void);
+  CLoadSaveMenu::ChangeToLoad(TRUE, LSSORT_FILEDN, "SaveGame\\SplitScreen\\Quick\\", GetQuickLoadNotes(), &LSLoadSplitScreen);
 };
 
 void StartSplitScreenLoadMenu(void) {
   _gmMenuGameMode = GM_SPLIT_SCREEN;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\SplitScreen\\", TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadSplitScreen;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToLoad(FALSE, LSSORT_FILEDN, "SaveGame\\SplitScreen\\", "", &LSLoadSplitScreen);
 };
 
 void CSplitScreenMenu::Initialize_t(void)
@@ -120,5 +93,7 @@ void CSplitScreenMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void CSplitScreenMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmSplitScreenMenu);
+  CGameMenu *pgm = new CSplitScreenMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

@@ -189,5 +189,7 @@ void CAudioOptionsMenu::RenderBackground(CDrawPort *pdp, bool bSubmenu) {
 
 // [Cecil] Change to the menu
 void CAudioOptionsMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmAudioOptionsMenu);
+  CGameMenu *pgm = new CAudioOptionsMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

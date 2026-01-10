@@ -43,17 +43,16 @@ static void StartSelectLevelFromSingle(void) {
   StartSelectLevel(SPF_SINGLEPLAYER, TRUE);
 };
 
-void SetQuickLoadNotes(void) {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-
+CTString GetQuickLoadNotes(void) {
   if (_pShell->GetINDEX("gam_iQuickSaveSlots") <= 8) {
-    gmCurrent.gm_mgNotes.SetText(TRANS(
+    return TRANS(
       "In-game QuickSave shortcuts:\n"
       "F6 - save a new QuickSave\n"
-      "F9 - load the last QuickSave\n"));
-  } else {
-    gmCurrent.gm_mgNotes.SetText("");
+      "F9 - load the last QuickSave\n"
+    );
   }
+
+  return "";
 };
 
 BOOL LSLoadSinglePlayer(CGameMenu *pgm, const CTString &fnm) {
@@ -79,37 +78,15 @@ BOOL LSLoadSinglePlayer(CGameMenu *pgm, const CTString &fnm) {
 void StartSinglePlayerQuickLoadMenu(void) {
   _gmMenuGameMode = GM_SINGLE_PLAYER;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("QUICK LOAD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\Quick\\", _pGame->gm_iSinglePlayer);
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadSinglePlayer;
-  SetQuickLoadNotes();
-  CLoadSaveMenu::ChangeTo();
+  CTString strDir(0, "SaveGame\\Player%d\\Quick\\", _pGame->gm_iSinglePlayer);
+  CLoadSaveMenu::ChangeToLoad(TRUE, LSSORT_FILEDN, strDir, GetQuickLoadNotes(), &LSLoadSinglePlayer);
 };
 
 void StartSinglePlayerLoadMenu(void) {
   _gmMenuGameMode = GM_SINGLE_PLAYER;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory.PrintF("SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser(gmCurrent.gm_fnmDirectory, TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadSinglePlayer;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CTString strDir(0, "SaveGame\\Player%d\\", _pGame->gm_iSinglePlayer);
+  CLoadSaveMenu::ChangeToLoad(FALSE, LSSORT_FILEDN, strDir, "", &LSLoadSinglePlayer);
 };
 
 static void StartTraining(void) {
@@ -231,5 +208,7 @@ void CSinglePlayerMenu::OnStart(void) {
 
 // [Cecil] Change to the menu
 void CSinglePlayerMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmSinglePlayerMenu);
+  CGameMenu *pgm = new CSinglePlayerMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

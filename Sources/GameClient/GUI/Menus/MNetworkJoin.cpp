@@ -20,15 +20,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "MNetworkJoin.h"
 
 static void StartSelectServerLAN(void) {
-  CServersMenu &gmCurrent = _pGUIM->gmServersMenu;
-  gmCurrent.m_bInternet = FALSE;
-  CServersMenu::ChangeTo();
+  CServersMenu::ChangeTo(FALSE);
 };
 
 static void StartSelectServerNET(void) {
-  CServersMenu &gmCurrent = _pGUIM->gmServersMenu;
-  gmCurrent.m_bInternet = TRUE;
-  CServersMenu::ChangeTo();
+  CServersMenu::ChangeTo(TRUE);
 };
 
 void CNetworkJoinMenu::Initialize_t(void)
@@ -68,5 +64,7 @@ void CNetworkJoinMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void CNetworkJoinMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkJoinMenu);
+  CGameMenu *pgm = new CNetworkJoinMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

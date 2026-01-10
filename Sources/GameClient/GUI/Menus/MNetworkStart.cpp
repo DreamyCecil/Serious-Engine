@@ -67,11 +67,7 @@ void StartNetworkGame(void) {
 };
 
 static void StartSelectPlayersMenuFromNetwork(void) {
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-  gmCurrent.gm_bAllowDedicated = TRUE;
-  gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartNetworkGame;
-  CSelectPlayersMenu::ChangeTo();
+  CSelectPlayersMenu::ChangeTo(TRUE, TRUE, &StartNetworkGame);
 };
 
 void CNetworkStartMenu::Initialize_t(void)
@@ -193,5 +189,7 @@ void CNetworkStartMenu::OnEnd(void) {
 
 // [Cecil] Change to the menu
 void CNetworkStartMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkStartMenu);
+  CGameMenu *pgm = new CNetworkStartMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

@@ -121,7 +121,7 @@ struct PressedMenuButton {
 #include "MVideoOptions.h"
 
 // [Cecil] Moved here out of MenuManager.h
-class CMenuManager {
+class CMenuManager : public CNode {
   public:
     // Menu sound types
     enum EMenuSound {
@@ -159,17 +159,14 @@ class CMenuManager {
     BOOL m_bMouseUsedLast;
     CMenuGadget *m_pmgUnderCursor;
 
-    // [Cecil] List of previously visited menus
-    // Each time a new menu is changed to, it's pushed on top of this stack and and the new
-    // stack count is remembered in m_ctVisitedMenus
-    // When going back to the previous menu, m_ctVisitedMenus is decremented once without
-    // popping the top menu, in case it's still needed for rendering or processing purposes
-    // If it changes to a new menu after that, all menus since m_ctVisitedMenus are popped
-    // to allow the new menu to be pushed on top to become the last visited one
-    CStaticStackArray<CGameMenu *> m_aVisitedMenus;
-
-    // [Cecil] Amount of visited menus with no regard for the rest of the stack after it
-    INDEX m_ctVisitedMenus;
+    // [Cecil] The currently active menu among the ones attached to the menu manager as child nodes
+    // Each time a new menu is changed to, it's added to this manager as a tail node and referenced
+    // by this pointer. When going back to the previous menu, the pointer moves to the previous neighbor
+    // of the current menu instead of removing the tail menu, in case it's still needed for rendering or
+    // processing purposes.
+    // If it changes to a new menu after that, all nodes in the chain after m_pCurrentMenu are destroyed
+    // to allow the new menu to be added as the new tail, which also goes right after the current one.
+    CGameMenu *m_pCurrentMenu;
 
     // Thumbnail for showing in the menu
     CTextureObject m_toThumbnail;
@@ -194,32 +191,6 @@ class CMenuManager {
     CFontData m_fdBig;
     CFontData m_fdMedium;
     CFontData m_fdTitle;
-
-    // Menu instances
-    CConfirmMenu gmConfirmMenu;
-    CMainMenu gmMainMenu;
-    CInGameMenu gmInGameMenu;
-    CSinglePlayerMenu gmSinglePlayerMenu;
-    CSinglePlayerNewMenu gmSinglePlayerNewMenu;
-    CLevelsMenu gmLevelsMenu;
-    CVarMenu gmVarMenu;
-    CPlayerProfileMenu gmPlayerProfile;
-    CControlsMenu gmControls;
-    CLoadSaveMenu gmLoadSaveMenu;
-    CHighScoreMenu gmHighScoreMenu;
-    CCustomizeKeyboardMenu gmCustomizeKeyboardMenu;
-    CServersMenu gmServersMenu;
-    CCustomizeAxisMenu gmCustomizeAxisMenu;
-    COptionsMenu gmOptionsMenu;
-    CVideoOptionsMenu gmVideoOptionsMenu;
-    CAudioOptionsMenu gmAudioOptionsMenu;
-    CNetworkMenu gmNetworkMenu;
-    CNetworkJoinMenu gmNetworkJoinMenu;
-    CNetworkStartMenu gmNetworkStartMenu;
-    CNetworkOpenMenu gmNetworkOpenMenu;
-    CSplitScreenMenu gmSplitScreenMenu;
-    CSplitStartMenu gmSplitStartMenu;
-    CSelectPlayersMenu gmSelectPlayersMenu;
 
     // [Cecil] Global back button from the global scope
     CMGButton m_mgBack;
@@ -264,69 +235,48 @@ class CMenuManager {
       return (m_bMouseUsedLast && m_pmgUnderCursor == NULL);
     };
 
+    // Clear the gadget under the cursor
+    inline void ClearCurrentGadget(void) {
+      m_pmgUnderCursor = NULL;
+    };
+
     // Get the currently active menu
     inline CGameMenu *GetCurrentMenu(void) {
-      const INDEX ct = GetMenuCount();
-      if (ct == 0) return NULL;
-
-      return m_aVisitedMenus[ct - 1];
+      return m_pCurrentMenu;
     };
 
   private:
-    // Get amount of visited menus in the stack
-    inline INDEX GetMenuStackCount(void) {
-      return m_aVisitedMenus.Count();
-    };
-
-    // Get amount of visited menus
-    inline INDEX GetMenuCount(void) {
-      return m_ctVisitedMenus;
-    };
-
     // Get a visited menu from the stack
     inline CGameMenu *GetMenu(INDEX i) {
-      const INDEX ct = GetMenuStackCount();
-
-      ASSERT(i >= 0 && i < ct);
-      if (i < 0 || i >= ct) return NULL;
-
-      return m_aVisitedMenus[i];
+      return (CGameMenu *)GetNode(i);
     };
 
     // Push a new menu on top, making it the current one
     inline void PushMenu(CGameMenu *pgm) {
-      // Pop all the menus after the current amount
-      PopMenusUntil(GetMenuCount() - 1);
+      // Pop all the menus after the current one
+      PopMenusUntil(m_pCurrentMenu);
 
-      m_aVisitedMenus.Add(pgm);
-      m_ctVisitedMenus = GetMenuStackCount();
+      AddTail(pgm);
+      m_pCurrentMenu = pgm;
     };
 
     // Pop the current menu from top, making the previous menu the current one
     inline void PopMenu(void) {
-      ASSERT(GetMenuCount() > 0);
-      if (GetMenuCount() <= 0) return;
+      ASSERT(m_pCurrentMenu != NULL);
 
       // Instead of actually popping here, it's done via PopMenusUntil() when appropriate
-      m_ctVisitedMenus--;
+      if (m_pCurrentMenu != NULL) {
+        m_pCurrentMenu = (CGameMenu *)m_pCurrentMenu->GetPrev();
+      }
     };
 
     // Pop the menus from top until a specific one
-    inline void PopMenusUntil(INDEX i) {
-      if (i >= 0) {
-        m_aVisitedMenus.PopUntil(i);
-      } else {
-        m_aVisitedMenus.PopAll();
-      }
-
-      // Preserve current amount, unless the new amount is lower
-      m_ctVisitedMenus = Min(m_ctVisitedMenus, GetMenuStackCount());
-    };
+    void PopMenusUntil(CGameMenu *pMenu);
 
     // Pop all visited menus
     inline void ClearVisitedMenus(void) {
-      m_aVisitedMenus.PopAll();
-      m_ctVisitedMenus = 0;
+      // Don't actually pop and delete any menus here as they might still be processed
+      m_pCurrentMenu = NULL;
     };
 
     // Automaticaly manage input enable/disable toggling
@@ -384,8 +334,8 @@ class CMenuManager {
     // Go to the previous menu or back to the game
     static void MenuGoToParent(void);
 
-    // Configure the "back" button for a specific menu
-    void FixupBackButton(CGameMenu *pgm);
+    // Configure the "back" button for the current menu
+    void FixupBackButton(void);
 };
 
 // [Cecil] Declared here

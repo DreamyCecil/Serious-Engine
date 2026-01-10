@@ -125,6 +125,9 @@ void CServersMenu::Think(void)
 }
 
 // [Cecil] Change to the menu
-void CServersMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmServersMenu);
+void CServersMenu::ChangeTo(BOOL bInternet) {
+  CServersMenu *pgm = new CServersMenu;
+  pgm->Initialize_t();
+  pgm->m_bInternet = bInternet;
+  _pGUIM->ChangeToMenu(pgm);
 };

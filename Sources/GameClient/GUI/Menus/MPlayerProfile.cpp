@@ -139,19 +139,7 @@ static BOOL LSLoadPlayerModel(CGameMenu *pgm, const CTString &fnm) {
 
 static void StartPlayerModelLoadMenu(CMenuGadget *pmg) {
   CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pmg->GetParentMenu();
-
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("CHOOSE MODEL"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
-  gmCurrent.gm_fnmDirectory = CTString("Models\\Player\\");
-  gmCurrent.gm_fnmSelected = gmProfile.gm_strLastAppearance;
-  gmCurrent.gm_fnmExt = CTString(".amc");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadPlayerModel;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToFiles(TRANS("CHOOSE MODEL"), LSSORT_FILEUP, TRUE, "Models\\Player\\", ".amc", gmProfile.gm_strLastAppearance, "", &LSLoadPlayerModel);
 };
 
 #define ADD_SELECT_PLAYER_MG( index, mg, mgprev, mgnext, me)\
@@ -434,7 +422,9 @@ void CPlayerProfileMenu::OnEnd(void) {
 
 // [Cecil] Change to the menu
 void CPlayerProfileMenu::ChangeTo(INDEX *piProfile, BOOL bSinglePlayer) {
-  _pGUIM->gmPlayerProfile.gm_piCurrentPlayer = piProfile;
-  _pGUIM->gmPlayerProfile.gm_bFromSinglePlayer = bSinglePlayer;
-  _pGUIM->ChangeToMenu(&_pGUIM->gmPlayerProfile);
+  CPlayerProfileMenu *pgm = new CPlayerProfileMenu;
+  pgm->Initialize_t();
+  pgm->gm_piCurrentPlayer = piProfile;
+  pgm->gm_bFromSinglePlayer = bSinglePlayer;
+  _pGUIM->ChangeToMenu(pgm);
 };

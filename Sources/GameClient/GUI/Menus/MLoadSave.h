@@ -87,8 +87,22 @@ public:
   virtual void OnEnd(void);
   void FillListItems(void);
 
-  // [Cecil] Change to the menu
-  static void ChangeTo(void);
+  // [Cecil] Change to a generic list of files
+  static void ChangeToFiles(const CTString &strTitle, ELSSortType eSorting, BOOL bThumbnails,
+    const CTString &strDir, const CTString &strExt, const CTString &strSelected, const CTString &strNotes,
+    CLoadSaveMenu::FAfterChoosing pCallback);
+
+  // [Cecil] Change to a list of demos
+  static void ChangeToDemos(BOOL bRecord, ELSSortType eSorting,
+    const CTString &strSaveDes, CLoadSaveMenu::FAfterChoosing pCallback);
+
+  // [Cecil] Change to saving a game
+  static void ChangeToSave(ELSSortType eSorting, const CTString &strDir, const CTString &strBase,
+    const CTString &strSaveDes, const CTString &strNotes, CLoadSaveMenu::FAfterChoosing pCallback);
+
+  // [Cecil] Change to loading a game
+  static void ChangeToLoad(BOOL bQuick, ELSSortType eSorting, const CTString &strDir,
+    const CTString &strNotes, CLoadSaveMenu::FAfterChoosing pCallback);
 };
 
 #endif  /* include-once check. */

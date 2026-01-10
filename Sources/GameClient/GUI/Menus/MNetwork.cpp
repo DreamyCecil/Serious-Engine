@@ -40,48 +40,21 @@ static void StartNetworkLoadGame(void) {
 BOOL LSLoadNetwork(CGameMenu *pgm, const CTString &fnm) {
   // call local players menu
   _fnGameToLoad = fnm;
-
-  CSelectPlayersMenu &gmCurrent = _pGUIM->gmSelectPlayersMenu;
-  gmCurrent.gm_bAllowDedicated = FALSE;
-  gmCurrent.gm_bAllowObserving = TRUE;
-  gmCurrent.gm_mgStart.mg_pCallbackFunction = &StartNetworkLoadGame;
-  CSelectPlayersMenu::ChangeTo();
+  CSelectPlayersMenu::ChangeTo(FALSE, TRUE, &StartNetworkLoadGame);
   return TRUE;
 };
 
 void StartNetworkQuickLoadMenu(void) {
   _gmMenuGameMode = GM_NETWORK;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("QUICK LOAD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\Quick\\", TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadNetwork;
-  extern void SetQuickLoadNotes(void);
-  SetQuickLoadNotes();
-  CLoadSaveMenu::ChangeTo();
+  extern CTString GetQuickLoadNotes(void);
+  CLoadSaveMenu::ChangeToLoad(TRUE, LSSORT_FILEDN, "SaveGame\\Network\\Quick\\", GetQuickLoadNotes(), &LSLoadNetwork);
 };
 
 void StartNetworkLoadMenu(void) {
   _gmMenuGameMode = GM_NETWORK;
 
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD"));
-  gmCurrent.gm_bAllowThumbnails = TRUE;
-  gmCurrent.gm_iSortType = LSSORT_FILEDN;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = TRUE;
-  gmCurrent.gm_fnmDirectory = ExpandPath::ToUser("SaveGame\\Network\\", TRUE); // [Cecil] From user data in a mod
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".sav");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadNetwork;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToLoad(FALSE, LSSORT_FILEDN, "SaveGame\\Network\\", "", &LSLoadNetwork);
 };
 
 void CNetworkMenu::Initialize_t(void)
@@ -130,5 +103,7 @@ void CNetworkMenu::Initialize_t(void)
 
 // [Cecil] Change to the menu
 void CNetworkMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmNetworkMenu);
+  CGameMenu *pgm = new CNetworkMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

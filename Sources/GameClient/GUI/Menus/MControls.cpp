@@ -44,20 +44,9 @@ static BOOL LSLoadControls(CGameMenu *pgm, const CTString &fnm) {
 };
 
 static void StartControlsLoadMenu(void) {
-  CLoadSaveMenu &gmCurrent = _pGUIM->gmLoadSaveMenu;
-  gmCurrent.gm_mgTitle.SetText(TRANS("LOAD CONTROLS"));
-  gmCurrent.gm_bAllowThumbnails = FALSE;
-  gmCurrent.gm_iSortType = LSSORT_FILEUP;
-  gmCurrent.gm_bSave = FALSE;
-  gmCurrent.gm_bManage = FALSE;
   // [Cecil] NOTE: It needs to list controls presets from the main directory but it will still
   // load user controls from the user data directory when selected (see LSLoadControls() function)
-  gmCurrent.gm_fnmDirectory = CTString("Controls\\");
-  gmCurrent.gm_fnmSelected = CTString("");
-  gmCurrent.gm_fnmExt = CTString(".ctl");
-  gmCurrent.gm_pAfterFileChosen = &LSLoadControls;
-  gmCurrent.gm_mgNotes.SetText("");
-  CLoadSaveMenu::ChangeTo();
+  CLoadSaveMenu::ChangeToFiles(TRANS("LOAD CONTROLS"), LSSORT_FILEUP, FALSE, "Controls\\", ".ctl", "", "", &LSLoadControls);
 }
 
 void CControlsMenu::Initialize_t(void)
@@ -218,5 +207,7 @@ void CControlsMenu::ApplyActionSettings(void)
 
 // [Cecil] Change to the menu
 void CControlsMenu::ChangeTo(void) {
-  _pGUIM->ChangeToMenu(&_pGUIM->gmControls);
+  CGameMenu *pgm = new CControlsMenu;
+  pgm->Initialize_t();
+  _pGUIM->ChangeToMenu(pgm);
 };

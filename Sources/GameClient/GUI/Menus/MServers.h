@@ -54,7 +54,7 @@ public:
   void Think(void);
 
   // [Cecil] Change to the menu
-  static void ChangeTo(void);
+  static void ChangeTo(BOOL bInternet);
 };
 
 #endif  /* include-once check. */

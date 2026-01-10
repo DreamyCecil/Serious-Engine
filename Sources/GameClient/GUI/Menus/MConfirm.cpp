@@ -25,7 +25,9 @@ static void ConfirmYes(CMenuGadget *pmg) {
     gmConfirm.gm_pConfirmedYes();
   }
 
-  gmConfirm.EndMenu();
+  // [Cecil] Delete the submenu
+  _pGUIM->ClearCurrentGadget();
+  delete &gmConfirm;
 };
 
 static void ConfirmNo(CMenuGadget *pmg) {
@@ -35,7 +37,9 @@ static void ConfirmNo(CMenuGadget *pmg) {
     gmConfirm.gm_pConfirmedNo();
   }
 
-  gmConfirm.EndMenu();
+  // [Cecil] Delete the submenu
+  _pGUIM->ClearCurrentGadget();
+  delete &gmConfirm;
 };
 
 void CConfirmMenu::Initialize_t(void)
@@ -118,19 +122,20 @@ BOOL CConfirmMenu::OnKeyDown(PressedMenuButton pmb)
 // [Cecil] Change to the menu
 void CConfirmMenu::ChangeTo(const CTString &strLabel, FConfirm pFuncYes, FConfirm pFuncNo, BOOL bBigLabel)
 {
-  CConfirmMenu &gm = _pGUIM->gmConfirmMenu;
+  CConfirmMenu *pgm = new CConfirmMenu;
+  pgm->Initialize_t();
 
-  gm.gm_pConfirmedYes = pFuncYes;
-  gm.gm_pConfirmedNo = pFuncNo;
-  gm.gm_mgConfirmLabel.SetText(strLabel);
+  pgm->gm_pConfirmedYes = pFuncYes;
+  pgm->gm_pConfirmedNo = pFuncNo;
+  pgm->gm_mgConfirmLabel.SetText(strLabel);
 
   if (bBigLabel) {
-    gm.BeLarge();
+    pgm->BeLarge();
   } else {
-    gm.BeSmall();
+    pgm->BeSmall();
   }
 
   // Attach to the current menu
-  _pGUIM->GetCurrentMenu()->AddChild(&gm);
-  gm.StartMenu();
+  _pGUIM->GetCurrentMenu()->AddChild(pgm);
+  pgm->StartMenu();
 };
