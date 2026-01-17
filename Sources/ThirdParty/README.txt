@@ -4,7 +4,7 @@ Additional Visual Studio project files for building specific submodules are incl
 
 Current module versions:
 
-ECC - 1.1.1
+ECC - 1.1.2
 glew - 2.1.0
 libogg - 1.3.5
 libvorbis - 1.3.7

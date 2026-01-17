@@ -3,7 +3,7 @@ if ($args.Count -ne 3) {
   Write-Host 'Please provide 3 arguments for the script:
 1. Output source file, e.g. "ShaderFunctions.inl"
 2. Project name the entities belong to, e.g. "Shaders"
-3. Directory with *_tables.h files, e.g. "Sources/Shaders"'
+3. Directory with *.cpp files, e.g. "Sources/Shaders"'
 
   exit 1
 }
