@@ -66,9 +66,6 @@ GFXColor *_pcolVtxColors = NULL;    // pointer to vertex color array (points to 
 static CStaticStackArray<GFXVertex4>  _vModifyVertices;
 static CStaticStackArray<GFXTexCoord> _uvUVMapForModify;
 
-// [Cecil] Texture wrapping set by the shader
-static GfxWrap _aTexWrapping[2] = { GFX_REPEAT, GFX_REPEAT };
-
 // Begin shader using
 void shaBegin(CAnyProjection3D &aprProjection,CShader *pShader)
 {
@@ -163,9 +160,6 @@ void shaDoFogPass(void)
     // render fog pass
     _pGfx->GetInterface()->DrawElements(_ctIndices, _paIndices);
   }
-
-  // [Cecil] Restore texture wrapping set by the shader
-  _pGfx->GetInterface()->SetTextureWrapping(_aTexWrapping[0], _aTexWrapping[1]);
 }
 
 // Modify color for fog
@@ -732,10 +726,6 @@ void shaDepthFunc(GfxComp eComp)
 // Set texture wrapping 
 void shaSetTextureWrapping( enum GfxWrap eWrapU, enum GfxWrap eWrapV)
 {
-  // [Cecil] Remember shader's texture wrapping
-  _aTexWrapping[0] = eWrapU;
-  _aTexWrapping[1] = eWrapV;
-
   _pGfx->GetInterface()->SetTextureWrapping(eWrapU, eWrapV);
 }
 
