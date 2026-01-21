@@ -139,7 +139,9 @@ void shaDoFogPass(void)
     _pGfx->GetInterface()->SetTextureWrapping(GFX_CLAMP, GFX_CLAMP);
     _pGfx->GetInterface()->SetTexture(_fog_ulTexture, _fog_tpLocal);
     _pGfx->GetInterface()->SetTexCoordArray(_paFogUVMap, FALSE);
-    _pGfx->GetInterface()->SetConstantColor(_fog_fp.fp_colColor);
+    // [Cecil] Adjust fog color
+    const COLOR colF = AdjustColor(_fog_fp.fp_colColor, _slTexHueShift, _slTexSaturation);
+    _pGfx->GetInterface()->SetConstantColor(colF);
     _pGfx->GetInterface()->BlendFunc(GFX_SRC_ALPHA, GFX_INV_SRC_ALPHA);
     _pGfx->GetInterface()->EnableBlend();
     // render fog pass
@@ -416,8 +418,9 @@ void shaSetLightDirection(const FLOAT3D &vLightDir)
 // Set light color
 void shaSetLightColor(COLOR colAmbient, COLOR colLight)
 {
-  _colAmbient = colAmbient;
-  _colLight = colLight;
+  // [Cecil] Adjust light colors
+  _colAmbient = AdjustColor(colAmbient, _slShdHueShift, _slShdSaturation);
+  _colLight   = AdjustColor(colLight,   _slShdHueShift, _slShdSaturation);
 }
 
 // Set object to view matrix
