@@ -103,7 +103,7 @@ void LoadLevelsList(void)
 
   // list the levels directory with subdirs
   CDynamicStackArray<CTFileName> afnmDir;
-  MakeDirList(afnmDir, CTString("Levels\\"), "*.wld", DLI_RECURSIVE | DLI_SEARCHGAMES);
+  MakeDirList(afnmDir, CTString("Levels\\"), "*.wld", DLI_RECURSIVE | DLI_SEARCHGAMES | DLI_SEARCHEXTRA);
 
   // for each file in the directory
   for (INDEX i=0; i<afnmDir.Count(); i++) {
