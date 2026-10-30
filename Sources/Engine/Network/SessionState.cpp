@@ -399,7 +399,7 @@ void CSessionState::Start_AtClient_t(INDEX ctLocalPlayers)     // throw char *
 
     // make response
     CNetworkMessage nmCRC(MSG_REP_CRCCHECK);
-    nmCRC<<CRCT_MakeCRCForFiles_t(strmMessage)<<ses_iLastProcessedSequence;
+    nmCRC << ICRCTable::MakeCRCForFiles_t(strmMessage) << ses_iLastProcessedSequence;
     _pNetwork->SendToServerReliable(nmCRC);
   }
 

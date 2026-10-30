@@ -173,6 +173,9 @@ extern CPacketBufferStats _pbsRecv;
 
 BOOL _bPredictionActive = FALSE;
 
+// [Cecil] FIXME: This class is responsible for setting ICRCTable::_bGatherCRCs back to FALSE whenever needed
+// because the engine NEVER explicitly does it by itself! If this class is missed even a *single* time in any
+// place that toggles ICRCTable::_bGatherCRCs to TRUE, it may forever remain as TRUE!
 class CGatherCRC {
 public:
   BOOL bOld;
@@ -181,10 +184,10 @@ public:
 };
 
 CGatherCRC::CGatherCRC() {
-  bOld = CRCT_bGatherCRCs;
+  bOld = ICRCTable::_bGatherCRCs;
 }
 CGatherCRC::~CGatherCRC() {
-  CRCT_bGatherCRCs = bOld;
+  ICRCTable::_bGatherCRCs = bOld;
 }
 
 // precache control
@@ -2488,9 +2491,9 @@ void CNetworkLibrary::GameInactive(void)
 
 void CNetworkLibrary::InitCRCGather(void)
 {
-  CRCT_ResetActiveList();
-  CRCT_bGatherCRCs = TRUE;
-  CRCT_AddFile_t(CTString("Classes\\Player.ecl"));
+  ICRCTable::ResetActiveList();
+  ICRCTable::_bGatherCRCs = TRUE;
+  ICRCTable::AddFile_t(CTString("Classes\\Player.ecl"));
 }
 
 // finish gathering of file CRCs to CRC table (call for server only!)
@@ -2499,7 +2502,7 @@ void CNetworkLibrary::FinishCRCGather(void)
   try {
     // make the list
     CTMemoryStream strmCRC;
-    CRCT_MakeFileList_t(strmCRC);
+    ICRCTable::MakeFileList_t(strmCRC);
 
     // remember it
     strmCRC.SetPos_t(0);
@@ -2509,7 +2512,7 @@ void CNetworkLibrary::FinishCRCGather(void)
 
     // remember its CRC
     strmCRC.SetPos_t(0);
-    ga_ulCRC = CRCT_MakeCRCForFiles_t(strmCRC);
+    ga_ulCRC = ICRCTable::MakeCRCForFiles_t(strmCRC);
 
   } catch (char *strError) {
     CPrintF(TRANS("Warning, cannot get CRCs: %s\n"), strError);

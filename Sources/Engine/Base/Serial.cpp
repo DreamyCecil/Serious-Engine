@@ -158,5 +158,5 @@ INDEX CSerial::GetUsedCount(void)
 void CSerial::AddToCRCTable(void)
 {
   // add the file to CRC table
-  CRCT_AddFile_t(ser_FileName);
+  ICRCTable::AddFile_t(ser_FileName);
 }

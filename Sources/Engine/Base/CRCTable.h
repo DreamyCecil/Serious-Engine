@@ -19,23 +19,33 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #pragma once
 #endif
 
-extern BOOL CRCT_bGatherCRCs;  // set while gathering CRCs of all loaded files
+// [Cecil] Reworked interface for dealing with CRC tables
+namespace ICRCTable {
+
+extern BOOL _bGatherCRCs;  // set while gathering CRCs of all loaded files
 
 // init CRC table
-void CRCT_Init(void);
-// add one file to active list
-void CRCT_AddFile_t(const CTFileName &fnm, ULONG ulCRC=0);// throw char *
-// check if a file is added
-BOOL CRCT_IsFileAdded(const CTFileName &fnm);
-// reset all files to not active
-void CRCT_ResetActiveList(void);
-// free all memory used by the crc cache
-void CRCT_Clear(void);
-// dump list of all active files to the stream
-void CRCT_MakeFileList_t(CTStream &strmFiles);  // throw char *
-// dump checksums for all files from the list
-ULONG CRCT_MakeCRCForFiles_t(CTStream &strmFiles);  // throw char *
+void Init(void);
 
+// add one file to active list
+void AddFile_t(const CTFileName &fnm); // throw char *
+
+// check if a file is added
+BOOL IsFileAdded(const CTFileName &fnm);
+
+// reset all files to not active
+void ResetActiveList(void);
+
+// free all memory used by the crc cache
+void Clear(void);
+
+// dump list of all active files to the stream
+void MakeFileList_t(CTStream &strmFiles); // throw char *
+
+// dump checksums for all files from the list
+ULONG MakeCRCForFiles_t(CTStream &strmFiles); // throw char *
+
+};
 
 #endif  /* include-once check. */
 

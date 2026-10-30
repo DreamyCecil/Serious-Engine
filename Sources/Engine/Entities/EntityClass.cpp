@@ -289,15 +289,15 @@ void CEntityClass::AddToCRCTable(void)
 {
   const CTFileName &fnm = GetName();
   // if already added
-  if (CRCT_IsFileAdded(fnm)) {
+  if (ICRCTable::IsFileAdded(fnm)) {
     // do nothing
     return;
   }
 
   // add the file itself
-  CRCT_AddFile_t(fnm);
+  ICRCTable::AddFile_t(fnm);
   // add its DLL
-  CRCT_AddFile_t(ec_fnmClassDLL);
+  ICRCTable::AddFile_t(ec_fnmClassDLL);
 }
 
 /* Get pointer to entity property from its name. */

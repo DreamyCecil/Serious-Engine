@@ -335,7 +335,7 @@ void SE_InitEngine(const SeriousEngineSetup &engineSetup) {
   _pInput = new CInput;
   _pNetwork = new CNetworkLibrary;
 
-  CRCT_Init();
+  ICRCTable::Init();
 
   _strEngineBuild.PrintF( TRANS("SeriousEngine Build: %d.%d"), _SE_BUILD_MAJOR, _SE_BUILD_MINOR);
 
@@ -611,7 +611,7 @@ void SE_EndEngine(void) {
   delete _pModelConfigStock;  _pModelConfigStock = NULL; // [Cecil]
 
   // free all memory used by the crc cache
-  CRCT_Clear();
+  ICRCTable::Clear();
 
   // shutdown
   delete _pInput;    _pInput   = NULL;  
