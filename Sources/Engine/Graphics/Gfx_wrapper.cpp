@@ -91,8 +91,32 @@ extern void OGL_CheckError(void)
 {
 #ifndef NDEBUG
   const GfxAPIType eAPI = _pGfx->GetCurrentAPI();
-  if( eAPI==GAT_OGL) ASSERT( pglGetError()==GL_NO_ERROR);
-  else ASSERT( eAPI==GAT_NONE);
+
+  // [Cecil] Detailed report with the OpenGL error code
+  if (eAPI == GAT_OGL) {
+    GLenum eErrorCode = pglGetError();
+
+    if (eErrorCode != GL_NO_ERROR) {
+      CTString strError = "OpenGL error code: ";
+
+      switch (eErrorCode) {
+        case GL_NO_ERROR:                      strError += "GL_NO_ERROR"; break;
+        case GL_INVALID_ENUM:                  strError += "GL_INVALID_ENUM"; break;
+        case GL_INVALID_VALUE:                 strError += "GL_INVALID_VALUE"; break;
+        case GL_INVALID_OPERATION:             strError += "GL_INVALID_OPERATION"; break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION: strError += "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+        case GL_OUT_OF_MEMORY:                 strError += "GL_OUT_OF_MEMORY"; break;
+        case GL_STACK_UNDERFLOW:               strError += "GL_STACK_UNDERFLOW"; break;
+        case GL_STACK_OVERFLOW:                strError += "GL_STACK_OVERFLOW"; break;
+        default: strError += CTString(0, "unknown %d (0x%X)", eErrorCode, eErrorCode);
+      }
+
+      ASSERTALWAYS(strError.ConstData());
+    }
+
+  } else {
+    ASSERT(eAPI == GAT_NONE);
+  }
 #endif
 }
 
