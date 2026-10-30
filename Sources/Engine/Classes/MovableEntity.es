@@ -1127,8 +1127,12 @@ functions:
     SendEvent(eBlock);
   }
 
-  BOOL IsStandingOnPolygon(CBrushPolygon *pbpo)
-  {
+  BOOL IsStandingOnPolygon(CBrushPolygon *pbpo) {
+    // [Cecil] Can't stand on nothing
+    if (pbpo == NULL) {
+      return FALSE;
+    }
+
     _pfPhysicsProfile.StartTimer(CPhysicsProfile::PTI_ISSTANDINGONPOLYGON);
     // if cannot optimize for standing on handle
     if (en_pciCollisionInfo==NULL 
@@ -1138,8 +1142,9 @@ functions:
       return FALSE;
     }
 
+    // [Cecil] 'en_pbpoStandOn' -> 'pbpo'
     // if polygon is not valid for standing on any more (brush turned off collision)
-    if (en_pbpoStandOn->bpo_pbscSector->bsc_pbmBrushMip->bm_pbrBrush->br_penEntity->en_ulCollisionFlags==0) {
+    if (pbpo->bpo_pbscSector->bsc_pbmBrushMip->bm_pbrBrush->br_penEntity->en_ulCollisionFlags==0) {
       // not standing on polygon
       return FALSE;
     }
@@ -2255,7 +2260,7 @@ out:;
     } else {
       BOOL bGravityAlongPolygon = TRUE;
       // if there is no fixed remembered stand-on polygon or the entity is not on it anymore
-      if (en_pbpoStandOn==NULL || !IsStandingOnPolygon(en_pbpoStandOn) || bReferenceMovingInY
+      if (!IsStandingOnPolygon(en_pbpoStandOn) || bReferenceMovingInY
         || (en_ulPhysicsFlags&EPF_ORIENTINGTOGRAVITY)) {
         // clear the stand on polygon
         en_pbpoStandOn=NULL;
