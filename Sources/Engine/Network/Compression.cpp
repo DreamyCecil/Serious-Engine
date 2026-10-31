@@ -33,7 +33,7 @@ void CCompressor::UnpackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // 
   strmSrc>>slSizeDst;
   strmSrc>>slSizeSrc;
   // get the buffer of source stream
-  UBYTE *pubSrc = strmSrc.mstrm_pubBuffer + strmSrc.mstrm_slLocation;
+  UBYTE *pubSrc = strmSrc.strm_pubCurrentPos;
   // allocate buffer for decompression
   UBYTE *pubDst = (UBYTE*)AllocMemory(slSizeDst);
   // compress there
@@ -54,7 +54,7 @@ void CCompressor::UnpackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // 
 void CCompressor::PackStream_t(CTMemoryStream &strmSrc, CTStream &strmDst) // throw char *
 {
   // get the buffer of source stream
-  UBYTE *pubSrc = strmSrc.mstrm_pubBuffer + strmSrc.mstrm_slLocation;
+  UBYTE *pubSrc = strmSrc.strm_pubCurrentPos;
   SLONG slSizeSrc = strmSrc.GetStreamSize();
   // allocate buffer for compression
   SLONG slSizeDst = NeededDestinationSize(slSizeSrc);

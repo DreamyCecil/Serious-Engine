@@ -1035,7 +1035,7 @@ void CServer::SendSessionStateData(INDEX iClient)
     CTStream *pstrmState; CTMemoryStream *pstrmDelta;
     extern INDEX net_bDumpConnectionInfo;
 
-    UBYTE* pubSrc = NULL;
+    // [Cecil] FIXME: Make this work. Requires CTFileStream data to be writable into a memory buffer
     /*if (net_bDumpConnectionInfo) {
       strmStateFile.Create_t(ExpandPath::ToTemp("State.bin"));
       strmDeltaFile.Create_t(ExpandPath::ToTemp("Delta.bin"));
@@ -1045,10 +1045,8 @@ void CServer::SendSessionStateData(INDEX iClient)
       pstrmState = &strmStateMem;
       pstrmDelta = &strmDeltaMem;
 
-      pubSrc = strmDeltaMem.mstrm_pubBuffer + strmDeltaMem.mstrm_slLocation;
+      ASSERT(strmDeltaMem.strm_pubCurrentPos != NULL);
     //}
-
-    ASSERT(pubSrc != NULL);
 
     // write main session state
     _pNetwork->ga_sesSessionState.Write_t(pstrmState);
