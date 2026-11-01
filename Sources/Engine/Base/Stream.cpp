@@ -371,7 +371,7 @@ void CTStream::Read_t(void *pvBuffer, size_t slSize) {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
 
   ASSERT(pvBuffer != NULL && slSize > 0 && IsReadable()); // Sanity checks
-  ASSERTMSG(strm_pubCurrentPos + slSize >= strm_pubBufferEnd, "Trying to read past the end!");
+  ASSERTMSG(strm_pubCurrentPos + slSize <= strm_pubBufferEnd, "Trying to read past the end!");
 
   // Read data from the buffer and advance it
   memcpy(pvBuffer, strm_pubCurrentPos, slSize);
@@ -382,7 +382,7 @@ void CTStream::Write_t(const void *pvBuffer, size_t slSize) {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
 
   ASSERT(pvBuffer != NULL && slSize > 0 && IsWriteable()); // Sanity checks
-  ASSERTMSG(strm_pubCurrentPos + slSize >= strm_pubBufferEnd, "Trying to write past the end");
+  ASSERTMSG(strm_pubCurrentPos + slSize <= strm_pubBufferEnd, "Trying to write past the end");
 
   // Write data to the buffer and advance it
   memcpy(strm_pubCurrentPos, pvBuffer, slSize);
