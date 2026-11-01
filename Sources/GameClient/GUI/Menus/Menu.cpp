@@ -707,12 +707,13 @@ void CMenuManager::FixupBackButton(void) {
   BOOL bResume = FALSE;
   BOOL bHasBack = FALSE;
 
-  // [Cecil] Show the back button if there are any menus to return to
-  if (pgm->GetPrev() != NULL) {
+  // [Cecil] Show the back button if there are any menus to return to or it's non-root
+  if (pgm->GetPrev() != NULL || !pgm->IsRootMenu()) {
     bHasBack = TRUE;
+  }
 
-  // [Cecil] Otherwise at least show the resume button if in a game
-  } else if (_gmRunningGameMode != GM_NONE) {
+  // [Cecil] Show the resume button if there's no menu to return to during a game
+  if (pgm->GetPrev() == NULL && _gmRunningGameMode != GM_NONE) {
     bResume = TRUE;
   }
 
