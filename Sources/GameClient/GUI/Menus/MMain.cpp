@@ -52,7 +52,7 @@ static void ModLoadYes(void) {
   _fnmModToLoad = _fnmModSelected;
 };
 
-static BOOL LSLoadMod(CGameMenu *pgm, const CTString &fnm) {
+static BOOL LSLoadMod(CGameMenu *, const CTString &fnm) {
   _fnmModSelected = fnm;
   CConfirmMenu::ChangeTo(TRANS("LOAD THIS MOD?"), &ModLoadYes, NULL, TRUE);
   return TRUE;

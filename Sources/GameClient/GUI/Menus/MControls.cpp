@@ -21,7 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern CTFileName _fnmControlsToCustomize;
 
-static BOOL LSLoadControls(CGameMenu *pgm, const CTString &fnm) {
+static BOOL LSLoadControls(CGameMenu *, const CTString &fnm) {
   try {
     // [Cecil] Load user controls from user data
     CTString fnmControls = fnm;

@@ -24,7 +24,7 @@ static void StartChangePlayerMenuFromOptions(void) {
   CPlayerProfileMenu::ChangeTo(&_pGame->gm_iSinglePlayer, FALSE);
 };
 
-static BOOL LSLoadNetSettings(CGameMenu *pgm, const CTString &fnm) {
+static BOOL LSLoadNetSettings(CGameMenu *, const CTString &fnm) {
   sam_strNetworkSettings = fnm;
   CTString strCmd;
   strCmd.PrintF("include \"%s\"", sam_strNetworkSettings.ConstData());
@@ -50,7 +50,7 @@ void StartNetworkSettingsMenu(void) {
   CLoadSaveMenu::ChangeToFiles(TRANS("CONNECTION SETTINGS"), LSSORT_FILEUP, FALSE, "Scripts\\NetSettings\\", ".ini", sam_strNetworkSettings, strNotes, &LSLoadNetSettings);
 };
 
-static BOOL LSLoadCustom(CGameMenu *pgm, const CTString &fnm) {
+static BOOL LSLoadCustom(CGameMenu *, const CTString &fnm) {
   CVarMenu::ChangeTo(TRANS("ADVANCED OPTIONS"), fnm);
   return TRUE;
 };
@@ -59,7 +59,7 @@ static void StartCustomLoadMenu(void) {
   CLoadSaveMenu::ChangeToFiles(TRANS("ADVANCED OPTIONS"), LSSORT_NAMEUP, FALSE, "Scripts\\CustomOptions\\", ".cfg", "", "", &LSLoadCustom);
 };
 
-static BOOL LSLoadAddon(CGameMenu *pgm, const CTString &fnm) {
+static BOOL LSLoadAddon(CGameMenu *, const CTString &fnm) {
   extern INDEX _iAddonExecState;
   extern CTFileName _fnmAddonToExec;
   _iAddonExecState = 1;

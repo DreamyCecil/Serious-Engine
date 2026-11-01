@@ -126,7 +126,10 @@ static void PPOnPlayerSelect(CMenuGadget *pmg) {
 };
 
 static BOOL LSLoadPlayerModel(CGameMenu *pgm, const CTString &fnm) {
-  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pgm;
+  // [Cecil] FIXME: Unreliable menu retrieval
+  CGameMenu *pgmPrev = (CGameMenu *)pgm->GetPrev();
+  ASSERT(pgmPrev != NULL && pgmPrev->GetName() == CTString("PlayerProfile"));
+  CPlayerProfileMenu &gmProfile = *(CPlayerProfileMenu *)pgmPrev;
 
   CPlayerCharacter &pc = _pGame->gm_apcPlayers[*gmProfile.gm_piCurrentPlayer];
   CPlayerSettings *pps = (CPlayerSettings *)pc.pc_aubAppearance;
