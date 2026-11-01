@@ -1099,29 +1099,6 @@ void CMenuManager::Process(void) {
         }
       }
 
-      // Quick-open specific menus
-      {
-        if (sam_bMenuSave) {
-          sam_bMenuSave = FALSE;
-          StartMenus(E_QCKM_SAVE);
-        }
-
-        if (sam_bMenuLoad) {
-          sam_bMenuLoad = FALSE;
-          StartMenus(E_QCKM_LOAD);
-        }
-
-        if (sam_bMenuControls) {
-          sam_bMenuControls = FALSE;
-          StartMenus(E_QCKM_CONTROLS);
-        }
-
-        if (sam_bMenuHiScore) {
-          sam_bMenuHiScore = FALSE;
-          StartMenus(E_QCKM_HIGHSCORE);
-        }
-      }
-
       // Pass key and mouse messages to the menu if it's active with no input on
       if (m_bMenuActive && !_pInput->IsInputEnabled()) {
         if (event.type == WM_KEYDOWN) {
@@ -1211,6 +1188,29 @@ void CMenuManager::Process(void) {
 
     // do the main game loop and render screen
     DoGame();
+
+    // [Cecil] Moved here from the message loop to quick-open specific menus just once after the game loop
+    {
+      if (sam_bMenuSave) {
+        sam_bMenuSave = FALSE;
+        StartMenus(E_QCKM_SAVE);
+      }
+
+      if (sam_bMenuLoad) {
+        sam_bMenuLoad = FALSE;
+        StartMenus(E_QCKM_LOAD);
+      }
+
+      if (sam_bMenuControls) {
+        sam_bMenuControls = FALSE;
+        StartMenus(E_QCKM_CONTROLS);
+      }
+
+      if (sam_bMenuHiScore) {
+        sam_bMenuHiScore = FALSE;
+        StartMenus(E_QCKM_HIGHSCORE);
+      }
+    }
 
     // limit current frame rate if neeeded
     LimitFrameRate();
