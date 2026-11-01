@@ -521,12 +521,12 @@ const CEntry *FindEntry(const CTString &fnm) {
   return NULL;
 };
 
-// Open a ZIP file for reading
-Handle_t Open_t(const CTString &fnm) {
-  // Find an entry with this filename
-  const CEntry *pze = FindEntry(fnm);
-
-  if (pze == NULL) ThrowF_t(TRANS("File not found: %s"), fnm.ConstData());
+// Open a ZIP file for reading from an entry
+Handle_t Open_t(const CEntry *pze) {
+  if (pze == NULL) {
+    ASSERTALWAYS("Trying to open an empty ZIP entry");
+    ThrowF_t(TRANS("File not found"));
+  }
 
   // Try to find an unused handle in the stack
   Handle_t pHandle = NULL;

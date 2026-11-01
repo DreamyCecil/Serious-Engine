@@ -95,8 +95,8 @@ const CEntry *GetEntry(Handle_t pHandle);
 // Try to find ZIP file entry by its file path
 const CEntry *FindEntry(const CTString &fnm);
 
-// Open a ZIP file for reading
-Handle_t Open_t(const CTString &fnm);
+// Open a ZIP file for reading from an entry
+Handle_t Open_t(const CEntry *pze);
 
 // Read a block of data from a ZIP file
 void ReadBlock_t(Handle_t pHandle, UBYTE *pub, SLONG slStart, SLONG slLen);

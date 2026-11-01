@@ -449,9 +449,9 @@ struct ENGINE_API ExpandPath {
   };
 
   EType eType; // Inside which directory this path is
-  BOOL bArchive; // Marks a file from an archive
+  const IZip::CEntry *pZipEntry; // File from an archive
 
-  __forceinline ExpandPath() : eType(E_PATH_INVALID), bArchive(FALSE) {};
+  __forceinline ExpandPath() : eType(E_PATH_INVALID), pZipEntry(NULL) {};
 
   // Get a potential substitution for some file
   static BOOL GetSub(CTString &fnm);
@@ -476,6 +476,11 @@ struct ENGINE_API ExpandPath {
   // Like ForReading() but without any substitutions for non-existing files
   // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
   BOOL ForReading_internal(const CTString &fnmFile, ULONG ulFlags);
+
+  // Checks whether the expanded path points to a file inside an archive
+  inline BOOL IsFromArchive(void) {
+    return pZipEntry != NULL;
+  };
 };
 
 // [Cecil] Turned paths into constant references to internal variables

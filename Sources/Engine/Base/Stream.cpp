@@ -1089,9 +1089,9 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
   if (om == OM_READ) {
     if (expath.ForReading(fnm, ulFlags)) {
       // if zip file
-      if (expath.bArchive) {
+      if (expath.IsFromArchive()) {
         // open from zip
-        fstrm_pZipHandle = IZip::Open_t(expath.fnmExpanded);
+        fstrm_pZipHandle = IZip::Open_t(expath.pZipEntry);
         SLONG slFileSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
 
         // [Cecil] Create a dummy buffer if it's an empty file
@@ -1523,7 +1523,7 @@ SLONG GetFileTimeStamp_t(const CTFileName &fnm)
   const BOOL bExists = expath.ForReading(fnm, 0);
 
   // Only existing physical files
-  if (!bExists || expath.bArchive) {
+  if (!bExists || expath.IsFromArchive()) {
     return FALSE;
   }
 
@@ -1561,7 +1561,7 @@ BOOL IsFileReadOnly(const CTFileName &fnm)
   const BOOL bExists = expath.ForReading(fnm, 0);
 
   // Only existing physical files
-  if (!bExists || expath.bArchive) {
+  if (!bExists || expath.IsFromArchive()) {
     return FALSE;
   }
 
@@ -1666,7 +1666,7 @@ BOOL ExpandPath::ForWriting(const CTString &fnmFile, ULONG ulFlags) {
   const BOOL bCanCheckLists = !(ulFlags & DLI_IGNORELISTS);
 
   // Can never write into archives
-  bArchive = FALSE;
+  pZipEntry = NULL;
 
   // Already an absolute path
   if (fnmNormalized.IsAbsolute()) {
@@ -1722,18 +1722,16 @@ BOOL ExpandPath::ForReading_internal(const CTString &fnmFile, ULONG ulFlags) {
   const BOOL bSearchGames = !!(ulFlags & DLI_SEARCHGAMES);
 
   // Search for the file in archives
-  const IZip::CEntry *pZipEntry = IZip::FindEntry(fnmFile);
-  const BOOL bFoundInZip = (pZipEntry != NULL);
+  pZipEntry = IZip::FindEntry(fnmFile);
 
   // Already an absolute path
   if (fnmFile.IsAbsolute()) {
     ASSERT(!bOnlyMod); // Don't use the mod flag for absolute paths
 
     fnmExpanded = fnmFile;
-    bArchive = bFoundInZip;
 
     // Path to some file inside an archive
-    if (bArchive) {
+    if (IsFromArchive()) {
       // Ignore archives
       if (bIgnoreGRO) {
         return FALSE;
@@ -1762,7 +1760,7 @@ BOOL ExpandPath::ForReading_internal(const CTString &fnmFile, ULONG ulFlags) {
   #define RETURN_FILE_AT(_Dir, _Type) { \
     if (CheckFileAt(_Dir, fnmFile, fnmExpanded)) { \
       eType = _Type; \
-      bArchive = FALSE; \
+      pZipEntry = NULL; \
       return TRUE; \
     } \
   }
@@ -1773,12 +1771,11 @@ BOOL ExpandPath::ForReading_internal(const CTString &fnmFile, ULONG ulFlags) {
     if (!bOnlyGRO && !fil_bPreferZips) RETURN_FILE_AT(_fnmApplicationPath + _fnmMod, E_PATH_MOD);
 
     // If allowing archives, use the found file
-    if (!bIgnoreGRO && bFoundInZip && pZipEntry->IsMod()) {
+    if (!bIgnoreGRO && IsFromArchive() && pZipEntry->IsMod()) {
       // [Cecil] Instead of returning relative path to the file inside any archive, return full path to the file
       // inside its archive, for example: "C:\\SeriousSam\\Mods\\MyMod\\Content.gro\\MyModels\\Model01.mdl"
       fnmExpanded = pZipEntry->GetArchive() + "\\" + fnmFile;
       eType = E_PATH_MOD;
-      bArchive = TRUE;
       return TRUE;
     }
 
@@ -1795,12 +1792,11 @@ BOOL ExpandPath::ForReading_internal(const CTString &fnmFile, ULONG ulFlags) {
   if (!bOnlyGRO && !fil_bPreferZips) RETURN_FILE_AT(_fnmApplicationPath, E_PATH_GAME);
 
   // If allowing archives, use the found file
-  if (!bIgnoreGRO && bFoundInZip) {
+  if (!bIgnoreGRO && IsFromArchive()) {
     // [Cecil] Instead of returning relative path to the file inside any archive, return full path to the file
     // inside its archive, for example: "C:\\SeriousSam\\MyAssets.gro\\MyModels\\Model01.mdl"
     fnmExpanded = pZipEntry->GetArchive() + "\\" + fnmFile;
     eType = E_PATH_GAME;
-    bArchive = TRUE;
     return TRUE;
   }
 

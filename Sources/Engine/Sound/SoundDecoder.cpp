@@ -288,6 +288,8 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
   // [Cecil] Ignore sounds on a dedicated server
   if (_SE1Setup.IsAppServer()) return;
 
+  // [Cecil] FIXME: The sound file has already been located and opened and now the decoder tries
+  // opening it again for its own handle, which does an additional expensive lookup of the ZIP entry
   ExpandPath expath;
 
   // [Cecil] No file to read
@@ -313,9 +315,9 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
 
     try {
       // if in zip
-      if (expath.bArchive) {
+      if (expath.IsFromArchive()) {
         // open it
-        pZipHandle = IZip::Open_t(fnmExpanded);
+        pZipHandle = IZip::Open_t(expath.pZipEntry);
         const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
 
         // if compressed
@@ -413,9 +415,9 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
 
     try {
       // if in zip
-      if (expath.bArchive) {
+      if (expath.IsFromArchive()) {
         // open it
-        pZipHandle = IZip::Open_t(fnmExpanded);
+        pZipHandle = IZip::Open_t(expath.pZipEntry);
         const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
 
         // if compressed
