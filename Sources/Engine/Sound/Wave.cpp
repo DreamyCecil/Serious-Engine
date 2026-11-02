@@ -192,6 +192,15 @@ WAVEFORMATEX PCMWaveInput::LoadInfo_t(CTStream *pCstrInput)
 
   /* Read Wave */
   pCstrInput->ExpectID_t(CChunkID("WAVE"));     // ID "WAVE"
+
+  // [Cecil] Skip occasional junk
+  if (pCstrInput->PeekID_t() == CChunkID("JUNK")) {
+    pCstrInput->Seek_t(4, CTStream::SD_CUR);
+    SLONG slJunkLength;
+    (*pCstrInput) >> slJunkLength;
+    pCstrInput->Seek_t(slJunkLength, CTStream::SD_CUR);
+  }
+
   pCstrInput->ExpectID_t(CChunkID("fmt "));     // ID "fmt "
   // read Format Chunk length
   SLONG  slFmtLength;
