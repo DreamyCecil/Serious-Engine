@@ -79,7 +79,7 @@ public:
   ALhandle mpeg_hMainFile; // mainfile handle if using subfile
   ALhandle mpeg_hFile;     // file handle
   ALhandle mpeg_hDecoder;  // the decoder handle
-  FLOAT mpeg_fSecondsLen;  // length of sound in seconds
+  SECOND mpeg_fSecondsLen;  // length of sound in seconds
   WAVEFORMATEX mpeg_wfeFormat; // format of sound
 };
 
@@ -105,6 +105,7 @@ public:
   SLONG ogg_slSize;     // size of ogg in the file (!=filesize for oggs in zip)
   OggVorbis_File *ogg_vfVorbisFile;  // the decoder file
   WAVEFORMATEX ogg_wfeFormat; // format of sound
+  SECOND ogg_fSecondsLen; // [Cecil] Audio length in seconds
 };
 
 // define vorbis function pointers
@@ -163,10 +164,9 @@ static size_t ogg_read_func  (void *ptr, size_t size, size_t nmemb, void *dataso
 
 static int ogg_seek_func  (void *datasource, ogg_int64_t offset, int whence)
 {
-  return -1;
-/*  !!!! seeking is evil with vorbisfile 1.0RC2
+  // [Cecil] Seeking is no longer evil 25 years later (hopefully)
   CDecodeData_OGG *pogg = (CDecodeData_OGG *)datasource;
-  SLONG slCurrentPos = ftell(pogg->ogg_fFile)-pogg->ogg_slOffset;
+
   if (whence==SEEK_CUR) {
     return fseek(pogg->ogg_fFile, offset, SEEK_CUR);
   } else if (whence==SEEK_END) {
@@ -175,7 +175,6 @@ static int ogg_seek_func  (void *datasource, ogg_int64_t offset, int whence)
     ASSERT(whence==SEEK_SET);
     return fseek(pogg->ogg_fFile, pogg->ogg_slOffset+offset, SEEK_SET);
   }
-*/
 }
 
 static int ogg_close_func (void *datasource)
@@ -188,11 +187,9 @@ static int ogg_close_func (void *datasource)
 }
 static long ogg_tell_func  (void *datasource)
 {
-  return -1;
-/*  !!!! seeking is evil with vorbisfile 1.0RC2
+  // [Cecil] Seeking is no longer evil 25 years later (hopefully)
   CDecodeData_OGG *pogg = (CDecodeData_OGG *)datasource;
-  ftell(pogg->ogg_fFile)-pogg->ogg_slOffset;
-  */
+  return ftell(pogg->ogg_fFile) - pogg->ogg_slOffset;
 }
 
 static ov_callbacks ovcCallbacks = {
@@ -317,8 +314,8 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       // if in zip
       if (expath.IsFromArchive()) {
         // open it
-        pZipHandle = IZip::Open_t(expath.pZipEntry);
-        const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
+        const IZip::CEntry *pEntry = expath.pZipEntry;
+        pZipHandle = IZip::Open_t(pEntry);
 
         // if compressed
         if (!pEntry->IsStored()) {
@@ -379,6 +376,7 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       }
     
       sdc_pogg->ogg_wfeFormat = form;
+      sdc_pogg->ogg_fSecondsLen = pov_time_total(sdc_pogg->ogg_vfVorbisFile, -1); // [Cecil] Remember audio length
 
     } catch (char*strError) {
       CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnm.ConstData(), strError);
@@ -417,8 +415,8 @@ CSoundDecoder::CSoundDecoder(const CTFileName &fnm)
       // if in zip
       if (expath.IsFromArchive()) {
         // open it
-        pZipHandle = IZip::Open_t(expath.pZipEntry);
-        const IZip::CEntry *pEntry = IZip::GetEntry(pZipHandle);
+        const IZip::CEntry *pEntry = expath.pZipEntry;
+        pZipHandle = IZip::Open_t(pEntry);
 
         // if compressed
         if (!pEntry->IsStored()) {
@@ -563,6 +561,17 @@ void CSoundDecoder::GetFormat(WAVEFORMATEX &wfe)
     NOTHING;
   }
 }
+
+// [Cecil] Retrieive length of the decoded audio in seconds
+DOUBLE CSoundDecoder::GetSoundLength(void) {
+  if (sdc_pmpeg != NULL) {
+    return sdc_pmpeg->mpeg_fSecondsLen;
+  } else if (sdc_pogg != NULL) {
+    return sdc_pogg->ogg_fSecondsLen;
+  }
+
+  return 0;
+};
 
 // decode a block of bytes
 INDEX CSoundDecoder::Decode(void *pvDestBuffer, INDEX ctBytesToDecode)

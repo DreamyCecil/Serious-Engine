@@ -22,3 +22,4 @@ DLLFUNCTION( OVF, int, ov_open_callbacks, (void *datasource, OggVorbis_File *vf,
 DLLFUNCTION( OVF, long, ov_read, (OggVorbis_File *vf,char *buffer,int length, int bigendianp,int word,int sgned,int *bitstream), 28,0);
 DLLFUNCTION( OVF, vorbis_info *, ov_info, (OggVorbis_File *vf,int link), 8,0);
 DLLFUNCTION( OVF, int, ov_time_seek, (OggVorbis_File *vf, double pos), 12,0);
+DLLFUNCTION( OVF, double, ov_time_total, (OggVorbis_File *vf,int i), 8,0);

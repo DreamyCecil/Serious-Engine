@@ -34,6 +34,9 @@ public:
   // get wave format of the decoder (invaid if it is not open)
   void GetFormat(WAVEFORMATEX &wfe);
 
+  // [Cecil] Retrieive length of the decoded audio in seconds
+  SECOND GetSoundLength(void);
+
   // decode a block of bytes
   INDEX Decode(void *pvDestBuffer, INDEX ctBytesToDecode);
   // reset decoder to start of sample

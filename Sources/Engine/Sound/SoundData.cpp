@@ -109,16 +109,8 @@ void CSoundData::ClearBuffer(void)
 // Get Sound Length in seconds
 SECOND CSoundData::GetSecondsLength(void)
 {
-  // if not encoded
-  if (!IsEncoded()) {
-    // len is read from wave
-    return sd_dSecondsLength;
-  // if encoded
-  } else {
-    // implement this!!!!
-    ASSERT(FALSE);
-    return 0;
-  }
+  // [Cecil] Now valid for encoded audio as well
+  return sd_dSecondsLength;
 }
 
 
@@ -143,6 +135,9 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
     CSoundDecoder *pmpd = new CSoundDecoder(fnm);
     if (pmpd->IsOpen()) {
       pmpd->GetFormat(sd_wfeFormat);
+
+      // [Cecil] Remember length of the decoded sound
+      sd_dSecondsLength = pmpd->GetSoundLength();
     }
     delete pmpd;
     // mark that this is streaming encoded file
