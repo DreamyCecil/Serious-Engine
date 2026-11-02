@@ -22,10 +22,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Serial.h>
 
-#define SDF_ENCODED       (1UL<<0) // this is ogg or mpx compressed file
-#define SDF_STREAMING     (1UL<<1) // streaming from disk
-
 class ENGINE_API CSoundData : public CSerial {
+public:
+  enum ESoundDataFlags {
+    // Indicates an encoded sound that requires a dedicated decoder to play. When CSoundData is marked with this flag,
+    // CSoundObject will create and utilize its own decoder for the specified file using CSoundObject::so_psdcDecoder
+    SDF_ENCODED   = (1UL << 0),
+
+    // Indicates that a sound is being played directly from disk instead of being fully loaded into memory
+    // Currently, only used by encoded files, if needed. Regular unencoded sounds don't support streaming
+    SDF_STREAMING = (1UL << 1),
+  };
+
 public:
   // Sound Mode Aware class (notify class when sound mode change)
   CListNode   sd_Node;        // for linking in list
@@ -62,6 +70,15 @@ public:
   CSoundData();
   // Destructor
   ~CSoundData();
+
+  inline bool IsEncoded(void) {
+    return !!(sd_ulFlags & SDF_ENCODED);
+  };
+
+  inline bool IsStreamed(void) {
+    return !!(sd_ulFlags & SDF_STREAMING);
+  };
+
   // get sound length in seconds
   SECOND GetSecondsLength(void);
   // read sound from file and convert it to the current sound format

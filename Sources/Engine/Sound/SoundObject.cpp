@@ -260,9 +260,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
   }
 
   // if the sound data is encoded
-  if (so_pCsdLink->sd_ulFlags&SDF_ENCODED) {
+  if (so_pCsdLink->IsEncoded()) {
     // create decoder
-    if (so_pCsdLink->sd_ulFlags&SDF_STREAMING) {
+    if (so_pCsdLink->IsStreamed()) {
       so_psdcDecoder = new CSoundDecoder(so_pCsdLink->GetName());
     } else {
       ASSERT(FALSE);  // nonstreaming not supported anymore

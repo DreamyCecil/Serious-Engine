@@ -466,12 +466,14 @@ CSoundLibrary::SoundFormat CSoundLibrary::SetFormat( CSoundLibrary::SoundFormat 
   lhToReload.MoveList(sl_ClhAwareList);
   {FORDELETELIST( CSoundData, sd_Node, lhToReload, itCsdContinue) {
     CSoundData &sd = *itCsdContinue;
-    if( !(sd.sd_ulFlags&SDF_ENCODED)) {
+
+    if (!sd.IsEncoded()) {
       sd.Reload();
     } else {
       sd.sd_Node.Remove();
       sl_ClhAwareList.AddTail(sd.sd_Node);
     }
+
     sd.ResumePlayingObjects();
   }}
 

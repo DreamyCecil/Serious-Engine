@@ -110,7 +110,7 @@ void CSoundData::ClearBuffer(void)
 SECOND CSoundData::GetSecondsLength(void)
 {
   // if not encoded
-  if (!(sd_ulFlags&SDF_ENCODED) ) {
+  if (!IsEncoded()) {
     // len is read from wave
     return sd_dSecondsLength;
   // if encoded

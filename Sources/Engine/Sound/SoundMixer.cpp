@@ -719,7 +719,7 @@ void MixSound( CSoundObject *pso)
   psd = pso->so_pCsdLink;
 
   // if don't mix encoded sounds if they are not opened properly
-  if((psd->sd_ulFlags&SDF_ENCODED) && 
+  if (psd->IsEncoded() && 
     (pso->so_psdcDecoder==NULL || !pso->so_psdcDecoder->IsOpen()) ) {
     return;
   }
@@ -770,7 +770,7 @@ void MixSound( CSoundObject *pso)
   if( fLeftVolume<0.001f && fRightVolume<0.001f && fNewLeftVolume<0.001f && fNewRightVolume<0.001f)
   {
     // if this is not an encoded sound
-    if( !(psd->sd_ulFlags&SDF_ENCODED) ) {
+    if (!psd->IsEncoded()) {
       // skip mixing of this sample segment
       fOfsDelta = fStep*slMixerBufferSampleRate*fSecondsToMix;
       pso->so_fLeftOffset  += fOfsDelta;
@@ -832,7 +832,7 @@ void MixSound( CSoundObject *pso)
 
   // if this is an encoded sound
   BOOL bDecodingFinished = FALSE;
-  if( psd->sd_ulFlags&SDF_ENCODED) {
+  if (psd->IsEncoded()) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
     // decode some samples from it
     SLONG slWantedBytes  = FloatToInt(slMixerBufferSize*fStep*pso->so_pCsdLink->sd_wfeFormat.nChannels) *2;
@@ -935,7 +935,7 @@ void MixSound( CSoundObject *pso)
   }
 
   // if encoded sound
-  if( psd->sd_ulFlags&SDF_ENCODED) {
+  if (psd->IsEncoded()) {
     // ignore mixing finished flag, but use decoding finished flag
     bEndOfSound = bDecodingFinished;
   }
