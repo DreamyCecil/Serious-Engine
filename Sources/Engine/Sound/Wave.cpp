@@ -232,6 +232,14 @@ WAVEFORMATEX PCMWaveInput::LoadInfo_t(CTStream *pCstrInput)
     pCstrInput->Seek_t(-CID_LENGTH, CTStream::SD_CUR);
   }
 
+  // [Cecil] Skip "LIST" chunk
+  if (pCstrInput->PeekID_t() == CChunkID("LIST")) {
+    pCstrInput->Seek_t(4, CTStream::SD_CUR);
+    SLONG slJunkLength;
+    (*pCstrInput) >> slJunkLength;
+    pCstrInput->Seek_t(slJunkLength, CTStream::SD_CUR);
+  }
+
   /* Read Data */
   pCstrInput->ExpectID_t(CChunkID("data"));      // ID "data"
   // read Data length (in bytes)
