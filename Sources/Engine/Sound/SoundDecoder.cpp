@@ -147,8 +147,7 @@ static size_t ogg_read_func  (void *ptr, size_t size, size_t nmemb, void *dataso
 
 static int ogg_seek_func  (void *datasource, ogg_int64_t offset, int whence)
 {
-  return -1;
-/*  !!!! seeking is evil with vorbisfile 1.0RC2
+  // [Cecil] Seeking is no longer evil in the new version
   CDecodeData_OGG *pogg = (CDecodeData_OGG *)datasource;
   SLONG slCurrentPos = ftell(pogg->ogg_fFile)-pogg->ogg_slOffset;
   if (whence==SEEK_CUR) {
@@ -159,30 +158,19 @@ static int ogg_seek_func  (void *datasource, ogg_int64_t offset, int whence)
     ASSERT(whence==SEEK_SET);
     return fseek(pogg->ogg_fFile, pogg->ogg_slOffset+offset, SEEK_SET);
   }
-*/
 }
 
-static int ogg_close_func (void *datasource)
-{
-  return 0;
-/* !!!! closing is evil with vorbisfile 1.0RC2
-  CDecodeData_OGG *pogg = (CDecodeData_OGG *)datasource;
-  fclose(pogg->ogg_fFile);
-  */
-}
 static long ogg_tell_func  (void *datasource)
 {
-  return -1;
-/*  !!!! seeking is evil with vorbisfile 1.0RC2
+  // [Cecil] Seeking is no longer evil in the new version
   CDecodeData_OGG *pogg = (CDecodeData_OGG *)datasource;
-  ftell(pogg->ogg_fFile)-pogg->ogg_slOffset;
-  */
+  return ftell(pogg->ogg_fFile)-pogg->ogg_slOffset;
 }
 
 static ov_callbacks ovcCallbacks = {
   ogg_read_func,
   ogg_seek_func,
-  ogg_close_func,
+  NULL,
   ogg_tell_func,
 };
 
@@ -517,10 +505,8 @@ void CSoundDecoder::Reset(void)
   if (sdc_pmpeg!=NULL) {
     palDecSeekAbs(sdc_pmpeg->mpeg_hDecoder, 0.0f);
   } else if (sdc_pogg!=NULL) {
-    // so instead, we reinit
-    pov_clear(sdc_pogg->ogg_vfVorbisFile);
-    fseek(sdc_pogg->ogg_fFile, sdc_pogg->ogg_slOffset, SEEK_SET);
-    pov_open_callbacks(sdc_pogg, sdc_pogg->ogg_vfVorbisFile, NULL, 0, ovcCallbacks);
+    // [Cecil] Don't need to reopen libvorbis anymore, simply seek
+    pov_time_seek(sdc_pogg->ogg_vfVorbisFile, 0.0);
   }
 }
 
@@ -548,35 +534,72 @@ void CSoundDecoder::GetFormat(WAVEFORMATEX &wfe)
   }
 }
 
-// decode a block of bytes
-INDEX CSoundDecoder::Decode(void *pvDestBuffer, INDEX ctBytesToDecode)
+// [Cecil] Decode a block of samples instead of bytes
+ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctSamplesToDecode, const WAVEFORMATEX &wfeReference)
 {
+  // [Cecil] TEMP: Read extra samples for the interpolation at the end
+  const ULONG ctExtraSamples = 2;
+  if (ctExtraSamples > 0) ctSamplesToDecode += ctExtraSamples;
+
+  // [Cecil] Determine amount of bytes from the format
+  const ULONG ctBytesToDecode = ctSamplesToDecode * wfeReference.nBlockAlign;
+
   // if ogg
   if (sdc_pogg!=NULL && sdc_pogg->ogg_vfVorbisFile!=0) {
     // decode ogg
-    static int iCurrrentSection = -1; // we don't care about this
     char *pch = (char *)pvDestBuffer;
-    INDEX ctDecoded = 0;
-    while (ctDecoded<ctBytesToDecode) {
-      long iRes = pov_read(sdc_pogg->ogg_vfVorbisFile, pch, ctBytesToDecode-ctDecoded, 
-        0, 2, 1, &iCurrrentSection);
+    ULONG ctDecodedBytes = 0;
+
+    while (ctDecodedBytes < ctBytesToDecode) {
+      long iRes = pov_read(sdc_pogg->ogg_vfVorbisFile, pch, ctBytesToDecode - ctDecodedBytes, 0, 2, 1, NULL);
+
       if (iRes<=0) {
-        return ctDecoded;
+        ASSERT(ctDecodedBytes % wfeReference.nBlockAlign == 0); // [Cecil] Must align to the sample size
+        ULONG ctDecodedSamples = ctDecodedBytes / wfeReference.nBlockAlign;
+
+        // [Cecil] TEMP: Rewind extra samples
+        if (ctExtraSamples > 0) {
+          ogg_int64_t iCurrent = pov_pcm_tell(sdc_pogg->ogg_vfVorbisFile);
+          pov_pcm_seek(sdc_pogg->ogg_vfVorbisFile, iCurrent - ctExtraSamples);
+          ctDecodedSamples -= ctExtraSamples;
+        }
+        return ctDecodedSamples;
       }
-      ctDecoded+=iRes;
-      pch+=iRes;
+
+      ASSERT(iRes % wfeReference.nBlockAlign == 0); // [Cecil] Must align to the sample size
+      ctDecodedBytes += iRes;
+      pch += iRes;
     }
-    return ctDecoded;
+
+    ASSERT(ctDecodedBytes % wfeReference.nBlockAlign == 0); // [Cecil] Must align to the sample size
+    ULONG ctDecodedSamples = ctDecodedBytes / wfeReference.nBlockAlign;
+
+    // [Cecil] TEMP: Rewind extra samples
+    if (ctExtraSamples > 0) {
+      ogg_int64_t iCurrent = pov_pcm_tell(sdc_pogg->ogg_vfVorbisFile);
+      pov_pcm_seek(sdc_pogg->ogg_vfVorbisFile, iCurrent - ctExtraSamples);
+      ctDecodedSamples -= ctExtraSamples;
+    }
+    return ctDecodedSamples;
 
   // if mpeg
   } else if (sdc_pmpeg!=NULL && sdc_pmpeg->mpeg_hDecoder!=0) {
     // decode mpeg
-    return palRead(sdc_pmpeg->mpeg_hDecoder, pvDestBuffer, ctBytesToDecode);
+    ALsize ctDecodedBytes = palRead(sdc_pmpeg->mpeg_hDecoder, pvDestBuffer, ctBytesToDecode);
+
+    ASSERT(ctDecodedBytes % wfeReference.nBlockAlign == 0); // [Cecil] Must align to the sample size
+    ULONG ctDecodedSamples = ctDecodedBytes / wfeReference.nBlockAlign;
+
+    // [Cecil] FIXME: No methods to rewind extra samples
+    if (ctExtraSamples > 0) {
+      ASSERT(FALSE);
+    }
+    return ctDecodedSamples;
 
   // if no decoder
   } else {
     // play all zeroes
     memset(pvDestBuffer, 0, ctBytesToDecode);
-    return ctBytesToDecode;
+    return ctSamplesToDecode;
   }
 }

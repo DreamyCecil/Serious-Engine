@@ -580,8 +580,9 @@ void MixSound( CSoundObject *pso)
   }
 
   // check for supported sound formats
-  const SLONG slChannels = pso->so_pCsdLink->sd_wfeFormat.nChannels;
-  const SLONG slBytes    = pso->so_pCsdLink->sd_wfeFormat.wBitsPerSample/8;
+  const WAVEFORMATEX &wfe = psd->sd_wfeFormat;
+  const SLONG slChannels = wfe.nChannels;
+  const SLONG slBytes    = wfe.wBitsPerSample/8;
   // unsupported sound formats will be ignored
   if( (slChannels!=1 && slChannels!=2) || slBytes!=2) return;
 
@@ -598,7 +599,7 @@ void MixSound( CSoundObject *pso)
 
   // reach sound data and determine sound step, sound buffer and buffer size
   pswSrcBuffer = psd->sd_pswBuffer;
-  fSoundSampleRate = psd->sd_wfeFormat.nSamplesPerSec * pso->so_sp.sp_fPitchShift;
+  fSoundSampleRate = wfe.nSamplesPerSec * pso->so_sp.sp_fPitchShift;
   fStep      = fSoundSampleRate * f1oMixerBufferSampleRate;
   fLeftStep  = fStep;
   fRightStep = fStep;
@@ -689,34 +690,60 @@ void MixSound( CSoundObject *pso)
   BOOL bDecodingFinished = FALSE;
   if( psd->sd_ulFlags&SDF_ENCODED) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
-    // decode some samples from it
-    SLONG slWantedBytes  = FloatToInt(slMixerBufferSize*fStep*pso->so_pCsdLink->sd_wfeFormat.nChannels) *2;
-    void *pvDecodeBuffer = _pSound->sl_pswDecodeBuffer;
-    ASSERT(slWantedBytes<=_pSound->sl_slDecodeBufferSize);
-    SLONG slDecodedBytes = pso->so_psdcDecoder->Decode( pvDecodeBuffer, slWantedBytes);
-    ASSERT(slDecodedBytes<=slWantedBytes);
+
+    // [Cecil] Instead of decoding bytes, decode samples (slMixerBufferSize is already in samples, not bytes)
+
+    // [Cecil] NOTE: Step size with pitch
+    //ULONG ulWantedSamples = FloatToInt(slMixerBufferSize * fStep);
+
+    // [Cecil] NOTE: Step size without pitch, then ceiled pitch
+    ULONG ulWantedSamples = FloatToInt(slMixerBufferSize * wfe.nSamplesPerSec * f1oMixerBufferSampleRate);
+    ulWantedSamples = (SLONG)ceil(ulWantedSamples * pso->so_sp.sp_fPitchShift);
+
+    // [Cecil] Must be at least one sample but below buffer size in samples
+    ASSERT(ulWantedSamples > 0);
+    ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_slDecodeBufferSize / wfe.nBlockAlign);
+    UBYTE *pDecodeBuffer = (UBYTE *)_pSound->sl_pswDecodeBuffer; // [Cecil] NOTE: UBYTE* for easy offsetting
+
+    // [Cecil] Decode some samples instead of bytes
+    ULONG ulDecodedSamples = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedSamples, wfe);
+    ASSERT(ulDecodedSamples <= ulWantedSamples);
+
     // if it has a loop
     if (!bNotLoop) {
       // if sound is shorter than buffer
-      while(slDecodedBytes<slWantedBytes) {
+      while (ulDecodedSamples < ulWantedSamples) {
         // decode it again and again
         pso->so_psdcDecoder->Reset();
-        slDecodedBytes += pso->so_psdcDecoder->Decode( ((UBYTE*)pvDecodeBuffer) +
-                                                       slDecodedBytes, slWantedBytes-slDecodedBytes);
+
+        // [Cecil] Decode more samples instead of bytes after already decoded samples
+        const ULONG ulBytesOffset = ulDecodedSamples * wfe.nBlockAlign;
+        ulDecodedSamples += pso->so_psdcDecoder->Decode(pDecodeBuffer + ulBytesOffset, ulWantedSamples - ulDecodedSamples, wfe);
       }
-    // if it doesn't have a loop
-    } else {
-      // if sound is shorter than buffer
-      if(slDecodedBytes<slWantedBytes) {
-        // mark that it is finished
-        bDecodingFinished = TRUE;
-      }
+
+    // if it doesn't have a loop and the sound is shorter than buffer
+    } else if (ulDecodedSamples < ulWantedSamples) {
+      // mark that it is finished
+      bDecodingFinished = TRUE;
     }
+
+    // [Cecil] NOTE: The lines below are now copying the first sample based on sample size instead of
+    // just "ULONG", which assumed that it was two "SWORD" samples (one per channel).
+    //
+    // But it's also now disabled because it would simply copy the first sample of the currently decoded
+    // chunk to the end of the currently decoded chunk instead of copying the beginning of the entire
+    // sound to the end of the entire sound, like with CSoundData::sd_pswBuffer.
+    //
+    // Check 'ctExtraSamples' constant in CSoundDecoder::Decode() that's responsible for reading extra
+    // samples at the end for linear interpolation.
+
     // copy first sample to the last one (this is needed for linear interpolation)
-    (ULONG&)(((UBYTE*)pvDecodeBuffer)[slDecodedBytes]) = *(ULONG*)pvDecodeBuffer;
+    //const ULONG ulBytesEnd = ulDecodedSamples * wfe.nBlockAlign;
+    //memcpy(pDecodeBuffer + ulBytesEnd, pDecodeBuffer, wfe.nBlockAlign);
+
     // fix some mixer variables to play temporary decode buffer instead of real sound
-    pswSrcBuffer = (SWORD*)pvDecodeBuffer;
-    slSoundBufferSize = slDecodedBytes>>2;  // convert to samples
+    pswSrcBuffer = (SWORD *)pDecodeBuffer;
+    slSoundBufferSize = ulDecodedSamples; // [Cecil] Buffer size is in samples, so return decoded amount as is
     fLeftOfs  = 0.0f;
     fRightOfs = 0.0f;
     fPhase = 0.0f;

@@ -34,8 +34,9 @@ public:
   // get wave format of the decoder (invaid if it is not open)
   void GetFormat(WAVEFORMATEX &wfe);
 
-  // decode a block of bytes
-  INDEX Decode(void *pvDestBuffer, INDEX ctBytesToDecode);
+  // [Cecil] Decode a block of samples instead of bytes
+  ULONG Decode(void *pvDestBuffer, ULONG ctSamplesToDecode, const WAVEFORMATEX &wfeReference);
+
   // reset decoder to start of sample
   void Reset(void);
 };
