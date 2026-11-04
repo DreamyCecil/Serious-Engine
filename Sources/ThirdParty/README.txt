@@ -8,6 +8,7 @@ ECC - 1.1.2
 glew - 2.1.0
 libogg - 1.3.5
 libvorbis - 1.3.7
+miniaudio - 0.11.26
 OpenAL Soft - 1.24.2
 SDL - 3.2.10
 zlib - 1.1.3
