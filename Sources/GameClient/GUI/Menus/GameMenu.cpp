@@ -330,6 +330,9 @@ void CGameMenu::StartMenu(void) {
   ASSERT(!gm_bActive);
   gm_bActive = true;
 
+  // [Cecil] Reset gadget under the cursor
+  _pGUIM->ClearCurrentGadget();
+
   // Show all menu gadgets by default
   FOREACHNODE(this, CAbstractMenuElement, itme) {
     if (itme->IsMenu()) continue;

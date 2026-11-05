@@ -752,9 +752,6 @@ void CMenuManager::ChangeToMenu(CGameMenu *pgmNewMenu) {
   // auto-clear old thumbnail when going out of menu
   ClearThumbnail();
 
-  // [Cecil] Reset gadget under the cursor
-  ClearCurrentGadget();
-
   // [Cecil] Detach the back button
   m_mgBack.Expunge();
 
