@@ -49,6 +49,9 @@ SLONG CAbstractSoundAPI::CalculateMixerSize(void) {
 
 // Calculate decoder buffer size (only after mixer size)
 SLONG CAbstractSoundAPI::CalculateDecoderSize(SLONG slMixerSize) {
+  // [Cecil] FIXME: Get rid of the 44100 constant and synchronize it with the maximum sample rate supported by the engine.
+  // Also, if sound decoder decodes audio with sample rate higher than 44100, it may write data outside the buffer boundaries!
+
   // Decoder buffer always works at 44khz
   const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
   return slMixerSize * ((44100 + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
@@ -71,6 +74,9 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
 
   // Twice as much because of 32-bit buffer
   m_pslMixerBuffer = (SLONG *)AllocMemory(m_slMixerBufferSize * 2);
+
+  // [Cecil] FIXME: Don't just use 4, do it based on the audio setup
+  // Right now it's 4 because: 16-bit samples * 2 channels (stereo) = 32 bits = 4 bytes per sample
 
   // +4 because of linear interpolation of last samples
   m_pswDecodeBuffer = (SWORD *)AllocMemory(m_slDecodeBufferSize + 4);

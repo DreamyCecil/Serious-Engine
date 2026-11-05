@@ -990,9 +990,6 @@
     <ClInclude Include="Graphics\ViewPort.h">
       <Filter>Header Files\Graphics Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Sound\al_functions.h">
-      <Filter>Header Files\Sound Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Sound\DSound.h">
       <Filter>Header Files\Sound Headers</Filter>
     </ClInclude>
@@ -1304,9 +1301,6 @@
     </ClInclude>
     <ClInclude Include="StdH.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sound\ov_functions.h">
-      <Filter>Header Files\Sound Headers</Filter>
     </ClInclude>
     <ClInclude Include="Base\ByteSwap.h">
       <Filter>Header Files\Base Headers</Filter>

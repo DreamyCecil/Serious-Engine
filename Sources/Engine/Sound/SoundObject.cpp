@@ -263,7 +263,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
   if (so_pCsdLink->IsEncoded()) {
     // create decoder
     if (so_pCsdLink->IsStreamed()) {
-      so_psdcDecoder = new CSoundDecoder(so_pCsdLink->GetName());
+      // [Cecil] Initialize decoder with a separate method
+      so_psdcDecoder = new CSoundDecoder();
+      so_psdcDecoder->Initialize(so_pCsdLink->GetName());
     } else {
       ASSERT(FALSE);  // nonstreaming not supported anymore
     }

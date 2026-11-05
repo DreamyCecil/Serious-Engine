@@ -717,16 +717,17 @@ loopEnd:
 void MixSound( CSoundObject *pso)
 {
   psd = pso->so_pCsdLink;
+  const BOOL bEncoded = psd->IsEncoded();
 
   // if don't mix encoded sounds if they are not opened properly
-  if (psd->IsEncoded() && 
-    (pso->so_psdcDecoder==NULL || !pso->so_psdcDecoder->IsOpen()) ) {
+  if (bEncoded && (pso->so_psdcDecoder == NULL || !pso->so_psdcDecoder->IsOpen())) {
     return;
   }
 
   // check for supported sound formats
-  const SLONG slChannels = pso->so_pCsdLink->sd_wfeFormat.nChannels;
-  const SLONG slBytes    = pso->so_pCsdLink->sd_wfeFormat.wBitsPerSample/8;
+  const WAVEFORMATEX &wfe = psd->sd_wfeFormat;
+  const SLONG slChannels = wfe.nChannels;
+  const SLONG slBytes    = wfe.wBitsPerSample/8;
   // unsupported sound formats will be ignored
   if( (slChannels!=1 && slChannels!=2) || slBytes!=2) return;
 
@@ -743,7 +744,7 @@ void MixSound( CSoundObject *pso)
 
   // reach sound data and determine sound step, sound buffer and buffer size
   pswSrcBuffer = psd->sd_pswBuffer;
-  fSoundSampleRate = psd->sd_wfeFormat.nSamplesPerSec * pso->so_sp.sp_fPitchShift;
+  fSoundSampleRate = wfe.nSamplesPerSec * pso->so_sp.sp_fPitchShift;
   fStep      = fSoundSampleRate * f1oMixerBufferSampleRate;
   fLeftStep  = fStep;
   fRightStep = fStep;
@@ -769,8 +770,12 @@ void MixSound( CSoundObject *pso)
   // if both channel volumes are too low
   if( fLeftVolume<0.001f && fRightVolume<0.001f && fNewLeftVolume<0.001f && fNewRightVolume<0.001f)
   {
+    // [Cecil] NOTE: This code is responsible for completely skipping playback of unencoded sounds if they aren't immediately
+    // audible because those sounds are usually used for momentary sound effects, whereas encoded sounds are used for music and
+    // therefore they simply get paused until they're audible again, at which point they continue playing from the paused point
+
     // if this is not an encoded sound
-    if (!psd->IsEncoded()) {
+    if (!bEncoded) {
       // skip mixing of this sample segment
       fOfsDelta = fStep*slMixerBufferSampleRate*fSecondsToMix;
       pso->so_fLeftOffset  += fOfsDelta;
@@ -778,6 +783,7 @@ void MixSound( CSoundObject *pso)
       const FLOAT fMinOfs = Min( pso->so_fLeftOffset, pso->so_fRightOffset);
       ASSERT( fMinOfs>=0);
       if (fMinOfs < 0) CPrintF("BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, psd->GetName().ConstData());
+
       // if looping
       if (pso->so_slFlags & SOF_LOOP) {
         // adjust offset ptrs inside sound
@@ -785,6 +791,7 @@ void MixSound( CSoundObject *pso)
         while( pso->so_fRightOffset < 0) pso->so_fRightOffset += slSoundBufferSize;
         while( pso->so_fLeftOffset  >= slSoundBufferSize) pso->so_fLeftOffset  -= slSoundBufferSize;
         while( pso->so_fRightOffset >= slSoundBufferSize) pso->so_fRightOffset -= slSoundBufferSize;
+
       // if not looping
       } else {
         // no more playing
@@ -793,6 +800,7 @@ void MixSound( CSoundObject *pso)
         pso->so_sp.sp_fDelay = 0.0f;
       }
     }
+
     // reset last samples
     pso->so_swLastLeftSample  = 0;
     pso->so_swLastRightSample = 0;
@@ -803,6 +811,7 @@ void MixSound( CSoundObject *pso)
     _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_SOUNDSSKIPPED, 1);
     return;
   }
+
   _sfStats.IncrementCounter(CStatForm::SCI_SOUNDSMIXING);
 
   // cache sound object vars
@@ -830,38 +839,45 @@ void MixSound( CSoundObject *pso)
   mmSurroundFactor = 0;
   if( pso->so_slFlags & SOF_SURROUND) mmSurroundFactor = 0x0000FFFF;
 
-  // if this is an encoded sound
   BOOL bDecodingFinished = FALSE;
-  if (psd->IsEncoded()) {
+
+  // If it's encoded audio
+  if (bEncoded) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
-    // decode some samples from it
-    SLONG slWantedBytes  = FloatToInt(slMixerBufferSize*fStep*pso->so_pCsdLink->sd_wfeFormat.nChannels) *2;
-    void *pvDecodeBuffer = _pSound->sl_pInterface->m_pswDecodeBuffer;
-    ASSERT(slWantedBytes<=_pSound->sl_pInterface->m_slDecodeBufferSize);
-    SLONG slDecodedBytes = pso->so_psdcDecoder->Decode( pvDecodeBuffer, slWantedBytes);
-    ASSERT(slDecodedBytes<=slWantedBytes);
-    // if it has a loop
+
+    // Decode some samples from it
+    const ULONG ulSampleSize = wfe.nBlockAlign;
+    const ULONG ulWantedSamples = FloatToInt(slMixerBufferSize * fStep);
+    ASSERT(ulWantedSamples > 0);
+    ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_slDecodeBufferSize / ulSampleSize);
+    UBYTE *pDecodeBuffer = (UBYTE *)_pSound->sl_pInterface->m_pswDecodeBuffer;
+
+    ULONG ulDecodedSamples = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedSamples);
+    ASSERT(ulDecodedSamples <= ulWantedSamples);
+
+    // If it's looped
     if (!bNotLoop) {
-      // if sound is shorter than buffer
-      while(slDecodedBytes<slWantedBytes) {
-        // decode it again and again
+      // Decode the buffer until it decodes enough samples
+      while (ulDecodedSamples < ulWantedSamples) {
         pso->so_psdcDecoder->Reset();
-        slDecodedBytes += pso->so_psdcDecoder->Decode( ((UBYTE*)pvDecodeBuffer) +
-                                                       slDecodedBytes, slWantedBytes-slDecodedBytes);
+
+        const ULONG ulBytesOffset = ulDecodedSamples * ulSampleSize;
+        ulDecodedSamples += pso->so_psdcDecoder->Decode(pDecodeBuffer + ulBytesOffset, ulWantedSamples - ulDecodedSamples);
       }
-    // if it doesn't have a loop
-    } else {
-      // if sound is shorter than buffer
-      if(slDecodedBytes<slWantedBytes) {
-        // mark that it is finished
-        bDecodingFinished = TRUE;
-      }
+
+    // If it's not looped and the decoded samples are less than the buffer
+    } else if (ulDecodedSamples < ulWantedSamples) {
+      // Mark it as finished
+      bDecodingFinished = TRUE;
     }
+
     // copy first sample to the last one (this is needed for linear interpolation)
-    (ULONG&)(((UBYTE*)pvDecodeBuffer)[slDecodedBytes]) = *(ULONG*)pvDecodeBuffer;
+    const ULONG ulBytesEnd = ulDecodedSamples * ulSampleSize;
+    memcpy(pDecodeBuffer + ulBytesEnd, pDecodeBuffer, ulSampleSize);
+
     // fix some mixer variables to play temporary decode buffer instead of real sound
-    pswSrcBuffer = (SWORD*)pvDecodeBuffer;
-    slSoundBufferSize = slDecodedBytes>>2;  // convert to samples
+    pswSrcBuffer = (SWORD *)pDecodeBuffer;
+    slSoundBufferSize = ulDecodedSamples;
     fLeftOfs  = 0.0f;
     fRightOfs = 0.0f;
     fPhase = 0.0f;
@@ -934,9 +950,8 @@ void MixSound( CSoundObject *pso)
     }
   }
 
-  // if encoded sound
-  if (psd->IsEncoded()) {
-    // ignore mixing finished flag, but use decoding finished flag
+  // Use decoding finished flag instead of the mixer flag if it's encoded
+  if (bEncoded) {
     bEndOfSound = bDecodingFinished;
   }
 
