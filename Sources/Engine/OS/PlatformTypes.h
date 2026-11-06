@@ -59,15 +59,15 @@ typedef HINSTANCE HMODULE;
 DECLARE_HANDLE(HDC);
 DECLARE_HANDLE(HGLRC);
 
-// For sound playback using a specific API
+// For setting up audio formats
 typedef struct {
-  SWORD wFormatTag;
-  WORD  nChannels;
+  UWORD wFormatTag;
+  UWORD nChannels;
   DWORD nSamplesPerSec;
-  WORD  wBitsPerSample;
-  WORD  nBlockAlign;
   DWORD nAvgBytesPerSec;
-  WORD  cbSize;
+  UWORD nBlockAlign;
+  UWORD wBitsPerSample;
+  UWORD cbSize;
 } WAVEFORMATEX;
 
 #define WAVE_FORMAT_PCM 0x0001

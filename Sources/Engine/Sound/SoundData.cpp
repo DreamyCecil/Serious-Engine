@@ -165,8 +165,8 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
     sd_dSecondsLength = CpwiLoad.GetSecondsLength();
 
     // if sound library is in lower format convert sound to library format
-    if ((_pSound->sl_SwfeFormat).nSamplesPerSec < sd_wfeFormat.nSamplesPerSec) {
-      sd_wfeFormat.nSamplesPerSec = (_pSound->sl_SwfeFormat).nSamplesPerSec;
+    if (_pSound->sl_SwfeFormat.nSamplesPerSec < sd_wfeFormat.nSamplesPerSec) {
+      sd_wfeFormat.nSamplesPerSec = _pSound->sl_SwfeFormat.nSamplesPerSec;
     }
     // same goes for bits/sample (must be 16)
     sd_wfeFormat.wBitsPerSample = 16;

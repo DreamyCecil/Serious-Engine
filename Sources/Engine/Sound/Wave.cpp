@@ -29,7 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 void PCMWaveInput::CheckWaveFormat_t(WAVEFORMATEX wfeCheck, const char *pcErrorString)
 {
   // check format tag
-  if (wfeCheck.wFormatTag != 1) {
+  if (wfeCheck.wFormatTag != WAVE_FORMAT_PCM) {
     ThrowF_t(TRANS("%s: Invalid format tag, not a PCM Wave file!"), pcErrorString);
   }
   // check bits per sample
