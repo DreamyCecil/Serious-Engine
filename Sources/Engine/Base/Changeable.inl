@@ -24,15 +24,17 @@ TChangeable<bRealTime>::TChangeable(void)
 };
 
 // Mark that something has changed in this object
-template<bool bRealTime> inline
-void TChangeable<bRealTime>::MarkChanged(void)
+template<> inline
+void TChangeable<false>::MarkChanged(void)
 {
-  // [Cecil] Unified logic
-  if (bRealTime) {
-    ch_tckLastChangeTime = _pTimer->GetRealTime();
-  } else {
-    ch_tckLastChangeTime = _pTimer->GetGameTick();
-  }
+  ch_tckLastChangeTime = _pTimer->GetGameTick(); // [Cecil] Not real time
+};
+
+// Mark that something has changed in this object
+template<> inline
+void TChangeable<true>::MarkChanged(void)
+{
+  ch_tckLastChangeTime = _pTimer->GetRealTime(); // [Cecil] Real time
 };
 
 // Test if some updateable object is up to date with this changeable

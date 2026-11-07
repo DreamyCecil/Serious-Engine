@@ -23,15 +23,17 @@ TUpdateable<bRealTime>::TUpdateable(void)
 };
 
 // Mark that the object has been updated
-template<bool bRealTime> inline
-void TUpdateable<bRealTime>::MarkUpdated(void)
+template<> inline
+void TUpdateable<false>::MarkUpdated(void)
 {
-  // [Cecil] Unified logic
-  if (bRealTime) {
-    ud_tckLastUpdateTime = _pTimer->GetRealTime();
-  } else {
-    ud_tckLastUpdateTime = _pTimer->GetGameTick();
-  }
+  ud_tckLastUpdateTime = _pTimer->GetGameTick(); // [Cecil] Not real time
+};
+
+// Mark that the object has been updated
+template<> inline
+void TUpdateable<true>::MarkUpdated(void)
+{
+  ud_tckLastUpdateTime = _pTimer->GetRealTime(); // [Cecil] Real time
 };
 
 // Get time when last updated
