@@ -67,6 +67,7 @@ _CRTIMP _PNH __cdecl _set_new_handler( _PNH );*/
 int NewHandler(size_t size)
 {
   // terminate program
+  ASSERTALWAYS("Not enough memory");
   FatalError(TRANS("Not enough memory (%d bytes needed)!"), size);
   return 0;
 }
@@ -76,6 +77,7 @@ int NewHandler(size_t size)
 void NewHandler(void)
 {
   // terminate program
+  ASSERTALWAYS("Not enough memory");
   FatalError(TRANS("Not enough memory!"));
 };
 
@@ -110,6 +112,7 @@ void *AllocMemory(size_t memsize)
   pmem = malloc( memsize);
   // memory handler asures no null results here?!
   if (pmem==NULL) {
+    ASSERTALWAYS("Not enough memory");
     _CrtCheckMemory();
     FatalError(TRANS("Not enough memory (%d bytes needed)!"), memsize);
   }
@@ -129,6 +132,7 @@ void *_debug_AllocMemory(size_t memsize, int iType, const char *strFile, int iLi
   pmem = _malloc_dbg( memsize, iType, strFile, iLine);
   // memory handler asures no null results here?!
   if (pmem==NULL) {
+    ASSERTALWAYS("Not enough memory");
     _CrtCheckMemory();
     FatalError(TRANS("Not enough memory (%d bytes needed)!"), memsize);
   }
@@ -165,6 +169,7 @@ void ResizeMemory(void **ppv, size_t slSize)
   void *pv = realloc(*ppv, slSize);
   // memory handler asures no null results here?!
   if (pv==NULL) {
+    ASSERTALWAYS("Not enough memory");
     _CrtCheckMemory();
     FatalError(TRANS("Not enough memory (%d bytes needed)!"), slSize);
   }
