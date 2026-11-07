@@ -197,6 +197,8 @@ extern void UploadTexture_D3D( LPDIRECT3DTEXTURE8 *ppd3dTexture, ULONG *pulTextu
       if( pixSizeU==0) pixSizeU=1;
       if( pixSizeV==0) pixSizeV=1;
       pixSize = pixSizeU*pixSizeV;
+
+    #if SE1_USE_ASM
       __asm {   
         pxor    mm0,mm0
         mov     esi,D [pulSrc]
@@ -217,6 +219,23 @@ extern void UploadTexture_D3D( LPDIRECT3DTEXTURE8 *ppd3dTexture, ULONG *pulTextu
         jnz     pixLoop
         emms
       }
+
+    #else
+      UBYTE *dptr = (UBYTE *)pulDst;
+      UBYTE *sptr = (UBYTE *)pulSrc;
+
+      for (PIX i = 0; i < pixSize; i++)
+      {
+        for (PIX j = 0; j < 4; j++)
+        {
+          *dptr = (UBYTE)((((UWORD)sptr[0]) + ((UWORD)sptr[4])) >> 1);
+          dptr++;
+          sptr++;
+        }
+        sptr += 4;
+      }
+    #endif
+
       // upload mipmap and advance
       UploadMipmap_D3D( pulDst, pd3dTex, pixSizeU, pixSizeV, iMip);
       pulSrc     = pulDst;

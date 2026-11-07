@@ -1,4 +1,5 @@
-/* Copyright (c) 2002-2012 Croteam Ltd. 
+/* Copyright (c) 2002-2012 Croteam Ltd.
+   Copyright (c) 2026 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -75,10 +76,17 @@ static void ConvertAny( ULONG *pulSrc, LPDIRECT3DTEXTURE8 ptexDst, PIX pixWidth,
 
 // fast conversion from RGBA memory format to one of D3D color formats
 
+// [Cecil] TODO: Replace with std::rotr when C++20 is available
+// [Cecil] Inline implementation of bit rotation
+static __forceinline ULONG rotr_inline(ULONG ul, int bits) {
+  return (ul >> (bits & 31)) | (ul << (-bits & 31));
+};
 
 static void ConvARGB8( ULONG *pulSrc, void *pulDst, PIX pixWidth, PIX pixHeight, SLONG slPitch)
 {
   const ULONG slRowModulo = slPitch - (pixWidth<<2);
+
+#if SE1_USE_ASM
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pulDst]
@@ -99,12 +107,31 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+
+#else
+  // [Cecil] C++ translation of inline ASM
+  ULONG *pSrcIt = pulSrc; // Source iterator
+  ULONG *pDstIt = (ULONG *)pulDst; // Destination iterator
+
+  for (PIX y = pixHeight; y > 0; --y) {
+    for (PIX x = pixWidth; x > 0; --x) {
+      ULONG val = (*pSrcIt) | _ulAlphaMask;
+      (*pDstIt) = rotr_inline(ByteSwap32(val), 8);
+      ++pSrcIt;
+      ++pDstIt;
+    }
+
+    ((UBYTE *&)pDstIt) += slRowModulo;
+  }
+#endif
 }
 
 
 static void ConvARGB5( ULONG *pulSrc, void *pulDst, PIX pixWidth, PIX pixHeight, SLONG slPitch)
 {
   const ULONG slRowModulo = slPitch - (pixWidth<<1);
+
+#if SE1_USE_ASM
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pulDst]
@@ -142,12 +169,36 @@ pixLoop:
     jnz     rowLoop
     emms
   }
+
+#else
+  // [Cecil] C++ translation of inline ASM
+  ULONG *pSrcIt = pulSrc; // Source iterator
+  UWORD *pDstIt = (UWORD *)pulDst; // Destination iterator
+
+  for (PIX y = pixHeight; y > 0; --y) {
+    for (PIX x = pixWidth; x > 0; --x) {
+      ULONG val = (*pSrcIt) | _ulAlphaMask;
+      val = ((val & 0x000000F8) << 7)
+          | ((val & 0x0000F800) >> 6)
+          | ((val & 0x00F80000) >> 19)
+          | ((val & 0x80000000) >> 16);
+
+      (*pDstIt) = UWORD(val & 0xFFFF);
+      ++pDstIt;
+      ++pSrcIt;
+    }
+
+    ((UBYTE *&)pDstIt) += slRowModulo;
+  }
+#endif
 }
 
 
 static void ConvARGB4( ULONG *pulSrc, void *pulDst, PIX pixWidth, PIX pixHeight, SLONG slPitch)
 {
   const ULONG slRowModulo = slPitch - (pixWidth<<1);
+
+#if SE1_USE_ASM
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pulDst]
@@ -185,12 +236,36 @@ pixLoop:
     jnz     rowLoop
     emms
   }
+
+#else
+  // [Cecil] C++ translation of inline ASM
+  ULONG *pSrcIt = pulSrc; // Source iterator
+  UWORD *pDstIt = (UWORD *)pulDst; // Destination iterator
+
+  for (PIX y = pixHeight; y > 0; --y) {
+    for (PIX x = pixWidth; x > 0; --x) {
+      ULONG val = (*pSrcIt) | _ulAlphaMask;
+      val = ((val & 0x000000F0) << 4)
+          | ((val & 0x0000F000) >> 8)
+          | ((val & 0x00F00000) >> 20)
+          | ((val & 0xF0000000) >> 16);
+
+      (*pDstIt) = UWORD(val & 0xFFFF);
+      ++pSrcIt;
+      ++pDstIt;
+    }
+
+    ((UBYTE *&)pDstIt) += slRowModulo;
+  }
+#endif
 }
 
 
 static void ConvRGB5( ULONG *pulSrc, void *pulDst, PIX pixWidth, PIX pixHeight, SLONG slPitch)
 {
   const ULONG slRowModulo = slPitch - (pixWidth<<1);
+
+#if SE1_USE_ASM
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pulDst]
@@ -221,12 +296,35 @@ pixLoop:
     jnz     rowLoop
     emms
   }
+
+#else
+  // [Cecil] C++ translation of inline ASM
+  ULONG *pSrcIt = pulSrc; // Source iterator
+  UWORD *pDstIt = (UWORD *)pulDst; // Destination iterator
+
+  for (PIX y = pixHeight; y > 0; --y) {
+    for (PIX x = pixWidth; x > 0; --x) {
+      ULONG val = *pSrcIt;
+      val = ((val & 0x000000F8) << 8)
+          | ((val & 0x0000FC00) >> 5)
+          | ((val & 0x00F80000) >> 19);
+
+      (*pDstIt) = UWORD(val & 0xFFFF);
+      ++pDstIt;
+      ++pSrcIt;
+    }
+
+    ((UBYTE *&)pDstIt) += slRowModulo;
+  }
+#endif
 }
 
 
 static void ConvAL8( ULONG *pulSrc, void *pulDst, PIX pixWidth, PIX pixHeight, SLONG slPitch)
 {
   const ULONG slRowModulo = slPitch - (pixWidth<<1);
+
+#if SE1_USE_ASM
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pulDst]
@@ -246,6 +344,23 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+
+#else
+  // [Cecil] C++ translation of inline ASM
+  ULONG *pSrcIt = pulSrc; // Source iterator
+  UWORD *pDstIt = (UWORD *)pulDst; // Destination iterator
+
+  for (PIX y = pixHeight; y > 0; --y) {
+    for (PIX x = pixWidth; x > 0; --x) {
+      ULONG val = ByteSwap32(rotr_inline(*pSrcIt, 8));
+      (*pDstIt) = UWORD(val & 0xFFFF);
+      ++pDstIt;
+      ++pSrcIt;
+    }
+
+    ((UBYTE *&)pDstIt) += slRowModulo;
+  }
+#endif
 }
 
 
@@ -253,6 +368,8 @@ pixLoop:
 static void ConvL8( ULONG *pulSrc, void *pulDst, PIX pixWidth, PIX pixHeight, SLONG slPitch)
 {
   const ULONG slRowModulo = slPitch - (pixWidth<<0);
+
+#if SE1_USE_ASM
   __asm {
     mov     esi,D [pulSrc]
     mov     edi,D [pulDst]
@@ -270,6 +387,22 @@ pixLoop:
     dec     ebx
     jnz     rowLoop
   }
+
+#else
+  // [Cecil] C++ translation of inline ASM
+  ULONG *pSrcIt = pulSrc; // Source iterator
+  UBYTE *pDstIt = (UBYTE *)pulDst; // Destination iterator
+
+  for (PIX y = pixHeight; y > 0; --y) {
+    for (PIX x = pixWidth; x > 0; --x) {
+      (*pDstIt) = UBYTE((*pSrcIt) & 0xFF);
+      ++pSrcIt;
+      ++pDstIt;
+    }
+
+    pDstIt += slRowModulo;
+  }
+#endif
 }
 
 

@@ -333,6 +333,7 @@ void CTString::Resize(size_t ct) {
   str_String = strNew;
 };
 
+// [Cecil] TODO: Deal with color tags somehow as to not accidentally affect them
 // [Cecil] Convert all characters to lowercase
 CTString CTString::ToLower(void) const {
   CTString strCopy(*this);
@@ -345,6 +346,7 @@ CTString CTString::ToLower(void) const {
   return strCopy;
 };
 
+// [Cecil] TODO: Deal with color tags somehow as to not accidentally affect them
 // [Cecil] Convert all characters to uppercase
 CTString CTString::ToUpper(void) const {
   CTString strCopy(*this);
@@ -357,6 +359,7 @@ CTString CTString::ToUpper(void) const {
   return strCopy;
 };
 
+// [Cecil] TODO: Replace with std::rotl when C++20 is available
 // [Cecil] Inline implementation of bit rotation
 static __forceinline ULONG rotl_inline(ULONG ul, int bits) {
   return (ul << bits) | (ul >> (-bits & 31));
