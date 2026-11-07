@@ -49,12 +49,12 @@ SLONG CAbstractSoundAPI::CalculateMixerSize(void) {
 
 // Calculate decoder buffer size (only after mixer size)
 SLONG CAbstractSoundAPI::CalculateDecoderSize(SLONG slMixerSize) {
-  // [Cecil] FIXME: Get rid of the 44100 constant and synchronize it with the maximum sample rate supported by the engine.
-  // Also, if sound decoder decodes audio with sample rate higher than 44100, it may write data outside the buffer boundaries!
+  // [Cecil] FIXME: If the sound decoder decodes audio with the sample rate higher than
+  // CSoundLibrary::sl_ulMaxSampleRate, it may write data outside the buffer boundaries!
 
-  // Decoder buffer always works at 44khz
+  // Decoder buffer always works at maximum sample rate
   const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
-  return slMixerSize * ((44100 + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
+  return slMixerSize * ((CSoundLibrary::sl_ulMaxSampleRate + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
 };
 
 // Allocate new buffer memory

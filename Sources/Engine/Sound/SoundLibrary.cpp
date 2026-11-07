@@ -78,11 +78,8 @@ static FLOAT _fLastNormalizeValue = 1;
 
 static BOOL _bMutedForMixing = FALSE;
 
-/**
- * ----------------------------
- *    Sound Library functions
- * ----------------------------
-**/
+// [Cecil] Maximum sample rate for audio supported by the engine
+const ULONG CSoundLibrary::sl_ulMaxSampleRate = 44100;
 
 /*
  *  Construct uninitialized sound library.
@@ -146,7 +143,7 @@ static void SndPostFunc(void *pArgs)
 {
   // clamp variables
   snd_tmMixAhead = Clamp(snd_tmMixAhead, 0.1f, 0.9f);
-  snd_iFormat    = Clamp(snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
+  snd_iFormat    = Clamp(snd_iFormat, CSoundLibrary::SF_NONE, CSoundLibrary::SF_MAX_FORMATS - 1);
   snd_iDevice    = ClampDn(snd_iDevice, -1); // [Cecil] Only down to -1, which is "default audio device"
   snd_iInterface = Clamp(snd_iInterface, 0L, CAbstractSoundAPI::E_SND_MAX - 1); // [Cecil] Until max interfaces
   // if any variable has been changed
@@ -224,6 +221,9 @@ void CSoundLibrary::SetWaveFormat(CSoundLibrary::SoundFormat EsfFormat)
     default:                     ASSERTALWAYS( "Unknown Sound format");     break;
   }
 
+  // [Cecil] Verify sample rate
+  ASSERT(wfe.nSamplesPerSec <= sl_ulMaxSampleRate);
+
   wfe.nBlockAlign = (wfe.wBitsPerSample / 8) * wfe.nChannels;
   wfe.nAvgBytesPerSec = wfe.nSamplesPerSec * wfe.nBlockAlign;
 };
@@ -237,7 +237,14 @@ void CSoundLibrary::SetLibraryFormat(void)
   if (sl_EsfFormat == CSoundLibrary::SF_NONE) return;
 
   // else check wave format to determine library format
-  ULONG ulFormat = sl_SwfeFormat.nSamplesPerSec;
+  const ULONG ulFormat = sl_SwfeFormat.nSamplesPerSec;
+
+  // [Cecil] Make sure it's not over maximum supported sample rate
+  if (ulFormat > sl_ulMaxSampleRate) {
+    ASSERTALWAYS("Unknown sound format");
+    FatalError(TRANS("Unknown sound format"));
+  }
+
   // find format
   switch( ulFormat) {
     case 11025: sl_EsfFormat = CSoundLibrary::SF_11025_16; break;
@@ -245,9 +252,8 @@ void CSoundLibrary::SetLibraryFormat(void)
     case 44100: sl_EsfFormat = CSoundLibrary::SF_44100_16; break;
     // unknown format
     default:
-      ASSERTALWAYS( "Unknown sound format");
-      FatalError( TRANS("Unknown sound format"));
-      sl_EsfFormat = CSoundLibrary::SF_ILLEGAL;
+      ASSERTALWAYS("Unknown sound format");
+      FatalError(TRANS("Unknown sound format"));
   }
 };
 

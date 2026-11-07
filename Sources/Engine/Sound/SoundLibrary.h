@@ -57,15 +57,18 @@ public:
 class ENGINE_API CSoundLibrary {
 public:
   enum SoundFormat {
-    SF_NONE     = 0,
-    SF_11025_16 = 1,
-    SF_22050_16 = 2,
-    SF_44100_16 = 3,
-    SF_ILLEGAL  = 4
+    SF_NONE,
+    SF_11025_16,
+    SF_22050_16,
+    SF_44100_16,
+
+    SF_MAX_FORMATS,
   };
 
 //private:
 public:
+  static const ULONG sl_ulMaxSampleRate; // [Cecil] Maximum sample rate for audio supported by the engine
+
   CTCriticalSection sl_csSound;          // sync. access to sounds
   CSoundTimerHandler sl_thTimerHandler;  // handler for mixing sounds in timer
 

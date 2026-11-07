@@ -61,11 +61,11 @@ static void ApplyAudioOptions(CMenuGadget *pmg) {
 
     switch (gmAudio.gm_mgFrequencyTrigger.mg_iSelected) {
       // [Cecil] Report reinitialization
-      case 0:  _pSound->SetFormat(CSoundLibrary::SF_NONE, TRUE); break;
-      case 1:  _pSound->SetFormat(CSoundLibrary::SF_11025_16, TRUE); break;
-      case 2:  _pSound->SetFormat(CSoundLibrary::SF_22050_16, TRUE); break;
-      case 3:  _pSound->SetFormat(CSoundLibrary::SF_44100_16, TRUE); break;
-      default: _pSound->SetFormat(CSoundLibrary::SF_NONE, TRUE);
+      default:
+      case 0: _pSound->SetFormat(CSoundLibrary::SF_NONE, TRUE); break;
+      case 1: _pSound->SetFormat(CSoundLibrary::SF_11025_16, TRUE); break;
+      case 2: _pSound->SetFormat(CSoundLibrary::SF_22050_16, TRUE); break;
+      case 3: _pSound->SetFormat(CSoundLibrary::SF_44100_16, TRUE); break;
     }
   }
 

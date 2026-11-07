@@ -445,7 +445,7 @@ static BOOL InitClient(HINSTANCE hInstance, const CommandLineSetup &cmd) {
   }
 
   // initialize sound library
-  snd_iFormat = Clamp( snd_iFormat, (INDEX)CSoundLibrary::SF_NONE, (INDEX)CSoundLibrary::SF_44100_16);
+  snd_iFormat = Clamp(snd_iFormat, CSoundLibrary::SF_NONE, CSoundLibrary::SF_MAX_FORMATS - 1);
   _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat);
 
   if (sam_bAutoAdjustAudio) {

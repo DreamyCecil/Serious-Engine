@@ -70,7 +70,7 @@ static ma_result DecoderOpen(ma_vfs *pVFS, const char *pFilePath, ma_uint32 iOpe
 
   // Seek to the requested offset
   if (pData->iDataOffset != 0) {
-    fseek(fHandle, pData->iDataOffset, SEEK_SET);
+    fseek(fHandle, (long)pData->iDataOffset, SEEK_SET);
   }
 
   *pFile = fHandle;
@@ -106,9 +106,9 @@ static ma_result DecoderSeek(ma_vfs *pVFS, ma_vfs_file file, ma_int64 iOffset, m
   FILE *fHandle = (FILE *)file;
 
   switch (eOrigin) {
-    case ma_seek_origin_current: fseek(fHandle, iOffset, SEEK_CUR); break;
-    case ma_seek_origin_end:     fseek(fHandle, pData->iDataOffset + pData->iDataSize + iOffset, SEEK_SET); break;
-    case ma_seek_origin_start:   fseek(fHandle, pData->iDataOffset + iOffset, SEEK_SET); break;
+    case ma_seek_origin_current: fseek(fHandle, (long)iOffset, SEEK_CUR); break;
+    case ma_seek_origin_end:     fseek(fHandle, (long)(pData->iDataOffset + pData->iDataSize) + (long)iOffset, SEEK_SET); break;
+    case ma_seek_origin_start:   fseek(fHandle, (long)pData->iDataOffset + (long)iOffset, SEEK_SET); break;
     default: return MA_INVALID_OPERATION;
   }
 
@@ -131,8 +131,8 @@ void CSoundDecoder::InitPlugins(void)
     ma_decoding_backend_libvorbis, // OGG
   };
 
-  // Force-load everything in [signed 16-bit, stereo, 44100 Hz] format that the engine mixer expects
-  DecodeData::dcConfig = ma_decoder_config_init(ma_format_s16, 2, 44100);
+  // Force-load everything in [signed 16-bit, stereo, max sample rate] format that the engine mixer expects
+  DecodeData::dcConfig = ma_decoder_config_init(ma_format_s16, 2, CSoundLibrary::sl_ulMaxSampleRate);
   DecodeData::dcConfig.pCustomBackendUserData = NULL;
   DecodeData::dcConfig.ppCustomBackendVTables = aCustomBackends;
   DecodeData::dcConfig.customBackendCount = ARRAYCOUNT(aCustomBackends);
@@ -212,8 +212,8 @@ void CSoundDecoder::Initialize(const CTString &fnm) {
     }
 
     // Must be in a very specific format
-    if (eFormat != ma_format_s16 || iChannels != 2 || iSampleRate != 44100) {
-      ThrowF_t(TRANS("Encoded audio must be signed 16-bit, stereo, 44100 Hz!"));
+    if (eFormat != ma_format_s16 || iChannels != 2 || iSampleRate != CSoundLibrary::sl_ulMaxSampleRate) {
+      ThrowF_t(TRANS("Encoded audio must be signed 16-bit, stereo, %u Hz!"), CSoundLibrary::sl_ulMaxSampleRate);
     }
 
     WAVEFORMATEX &wfe = sdc_pData->wfeFormat;
