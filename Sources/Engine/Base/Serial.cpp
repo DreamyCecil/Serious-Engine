@@ -122,8 +122,6 @@ void CSerial::Save_t(const CTFileName fnFileName)  // throw char *
  */
 void CSerial::MarkUsed(void)
 {
-  // use count must not have dropped below zero
-  ASSERT(ser_ctUsed>=0);
   // increment use count
   ser_ctUsed++;
 }
@@ -133,23 +131,21 @@ void CSerial::MarkUsed(void)
  */
 void CSerial::MarkUnused(void)
 {
+  // use count cannot drop below zero
+  ASSERT(ser_ctUsed != 0);
   // decrement use count
   ser_ctUsed--;
-  // use count must not have dropped below zero
-  ASSERT(ser_ctUsed>=0);
 }
 
 /*
  * Check if object is used at least once.
  */
-BOOL CSerial::IsUsed(void)
+BOOL CSerial::IsUsed(void) const
 {
-  // use count must not have dropped below zero
-  ASSERT(ser_ctUsed>=0);
-
-  return ser_ctUsed>0;
+  return ser_ctUsed != 0;
 }
-INDEX CSerial::GetUsedCount(void)
+
+size_t CSerial::GetUsedCount(void) const
 {
   return ser_ctUsed;
 }

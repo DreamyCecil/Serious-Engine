@@ -611,7 +611,7 @@ void CEntityComponent::Obtain_t(void)  // throw char *
     return;
   }
 
-  INDEX ctUsed = 0;
+  size_t ctUsed = 0;
   // check the component type
   switch(ec_ectType) {
     // if texture

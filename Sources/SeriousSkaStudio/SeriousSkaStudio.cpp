@@ -1446,7 +1446,7 @@ void CSeriousSkaStudioApp::SaveModel(CModelInstance &mi)
     CMesh *pMesh = mshi.mi_pMesh;
     // try to save mesh
     try {
-      pMesh->Save_t(pMesh->ser_FileName);
+      pMesh->Save_t(pMesh->GetName());
     } catch(char *strErr) {
       ErrorMessage(strErr);
       bSaved = FALSE;
@@ -1458,7 +1458,7 @@ void CSeriousSkaStudioApp::SaveModel(CModelInstance &mi)
   if(psklSkeleton!=NULL) {
     // try to save skeleton
     try {
-      psklSkeleton->Save_t(psklSkeleton->ser_FileName);
+      psklSkeleton->Save_t(psklSkeleton->GetName());
     } catch(char *strErr) {
       ErrorMessage(strErr);
       bSaved = FALSE;
@@ -1474,7 +1474,7 @@ void CSeriousSkaStudioApp::SaveModel(CModelInstance &mi)
     CAnimSet *pas = &mi.mi_aAnimSet[ias];
     // try to save animset
     try {
-      pas->Save_t(pas->ser_FileName);
+      pas->Save_t(pas->GetName());
     } catch(char *strErr) {
       ErrorMessage(strErr);
       bSaved = FALSE;

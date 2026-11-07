@@ -51,7 +51,14 @@ Type *CResourceStock<Type>::Obtain_internal_t(const CTFileName &fnmFileName)
 
   // Create a new stock object, if not found
   Type *ptNew = new Type;
-  ptNew->ser_FileName = fnmFileName;
+
+  // [Cecil] NOTE: Preemptively setting the filename because it needs a name in order to be added to a nametable.
+  // And the reason why it needs to be added to the nametable immediately and not after Load_t() is because while
+  // it's loading this class, the class in question may load extra resources, which in turn may need to load this
+  // class again. And instead of falling into an infinite loop of cyclic dependencies, it will simply be able to
+  // find an already existing class in this stock and reference it instead of trying to load it again while this
+  // same class is already in the process of being loaded.
+  ptNew->SetFileNameForStock(fnmFileName);
 
   st_ctObjects.Add(ptNew);
   st_ntObjects.Add(ptNew);
@@ -164,8 +171,8 @@ void CResourceStock<Type>::DumpMemoryUsage_t(CTStream &strm)
     }
 
     // Print out memory usage of this object
-    strLine.PrintF("%7.1fk %s(%d) %s", slUsedByObject / 1024.0f,
-      itt->GetName().ConstData(), itt->GetUsedCount(), itt->GetDescription().ConstData());
+    strLine.PrintF("%7.1fk %s(%llu) %s", slUsedByObject / 1024.0f,
+      itt->GetName().ConstData(), (UQUAD)itt->GetUsedCount(), itt->GetDescription().ConstData());
 
     strm.PutLine_t(strLine.ConstData());
   }
@@ -179,9 +186,9 @@ INDEX CResourceStock<Type>::GetTotalCount(void) {
 
 // Get number of used elements in stock
 template<class Type>
-INDEX CResourceStock<Type>::GetUsedCount(void)
+size_t CResourceStock<Type>::GetUsedCount(void)
 {
-  INDEX ctUsed = 0;
+  size_t ctUsed = 0;
 
   // Go through all stock objects
   FOREACHINDYNAMICCONTAINER(st_ctObjects, Type, itt) {

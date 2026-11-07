@@ -68,7 +68,7 @@ class CResourceStock {
     INDEX GetTotalCount(void);
 
     // Get number of used elements in stock
-    INDEX GetUsedCount(void);
+    size_t GetUsedCount(void);
 };
 
 // [Cecil] Define template methods

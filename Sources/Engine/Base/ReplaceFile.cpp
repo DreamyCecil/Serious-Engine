@@ -486,7 +486,7 @@ void WriteModelInstance_t(CTStream &strm, CModelInstance &mi, BOOL bFromStock)
   // [Cecil] Write "Model Instance Source File" if this model has been loaded from the stock
   if (bFromStock && mi.mi_pInStock != NULL) {
     strm.WriteID_t("MISF");
-    strm.WriteFileName(mi.mi_pInStock->ser_FileName);
+    strm.WriteFileName(mi.mi_pInStock->GetName());
   }
 
   // write model instance name

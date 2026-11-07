@@ -27,7 +27,7 @@ CModelConfig::~CModelConfig() {
 
   // Make sure that the released model instance isn't used by anything anymore
   if (mc_pModelInstance->mi_pInStock != NULL) {
-    ASSERT(mc_pModelInstance->mi_pInStock->ser_ctUsed == 0);
+    ASSERT(!mc_pModelInstance->mi_pInStock->IsUsed());
   }
 
   // Delete stock's model instance
@@ -68,7 +68,7 @@ void CModelConfig::Write_t(CTStream *ostrFile) {
 void CModelConfig::Read_t(CTStream *istrFile) {
   // Load model instance from the model config
   ASSERT(mc_pModelInstance == NULL);
-  mc_pModelInstance = LoadModelInstance_t(istrFile->GetDescription());
+  mc_pModelInstance = LoadModelInstance_t(istrFile->GetDescription()); // [Cecil] FIXME: Just pass the stream??
 
   // Make model instance remember its config in the stock
   ASSERT(mc_pModelInstance != NULL);
