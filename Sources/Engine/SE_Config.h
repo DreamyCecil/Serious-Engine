@@ -84,9 +84,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifndef SE1_DITHERBITMAP
 #define SE1_DITHERBITMAP  1 // Enable texture dithering (0 - Disabled; 1 - Enabled)
 #endif
-#ifndef SE1_MMXINTOPT
-#define SE1_MMXINTOPT     1 // Use MMX intrinsics for light calculations (0 - No; 1 - Yes)
-#endif
 #ifndef SE1_SINGLE_THREAD
 #define SE1_SINGLE_THREAD 0 // Run all timer logic manually in the same thread as the application logic (0 - No; 1 - Yes)
 #endif
@@ -106,7 +103,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define SE1_GLEW          0 // GLEW support (0 - None; 1 - Available; 2 - Replace manual hooking of OpenGL in the engine)
 #endif
 #ifndef SE1_USE_SDL
-#define SE1_USE_SDL       0 // Prefer SDL over Windows API (0 - No; 1 - Yes)
+#define SE1_USE_SDL       0 // Use SDL instead of Windows API (0 - No; 1 - Yes)
 #endif
 
 // Sound API switches specifically for Windows platforms
@@ -135,9 +132,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // Automatic switches for convenience
 
-#define SE1_PREFER_SDL (!SE1_WIN || SE1_USE_SDL)                // Prefer SDL over Windows API?
-#define SE1_USE_ASM    (SE1_WIN && SE1_X86 && SE1_ASMOPT)       // Prioritize inline assembly under a traditional platform?
-#define SE1_USE_MMXINT (!SE1_WIN || (SE1_X86 && SE1_MMXINTOPT)) // Prioritize MMX intrinsic functions?
+#define SE1_PREFER_SDL (!SE1_WIN || SE1_USE_SDL)          // Prefer SDL over Windows API?
+#define SE1_USE_ASM    (SE1_WIN && SE1_X86 && SE1_ASMOPT) // Prioritize inline assembly under the traditional platform?
 
 // **************************************************************************
 // EXPERIMENTAL FEATURES ----- USE WITH CAUTION SOLELY FOR DEBUGGING PURPOSES

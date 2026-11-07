@@ -41,11 +41,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
   #include <winsock2.h>
   #include <windows.h>
   #include <mmsystem.h> // For timers
-
-  // [Cecil] Intrinsics for new compilers
-  #if !SE1_OLD_COMPILER
-    #include <intrin.h>
-  #endif
 #endif // SE1_WIN
 
 // [Cecil] SDL: Include SDL in its entirety

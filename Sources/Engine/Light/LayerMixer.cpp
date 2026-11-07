@@ -37,11 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicArray.cpp>
 
-// [Cecil] For no ASM in CLayerMixer::AddAmbientPoint()
-#if !SE1_OLD_COMPILER
-  #include <xmmintrin.h>
-#endif
-
 // asm shortcuts
 #define O offset
 #define Q qword ptr
@@ -265,92 +260,57 @@ static ULONG *_pulLayer;
 
 // [Cecil] Separate methods to avoid code duplication
 static __forceinline void PrepareColorMMX(__m64 &mm7, const ULONG ulLightRGB) {
-  #if SE1_USE_MMXINT
-    __m64 tmp_mm0;
+  // punpcklbw
+  mm7.m64_u16[0] = (ulLightRGB & 0x000000FF);
+  mm7.m64_u16[1] = (ulLightRGB & 0x0000FF00) >> 8;
+  mm7.m64_u16[2] = (ulLightRGB & 0x00FF0000) >> 16;
+  mm7.m64_u16[3] = (ulLightRGB & 0xFF000000) >> 24;
 
-    memset(&mm7, 0, sizeof(mm7));           //mm7.m64_u64 = 0;
-    memcpy(&mm7, &ulLightRGB, sizeof(mm7)); //mm7.m64_i64 = ulLightRGB;
-    memset(&tmp_mm0, 0, sizeof(tmp_mm0));   //tmp_mm0.m64_u64 = 0;
-    mm7 = _m_punpcklbw(mm7, tmp_mm0); // punpcklbw
-    mm7 = _m_psllwi(mm7, 1);          // psllw
-    _mm_empty(); // emms
-
-  #else
-    // punpcklbw
-    mm7.m64_u16[0] = (ulLightRGB & 0x000000FF);
-    mm7.m64_u16[1] = (ulLightRGB & 0x0000FF00) >> 8;
-    mm7.m64_u16[2] = (ulLightRGB & 0x00FF0000) >> 16;
-    mm7.m64_u16[3] = (ulLightRGB & 0xFF000000) >> 24;
-
-    // psllw
-    mm7.m64_u16[0] <<= 1;
-    mm7.m64_u16[1] <<= 1;
-    mm7.m64_u16[2] <<= 1;
-    mm7.m64_u16[3] <<= 1;
-  #endif
+  // psllw
+  mm7.m64_u16[0] <<= 1;
+  mm7.m64_u16[1] <<= 1;
+  mm7.m64_u16[2] <<= 1;
+  mm7.m64_u16[3] <<= 1;
 };
 
 static __forceinline void MixPixelMMX(ULONG &ulPixel, const SLONG slIntensity, const __m64 &mm7) {
   // Mix underlaying pixels with the calculated one
   __m64 tmp_mm6;
 
-  #if SE1_USE_MMXINT
-    memset(&tmp_mm6, 0, sizeof(tmp_mm6)); //tmp_mm6.m64_u64 = 0;
-    tmp_mm6 = _mm_cvtsi32_si64(slIntensity);
-    tmp_mm6 = _mm_unpacklo_pi16(tmp_mm6, tmp_mm6); // punpcklwd
-    tmp_mm6 = _mm_unpacklo_pi32(tmp_mm6, tmp_mm6); // punpckldq
-    tmp_mm6 = _mm_mulhi_pi16(tmp_mm6, mm7);        // _m_pmulhw
-    _mm_empty(); // emms
+  // punpcklwd & punpckldq
+  tmp_mm6.m64_u16[0] = slIntensity;
+  tmp_mm6.m64_u16[1] = slIntensity;
+  tmp_mm6.m64_u16[2] = slIntensity;
+  tmp_mm6.m64_u16[3] = slIntensity;
 
-  #else
-    // punpcklwd & punpckldq
-    tmp_mm6.m64_u16[0] = slIntensity;
-    tmp_mm6.m64_u16[1] = slIntensity;
-    tmp_mm6.m64_u16[2] = slIntensity;
-    tmp_mm6.m64_u16[3] = slIntensity;
-
-    // pmulhw   mm7, mm6
-    tmp_mm6.m64_u16[0] = (tmp_mm6.m64_i16[0] * mm7.m64_i16[0]) >> 16;
-    tmp_mm6.m64_u16[1] = (tmp_mm6.m64_i16[1] * mm7.m64_i16[1]) >> 16;
-    tmp_mm6.m64_u16[2] = (tmp_mm6.m64_i16[2] * mm7.m64_i16[2]) >> 16;
-    tmp_mm6.m64_u16[3] = (tmp_mm6.m64_i16[3] * mm7.m64_i16[3]) >> 16;
-  #endif
+  // pmulhw   mm7, mm6
+  tmp_mm6.m64_u16[0] = (tmp_mm6.m64_i16[0] * mm7.m64_i16[0]) >> 16;
+  tmp_mm6.m64_u16[1] = (tmp_mm6.m64_i16[1] * mm7.m64_i16[1]) >> 16;
+  tmp_mm6.m64_u16[2] = (tmp_mm6.m64_i16[2] * mm7.m64_i16[2]) >> 16;
+  tmp_mm6.m64_u16[3] = (tmp_mm6.m64_i16[3] * mm7.m64_i16[3]) >> 16;
 
   // Add light pixel to underlying pixel
   __m64 tmp_mm5;
 
-  #if SE1_USE_MMXINT
-    // [Cecil] Old compilers don't like inline braces
-    const __m64 mmZero = { 0L };
+  // punpcklbw
+  tmp_mm5.m64_u16[0] = (ulPixel & 0x000000FF);
+  tmp_mm5.m64_u16[1] = (ulPixel & 0x0000FF00) >> 8;
+  tmp_mm5.m64_u16[2] = (ulPixel & 0x00FF0000) >> 16;
+  tmp_mm5.m64_u16[3] = (ulPixel & 0xFF000000) >> 24;
 
-    tmp_mm5 = _mm_cvtsi32_si64(ulPixel);
-    tmp_mm5 = _mm_unpacklo_pi8(tmp_mm5, mmZero); // punpcklbw
-    tmp_mm5 = _mm_add_pi16(tmp_mm5, tmp_mm6);    // paddw
-    tmp_mm5 = _mm_packs_pu16(tmp_mm5, mmZero);   // packuswb
-    ulPixel = _mm_cvtsi64_si32(tmp_mm5);
-    _mm_empty(); // emms
+  // paddw
+  tmp_mm5.m64_i16[0] += tmp_mm6.m64_i16[0];
+  tmp_mm5.m64_i16[1] += tmp_mm6.m64_i16[1];
+  tmp_mm5.m64_i16[2] += tmp_mm6.m64_i16[2];
+  tmp_mm5.m64_i16[3] += tmp_mm6.m64_i16[3];
 
-  #else
-    // punpcklbw
-    tmp_mm5.m64_u16[0] = (ulPixel & 0x000000FF);
-    tmp_mm5.m64_u16[1] = (ulPixel & 0x0000FF00) >> 8;
-    tmp_mm5.m64_u16[2] = (ulPixel & 0x00FF0000) >> 16;
-    tmp_mm5.m64_u16[3] = (ulPixel & 0xFF000000) >> 24;
+  // packuswb
+  tmp_mm5.m64_u8[0] = LimitWordToByte(tmp_mm5.m64_i16[0]);
+  tmp_mm5.m64_u8[1] = LimitWordToByte(tmp_mm5.m64_i16[1]);
+  tmp_mm5.m64_u8[2] = LimitWordToByte(tmp_mm5.m64_i16[2]);
+  tmp_mm5.m64_u8[3] = LimitWordToByte(tmp_mm5.m64_i16[3]);
 
-    // paddw
-    tmp_mm5.m64_i16[0] += tmp_mm6.m64_i16[0];
-    tmp_mm5.m64_i16[1] += tmp_mm6.m64_i16[1];
-    tmp_mm5.m64_i16[2] += tmp_mm6.m64_i16[2];
-    tmp_mm5.m64_i16[3] += tmp_mm6.m64_i16[3];
-
-    // packuswb
-    tmp_mm5.m64_u8[0] = LimitWordToByte(tmp_mm5.m64_i16[0]);
-    tmp_mm5.m64_u8[1] = LimitWordToByte(tmp_mm5.m64_i16[1]);
-    tmp_mm5.m64_u8[2] = LimitWordToByte(tmp_mm5.m64_i16[2]);
-    tmp_mm5.m64_u8[3] = LimitWordToByte(tmp_mm5.m64_i16[3]);
-
-    ulPixel = tmp_mm5.m64_u32[0];
-  #endif
+  ulPixel = tmp_mm5.m64_u32[0];
 };
 
 #endif // !SE1_USE_ASM
