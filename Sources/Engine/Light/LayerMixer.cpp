@@ -37,6 +37,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Templates/DynamicArray.cpp>
 
+// [Cecil] For no ASM in CLayerMixer::AddAmbientPoint()
+union M64Container {
+  UBYTE u8[8];
+  UWORD u16[4];
+  ULONG u32[2];
+  UQUAD u64;
+
+  SBYTE i8[8];
+  SWORD i16[4];
+  SLONG i32[2];
+  SQUAD i64;
+};
+
 // asm shortcuts
 #define O offset
 #define Q qword ptr
@@ -259,58 +272,58 @@ static ULONG *_pulLayer;
 #if !SE1_USE_ASM
 
 // [Cecil] Separate methods to avoid code duplication
-static __forceinline void PrepareColorMMX(__m64 &mm7, const ULONG ulLightRGB) {
+static __forceinline void PrepareColorMMX(M64Container &mm7, const ULONG ulLightRGB) {
   // punpcklbw
-  mm7.m64_u16[0] = (ulLightRGB & 0x000000FF);
-  mm7.m64_u16[1] = (ulLightRGB & 0x0000FF00) >> 8;
-  mm7.m64_u16[2] = (ulLightRGB & 0x00FF0000) >> 16;
-  mm7.m64_u16[3] = (ulLightRGB & 0xFF000000) >> 24;
+  mm7.u16[0] = (ulLightRGB & 0x000000FF);
+  mm7.u16[1] = (ulLightRGB & 0x0000FF00) >> 8;
+  mm7.u16[2] = (ulLightRGB & 0x00FF0000) >> 16;
+  mm7.u16[3] = (ulLightRGB & 0xFF000000) >> 24;
 
   // psllw
-  mm7.m64_u16[0] <<= 1;
-  mm7.m64_u16[1] <<= 1;
-  mm7.m64_u16[2] <<= 1;
-  mm7.m64_u16[3] <<= 1;
+  mm7.u16[0] <<= 1;
+  mm7.u16[1] <<= 1;
+  mm7.u16[2] <<= 1;
+  mm7.u16[3] <<= 1;
 };
 
-static __forceinline void MixPixelMMX(ULONG &ulPixel, const SLONG slIntensity, const __m64 &mm7) {
+static __forceinline void MixPixelMMX(ULONG &ulPixel, const SLONG slIntensity, const M64Container &mm7) {
   // Mix underlaying pixels with the calculated one
-  __m64 tmp_mm6;
+  M64Container tmp_mm6;
 
   // punpcklwd & punpckldq
-  tmp_mm6.m64_u16[0] = slIntensity;
-  tmp_mm6.m64_u16[1] = slIntensity;
-  tmp_mm6.m64_u16[2] = slIntensity;
-  tmp_mm6.m64_u16[3] = slIntensity;
+  tmp_mm6.u16[0] = slIntensity;
+  tmp_mm6.u16[1] = slIntensity;
+  tmp_mm6.u16[2] = slIntensity;
+  tmp_mm6.u16[3] = slIntensity;
 
   // pmulhw   mm7, mm6
-  tmp_mm6.m64_u16[0] = (tmp_mm6.m64_i16[0] * mm7.m64_i16[0]) >> 16;
-  tmp_mm6.m64_u16[1] = (tmp_mm6.m64_i16[1] * mm7.m64_i16[1]) >> 16;
-  tmp_mm6.m64_u16[2] = (tmp_mm6.m64_i16[2] * mm7.m64_i16[2]) >> 16;
-  tmp_mm6.m64_u16[3] = (tmp_mm6.m64_i16[3] * mm7.m64_i16[3]) >> 16;
+  tmp_mm6.u16[0] = (tmp_mm6.i16[0] * mm7.i16[0]) >> 16;
+  tmp_mm6.u16[1] = (tmp_mm6.i16[1] * mm7.i16[1]) >> 16;
+  tmp_mm6.u16[2] = (tmp_mm6.i16[2] * mm7.i16[2]) >> 16;
+  tmp_mm6.u16[3] = (tmp_mm6.i16[3] * mm7.i16[3]) >> 16;
 
   // Add light pixel to underlying pixel
-  __m64 tmp_mm5;
+  M64Container tmp_mm5;
 
   // punpcklbw
-  tmp_mm5.m64_u16[0] = (ulPixel & 0x000000FF);
-  tmp_mm5.m64_u16[1] = (ulPixel & 0x0000FF00) >> 8;
-  tmp_mm5.m64_u16[2] = (ulPixel & 0x00FF0000) >> 16;
-  tmp_mm5.m64_u16[3] = (ulPixel & 0xFF000000) >> 24;
+  tmp_mm5.u16[0] = (ulPixel & 0x000000FF);
+  tmp_mm5.u16[1] = (ulPixel & 0x0000FF00) >> 8;
+  tmp_mm5.u16[2] = (ulPixel & 0x00FF0000) >> 16;
+  tmp_mm5.u16[3] = (ulPixel & 0xFF000000) >> 24;
 
   // paddw
-  tmp_mm5.m64_i16[0] += tmp_mm6.m64_i16[0];
-  tmp_mm5.m64_i16[1] += tmp_mm6.m64_i16[1];
-  tmp_mm5.m64_i16[2] += tmp_mm6.m64_i16[2];
-  tmp_mm5.m64_i16[3] += tmp_mm6.m64_i16[3];
+  tmp_mm5.i16[0] += tmp_mm6.i16[0];
+  tmp_mm5.i16[1] += tmp_mm6.i16[1];
+  tmp_mm5.i16[2] += tmp_mm6.i16[2];
+  tmp_mm5.i16[3] += tmp_mm6.i16[3];
 
   // packuswb
-  tmp_mm5.m64_u8[0] = LimitWordToByte(tmp_mm5.m64_i16[0]);
-  tmp_mm5.m64_u8[1] = LimitWordToByte(tmp_mm5.m64_i16[1]);
-  tmp_mm5.m64_u8[2] = LimitWordToByte(tmp_mm5.m64_i16[2]);
-  tmp_mm5.m64_u8[3] = LimitWordToByte(tmp_mm5.m64_i16[3]);
+  tmp_mm5.u8[0] = LimitWordToByte(tmp_mm5.i16[0]);
+  tmp_mm5.u8[1] = LimitWordToByte(tmp_mm5.i16[1]);
+  tmp_mm5.u8[2] = LimitWordToByte(tmp_mm5.i16[2]);
+  tmp_mm5.u8[3] = LimitWordToByte(tmp_mm5.i16[3]);
 
-  ulPixel = tmp_mm5.m64_u32[0];
+  ulPixel = tmp_mm5.u32[0];
 };
 
 #endif // !SE1_USE_ASM
@@ -407,7 +420,7 @@ skipPixel:
 
 #else
   // prepare color
-  __m64 tmp_mm7;
+  M64Container tmp_mm7;
   PrepareColorMMX(tmp_mm7, ulLightRGB);
 
   PIX pixV = _iRowCt;
@@ -560,7 +573,7 @@ skipPixel:
 
 #else
   // prepare color
-  __m64 tmp_mm7;
+  M64Container tmp_mm7;
   PrepareColorMMX(tmp_mm7, ulLightRGB);
 
   PIX pixV = _iRowCt;
@@ -726,7 +739,7 @@ skipPixel:
 
 #else
   // prepare color
-  __m64 tmp_mm7;
+  M64Container tmp_mm7;
   PrepareColorMMX(tmp_mm7, ulLightRGB);
 
   PIX pixV = _iRowCt;
@@ -896,7 +909,7 @@ skipPixel:
 
 #else
   // prepare color
-  __m64 tmp_mm7;
+  M64Container tmp_mm7;
   PrepareColorMMX(tmp_mm7, ulLightRGB);
 
   PIX pixV = _iRowCt;
