@@ -139,7 +139,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
     sdc.Initialize(fnm);
 
     if (sdc.IsOpen()) {
-      sdc.GetFormat(sd_wfeFormat);
+      sdc.GetFormat(sd_afFormat);
 
       // [Cecil] Remember length of the decoded sound
       sd_dSecondsLength = sdc.GetSoundLength();
@@ -160,25 +160,25 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   try {
     // load wave info
     PCMWaveInput CpwiLoad;
-    sd_wfeFormat = CpwiLoad.LoadInfo_t(inFile);
+    CpwiLoad.LoadInfo_t(inFile, sd_afFormat);
     // store sample length in seconds and average byte rate
     sd_dSecondsLength = CpwiLoad.GetSecondsLength();
 
     // if sound library is in lower format convert sound to library format
-    if (_pSound->sl_SwfeFormat.nSamplesPerSec < sd_wfeFormat.nSamplesPerSec) {
-      sd_wfeFormat.nSamplesPerSec = _pSound->sl_SwfeFormat.nSamplesPerSec;
+    if (_pSound->sl_afFormat.iSampleRate < sd_afFormat.iSampleRate) {
+      sd_afFormat.iSampleRate = _pSound->sl_afFormat.iSampleRate;
     }
-    // same goes for bits/sample (must be 16)
-    sd_wfeFormat.wBitsPerSample = 16;
+    // same goes for bits per sample (must be 16)
+    sd_afFormat.iBytesPerSample = 2;
 
     // if library is active create buffer and load sound data
     if (_pSound->IsActive()) {
       // create Buffer
-      sd_slBufferSampleSize = CpwiLoad.GetDataLength(sd_wfeFormat);
-      SLONG slBufferSize = CpwiLoad.DetermineBufferSize(sd_wfeFormat);
+      sd_slBufferSampleSize = CpwiLoad.GetDataLength(sd_afFormat);
+      SLONG slBufferSize = CpwiLoad.DetermineBufferSize(sd_afFormat);
       sd_pswBuffer = (SWORD*)AllocMemory( slBufferSize+8);
       // load data into buffer
-      CpwiLoad.LoadData_t( inFile, sd_pswBuffer, sd_wfeFormat);
+      CpwiLoad.LoadData_t(inFile, sd_pswBuffer, sd_afFormat);
       // copy first sample to the last one (this is needed for linear interpolation)
       (ULONG&)(((UBYTE*)sd_pswBuffer)[slBufferSize]) = *(ULONG*)sd_pswBuffer;
     }
@@ -209,9 +209,9 @@ CTString CSoundData::GetDescription(void)
 {
   CTString str;
   str.PrintF("%dkHz %dbit %s %.2lfs",
-    sd_wfeFormat.nSamplesPerSec/1000,
-    sd_wfeFormat.wBitsPerSample,
-    sd_wfeFormat.nChannels==1 ? "mono" : "stereo",
+    sd_afFormat.iSampleRate / 1000,
+    sd_afFormat.iBytesPerSample * 8,
+    sd_afFormat.iChannels == 1 ? "mono" : "stereo",
     sd_dSecondsLength);
   return str;
 }
@@ -253,8 +253,8 @@ SLONG CSoundData::GetUsedMemory(void)
 {
   SLONG slUsed = sizeof(*this);
   if( sd_pswBuffer!=NULL) {
-    ASSERT( sd_wfeFormat.nChannels==1 || sd_wfeFormat.nChannels==2);
-    slUsed += sd_slBufferSampleSize * sd_wfeFormat.nChannels *2; // all sounds are 16-bit
+    ASSERT(sd_afFormat.iChannels == 1 || sd_afFormat.iChannels == 2);
+    slUsed += sd_slBufferSampleSize * sd_afFormat.GetBytesPerFrame();
   }
   return slUsed;
 }

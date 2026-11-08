@@ -43,8 +43,8 @@ CAbstractSoundAPI::~CAbstractSoundAPI() {
 
 // Calculate mixer buffer size
 SLONG CAbstractSoundAPI::CalculateMixerSize(void) {
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
-  return SLONG(ceil(snd_tmMixAhead * wfe.nSamplesPerSec) * wfe.wBitsPerSample / 8 * wfe.nChannels);
+  const SEAudioFormat &af = _pSound->sl_afFormat;
+  return SLONG(ceil(snd_tmMixAhead * af.iSampleRate) * af.GetBytesPerFrame());
 };
 
 // Calculate decoder buffer size (only after mixer size)
@@ -53,8 +53,8 @@ SLONG CAbstractSoundAPI::CalculateDecoderSize(SLONG slMixerSize) {
   // CSoundLibrary::sl_ulMaxSampleRate, it may write data outside the buffer boundaries!
 
   // Decoder buffer always works at maximum sample rate
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
-  return slMixerSize * ((CSoundLibrary::sl_ulMaxSampleRate + wfe.nSamplesPerSec - 1) / wfe.nSamplesPerSec);
+  const SEAudioFormat &af = _pSound->sl_afFormat;
+  return slMixerSize * ((CSoundLibrary::sl_ulMaxSampleRate + af.iSampleRate - 1) / af.iSampleRate);
 };
 
 // Allocate new buffer memory
@@ -95,11 +95,11 @@ void CAbstractSoundAPI::FreeBuffers(void) {
 
 // Report generic info about an interface
 void CAbstractSoundAPI::ReportGenericInfo(void) {
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  const SEAudioFormat &af = _pSound->sl_afFormat;
   CPrintF(TRANS("Sound interface info:\n"));
 
-  CPrintF(TRANS("  %d Hz, %d bit, %d channels, mix-ahead: %gs\n"),
-    wfe.nSamplesPerSec, wfe.wBitsPerSample, wfe.nChannels, snd_tmMixAhead);
+  CPrintF(TRANS("  %u Hz, %u bit, %u channels, mix-ahead: %gs\n"),
+    af.iSampleRate, af.iBytesPerSample * 8, af.iChannels, snd_tmMixAhead);
 
   CPrintF(TRANS("  mixer buffer size:  %d bytes\n"), m_slMixerBufferSize);
   CPrintF(TRANS("  decode buffer size: %d bytes\n"), m_slDecodeBufferSize);

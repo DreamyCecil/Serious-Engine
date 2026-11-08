@@ -30,8 +30,6 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   static INDEX _ctChannelsOpened;
   _ctChannelsOpened = 0;
 
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
-
   // Set maximum total number of retries for device opening
   INDEX ctMaxRetries = snd_iMaxOpenRetries;
   MMRESULT res;
@@ -50,10 +48,14 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
     }
   }
 
+  // [Cecil] Create a temporary format structure for initialization
+  WAVEFORMATEX wfeInit;
+  _pSound->sl_afFormat.ToWaveFormat(wfeInit);
+
   FOREVER {
     // Try to open wave device
     HWAVEOUT hwo;
-    res = waveOutOpen(&hwo, uDeviceToOpen, &wfe, NULL, NULL, NONE);
+    res = waveOutOpen(&hwo, uDeviceToOpen, &wfeInit, NULL, NULL, NONE);
 
     if (res == MMSYSERR_NOERROR) {
       _ctChannelsOpened++;

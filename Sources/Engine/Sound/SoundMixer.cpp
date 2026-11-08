@@ -76,7 +76,7 @@ void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize)
   ASSERT( slBufferSize%4==0);
   pvMixerBuffer     = (void*)pslBuffer;
   slMixerBufferSize = slBufferSize /2/2; // because it's stereo and 16-bit dst format
-  slMixerBufferSampleRate = _pSound->sl_SwfeFormat.nSamplesPerSec;
+  slMixerBufferSampleRate = _pSound->sl_afFormat.iSampleRate;
 
   // wipe destination mixer buffer
 #if SE1_USE_ASM
@@ -725,11 +725,10 @@ void MixSound( CSoundObject *pso)
   }
 
   // check for supported sound formats
-  const WAVEFORMATEX &wfe = psd->sd_wfeFormat;
-  const SLONG slChannels = wfe.nChannels;
-  const SLONG slBytes    = wfe.wBitsPerSample/8;
+  const SEAudioFormat &af = psd->sd_afFormat;
+
   // unsupported sound formats will be ignored
-  if( (slChannels!=1 && slChannels!=2) || slBytes!=2) return;
+  if ((af.iChannels != 1 && af.iChannels != 2) || af.iBytesPerSample != 2) return;
 
   // check for delay
   const FLOAT f1oMixerBufferSampleRate = 1.0f / slMixerBufferSampleRate;
@@ -744,7 +743,7 @@ void MixSound( CSoundObject *pso)
 
   // reach sound data and determine sound step, sound buffer and buffer size
   pswSrcBuffer = psd->sd_pswBuffer;
-  fSoundSampleRate = wfe.nSamplesPerSec * pso->so_sp.sp_fPitchShift;
+  fSoundSampleRate = af.iSampleRate * pso->so_sp.sp_fPitchShift;
   fStep      = fSoundSampleRate * f1oMixerBufferSampleRate;
   fLeftStep  = fStep;
   fRightStep = fStep;
@@ -846,7 +845,7 @@ void MixSound( CSoundObject *pso)
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
 
     // Decode some samples from it
-    const ULONG ulSampleSize = wfe.nBlockAlign;
+    const ULONG ulSampleSize = af.GetBytesPerFrame();
     const ULONG ulWantedSamples = FloatToInt(slMixerBufferSize * fStep);
     ASSERT(ulWantedSamples > 0);
     ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_slDecodeBufferSize / ulSampleSize);
@@ -941,12 +940,13 @@ void MixSound( CSoundObject *pso)
 
     // call corresponding mixer routine for current sound format
     bEndOfSound = FALSE;
-    if( slChannels==2) {
+
+    if (af.iChannels == 2) {
       // mix as 16-bit stereo
-      MixStereo( pso);
+      MixStereo(pso);
     } else {
       // mix as 16-bit mono
-      MixMono( pso);
+      MixMono(pso);
     }
   }
 

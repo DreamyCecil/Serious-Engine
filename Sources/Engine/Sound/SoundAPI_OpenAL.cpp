@@ -71,7 +71,7 @@ static void OAL_ParseList(CStaticStackArray<CTString> &aStrings, const ALCchar *
 };
 
 BOOL CSoundAPI_OpenAL::StartUp(BOOL bReport) {
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  const SEAudioFormat &af = _pSound->sl_afFormat;
 
   // Create OpenAL device
   m_pDevice = alcOpenDevice(NULL);
@@ -83,7 +83,7 @@ BOOL CSoundAPI_OpenAL::StartUp(BOOL bReport) {
 
   // Specify context attributes
   const ALCint aAttributes[] = {
-    ALC_FREQUENCY, (ALCint)wfe.nSamplesPerSec,
+    ALC_FREQUENCY, (ALCint)af.iSampleRate,
     0
   };
 
@@ -247,7 +247,7 @@ void CSoundAPI_OpenAL::CopyMixerBuffer(SLONG slMixedSize) {
     slOffset += ctBufferBlockSize;
 
     // Queue this buffer for playing
-    alBufferData(iBuffer, AL_FORMAT_STEREO16, m_pubStreamBuffer, ctBufferBlockSize, _pSound->sl_SwfeFormat.nSamplesPerSec);
+    alBufferData(iBuffer, AL_FORMAT_STEREO16, m_pubStreamBuffer, ctBufferBlockSize, _pSound->sl_afFormat.iSampleRate);
     OAL_CheckError();
 
     alSourceQueueBuffers(m_iSource, 1, &iBuffer);

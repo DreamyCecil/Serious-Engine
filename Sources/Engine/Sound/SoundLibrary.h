@@ -30,6 +30,32 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // [Cecil] Sound interfaces
 #include <Engine/Sound/SoundAPI.h>
 
+// [Cecil] Cross-platform representation of an audio format
+struct SEAudioFormat {
+  UWORD iChannels;       // Amount of audio channels (e.g. 1 - mono, 2 - stereo)
+  UWORD iBytesPerSample; // Width of sample format in bytes (e.g. signed 16-bit = 2 bytes)
+  ULONG iSampleRate;     // Amount of samples in one second of audio (e.g. 11025, 22050, 44100 etc.)
+
+  // Calculate amount of bytes per one sample of audio
+  __forceinline ULONG GetBytesPerFrame(void) const { return iBytesPerSample * iChannels; };
+
+  // Calculate amount of bytes per one second of audio
+  __forceinline ULONG GetBytesPerSecond(void) const { return GetBytesPerFrame() * iSampleRate; };
+
+#if SE1_WIN
+  // Fill WAVEFORMATEX on Windows platforms based on this format
+  inline void ToWaveFormat(WAVEFORMATEX &wfe) const {
+    wfe.wFormatTag = WAVE_FORMAT_PCM; // Always PCM format
+    wfe.nChannels = (WORD)iChannels;
+    wfe.nSamplesPerSec = (DWORD)iSampleRate;
+    wfe.nAvgBytesPerSec = (DWORD)GetBytesPerSecond();
+    wfe.nBlockAlign = (WORD)GetBytesPerFrame();
+    wfe.wBitsPerSample = (WORD)(iBytesPerSample * 8);
+    wfe.cbSize = 0;
+  };
+#endif
+};
+
 // Mixer
 // set master volume and resets mixer buffer (wipes it with zeroes and keeps pointers)
 void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize);
@@ -74,7 +100,7 @@ public:
 
   SoundFormat sl_EsfFormat; // sound format (external)
   CAbstractSoundAPI *sl_pInterface; // [Cecil] Currently used interface
-  WAVEFORMATEX sl_SwfeFormat; // primary sound buffer format
+  SEAudioFormat sl_afFormat; // primary sound buffer format
 
   CListHead sl_ClhAwareList; // list of sound mode aware objects
   CListHead sl_lhActiveListeners; // active listeners for current frame of listening

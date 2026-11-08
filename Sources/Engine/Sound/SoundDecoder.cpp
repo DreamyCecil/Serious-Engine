@@ -41,7 +41,7 @@ struct DecodeData {
   size_t iDataOffset; // Where the encoded audio starts inside loaded data (e.g. uncompressed file inside an archive)
   size_t iDataSize; // Size of the encoded audio (setting it to -1 figures out the size upon decoder initialization)
 
-  WAVEFORMATEX wfeFormat; // Format of the loaded audio
+  SEAudioFormat afFormat; // Format of the loaded audio
   FLOAT fLength; // Audio length in seconds
 
   DecodeData() : pDecoder(NULL), fnmStreamed(""), iDataOffset(0), iDataSize(0), fLength(0) {};
@@ -216,14 +216,10 @@ void CSoundDecoder::Initialize(const CTString &fnm) {
       ThrowF_t(TRANS("Encoded audio must be signed 16-bit, stereo, %u Hz!"), CSoundLibrary::sl_ulMaxSampleRate);
     }
 
-    WAVEFORMATEX &wfe = sdc_pData->wfeFormat;
-    wfe.wFormatTag = WAVE_FORMAT_PCM;
-    wfe.nChannels = iChannels;
-    wfe.nSamplesPerSec = iSampleRate;
-    wfe.wBitsPerSample = 16;
-    wfe.nBlockAlign = wfe.wBitsPerSample/8 * wfe.nChannels;
-    wfe.nAvgBytesPerSec = wfe.nBlockAlign * wfe.nSamplesPerSec;
-    wfe.cbSize = 0;
+    SEAudioFormat &af = sdc_pData->afFormat;
+    af.iChannels = iChannels;
+    af.iSampleRate = iSampleRate;
+    af.iBytesPerSample = ma_get_bytes_per_sample(eFormat);
 
     // Retrieve length
     result = ma_data_source_get_length_in_seconds(sdc_pData->pDecoder, &sdc_pData->fLength);
@@ -257,9 +253,9 @@ BOOL CSoundDecoder::IsOpen(void) const {
 };
 
 // Get audio format from the decoder (only if it's open)
-void CSoundDecoder::GetFormat(WAVEFORMATEX &wfe) const {
+void CSoundDecoder::GetFormat(SEAudioFormat &af) const {
   ASSERT(sdc_pData != NULL);
-  if (sdc_pData != NULL) wfe = sdc_pData->wfeFormat;
+  if (sdc_pData != NULL) af = sdc_pData->afFormat;
 };
 
 // [Cecil] Retrieve length of the encoded audio in seconds
@@ -275,7 +271,7 @@ DOUBLE CSoundDecoder::GetSoundLength(void) const {
 ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctSamplesToDecode) {
   // Play all zeroes if no decoder
   if (!IsOpen()) {
-    memset(pvDestBuffer, 0, ctSamplesToDecode * sdc_pData->wfeFormat.nBlockAlign); // Samples * bytes per sample
+    memset(pvDestBuffer, 0, ctSamplesToDecode * sdc_pData->afFormat.GetBytesPerFrame());
     return ctSamplesToDecode;
   }
 

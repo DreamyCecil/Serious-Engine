@@ -38,7 +38,7 @@ public:
   BOOL IsOpen(void) const;
 
   // Get audio format from the decoder (only if it's open)
-  void GetFormat(WAVEFORMATEX &wfe) const;
+  void GetFormat(SEAudioFormat &af) const;
 
   // [Cecil] Retrieve length of the encoded audio in seconds
   SECOND GetSoundLength(void) const;

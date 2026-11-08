@@ -51,7 +51,7 @@ public:
   void ResumePlayingObjects(void);
 
   // Sound Buffer
-  WAVEFORMATEX sd_wfeFormat;     // primary sound buffer format
+  SEAudioFormat sd_afFormat;     // primary sound buffer format
   SWORD *sd_pswBuffer;           // pointer on buffer
   SLONG  sd_slBufferSampleSize;  // buffer sample size
   SECOND sd_dSecondsLength;      // sound length in seconds

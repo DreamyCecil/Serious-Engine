@@ -26,23 +26,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
  */
 
 // check wave format
-void PCMWaveInput::CheckWaveFormat_t(WAVEFORMATEX wfeCheck, const char *pcErrorString)
+void PCMWaveInput::CheckWaveFormat_t(const SEAudioFormat &afCheck, const char *strErrorString)
 {
-  // check format tag
-  if (wfeCheck.wFormatTag != WAVE_FORMAT_PCM) {
-    ThrowF_t(TRANS("%s: Invalid format tag, not a PCM Wave file!"), pcErrorString);
-  }
   // check bits per sample
-  if (wfeCheck.wBitsPerSample != 8 &&
-      wfeCheck.wBitsPerSample != 16) {
-    ThrowF_t(TRANS("%s: Unknown Bits Per Sample value!"), pcErrorString);
+  if (afCheck.iBytesPerSample != 1 && afCheck.iBytesPerSample != 2) {
+    ThrowF_t(TRANS("%s: Unknown Bits Per Sample value!"), strErrorString);
   }
+
   // check number of channels
-  if (wfeCheck.nChannels != 1 &&
-      wfeCheck.nChannels != 2) {
-    ThrowF_t(TRANS("%s: Invalid number of channels!"), pcErrorString);
+  if (afCheck.iChannels != 1 && afCheck.iChannels != 2) {
+    ThrowF_t(TRANS("%s: Invalid number of channels!"), strErrorString);
   }
-  //ASSERT( wfeCheck.wBitsPerSample==16);
 }
 
 
@@ -50,12 +44,14 @@ void PCMWaveInput::CheckWaveFormat_t(WAVEFORMATEX wfeCheck, const char *pcErrorS
 inline ULONG PCMWaveInput::GetData_t(CTStream *pCstrInput)
 {
   ASSERT(pwi_bInfoLoaded);
+
   // read data according to bits per sample value
-  if (pwi_wfeWave.wBitsPerSample==8) {
+  if (pwi_afWave.iBytesPerSample == 1) {
     // read UBYTE
     UBYTE ubData;
     *pCstrInput >> ubData;
     return ((ULONG)ubData) <<16;            // (shift) prepare data for shrink/expand operation
+
   } else {
     // read UWORD
     SWORD swData;
@@ -68,7 +64,7 @@ inline ULONG PCMWaveInput::GetData_t(CTStream *pCstrInput)
 // Store data
 inline void PCMWaveInput::StoreData(ULONG ulData)
 {
-  ASSERT( pwi_wfeDesired.wBitsPerSample==16);
+  ASSERT(pwi_afDesired.iBytesPerSample == 2);
   *pwi_pswMemory++ = ((SWORD)(ulData>>8) -0x8000);  // (shift) restore data format
 }
 
@@ -79,7 +75,7 @@ inline void PCMWaveInput::StoreData(ULONG ulData)
 void PCMWaveInput::CopyData_t(CTStream *pCstrInput)
 {
   // for all input data (mono and stereo)
-  ULONG ulDataCount = GetDataLength() * pwi_wfeWave.nChannels;
+  ULONG ulDataCount = GetDataLength() * pwi_afWave.iChannels;
   while (ulDataCount > 0) {
     StoreData(GetData_t(pCstrInput));   // read and store data from input (hidden BitsPerSample conversion!)
     ulDataCount--;                      // to next data
@@ -97,7 +93,7 @@ void PCMWaveInput::ShrinkData_t(CTStream *pCstrInput)
   ASSERT(pwi_dRatio>1.0);
 
   // *** MONO ***
-  if (pwi_wfeWave.nChannels == 1) {
+  if (pwi_afWave.iChannels == 1) {
     DOUBLE dInterData, dTempData, dRatio;
     ULONG ulDataCount;
 
@@ -128,7 +124,7 @@ void PCMWaveInput::ShrinkData_t(CTStream *pCstrInput)
 
 
   // *** STEREO ***
-  } else if (pwi_wfeWave.nChannels == 2) {
+  } else if (pwi_afWave.iChannels == 2) {
     DOUBLE dLInterData, dRInterData, dLTempData, dRTempData, dRatio;
     ULONG ulDataCount;
 
@@ -179,7 +175,7 @@ void PCMWaveInput::ShrinkData_t(CTStream *pCstrInput)
  *  Load Wave info
  */
 
-WAVEFORMATEX PCMWaveInput::LoadInfo_t(CTStream *pCstrInput)
+void PCMWaveInput::LoadInfo_t(CTStream *pCstrInput, SEAudioFormat &afInfo)
 {
   // if already loaded -> exception
   if (pwi_bInfoLoaded) {
@@ -206,14 +202,28 @@ WAVEFORMATEX PCMWaveInput::LoadInfo_t(CTStream *pCstrInput)
   SLONG  slFmtLength;
   (*pCstrInput) >> slFmtLength;
 
+  UWORD uwDummy;
+  ULONG ulDummy;
+
   // read WAVE format
-  (*pCstrInput) >> pwi_wfeWave.wFormatTag;
-  (*pCstrInput) >> pwi_wfeWave.nChannels;
-  (*pCstrInput) >> pwi_wfeWave.nSamplesPerSec;
-  (*pCstrInput) >> pwi_wfeWave.nAvgBytesPerSec;
-  (*pCstrInput) >> pwi_wfeWave.nBlockAlign;
-  (*pCstrInput) >> pwi_wfeWave.wBitsPerSample;
-  pwi_wfeWave.cbSize = 0;   // Only for PCM Wave !!!
+  (*pCstrInput) >> uwDummy;
+
+  // [Cecil] Check format tag (WAVE_FORMAT_PCM in Windows)
+  if (uwDummy != 1) {
+    ThrowF_t(TRANS("%s: Invalid format tag, not a PCM Wave file!"), "PCM Wave Input (input)");
+  }
+
+  (*pCstrInput) >> uwDummy;
+  pwi_afWave.iChannels = uwDummy;
+
+  (*pCstrInput) >> ulDummy;
+  pwi_afWave.iSampleRate = ulDummy;
+
+  (*pCstrInput) >> ulDummy;
+  (*pCstrInput) >> uwDummy;
+
+  (*pCstrInput) >> uwDummy;
+  pwi_afWave.iBytesPerSample = uwDummy / 8;
 
   // WARNING !!! - Only for PCM Wave - Skip extra information if exists
   if( slFmtLength > 16) {
@@ -246,21 +256,20 @@ WAVEFORMATEX PCMWaveInput::LoadInfo_t(CTStream *pCstrInput)
   (*pCstrInput) >> pwi_ulDataLength;
 
   /* Check PCM format */
-  CheckWaveFormat_t(pwi_wfeWave, "PCM Wave Input (input)");
+  CheckWaveFormat_t(pwi_afWave, "PCM Wave Input (input)");
 
   // mark Info loaded
   pwi_bInfoLoaded = TRUE;
 
-  // ASSERT( pwi_wfeWave.wBitsPerSample==16);
   // return Wave Format
-  return pwi_wfeWave;
+  afInfo = pwi_afWave;
 }
 
 
 /*
  *  Load and convert Wave data
  */
-void PCMWaveInput::LoadData_t(CTStream *pCstrInput, SWORD *pswMemory, WAVEFORMATEX &SwfeDesired)
+void PCMWaveInput::LoadData_t(CTStream *pCstrInput, SWORD *pswMemory, const SEAudioFormat &afDesired)
 {
   // if info not loaded -> exception
   if (!pwi_bInfoLoaded) {
@@ -275,11 +284,11 @@ void PCMWaveInput::LoadData_t(CTStream *pCstrInput, SWORD *pswMemory, WAVEFORMAT
   pwi_pswMemory = pswMemory;
 
   // store and check desired sound format
-  CheckWaveFormat_t(SwfeDesired, "PCM Wave Input (desired)");
-  pwi_wfeDesired = SwfeDesired;
+  CheckWaveFormat_t(afDesired, "PCM Wave Input (desired)");
+  pwi_afDesired = afDesired;
 
   // calculate expand/shrink ratio (number of channels remain the same)
-  pwi_dRatio = (DOUBLE)pwi_wfeDesired.nSamplesPerSec / (DOUBLE)pwi_wfeWave.nSamplesPerSec;
+  pwi_dRatio = (DOUBLE)pwi_afDesired.iSampleRate / (DOUBLE)pwi_afWave.iSampleRate;
 
   // determine converion type from input and desired sound frequency, and convert sound
   if (pwi_dRatio < 1) {
@@ -287,15 +296,14 @@ void PCMWaveInput::LoadData_t(CTStream *pCstrInput, SWORD *pswMemory, WAVEFORMAT
     ShrinkData_t(pCstrInput);
   } else if (pwi_dRatio > 1) {
     ASSERTALWAYS("Can't expand wave data");
-    memset(pwi_pswMemory, 0, DetermineBufferSize(pwi_wfeDesired));
+    memset(pwi_pswMemory, 0, DetermineBufferSize(pwi_afDesired));
   // copy data
   } else {
     ASSERT(pwi_dRatio==1.0f);
     CopyData_t(pCstrInput);
   }
 
-  // data is loaded (and maybe converted from 16-bits)
-  if( pwi_wfeWave.wBitsPerSample==8) SwfeDesired.nBlockAlign *= 2; 
+  // data is loaded (and maybe converted)
   pwi_bDataLoaded = TRUE;
 }
 
@@ -316,15 +324,15 @@ ULONG PCMWaveInput::GetByteLength(void)
 ULONG PCMWaveInput::GetDataLength(void)
 {
   ASSERT(pwi_bInfoLoaded);
-  return GetByteLength() / (pwi_wfeWave.nChannels * pwi_wfeWave.wBitsPerSample/8);
+  return GetByteLength() / pwi_afWave.GetBytesPerFrame();
 }
 
 
-ULONG PCMWaveInput::GetDataLength(WAVEFORMATEX SwfeDesired)
+ULONG PCMWaveInput::GetDataLength(const SEAudioFormat &afDesired)
 {
   ASSERT(pwi_bInfoLoaded);
   // return buffer size
-  return DetermineBufferSize(SwfeDesired) / (SwfeDesired.nChannels * SwfeDesired.wBitsPerSample/8);
+  return DetermineBufferSize(afDesired) / afDesired.GetBytesPerFrame();
 }
 
 /*
@@ -333,7 +341,7 @@ ULONG PCMWaveInput::GetDataLength(WAVEFORMATEX SwfeDesired)
 DOUBLE PCMWaveInput::GetSecondsLength(void)
 {
   ASSERT(pwi_bInfoLoaded);
-  return (DOUBLE)GetDataLength() / (DOUBLE)pwi_wfeWave.nSamplesPerSec;
+  return (DOUBLE)GetDataLength() / (DOUBLE)pwi_afWave.iSampleRate;
 }
 
 
@@ -342,21 +350,20 @@ DOUBLE PCMWaveInput::GetSecondsLength(void)
  */
 ULONG PCMWaveInput::DetermineBufferSize(void)
 {
-  return DetermineBufferSize(pwi_wfeWave);
+  return DetermineBufferSize(pwi_afWave);
 }
 
 
-ULONG PCMWaveInput::DetermineBufferSize( WAVEFORMATEX SwfeDesired)
+ULONG PCMWaveInput::DetermineBufferSize(const SEAudioFormat &afDesired)
 {
   ASSERT(pwi_bInfoLoaded);
-  DOUBLE dRatio;
 
   // calculate ratio between formats
-  dRatio = (DOUBLE)SwfeDesired.nSamplesPerSec / (DOUBLE)pwi_wfeWave.nSamplesPerSec
-         * (DOUBLE)SwfeDesired.wBitsPerSample / (DOUBLE)pwi_wfeWave.wBitsPerSample;
+  DOUBLE dRatio = (DOUBLE)afDesired.iSampleRate     / (DOUBLE)pwi_afWave.iSampleRate
+                * (DOUBLE)afDesired.iBytesPerSample / (DOUBLE)pwi_afWave.iBytesPerSample;
+
   // return buffer size (must calculate with data length to avoid miss align data, for example:
   // 16 bit sound with 2 channels must be aligned to 4 bytes boundary and a multiply with
   // random ratio can as result give any possible number
-  DOUBLE ret = ceil(dRatio*GetDataLength()) * (pwi_wfeWave.nChannels*(pwi_wfeWave.wBitsPerSample/8));
-  return (ULONG)ret;
+  return (ULONG)ceil(dRatio * GetDataLength()) * pwi_afWave.GetBytesPerFrame();
 }

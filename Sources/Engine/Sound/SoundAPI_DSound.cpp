@@ -40,7 +40,9 @@ BOOL CSoundAPI_DSound::Fail(const char *strError) {
 };
 
 BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize) {
-  WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  // [Cecil] Create a temporary format structure for initialization
+  WAVEFORMATEX wfeInit;
+  _pSound->sl_afFormat.ToWaveFormat(wfeInit);
 
   // Eventually adjust for EAX
   DWORD dwFlag3D = NONE;
@@ -48,9 +50,9 @@ BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize)
 #if SE1_SND_EAX
   if (snd_iInterface == E_SND_EAX) {
     dwFlag3D = DSBCAPS_CTRL3D;
-    wfe.nChannels = 1;  // mono output
-    wfe.nBlockAlign /= 2;
-    wfe.nAvgBytesPerSec /= 2;
+    wfeInit.nChannels = 1;  // mono output
+    wfeInit.nBlockAlign /= 2;
+    wfeInit.nAvgBytesPerSec /= 2;
     slSize /= 2;
   }
 #endif
@@ -61,18 +63,9 @@ BOOL CSoundAPI_DSound::InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize)
   dsBuffer.dwSize = sizeof(dsBuffer);
   dsBuffer.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | dwFlag3D;
   dsBuffer.dwBufferBytes = slSize;
-  dsBuffer.lpwfxFormat = &wfe;
+  dsBuffer.lpwfxFormat = &wfeInit;
 
   HRESULT hResult = m_pDS->CreateSoundBuffer(&dsBuffer, &pBuffer, NULL);
-
-#if SE1_SND_EAX
-  if (snd_iInterface == E_SND_EAX) {
-    // Revert back to original wave format (stereo)
-    wfe.nChannels = 2;
-    wfe.nBlockAlign *= 2;
-    wfe.nAvgBytesPerSec *= 2;
-  }
-#endif
 
   if (hResult != DS_OK) {
     return Fail(TRANS("  ! DirectSound error: Cannot create secondary buffer.\n"));
@@ -259,10 +252,12 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   hResult = m_pDS->CreateSoundBuffer(&dsBuffer, &m_pDSPrimary, NULL);
   if(hResult != DS_OK) return Fail(TRANS("  ! DirectSound error: Cannot create primary sound buffer.\n"));
 
-  // Set primary buffer format
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
+  // [Cecil] Create a temporary format structure for initialization
+  WAVEFORMATEX wfeInit;
+  _pSound->sl_afFormat.ToWaveFormat(wfeInit);
 
-  hResult = m_pDSPrimary->SetFormat(&wfe);
+  // Set primary buffer format
+  hResult = m_pDSPrimary->SetFormat(&wfeInit);
   if (hResult != DS_OK) return Fail(TRANS("  ! DirectSound error: Cannot set primary sound buffer format.\n"));
 
   // Allocate mixer buffers

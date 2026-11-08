@@ -100,7 +100,7 @@ CSoundLibrary::CSoundLibrary(void)
   CTSingleLock slSounds(&sl_csSound, TRUE);
 
   // clear sound format
-  memset(&sl_SwfeFormat, 0, sizeof(sl_SwfeFormat));
+  memset(&sl_afFormat, 0, sizeof(sl_afFormat));
   sl_EsfFormat = SF_NONE;
 };
 
@@ -206,26 +206,22 @@ static void PrintAudioDevices(void) {
 void CSoundLibrary::SetWaveFormat(CSoundLibrary::SoundFormat EsfFormat)
 {
   // change Library Wave Format
-  WAVEFORMATEX &wfe = sl_SwfeFormat;
-  memset(&wfe, 0, sizeof(wfe));
+  SEAudioFormat &af = sl_afFormat;
+  memset(&af, 0, sizeof(af));
 
-  wfe.wFormatTag = WAVE_FORMAT_PCM;
-  wfe.nChannels = 2;
-  wfe.wBitsPerSample = 16;
+  af.iChannels = 2;
+  af.iBytesPerSample = 2;
 
   switch( EsfFormat) {
-    case CSoundLibrary::SF_11025_16: wfe.nSamplesPerSec = 11025;  break;
-    case CSoundLibrary::SF_22050_16: wfe.nSamplesPerSec = 22050;  break;
-    case CSoundLibrary::SF_44100_16: wfe.nSamplesPerSec = 44100;  break;
+    case CSoundLibrary::SF_11025_16: af.iSampleRate = 11025;  break;
+    case CSoundLibrary::SF_22050_16: af.iSampleRate = 22050;  break;
+    case CSoundLibrary::SF_44100_16: af.iSampleRate = 44100;  break;
     case CSoundLibrary::SF_NONE: ASSERTALWAYS( "Can't set to NONE format"); break;
     default:                     ASSERTALWAYS( "Unknown Sound format");     break;
   }
 
   // [Cecil] Verify sample rate
-  ASSERT(wfe.nSamplesPerSec <= sl_ulMaxSampleRate);
-
-  wfe.nBlockAlign = (wfe.wBitsPerSample / 8) * wfe.nChannels;
-  wfe.nAvgBytesPerSec = wfe.nSamplesPerSec * wfe.nBlockAlign;
+  ASSERT(af.iSampleRate <= sl_ulMaxSampleRate);
 };
 
 /*
@@ -237,7 +233,7 @@ void CSoundLibrary::SetLibraryFormat(void)
   if (sl_EsfFormat == CSoundLibrary::SF_NONE) return;
 
   // else check wave format to determine library format
-  const ULONG ulFormat = sl_SwfeFormat.nSamplesPerSec;
+  const ULONG ulFormat = sl_afFormat.iSampleRate;
 
   // [Cecil] Make sure it's not over maximum supported sample rate
   if (ulFormat > sl_ulMaxSampleRate) {

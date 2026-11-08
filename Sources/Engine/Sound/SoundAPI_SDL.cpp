@@ -109,21 +109,20 @@ static void AudioCallback(void *pUserData, SDL_AudioStream *pStream, int ctAddit
 };
 
 BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
-  const WAVEFORMATEX &wfe = _pSound->sl_SwfeFormat;
-  Sint16 iBPS = wfe.wBitsPerSample;
+  const SEAudioFormat &af = _pSound->sl_afFormat;
   SDL_AudioFormat formatSet;
 
-  if (iBPS <= 8) {
+  if (af.iBytesPerSample <= 1) {
     formatSet = SDL_AUDIO_U8;
 
-  } else if (iBPS <= 16) {
+  } else if (af.iBytesPerSample <= 2) {
     formatSet = SDL_AUDIO_S16LE;
 
-  } else if (iBPS <= 32) {
+  } else if (af.iBytesPerSample <= 4) {
     formatSet = SDL_AUDIO_S32LE;
 
   } else {
-    CPrintF(TRANS("Unsupported bits-per-sample: %d\n"), iBPS);
+    CPrintF(TRANS("Unsupported bits-per-sample: %u\n"), af.iBytesPerSample * 8);
     return FALSE;
   }
 
@@ -145,7 +144,7 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
     }
   }
 
-  const SDL_AudioSpec spec = { formatSet, (int)wfe.nChannels, (int)wfe.nSamplesPerSec };
+  const SDL_AudioSpec spec = { formatSet, (int)af.iChannels, (int)af.iSampleRate };
   m_pAudioStream = SDL_OpenAudioDeviceStream(iDeviceToOpen, &spec, &AudioCallback, this);
 
   if (m_pAudioStream == NULL) {
