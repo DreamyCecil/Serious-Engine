@@ -142,15 +142,15 @@ BOOL CSoundAPI_OpenAL::StartUp(BOOL bReport) {
   AllocBuffers(TRUE);
 
   // Determine number of OpenAL buffers
-  const INDEX ctBuffers = INDEX(m_ctMixerBufferSize / ctBufferBlockSize);
+  const size_t ctBuffers = m_ctMixerBufferSize / ctBufferBlockSize;
 
   if (bReport) {
-    CPrintF(TRANS("  output buffers: %d x %d bytes\n"), ctBuffers, ctBufferBlockSize);
+    CPrintF(TRANS("  output buffers: %u x %u bytes\n"), (ULONG)ctBuffers, (ULONG)ctBufferBlockSize);
     ReportGenericInfo();
   }
 
   // Setup the audio buffers
-  m_aiBuffers.New(ctBuffers);
+  m_aiBuffers.New((INDEX)ctBuffers);
   alGenBuffers(m_aiBuffers.Count(), m_aiBuffers.sa_Array);
   OAL_CheckError(TRANS("Cannot generate buffers"));
 
@@ -190,7 +190,7 @@ void CSoundAPI_OpenAL::ShutDown(void) {
   const INDEX ctBuffers = m_aiBuffers.Count();
 
   if (ctBuffers != 0) {
-    alDeleteBuffers(ctBuffers, m_aiBuffers.sa_Array);
+    alDeleteBuffers((ALsizei)ctBuffers, m_aiBuffers.sa_Array);
     m_aiBuffers.Delete();
   }
 
@@ -227,27 +227,27 @@ size_t CSoundAPI_OpenAL::PrepareSoundBuffer(void) {
   }
 
   // Mix as much data as current free buffers can handle
-  const INDEX slDataToMix = m_aiFreeBuffers.Count() * ctBufferBlockSize;
+  const size_t ctDataToMix = m_aiFreeBuffers.Count() * ctBufferBlockSize;
 
-  ASSERT(slDataToMix <= m_ctMixerBufferSize);
-  return slDataToMix;
+  ASSERT(ctDataToMix <= m_ctMixerBufferSize);
+  return ctDataToMix;
 };
 
 void CSoundAPI_OpenAL::CopyMixerBuffer(size_t) {
   // Must have at least one free buffer to play sound through
   ASSERT(m_aiFreeBuffers.Count() != 0);
 
-  SLONG slOffset = 0;
+  size_t ctOffset = 0;
 
   while (m_aiFreeBuffers.Count() != 0) {
     ALuint iBuffer = m_aiFreeBuffers.Pop();
 
     // Copy mixer data into the proxy buffer
-    CopyMixerBuffer_stereo(slOffset, m_pubStreamBuffer, ctBufferBlockSize);
-    slOffset += ctBufferBlockSize;
+    CopyMixerBuffer_stereo(ctOffset, m_pubStreamBuffer, ctBufferBlockSize);
+    ctOffset += ctBufferBlockSize;
 
     // Queue this buffer for playing
-    alBufferData(iBuffer, AL_FORMAT_STEREO16, m_pubStreamBuffer, ctBufferBlockSize, _pSound->sl_afFormat.iSampleRate);
+    alBufferData(iBuffer, AL_FORMAT_STEREO16, m_pubStreamBuffer, (ALsizei)ctBufferBlockSize, _pSound->sl_afFormat.iSampleRate);
     OAL_CheckError();
 
     alSourceQueueBuffers(m_iSource, 1, &iBuffer);
@@ -269,7 +269,7 @@ void CSoundAPI_OpenAL::Update(void) {
   if (!m_bUsingEFX) return;
 
   // Determine number of listeners and get a listener
-  INDEX ctListeners = 0;
+  size_t ctListeners = 0;
   CSoundListener *pListener = NULL;
 
   {FOREACHINLIST(CSoundListener, sli_lnInActiveListeners, _pSound->sl_lhActiveListeners, itsli) {
@@ -282,7 +282,7 @@ void CSoundAPI_OpenAL::Update(void) {
     SetEnvironment(pListener->sli_iEnvironmentType, pListener->sli_fEnvironmentSize);
 
   // Reset environment properties for no listeners
-  } else if (ctListeners < 1) {
+  } else if (ctListeners == 0) {
     SetEnvironment(-1, -1);
   }
 };

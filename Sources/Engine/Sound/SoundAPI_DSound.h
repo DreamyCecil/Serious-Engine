@@ -35,7 +35,7 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
 
     LPDIRECTSOUNDBUFFER m_pDSPrimary;
     LPDIRECTSOUNDBUFFER m_pDSSecondary; // 2D usage
-    INDEX m_iWriteOffset;
+    size_t m_iWriteOffset;
 
   #if SE1_SND_EAX
     BOOL m_bUsingEAX;
@@ -45,7 +45,7 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
     LPDIRECTSOUND3DLISTENER m_pDSListener; // 3D EAX
     LPDIRECTSOUND3DBUFFER m_pDSSourceLeft;
     LPDIRECTSOUND3DBUFFER m_pDSSourceRight;
-    INDEX m_iWriteOffsetEAX;
+    size_t m_iWriteOffsetEAX;
 
     INDEX m_iLastEnvType;
     FLOAT m_fLastEnvSize;

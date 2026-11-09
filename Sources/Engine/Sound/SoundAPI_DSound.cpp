@@ -153,7 +153,7 @@ void CSoundAPI_DSound::PlayBuffers(void) {
   // Adjust starting offsets for EAX
   if (m_bUsingEAX) {
     DWORD dwCursor1, dwCursor2;
-    SLONG slMinDelta = MAX_SLONG;
+    SLONG slMinDelta = MAX_SLONG; // Must remain as SLONG because it may be negative
 
     // Should be enough to screw interrupts
     for (INDEX i = 0; i < 10; i++) {
@@ -171,20 +171,23 @@ void CSoundAPI_DSound::PlayBuffers(void) {
       //CPrintF("D1=%5d,  D2=%5d,  AD=%5d,  MD=%5d\n", slDelta1, slDelta2, slDelta, slMinDelta);
     }
 
-    // 2 because of stereo offsets
-    if (slMinDelta < 0) m_iWriteOffset  = -slMinDelta * 2;
-    if (slMinDelta > 0) m_iWriteOffsetEAX = +slMinDelta * 2;
+    // Multiplied by 2 because of stereo offsets
+    if (slMinDelta < 0) {
+      m_iWriteOffset = -slMinDelta * 2;
+    } else if (slMinDelta > 0) {
+      m_iWriteOffsetEAX = +slMinDelta * 2;
+    }
 
     // Round to 4 bytes
     m_iWriteOffset += m_iWriteOffset & 3;
     m_iWriteOffsetEAX += m_iWriteOffsetEAX & 3;
 
     // Assure that first writing offsets are inside buffers
-    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= (INDEX)m_ctMixerBufferSize;
-    if (m_iWriteOffsetEAX >= m_ctMixerBufferSize) m_iWriteOffsetEAX -= (INDEX)m_ctMixerBufferSize;
+    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= m_ctMixerBufferSize;
+    if (m_iWriteOffsetEAX >= m_ctMixerBufferSize) m_iWriteOffsetEAX -= m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_ctMixerBufferSize);
-    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_ctMixerBufferSize);
+    ASSERT(m_iWriteOffset < m_ctMixerBufferSize);
+    ASSERT(m_iWriteOffsetEAX < m_ctMixerBufferSize);
   }
 #endif // SE1_SND_EAX
 };
@@ -403,10 +406,10 @@ void CSoundAPI_DSound::CopyMixerBuffer(size_t ctMixedSize) {
     ctPart2Size = ctMixedSize - ctPart1Size;
     CopyMixerBuffer_mono(ctPart1Size, lpData, ctPart2Size);
 
-    m_iWriteOffset += (INDEX)ctMixedSize;
-    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= (INDEX)m_ctMixerBufferSize;
+    m_iWriteOffset += ctMixedSize;
+    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_ctMixerBufferSize);
+    ASSERT(m_iWriteOffset < m_ctMixerBufferSize);
     m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
 
     // Lock right buffer and copy first part of the 2nd mono block
@@ -419,10 +422,10 @@ void CSoundAPI_DSound::CopyMixerBuffer(size_t ctMixedSize) {
     ctPart2Size = ctMixedSize - ctPart1Size;
     CopyMixerBuffer_mono(ctPart1Size + 2, lpData, ctPart2Size);
 
-    m_iWriteOffsetEAX += (INDEX)ctMixedSize;
-    if (m_iWriteOffsetEAX >= m_ctMixerBufferSize) m_iWriteOffsetEAX -= (INDEX)m_ctMixerBufferSize;
+    m_iWriteOffsetEAX += ctMixedSize;
+    if (m_iWriteOffsetEAX >= m_ctMixerBufferSize) m_iWriteOffsetEAX -= m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_ctMixerBufferSize);
+    ASSERT(m_iWriteOffsetEAX < m_ctMixerBufferSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);
     return;
   }
@@ -440,10 +443,10 @@ void CSoundAPI_DSound::CopyMixerBuffer(size_t ctMixedSize) {
     ctPart2Size = ctMixedSize - ctPart1Size;
     CopyMixerBuffer_stereo(ctPart1Size, lpData, ctPart2Size);
 
-    m_iWriteOffset += (INDEX)ctMixedSize;
-    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= (INDEX)m_ctMixerBufferSize;
+    m_iWriteOffset += ctMixedSize;
+    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_ctMixerBufferSize);
+    ASSERT(m_iWriteOffset < m_ctMixerBufferSize);
     m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
   }
 };
@@ -472,13 +475,13 @@ size_t CSoundAPI_DSound::PrepareSoundBuffer(void)
     dwCurrentCursor2 *= 2;
 
     // Store pointers and wrapped block sizes
-    SLONG slDataToMix1 = dwCurrentCursor - m_iWriteOffset;
+    SLONG slDataToMix1 = (SLONG)dwCurrentCursor - (SLONG)m_iWriteOffset;
     if (slDataToMix1 < 0) slDataToMix1 += (SLONG)m_ctMixerBufferSize;
 
     ASSERT(slDataToMix1 >= 0 && slDataToMix1 <= m_ctMixerBufferSize);
     slDataToMix1 = Min(slDataToMix1, m_ctMixerBufferSize);
 
-    SLONG slDataToMix2 = dwCurrentCursor2 - m_iWriteOffsetEAX;
+    SLONG slDataToMix2 = (SLONG)dwCurrentCursor2 - (SLONG)m_iWriteOffsetEAX;
     if (slDataToMix2 < 0) slDataToMix2 += (SLONG)m_ctMixerBufferSize;
 
     ASSERT(slDataToMix2 >= 0 && slDataToMix2 <= m_ctMixerBufferSize);
@@ -497,7 +500,7 @@ size_t CSoundAPI_DSound::PrepareSoundBuffer(void)
     }
 
     // Store pointer and wrapped block size
-    slDataToMix = dwCurrentCursor - m_iWriteOffset;
+    slDataToMix = (SLONG)dwCurrentCursor - (SLONG)m_iWriteOffset;
     if (slDataToMix < 0) slDataToMix += (SLONG)m_ctMixerBufferSize;
 
     ASSERT(slDataToMix >= 0 && slDataToMix <= m_ctMixerBufferSize);
@@ -571,7 +574,7 @@ void CSoundAPI_DSound::Update(void) {
 
 #if SE1_SND_EAX
   // Determine number of listeners and get listener
-  INDEX ctListeners = 0;
+  size_t ctListeners = 0;
   CSoundListener *sli;
 
   {FOREACHINLIST(CSoundListener, sli_lnInActiveListeners, _pSound->sl_lhActiveListeners, itsli) {
@@ -588,7 +591,7 @@ void CSoundAPI_DSound::Update(void) {
   }
 
   // If there are no listeners - reset environment properties
-  if (ctListeners < 1 && (m_iLastEnvType != 1 || m_fLastEnvSize != 1.4f)) {
+  if (ctListeners == 0 && (m_iLastEnvType != 1 || m_fLastEnvSize != 1.4f)) {
     // Keep new properties and update environment
     m_iLastEnvType = 1;
     m_fLastEnvSize = 1.4f;

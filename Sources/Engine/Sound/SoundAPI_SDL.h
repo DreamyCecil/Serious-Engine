@@ -32,20 +32,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class CSoundAPI_SDL : public CAbstractSoundAPI {
   public:
     Uint8 m_ubSilence;
-    SLONG m_slBackBufferAlloc;
+    size_t m_ctBackBufferAlloc;
     SE1_ATOMIC(Uint8 *) m_pBackBuffer;
-    SE1_ATOMIC(SLONG) m_slBackBufferPos;
-    SE1_ATOMIC(SLONG) m_slBackBufferRemain;
+    SE1_ATOMIC(size_t) m_ctBackBufferPos;
+    SE1_ATOMIC(size_t) m_ctBackBufferRemain;
     SDL_AudioStream *m_pAudioStream;
 
   public:
     // Constructor
     CSoundAPI_SDL() : CAbstractSoundAPI() {
       m_ubSilence = 0;
-      m_slBackBufferAlloc = 0;
+      m_ctBackBufferAlloc = 0;
       m_pBackBuffer = NULL;
-      m_slBackBufferPos = 0;
-      m_slBackBufferRemain = 0;
+      m_ctBackBufferPos = 0;
+      m_ctBackBufferRemain = 0;
       m_pAudioStream = NULL;
     };
 
@@ -57,7 +57,7 @@ class CSoundAPI_SDL : public CAbstractSoundAPI {
     virtual BOOL StartUp(BOOL bReport);
     virtual void ShutDown(void);
 
-    void WriteAudioData(UBYTE *pubStream, SLONG slStreamSize);
+    void WriteAudioData(UBYTE *pubStream, size_t ctStreamSize);
 
     virtual void CopyMixerBuffer(size_t ctMixedSize);
     virtual size_t PrepareSoundBuffer(void);

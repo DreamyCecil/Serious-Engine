@@ -39,11 +39,11 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   CTString strDevice = TRANS("default");
 
   if (snd_iDevice >= 0) {
-    const INDEX ctDevices = (INDEX)waveOutGetNumDevs();
+    const UINT ctDevices = waveOutGetNumDevs();
 
     // Select a specific device only if there are any
     if (ctDevices != 0) {
-      uDeviceToOpen = (UINT)ClampUp(snd_iDevice, ctDevices - 1);
+      uDeviceToOpen = ClampUp((UINT)snd_iDevice, ctDevices - 1);
       strDevice.PrintF("%u", uDeviceToOpen);
     }
   }
@@ -118,12 +118,12 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   res = waveOutGetDevCaps((UINT_PTR)m_hwoWaveOut, &woc, sizeof(woc));
 
   // Determine number of WaveOut buffers
-  const INDEX ctWOBuffers = INDEX(m_ctMixerBufferSize / ctBufferBlockSize);
+  const size_t ctBuffers = m_ctMixerBufferSize / ctBufferBlockSize;
 
   // Report success
   if (bReport) {
     CPrintF(TRANS("  opened device (%s): %s\n"), strDevice.ConstData(), woc.szPname);
-    CPrintF(TRANS("  output buffers: %d x %d bytes\n"), ctWOBuffers, ctBufferBlockSize);
+    CPrintF(TRANS("  output buffers: %u x %u bytes\n"), (ULONG)ctBuffers, (ULONG)ctBufferBlockSize);
     CPrintF(TRANS("  extra sound channels taken: %d\n"), _ctChannelsOpened-1);
     ReportGenericInfo();
   }
@@ -132,13 +132,13 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   m_pubBuffersMemory = (UBYTE *)AllocMemory(m_ctMixerBufferSize);
   memset(m_pubBuffersMemory, 0, m_ctMixerBufferSize);
 
-  m_awhWOBuffers.New(ctWOBuffers);
+  m_awhWOBuffers.New((INDEX)ctBuffers);
 
   for (INDEX iBuffer = 0; iBuffer < m_awhWOBuffers.Count(); iBuffer++)
   {
     WAVEHDR &wh = m_awhWOBuffers[iBuffer];
     wh.lpData = (char *)(m_pubBuffersMemory + iBuffer * ctBufferBlockSize);
-    wh.dwBufferLength = ctBufferBlockSize;
+    wh.dwBufferLength = (DWORD)ctBufferBlockSize;
     wh.dwFlags = 0;
   }
 
@@ -194,7 +194,7 @@ void CSoundAPI_WaveOut::ShutDown(void) {
 
 void CSoundAPI_WaveOut::CopyMixerBuffer(size_t) {
   MMRESULT res;
-  SLONG slOffset = 0;
+  size_t ctOffset = 0;
   const INDEX ctBuffers = m_awhWOBuffers.Count();
 
   for (INDEX iBuffer = 0; iBuffer < ctBuffers; iBuffer++) {
@@ -204,8 +204,8 @@ void CSoundAPI_WaveOut::CopyMixerBuffer(size_t) {
     if (wh.dwFlags & WHDR_PREPARED) continue;
 
     // Copy part of a mixer buffer to wave buffer
-    CopyMixerBuffer_stereo(slOffset, wh.lpData, ctBufferBlockSize);
-    slOffset += ctBufferBlockSize;
+    CopyMixerBuffer_stereo(ctOffset, wh.lpData, ctBufferBlockSize);
+    ctOffset += ctBufferBlockSize;
 
     // Write wave buffer (ready for playing)
     res = waveOutPrepareHeader(m_hwoWaveOut, &wh, sizeof(wh));
@@ -218,7 +218,7 @@ void CSoundAPI_WaveOut::CopyMixerBuffer(size_t) {
 
 size_t CSoundAPI_WaveOut::PrepareSoundBuffer(void) {
   // Scan WaveOut buffers to find all that are ready to receive sound data (i.e. not playing)
-  SLONG slDataToMix = 0;
+  size_t ctDataToMix = 0;
   const INDEX ctBuffers = m_awhWOBuffers.Count();
 
   for (INDEX iBuffer = 0; iBuffer < ctBuffers; iBuffer++) {
@@ -232,13 +232,13 @@ size_t CSoundAPI_WaveOut::PrepareSoundBuffer(void) {
 
     // Increase mix-in data size, if unprepared
     if (!(wh.dwFlags & WHDR_PREPARED)) {
-      slDataToMix += ctBufferBlockSize;
+      ctDataToMix += ctBufferBlockSize;
     }
   }
 
   // Done
-  ASSERT(slDataToMix <= m_ctMixerBufferSize);
-  return slDataToMix;
+  ASSERT(ctDataToMix <= m_ctMixerBufferSize);
+  return ctDataToMix;
 };
 
 #endif // SE1_WIN && SE1_SND_WAVEOUT

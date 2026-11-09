@@ -55,7 +55,7 @@ class ENGINE_API CAbstractSoundAPI {
 
   public:
     // Amount of data that can be stored in a single audio buffer in a multi-buffer interface
-    static const int ctBufferBlockSize;
+    static const size_t ctBufferBlockSize;
 
     SLONG *m_pslMixerBuffer;     // buffer for mixing sounds (32-bit!)
     size_t m_ctMixerBufferSize;  // mixer buffer size

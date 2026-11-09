@@ -24,70 +24,70 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern INDEX snd_iDevice;
 
 // Write some audio data into a stream
-void CSoundAPI_SDL::WriteAudioData(UBYTE *pubStream, SLONG slStreamSize) {
+void CSoundAPI_SDL::WriteAudioData(UBYTE *pubStream, size_t ctStreamSize) {
   ASSERT(m_pBackBuffer != NULL);
-  ASSERT(m_slBackBufferPos    >= 0 && m_slBackBufferPos    <  m_slBackBufferAlloc);
-  ASSERT(m_slBackBufferRemain >= 0 && m_slBackBufferRemain <= m_slBackBufferAlloc);
+  ASSERT(m_ctBackBufferPos    <  m_ctBackBufferAlloc);
+  ASSERT(m_ctBackBufferRemain <= m_ctBackBufferAlloc);
 
   // Stream length left
-  SLONG iLength = slStreamSize;
+  size_t iLength = ctStreamSize;
 
   // How many bytes can actually be copied
-  SLONG slToCopy = (iLength < m_slBackBufferRemain) ? iLength : (SLONG)m_slBackBufferRemain;
+  size_t ctToCopy = (iLength < m_ctBackBufferRemain) ? iLength : m_ctBackBufferRemain;
 
   // Cap at the end of the ring buffer
-  const SLONG slBytesLeft = m_slBackBufferAlloc - m_slBackBufferPos;
+  const size_t ctBytesLeft = m_ctBackBufferAlloc - m_ctBackBufferPos;
 
-  if (slToCopy >= slBytesLeft) {
-    slToCopy = slBytesLeft;
+  if (ctToCopy >= ctBytesLeft) {
+    ctToCopy = ctBytesLeft;
   }
 
-  if (slToCopy > 0) {
+  if (ctToCopy != 0) {
     // Move the first block to the stream
-    Uint8 *pSrc = m_pBackBuffer + m_slBackBufferPos;
-    memcpy(pubStream, pSrc, slToCopy);
+    Uint8 *pSrc = m_pBackBuffer + m_ctBackBufferPos;
+    memcpy(pubStream, pSrc, ctToCopy);
 
-    m_slBackBufferRemain -= slToCopy;
-    ASSERT(m_slBackBufferRemain >= 0);
+    ASSERT(m_ctBackBufferRemain >= ctToCopy);
+    m_ctBackBufferRemain -= ctToCopy;
 
-    iLength -= slToCopy;
-    ASSERT(iLength >= 0);
+    ASSERT(iLength >= ctToCopy);
+    iLength -= ctToCopy;
 
-    pubStream += slToCopy;
-    m_slBackBufferPos += slToCopy;
+    pubStream += ctToCopy;
+    m_ctBackBufferPos += ctToCopy;
   }
 
   // See if we need to rotate to the start of the ring buffer
-  ASSERT(m_slBackBufferPos <= m_slBackBufferAlloc);
+  ASSERT(m_ctBackBufferPos <= m_ctBackBufferAlloc);
 
-  if (m_slBackBufferPos == m_slBackBufferAlloc) {
-    m_slBackBufferPos = 0;
+  if (m_ctBackBufferPos == m_ctBackBufferAlloc) {
+    m_ctBackBufferPos = 0;
 
     // Feed more data to the stream
     if (iLength > 0) {
-      slToCopy = (iLength < m_slBackBufferRemain) ? iLength : (SLONG)m_slBackBufferRemain;
+      ctToCopy = (iLength < m_ctBackBufferRemain) ? iLength : m_ctBackBufferRemain;
 
-      if (slToCopy > 0) {
+      if (ctToCopy != 0) {
         // Move the second block to the stream
-        memcpy(pubStream, m_pBackBuffer, slToCopy);
+        memcpy(pubStream, m_pBackBuffer, ctToCopy);
 
-        m_slBackBufferPos += slToCopy;
-        ASSERT(m_slBackBufferPos < m_slBackBufferAlloc);
+        m_ctBackBufferPos += ctToCopy;
+        ASSERT(m_ctBackBufferPos < m_ctBackBufferAlloc);
 
-        m_slBackBufferRemain -= slToCopy;
-        ASSERT(m_slBackBufferRemain >= 0);
+        ASSERT(m_ctBackBufferRemain >= ctToCopy);
+        m_ctBackBufferRemain -= ctToCopy;
 
-        iLength -= slToCopy;
-        ASSERT(iLength >= 0);
+        ASSERT(iLength >= ctToCopy);
+        iLength -= ctToCopy;
 
-        pubStream += slToCopy;
+        pubStream += ctToCopy;
       }
     }
   }
 
   // Fill the rest of the data with silence, if there's still some left
-  if (iLength > 0) {
-    ASSERT(m_slBackBufferRemain == 0);
+  if (iLength != 0) {
+    ASSERT(m_ctBackBufferRemain == 0);
     memset(pubStream, m_ubSilence, iLength);
   }
 };
@@ -156,10 +156,10 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
   AllocBuffers(TRUE);
 
   m_ubSilence = SDL_GetSilenceValueForFormat(formatSet);
-  m_slBackBufferAlloc = (SLONG)m_ctMixerBufferSize;
-  m_pBackBuffer = (Uint8 *)AllocMemory(m_slBackBufferAlloc);
-  m_slBackBufferRemain = 0;
-  m_slBackBufferPos = 0;
+  m_ctBackBufferAlloc = m_ctMixerBufferSize;
+  m_pBackBuffer = (Uint8 *)AllocMemory(m_ctBackBufferAlloc);
+  m_ctBackBufferRemain = 0;
+  m_ctBackBufferPos = 0;
 
   // Report success
   if (bReport) {
@@ -188,33 +188,33 @@ void CSoundAPI_SDL::ShutDown(void) {
 };
 
 void CSoundAPI_SDL::CopyMixerBuffer(size_t ctMixedSize) {
-  ASSERT(m_slBackBufferAlloc - m_slBackBufferRemain >= ctMixedSize);
+  ASSERT(m_ctBackBufferAlloc - m_ctBackBufferRemain >= ctMixedSize);
 
-  SLONG slFillPos = m_slBackBufferPos + m_slBackBufferRemain;
+  size_t ctFillPos = m_ctBackBufferPos + m_ctBackBufferRemain;
 
-  if (slFillPos > m_slBackBufferAlloc) {
-    slFillPos -= m_slBackBufferAlloc;
+  if (ctFillPos > m_ctBackBufferAlloc) {
+    ctFillPos -= m_ctBackBufferAlloc;
   }
 
   size_t ctCopyBytes = ctMixedSize;
 
-  if (ctCopyBytes + slFillPos > m_slBackBufferAlloc) {
-    ctCopyBytes = m_slBackBufferAlloc - slFillPos;
+  if (ctCopyBytes + ctFillPos > m_ctBackBufferAlloc) {
+    ctCopyBytes = m_ctBackBufferAlloc - ctFillPos;
   }
 
-  Uint8 *pBufferOffset = m_pBackBuffer + slFillPos;
+  Uint8 *pBufferOffset = m_pBackBuffer + ctFillPos;
   CopyMixerBuffer_stereo(0, pBufferOffset, ctCopyBytes);
 
   ctMixedSize -= ctCopyBytes;
-  m_slBackBufferRemain += (SLONG)ctCopyBytes;
+  m_ctBackBufferRemain += ctCopyBytes;
 
   // Rotate to the start of the ring buffer
   if (ctMixedSize != 0) {
     CopyMixerBuffer_stereo(ctCopyBytes, m_pBackBuffer, ctMixedSize);
-    m_slBackBufferRemain += (SLONG)ctMixedSize;
+    m_ctBackBufferRemain += ctMixedSize;
   }
 
-  ASSERT(m_slBackBufferRemain <= m_slBackBufferAlloc);
+  ASSERT(m_ctBackBufferRemain <= m_ctBackBufferAlloc);
 
   // PrepareSoundBuffer() was called prior to this
   SDL_UnlockAudioStream(m_pAudioStream);
@@ -223,10 +223,9 @@ void CSoundAPI_SDL::CopyMixerBuffer(size_t ctMixedSize) {
 size_t CSoundAPI_SDL::PrepareSoundBuffer(void) {
   SDL_LockAudioStream(m_pAudioStream);
 
-  ASSERT(m_slBackBufferRemain >= 0);
-  ASSERT(m_slBackBufferRemain <= m_slBackBufferAlloc);
+  ASSERT(m_ctBackBufferRemain <= m_ctBackBufferAlloc);
 
-  const size_t ctDataToMix = (m_slBackBufferAlloc - m_slBackBufferRemain);
+  const size_t ctDataToMix = (m_ctBackBufferAlloc - m_ctBackBufferRemain);
 
   if (ctDataToMix == 0) {
     // It won't end up in CopyMixerBuffer() with 0 data, so unlock it again
@@ -242,8 +241,8 @@ void CSoundAPI_SDL::Mute(BOOL &bSetSoundMuted) {
   bSetSoundMuted = TRUE;
 
   // Ditch pending audio data
-  m_slBackBufferRemain = 0;
-  m_slBackBufferPos = 0;
+  m_ctBackBufferRemain = 0;
+  m_ctBackBufferPos = 0;
 
   SDL_UnlockAudioStream(m_pAudioStream);
 };

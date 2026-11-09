@@ -27,7 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 extern FLOAT snd_tmMixAhead;
 
 // Amount of data that can be stored in a single audio buffer in a multi-buffer interface
-const int CAbstractSoundAPI::ctBufferBlockSize = 1024;
+const size_t CAbstractSoundAPI::ctBufferBlockSize = 1024;
 
 CAbstractSoundAPI::CAbstractSoundAPI() {
   m_pslMixerBuffer = NULL;
