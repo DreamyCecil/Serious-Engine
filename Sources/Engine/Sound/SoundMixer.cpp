@@ -35,19 +35,20 @@ extern INDEX snd_bMono;
 
 // a bunch of local vars coming up
 
-static SLONG slMixerBufferSampleRate;  // quality of destination buffer
-static SLONG slMixerBufferSize;        // size in samples per channel of the destination buffers
+static ULONG ulMixerBufferSampleRate;  // quality of destination buffer
+static size_t ctMixerBufferSize;       // size in samples per channel of the destination buffers
 static void *pvMixerBuffer;            // pointer to the start of the destination buffers
 
-static CSoundData *psd;
 static SWORD *pswSrcBuffer;
 static ULONG ulLeftVolume, ulRightVolume; // [Cecil] Volume may only be positive
 static SLONG slLeftFilter, slRightFilter;
-static SLONG slLastLeftSample, slLastRightSample, slSoundBufferSize;
+static SLONG slLastLeftSample, slLastRightSample;
+static size_t ctSoundBufferSize;
 static FLOAT fSoundSampleRate, fPhase;
 static FLOAT fOfsDelta, fStep, fLeftStep, fRightStep, fLeftOfs, fRightOfs;
-static SQUAD fixLeftOfs, fixRightOfs; // fixed integers 32:32
-static SQUAD mmSurroundFactor, mmVolumeGain;
+static UQUAD fixLeftOfs, fixRightOfs; // fixed integers 32:16
+static ULONG mmSurroundFactor;
+static UQUAD mmVolumeGain;
 static BOOL bNotLoop, bEndOfSound;
 
 // reset mixer buffer (wipes it with zeroes and remembers pointers in static mixer variables)
@@ -60,11 +61,11 @@ void ResetMixer(const SLONG *pslBuffer, const size_t ctBufferSize)
   // cache local variables
   ASSERT(ctBufferSize % 4 == 0);
   pvMixerBuffer     = (void*)pslBuffer;
-  slMixerBufferSize = SLONG(ctBufferSize / 2 / 2); // because it's stereo and 16-bit dst format
-  slMixerBufferSampleRate = _pSound->sl_afFormat.iSampleRate;
+  ctMixerBufferSize = ctBufferSize / 2 / 2; // because it's stereo and 16-bit dst format
+  ulMixerBufferSampleRate = _pSound->sl_afFormat.iSampleRate;
 
   // wipe destination mixer buffer
-  memset(pvMixerBuffer, 0, slMixerBufferSize * 2 * sizeof(SLONG));
+  memset(pvMixerBuffer, 0, ctMixerBufferSize * 2 * sizeof(SLONG));
 }
 
 
@@ -188,20 +189,20 @@ inline void MixMono( CSoundObject *pso)
   SLONG slLeftSample, slRightSample;
   SLONG slNextLeftSample, slNextRightSample; // [Cecil]
   SLONG *pslDstBuffer = (SLONG *)pvMixerBuffer;
-  fixLeftOfs = (SQUAD)(fLeftOfs * 65536.0f);
-  fixRightOfs = (SQUAD)(fRightOfs * 65536.0f);
-  SQUAD fixLeftStep = (SQUAD)(fLeftStep * 65536.0f);
-  SQUAD fixRightStep = (SQUAD)(fRightStep * 65536.0f);
-  SQUAD fixSoundBufferSize = ((SQUAD)slSoundBufferSize) << 16;
+  fixLeftOfs = (UQUAD)(fLeftOfs * 65536.0f);
+  fixRightOfs = (UQUAD)(fRightOfs * 65536.0f);
+  const UQUAD fixLeftStep = (UQUAD)(fLeftStep * 65536.0f);
+  const UQUAD fixRightStep = (UQUAD)(fRightStep * 65536.0f);
+  const UQUAD fixSoundBufferSize = ((UQUAD)ctSoundBufferSize) << 16;
 
   // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
   const UWORD uwSurroundLeft  = UWORD((mmSurroundFactor >>  0) & 0xFFFF);
   const UWORD uwSurroundRight = UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
   // Loop through source buffer
-  INDEX iCt = slMixerBufferSize;
-  FOREVER
-  {
+  size_t iCt = ctMixerBufferSize;
+
+  FOREVER {
     // If left channel source sample came to end of sample buffer
     if (fixLeftOfs >= fixSoundBufferSize) {
       fixLeftOfs -= fixSoundBufferSize;
@@ -217,7 +218,7 @@ inline void MixMono( CSoundObject *pso)
     }
 
     // End of buffer
-    if (iCt <= 0 || bEndOfSound) break;
+    if (iCt == 0 || bEndOfSound) break;
 
     // Fetch one lineary interpolated sample on left channel
     slLeftSample = pswSrcBuffer[(fixLeftOfs >> 16) + 0];
@@ -286,20 +287,20 @@ inline void MixStereo( CSoundObject *pso)
   SLONG slLeftSample, slRightSample;
   SLONG slNextLeftSample, slNextRightSample; // [Cecil]
   SLONG *pslDstBuffer = (SLONG *)pvMixerBuffer;
-  fixLeftOfs = (SQUAD)(fLeftOfs * 65536.0f);
-  fixRightOfs = (SQUAD)(fRightOfs * 65536.0f);
-  SQUAD fixLeftStep = (SQUAD)(fLeftStep * 65536.0f);
-  SQUAD fixRightStep = (SQUAD)(fRightStep * 65536.0f);
-  SQUAD fixSoundBufferSize = ((SQUAD)slSoundBufferSize) << 16;
+  fixLeftOfs = (UQUAD)(fLeftOfs * 65536.0f);
+  fixRightOfs = (UQUAD)(fRightOfs * 65536.0f);
+  const UQUAD fixLeftStep = (UQUAD)(fLeftStep * 65536.0f);
+  const UQUAD fixRightStep = (UQUAD)(fRightStep * 65536.0f);
+  const UQUAD fixSoundBufferSize = ((UQUAD)ctSoundBufferSize) << 16;
 
   // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
   const UWORD uwSurroundLeft  = UWORD((mmSurroundFactor >>  0) & 0xFFFF);
   const UWORD uwSurroundRight = UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
   // Loop through source buffer
-  INDEX iCt = slMixerBufferSize;
-  FOREVER
-  {
+  size_t iCt = ctMixerBufferSize;
+
+  FOREVER {
     // If left channel source sample came to end of sample buffer
     if (fixLeftOfs >= fixSoundBufferSize) {
       fixLeftOfs -= fixSoundBufferSize;
@@ -315,11 +316,11 @@ inline void MixStereo( CSoundObject *pso)
     }
 
     // End of buffer
-    if (iCt <= 0 || bEndOfSound) break;
+    if (iCt == 0 || bEndOfSound) break;
 
     // [Cecil] These nullify the lowest bit and fix distortion during doppler
-    const SQUAD fixLeftShift = (fixLeftOfs >> 16) << 1;
-    const SQUAD fixRightShift = (fixRightOfs >> 16) << 1;
+    const UQUAD fixLeftShift = (fixLeftOfs >> 16) << 1;
+    const UQUAD fixRightShift = (fixRightOfs >> 16) << 1;
 
     // Fetch one lineary interpolated sample on left channel
     slLeftSample = pswSrcBuffer[fixLeftShift + 0];
@@ -382,7 +383,7 @@ inline void MixStereo( CSoundObject *pso)
 // mixes one sound to destination buffer
 void MixSound( CSoundObject *pso)
 {
-  psd = pso->so_pCsdLink;
+  const CSoundData *psd = pso->so_pCsdLink;
   const BOOL bEncoded = psd->IsEncoded();
 
   // if don't mix encoded sounds if they are not opened properly
@@ -397,8 +398,8 @@ void MixSound( CSoundObject *pso)
   if ((af.iChannels != 1 && af.iChannels != 2) || af.iBytesPerSample != 2) return;
 
   // check for delay
-  const FLOAT f1oMixerBufferSampleRate = 1.0f / slMixerBufferSampleRate;
-  const FLOAT fSecondsToMix = (FLOAT)slMixerBufferSize * f1oMixerBufferSampleRate;
+  const FLOAT f1oMixerBufferSampleRate = 1.0f / ulMixerBufferSampleRate;
+  const FLOAT fSecondsToMix = (FLOAT)ctMixerBufferSize * f1oMixerBufferSampleRate;
   pso->so_fDelayed += fSecondsToMix;
   if( pso->so_fDelayed < pso->so_sp.sp_fDelay) {
     _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_SOUNDSDELAYED, 1);
@@ -413,9 +414,10 @@ void MixSound( CSoundObject *pso)
   fStep      = fSoundSampleRate * f1oMixerBufferSampleRate;
   fLeftStep  = fStep;
   fRightStep = fStep;
-  slSoundBufferSize  = psd->sd_slBufferSampleSize;
+  ctSoundBufferSize = psd->sd_slBufferSampleSize;
+
   // eliminate potentional "puck" at the of sample that hasn't loop
-  if( !(pso->so_slFlags&SOF_LOOP) && slSoundBufferSize>1) slSoundBufferSize--;
+  if (!(pso->so_slFlags & SOF_LOOP) && ctSoundBufferSize > 1) ctSoundBufferSize--;
 
   // get old and new volumes
   const FLOAT fLeftVolume  = ClampDn(pso->so_fLastLeftVolume,  0.0f);
@@ -442,7 +444,7 @@ void MixSound( CSoundObject *pso)
     // if this is not an encoded sound
     if (!bEncoded) {
       // skip mixing of this sample segment
-      fOfsDelta = fStep*slMixerBufferSampleRate*fSecondsToMix;
+      fOfsDelta = fStep * ulMixerBufferSampleRate * fSecondsToMix;
       pso->so_fLeftOffset  += fOfsDelta;
       pso->so_fRightOffset += fOfsDelta;
       const FLOAT fMinOfs = Min( pso->so_fLeftOffset, pso->so_fRightOffset);
@@ -452,10 +454,10 @@ void MixSound( CSoundObject *pso)
       // if looping
       if (pso->so_slFlags & SOF_LOOP) {
         // adjust offset ptrs inside sound
-        while( pso->so_fLeftOffset  < 0) pso->so_fLeftOffset  += slSoundBufferSize;
-        while( pso->so_fRightOffset < 0) pso->so_fRightOffset += slSoundBufferSize;
-        while( pso->so_fLeftOffset  >= slSoundBufferSize) pso->so_fLeftOffset  -= slSoundBufferSize;
-        while( pso->so_fRightOffset >= slSoundBufferSize) pso->so_fRightOffset -= slSoundBufferSize;
+        while (pso->so_fLeftOffset  < 0) pso->so_fLeftOffset  += ctSoundBufferSize;
+        while (pso->so_fRightOffset < 0) pso->so_fRightOffset += ctSoundBufferSize;
+        while (pso->so_fLeftOffset  >= ctSoundBufferSize) pso->so_fLeftOffset  -= ctSoundBufferSize;
+        while (pso->so_fRightOffset >= ctSoundBufferSize) pso->so_fRightOffset -= ctSoundBufferSize;
 
       // if not looping
       } else {
@@ -489,15 +491,15 @@ void MixSound( CSoundObject *pso)
   ulLeftVolume  = FloatToInt(fLeftVolume  * fVolumeMul);
   ulRightVolume = FloatToInt(fRightVolume * fVolumeMul);
 
-  const FLOAT fMixBufSize = fVolumeMul / slMixerBufferSize;
+  const FLOAT fMixBufSize = fVolumeMul / ctMixerBufferSize;
   const SLONG slLeftGain  = FloatToInt((fNewLeftVolume  - fLeftVolume)  * fMixBufSize);
   const SLONG slRightGain = FloatToInt((fNewRightVolume - fRightVolume) * fMixBufSize);
   mmVolumeGain = ((SQUAD)(slRightGain)<<32) | ((SQUAD)(slLeftGain)&0xFFFFFFFF);
 
   // extrapolate back new volumes because of not enough precision in interpolation!
   // (otherwise we might hear occasional pucks)
-  if (fNewLeftVolume  > 0.001f) fNewLeftVolume  = (ulLeftVolume  + slLeftGain  * slMixerBufferSize) / fVolumeMul;
-  if (fNewRightVolume > 0.001f) fNewRightVolume = (ulRightVolume + slRightGain * slMixerBufferSize) / fVolumeMul;
+  if (fNewLeftVolume  > 0.001f) fNewLeftVolume  = (ulLeftVolume  + slLeftGain  * ctMixerBufferSize) / fVolumeMul;
+  if (fNewRightVolume > 0.001f) fNewRightVolume = (ulRightVolume + slRightGain * ctMixerBufferSize) / fVolumeMul;
   //ASSERT( fNewLeftVolume>=0 && fNewRightVolume>=0);
   //CPrintF( "NV: %.4f / %.4f, GV: %.4f / %.4f\n", fNewLeftVolume,fNewRightVolume, fLeftGainedVolume,fRightGainedVolume); 
 
@@ -505,8 +507,7 @@ void MixSound( CSoundObject *pso)
   slLeftFilter  = pso->so_sp.sp_slLeftFilter;
   slRightFilter = pso->so_sp.sp_slRightFilter;
   bNotLoop = !(pso->so_slFlags & SOF_LOOP);
-  mmSurroundFactor = 0;
-  if( pso->so_slFlags & SOF_SURROUND) mmSurroundFactor = 0x0000FFFF;
+  mmSurroundFactor = (pso->so_slFlags & SOF_SURROUND) ? 0x0000FFFF : 0x00000000;
 
   BOOL bDecodingFinished = FALSE;
 
@@ -516,7 +517,7 @@ void MixSound( CSoundObject *pso)
 
     // Decode some samples from it
     const ULONG ulSampleSize = af.GetBytesPerFrame();
-    const ULONG ulWantedSamples = FloatToInt(slMixerBufferSize * fStep);
+    const ULONG ulWantedSamples = FloatToInt(ctMixerBufferSize * fStep);
     ASSERT(ulWantedSamples > 0);
     ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_ctDecodeBufferSize / ulSampleSize);
     UBYTE *pDecodeBuffer = (UBYTE *)_pSound->sl_pInterface->m_pswDecodeBuffer;
@@ -546,7 +547,7 @@ void MixSound( CSoundObject *pso)
 
     // fix some mixer variables to play temporary decode buffer instead of real sound
     pswSrcBuffer = (SWORD *)pDecodeBuffer;
-    slSoundBufferSize = ulDecodedSamples;
+    ctSoundBufferSize = ulDecodedSamples;
     fLeftOfs  = 0.0f;
     fRightOfs = 0.0f;
     fPhase = 0.0f;
@@ -555,7 +556,7 @@ void MixSound( CSoundObject *pso)
   }
 
   _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_SOUNDSMIXED, 1);
-  _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_SAMPLES, slMixerBufferSize);
+  _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_SAMPLES, (INDEX)ctMixerBufferSize);
 
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_MIXSOUND);
 
@@ -565,7 +566,7 @@ void MixSound( CSoundObject *pso)
   // calculate eventual new offsets from phase shift
   FLOAT fLastPhase  = fOfsDelta / fSoundSampleRate;
   FLOAT fPhaseDelta = fPhase - fLastPhase;
-  FLOAT fStepDelta  = Abs( fPhaseDelta*fSoundSampleRate / slMixerBufferSize);
+  FLOAT fStepDelta  = Abs(fPhaseDelta * fSoundSampleRate / ctMixerBufferSize);
 
   FLOAT fStepDeltaL, fStepDeltaR;
   if( fPhaseDelta>0) {
@@ -584,16 +585,17 @@ void MixSound( CSoundObject *pso)
   fStepDelta  = fStepDeltaR-fStepDeltaL;
 
   // if there is anything to mix (could be nothing when encoded file just finished)
-  if( slSoundBufferSize>0) {
+  if (ctSoundBufferSize != 0) {
     // safety check (needed because of bad-bug!)
     FLOAT fMinOfs = Min( fLeftOfs, fRightOfs);
     ASSERT( fMinOfs>=0);
     if (fMinOfs < 0) CPrintF("BUG: negative offset (%.2g) encountered in sound: '%s' !\n", fMinOfs, psd->GetName().ConstData());
+
     // adjust offset ptrs inside sound to match those of phase shift
-    while( fLeftOfs  < 0) fLeftOfs  += slSoundBufferSize;
-    while( fRightOfs < 0) fRightOfs += slSoundBufferSize;
-    while( fLeftOfs  >= slSoundBufferSize) fLeftOfs  -= slSoundBufferSize;
-    while( fRightOfs >= slSoundBufferSize) fRightOfs -= slSoundBufferSize;
+    while (fLeftOfs  < 0) fLeftOfs  += ctSoundBufferSize;
+    while (fRightOfs < 0) fRightOfs += ctSoundBufferSize;
+    while (fLeftOfs  >= ctSoundBufferSize) fLeftOfs  -= ctSoundBufferSize;
+    while (fRightOfs >= ctSoundBufferSize) fRightOfs -= ctSoundBufferSize;
 
     // if mono output is required
     if( snd_bMono) {
@@ -639,7 +641,7 @@ void MixSound( CSoundObject *pso)
   pso->so_swLastLeftSample  = (SWORD)slLastLeftSample;
   pso->so_swLastRightSample = (SWORD)slLastRightSample;
   // determine new phase shift offset
-  pso->so_fOffsetDelta += fStepDelta*slMixerBufferSize;
+  pso->so_fOffsetDelta += fStepDelta * ctMixerBufferSize;
   // update play offset for the next mix iteration
   pso->so_fLeftOffset  = fixLeftOfs  * (1.0f/65536.0f);
   pso->so_fRightOffset = fixRightOfs * (1.0f/65536.0f);

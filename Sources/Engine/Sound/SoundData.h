@@ -71,11 +71,11 @@ public:
   // Destructor
   ~CSoundData();
 
-  inline bool IsEncoded(void) {
+  inline bool IsEncoded(void) const {
     return !!(sd_ulFlags & SDF_ENCODED);
   };
 
-  inline bool IsStreamed(void) {
+  inline bool IsStreamed(void) const {
     return !!(sd_ulFlags & SDF_STREAMING);
   };
 
