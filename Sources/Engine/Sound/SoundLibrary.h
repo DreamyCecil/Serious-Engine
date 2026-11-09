@@ -58,12 +58,12 @@ struct SEAudioFormat {
 
 // Mixer
 // set master volume and resets mixer buffer (wipes it with zeroes and keeps pointers)
-void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize);
+void ResetMixer(const SLONG *pslBuffer, const size_t ctBufferSize);
 // copy mixer buffer to the output buffer(s)
-void CopyMixerBuffer_stereo( const SLONG slSrcOffset, void *pDstBuffer, const SLONG slBytes);
-void CopyMixerBuffer_mono(   const SLONG slSrcOffset, void *pDstBuffer, const SLONG slBytes);
+void CopyMixerBuffer_stereo(const size_t ctSrcOffset, void *pDstBuffer, const size_t ctBytes);
+void CopyMixerBuffer_mono(  const size_t ctSrcOffset, void *pDstBuffer, const size_t ctBytes);
 // normalize mixed sounds
-void NormalizeMixerBuffer( const FLOAT snd_fNormalizer, const SLONG slBytes, FLOAT &_fLastNormalizeValue);
+void NormalizeMixerBuffer(const FLOAT snd_fNormalizer, const size_t ctBytes, FLOAT &_fLastNormalizeValue);
 // mix in one sound object to mixer buffer
 void MixSound( class CSoundObject *pso);
 

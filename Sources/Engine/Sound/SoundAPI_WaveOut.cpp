@@ -192,7 +192,7 @@ void CSoundAPI_WaveOut::ShutDown(void) {
   CAbstractSoundAPI::ShutDown();
 };
 
-void CSoundAPI_WaveOut::CopyMixerBuffer(SLONG slMixedSize) {
+void CSoundAPI_WaveOut::CopyMixerBuffer(size_t) {
   MMRESULT res;
   SLONG slOffset = 0;
   const INDEX ctBuffers = m_awhWOBuffers.Count();
@@ -216,7 +216,7 @@ void CSoundAPI_WaveOut::CopyMixerBuffer(SLONG slMixedSize) {
   }
 };
 
-SLONG CSoundAPI_WaveOut::PrepareSoundBuffer(void) {
+size_t CSoundAPI_WaveOut::PrepareSoundBuffer(void) {
   // Scan WaveOut buffers to find all that are ready to receive sound data (i.e. not playing)
   SLONG slDataToMix = 0;
   const INDEX ctBuffers = m_awhWOBuffers.Count();

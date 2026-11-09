@@ -69,8 +69,8 @@ class CSoundAPI_OpenAL : public CAbstractSoundAPI {
     virtual BOOL StartUp(BOOL bReport);
     virtual void ShutDown(void);
 
-    virtual SLONG PrepareSoundBuffer(void);
-    virtual void CopyMixerBuffer(SLONG slMixedSize);
+    virtual size_t PrepareSoundBuffer(void);
+    virtual void CopyMixerBuffer(size_t ctMixedSize);
 
   #if SE1_OPENAL_EFX
     virtual void Update(void);

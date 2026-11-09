@@ -81,8 +81,8 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
 
   public:
     BOOL Fail(const char *strError);
-    BOOL InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, SLONG slSize);
-    BOOL LockBuffer(LPDIRECTSOUNDBUFFER pBuffer, SLONG slSize, LPVOID &lpData, DWORD &dwSize);
+    BOOL InitSecondary(LPDIRECTSOUNDBUFFER &pBuffer, size_t ctSize);
+    BOOL LockBuffer(LPDIRECTSOUNDBUFFER pBuffer, size_t ctSize, LPVOID &lpData, DWORD &dwSize);
     void PlayBuffers(void);
 
   #if SE1_SND_EAX
@@ -94,8 +94,8 @@ class CSoundAPI_DSound : public CAbstractSoundAPI {
     virtual BOOL StartUp(BOOL bReport);
     virtual void ShutDown(void);
 
-    virtual void CopyMixerBuffer(SLONG slMixedSize);
-    virtual SLONG PrepareSoundBuffer(void);
+    virtual void CopyMixerBuffer(size_t ctMixedSize);
+    virtual size_t PrepareSoundBuffer(void);
     virtual void Mute(BOOL &bSetSoundMuted);
 
     virtual void Update(void);

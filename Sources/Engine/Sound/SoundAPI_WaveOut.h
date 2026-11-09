@@ -44,8 +44,8 @@ class CSoundAPI_WaveOut : public CAbstractSoundAPI {
     virtual BOOL StartUp(BOOL bReport);
     virtual void ShutDown(void);
 
-    virtual void CopyMixerBuffer(SLONG slMixedSize);
-    virtual SLONG PrepareSoundBuffer(void);
+    virtual void CopyMixerBuffer(size_t ctMixedSize);
+    virtual size_t PrepareSoundBuffer(void);
 };
 
 #endif // SE1_WIN && SE1_SND_WAVEOUT

@@ -66,164 +66,99 @@ static SQUAD mmUnsign2Sign = 0x8000800080008000;
 
 
 // reset mixer buffer (wipes it with zeroes and remembers pointers in static mixer variables)
-void ResetMixer( const SLONG *pslBuffer, const SLONG slBufferSize)
+void ResetMixer(const SLONG *pslBuffer, const size_t ctBufferSize)
 {
   // clamp master volumes
   snd_fSoundVolume = Clamp(snd_fSoundVolume, 0.0f, 1.0f);
   snd_fMusicVolume = Clamp(snd_fMusicVolume, 0.0f, 1.0f);
 
   // cache local variables
-  ASSERT( slBufferSize%4==0);
+  ASSERT(ctBufferSize % 4 == 0);
   pvMixerBuffer     = (void*)pslBuffer;
-  slMixerBufferSize = slBufferSize /2/2; // because it's stereo and 16-bit dst format
+  slMixerBufferSize = SLONG(ctBufferSize / 2 / 2); // because it's stereo and 16-bit dst format
   slMixerBufferSampleRate = _pSound->sl_afFormat.iSampleRate;
 
   // wipe destination mixer buffer
-#if SE1_USE_ASM
-  __asm {
-    cld
-    xor     eax,eax
-    mov     edi,D [pvMixerBuffer]
-    mov     ecx,D [slMixerBufferSize]
-    shl     ecx,1 // *2 because of 32-bit src format
-    rep     stosd
-  }
-
-#else
   memset(pvMixerBuffer, 0, slMixerBufferSize * 2 * sizeof(SLONG));
-#endif
 }
 
 
 // copy mixer buffer to the output buffer(s)
-void CopyMixerBuffer_stereo( const SLONG slSrcOffset, void *pDstBuffer, const SLONG slBytes)
+void CopyMixerBuffer_stereo(const size_t ctSrcOffset, void *pDstBuffer, const size_t ctBytes)
 {
-  ASSERT( pDstBuffer!=NULL);
-  ASSERT( slBytes%4==0);
-  if( slBytes<4) return;
+  ASSERT(pDstBuffer != NULL);
+  ASSERT(ctBytes % 4 == 0);
+  if (ctBytes < 4) return;
 
-#if SE1_USE_ASM
-  __asm {
-    cld
-    mov     esi,D [slSrcOffset]
-    add     esi,D [pvMixerBuffer]
-    mov     edi,D [pDstBuffer]
-    mov     ecx,D [slBytes]
-    shr     ecx,2   // bytes to samples per channel
-    rep     movsd
-  }
-
-#else
-  memcpy(pDstBuffer, ((const char *)pvMixerBuffer) + slSrcOffset, slBytes);
-#endif
+  memcpy(pDstBuffer, ((UBYTE *)pvMixerBuffer) + ctSrcOffset, ctBytes);
 }
 
 
 // copy one channel from mixer buffer to the output buffer(s)
-void CopyMixerBuffer_mono( const SLONG slSrcOffset, void *pDstBuffer, const SLONG slBytes)
+void CopyMixerBuffer_mono(const size_t ctSrcOffset, void *pDstBuffer, const size_t ctBytes)
 {
-  ASSERT( pDstBuffer!=NULL);
-  ASSERT( slBytes%2==0);
-  if( slBytes<4) return;
+  ASSERT(pDstBuffer != NULL);
+  ASSERT(ctBytes % 2 == 0);
+  if (ctBytes < 4) return;
 
-#if SE1_USE_ASM
-  __asm {
-    mov     esi,D [slSrcOffset]
-    add     esi,D [pvMixerBuffer]
-    mov     edi,D [pDstBuffer]
-    mov     ecx,D [slBytes]
-    shr     ecx,2   // bytes to samples
-copyLoop:
-    movzx   eax,W [esi]
-    mov     W [edi],ax
-    add     esi,4
-    add     edi,2
-    dec     ecx
-    jnz     copyLoop
+  SWORD *pDst = (SWORD *)pDstBuffer;
+  const SWORD *pSrc = (SWORD *)(((UBYTE *)pvMixerBuffer) + ctSrcOffset);
+
+  const size_t ct = ctBytes / 4;
+
+  for (size_t i = 0; i < ct; i++) {
+    *pDst = *pSrc;
+    pDst += 1; // Move 16 bits
+    pSrc += 2; // Move 32 bits
   }
-
-#else
-  WORD *dst = (WORD *)pDstBuffer;
-  WORD *src = (WORD *)(((UBYTE *)pvMixerBuffer) + slSrcOffset);
-
-  SLONG max = slBytes / 4;
-
-  for (SLONG i = 0; i < max; i++)
-  {
-    *dst = *src;
-    dst += 1; // Move 16 bits
-    src += 2; // Move 32 bits
-  }
-#endif
 }
 
 
 // plain conversion of mixer buffer from 32-bit to 16-bit clamped
-static void ConvertMixerBuffer( const SLONG slBytes)
+static void ConvertMixerBuffer(const size_t ctBytes)
 {
-  ASSERT( slBytes%4==0);
-  if( slBytes<4) return;
+  ASSERT(ctBytes % 4 == 0);
+  if (ctBytes < 4) return;
 
-#if SE1_USE_ASM
-  __asm {
-    cld
-    mov     esi,D [pvMixerBuffer]
-    mov     edi,D [pvMixerBuffer]
-    mov     ecx,D [slBytes]
-    shr     ecx,2 // bytes to samples (2 channels)
-copyLoop:
-    movq    mm0,Q [esi]
-    packssdw mm0,mm0
-    movd    D [edi],mm0
-    add     esi,8
-    add     edi,4
-    dec     ecx
-    jnz     copyLoop
-    emms
+  SWORD *pDst = (SWORD *)pvMixerBuffer;
+  const SLONG *pSrc = (SLONG *)pvMixerBuffer;
+
+  const size_t ct = ctBytes / 2;
+
+  for (size_t i = 0; i < ct; i++) {
+    *pDst = (SWORD)Clamp(*pSrc, -32767, 32767);
+    pDst++;
+    pSrc++;
   }
-
-#else
-  WORD *dst = (WORD *)pvMixerBuffer;
-  DWORD *src = (DWORD *)pvMixerBuffer;
-  SLONG max = slBytes / 2;
-
-  int tmp;
-  for (SLONG i = 0; i < max; i++)
-  {
-    tmp = *src;
-    tmp = Clamp(tmp, -32767, 32767);
-
-    *dst = tmp;
-
-    dst++;
-    src++;
-  }
-#endif
 }
 
 
 // normalize mixer buffer
-void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT &fLastNormValue)
+void NormalizeMixerBuffer(const FLOAT fNormStrength, const size_t ctBytes, FLOAT &fLastNormValue)
 {
   // just convert to 16-bit if normalization isn't required
-  ASSERT( slBytes%4==0);
-  if( slBytes<8) return;
-  if( fNormStrength<0.01f) {
-    ConvertMixerBuffer(slBytes);
+  ASSERT(ctBytes % 4 == 0);
+  if (ctBytes < 8) return;
+
+  if (fNormStrength < 0.01f) {
+    ConvertMixerBuffer(ctBytes);
     return;
   }
 
   // well, I guess we'll might need to normalize a bit, so first - find maximum
-  INDEX i;
+  size_t i;
   SLONG slPeak = 0;
   SLONG *pslSrc = (SLONG*)pvMixerBuffer;
-  const INDEX iSamples = slBytes/2; // 16-bit was assumed -> samples (treat as mono)
-  for( i=0; i<iSamples; i++) slPeak = Max( Abs(pslSrc[i]), slPeak);
+
+  const size_t ctSamples = ctBytes / 2; // 16-bit was assumed -> samples (treat as mono)
+  for (i = 0; i < ctSamples; i++) {
+    slPeak = Max(Abs(pslSrc[i]), slPeak);
+  }
 
   // [Cecil] Avoid potential division by zero
   if (slPeak == 0) {
     fLastNormValue = 1.0f;
-    ConvertMixerBuffer(slBytes);
+    ConvertMixerBuffer(ctBytes);
     return;
   }
 
@@ -231,25 +166,27 @@ void NormalizeMixerBuffer( const FLOAT fNormStrength, const SLONG slBytes, FLOAT
   FLOAT fNormValue = 32767.0f / (FLOAT)slPeak;
   if( fNormValue>0.99f && fLastNormValue>0.99f) { // should be enough to tolerate
     fLastNormValue = 1.0f;
-    ConvertMixerBuffer(slBytes);
+    ConvertMixerBuffer(ctBytes);
     return;
   }
 
   // adjust normalize value by strength
   ASSERT( fNormStrength>=0 && fNormStrength<=1);
   fNormValue = Lerp( 1.0f, fNormValue, fNormStrength);
-  const FLOAT fNormAdd = (fNormValue-fLastNormValue) / (iSamples/4); 
+  const FLOAT fNormAdd = (fNormValue - fLastNormValue) / (ctSamples / 4); 
   
   // normalize (and convert to 16-bit)
   SWORD *pswDst = (SWORD*)pvMixerBuffer;
   FLOAT fCurrentNormValue = fLastNormValue;
-  for( i=0; i<iSamples; i++) {
+
+  for (i = 0; i < ctSamples; i++) {
     SLONG slSample = FloatToInt(pslSrc[i]*fCurrentNormValue);
     pswDst[i] = (SWORD)Clamp( slSample, -32767L, +32767L);
     fCurrentNormValue = fCurrentNormValue+fNormAdd; // interpolate normalizer
          if( fCurrentNormValue<fNormValue && fNormAdd<0) fCurrentNormValue = fNormValue; // clamp interpolated value
     else if( fCurrentNormValue>fNormValue && fNormAdd>0) fCurrentNormValue = fNormValue;
   }
+
   // CPrintF( "%.5f -> %.5f (%.5f) @ %.9f / %d\n", fLastNormValue, fCurrentNormValue, fNormValue, fNormAdd, iSamples);
   // remember normalization value
   fLastNormValue = fCurrentNormValue;

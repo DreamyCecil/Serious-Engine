@@ -187,8 +187,8 @@ void CSoundAPI_SDL::ShutDown(void) {
   CAbstractSoundAPI::ShutDown();
 };
 
-void CSoundAPI_SDL::CopyMixerBuffer(SLONG slMixedSize) {
-  ASSERT(m_slBackBufferAlloc - m_slBackBufferRemain >= slMixedSize);
+void CSoundAPI_SDL::CopyMixerBuffer(size_t ctMixedSize) {
+  ASSERT(m_slBackBufferAlloc - m_slBackBufferRemain >= ctMixedSize);
 
   SLONG slFillPos = m_slBackBufferPos + m_slBackBufferRemain;
 
@@ -196,22 +196,22 @@ void CSoundAPI_SDL::CopyMixerBuffer(SLONG slMixedSize) {
     slFillPos -= m_slBackBufferAlloc;
   }
 
-  SLONG slCopyBytes = slMixedSize;
+  size_t ctCopyBytes = ctMixedSize;
 
-  if (slCopyBytes + slFillPos > m_slBackBufferAlloc) {
-    slCopyBytes = m_slBackBufferAlloc - slFillPos;
+  if (ctCopyBytes + slFillPos > m_slBackBufferAlloc) {
+    ctCopyBytes = m_slBackBufferAlloc - slFillPos;
   }
 
   Uint8 *pBufferOffset = m_pBackBuffer + slFillPos;
-  CopyMixerBuffer_stereo(0, pBufferOffset, slCopyBytes);
+  CopyMixerBuffer_stereo(0, pBufferOffset, ctCopyBytes);
 
-  slMixedSize -= slCopyBytes;
-  m_slBackBufferRemain += slCopyBytes;
+  ctMixedSize -= ctCopyBytes;
+  m_slBackBufferRemain += (SLONG)ctCopyBytes;
 
   // Rotate to the start of the ring buffer
-  if (slMixedSize > 0) {
-    CopyMixerBuffer_stereo(slCopyBytes, m_pBackBuffer, slMixedSize);
-    m_slBackBufferRemain += slMixedSize;
+  if (ctMixedSize != 0) {
+    CopyMixerBuffer_stereo(ctCopyBytes, m_pBackBuffer, ctMixedSize);
+    m_slBackBufferRemain += (SLONG)ctMixedSize;
   }
 
   ASSERT(m_slBackBufferRemain <= m_slBackBufferAlloc);
@@ -220,21 +220,21 @@ void CSoundAPI_SDL::CopyMixerBuffer(SLONG slMixedSize) {
   SDL_UnlockAudioStream(m_pAudioStream);
 };
 
-SLONG CSoundAPI_SDL::PrepareSoundBuffer(void) {
+size_t CSoundAPI_SDL::PrepareSoundBuffer(void) {
   SDL_LockAudioStream(m_pAudioStream);
 
   ASSERT(m_slBackBufferRemain >= 0);
   ASSERT(m_slBackBufferRemain <= m_slBackBufferAlloc);
 
-  const SLONG slDataToMix = (m_slBackBufferAlloc - m_slBackBufferRemain);
+  const size_t ctDataToMix = (m_slBackBufferAlloc - m_slBackBufferRemain);
 
-  if (slDataToMix <= 0) {
+  if (ctDataToMix == 0) {
     // It won't end up in CopyMixerBuffer() with 0 data, so unlock it again
     SDL_UnlockAudioStream(m_pAudioStream);
     return 0;
   }
 
-  return slDataToMix;
+  return ctDataToMix;
 };
 
 void CSoundAPI_SDL::Mute(BOOL &bSetSoundMuted) {

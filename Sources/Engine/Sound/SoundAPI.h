@@ -107,10 +107,10 @@ class ENGINE_API CAbstractSoundAPI {
     };
 
     // Determine how much space is available in the sound buffers for new samples
-    virtual SLONG PrepareSoundBuffer(void) = 0;
+    virtual size_t PrepareSoundBuffer(void) = 0;
 
     // Copy samples from the mixer buffer into the sound buffers
-    virtual void CopyMixerBuffer(SLONG slMixedSize) = 0;
+    virtual void CopyMixerBuffer(size_t ctMixedSize) = 0;
 
     // Assume that it will mute itself eventually by default
     virtual void Mute(BOOL &bSetSoundMuted) {};

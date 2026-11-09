@@ -583,11 +583,10 @@ void CSoundLibrary::MixSounds(void)
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_MIXSOUNDS);
 
   // seek available buffer(s) for next crop of samples
-  SLONG slDataToMix = _pSound->sl_pInterface->PrepareSoundBuffer();
+  const size_t ctDataToMix = _pSound->sl_pInterface->PrepareSoundBuffer();
 
   // skip mixing if all sound buffers are still busy playing
-  ASSERT( slDataToMix>=0);
-  if( slDataToMix<=0) {
+  if (ctDataToMix == 0) {
     _pfSoundProfile.StopTimer(CSoundProfile::PTI_MIXSOUNDS);
     _sfStats.StopTimer(CStatForm::STI_SOUNDMIXING);
     return;
@@ -595,7 +594,7 @@ void CSoundLibrary::MixSounds(void)
 
   // prepare mixer buffer
   _pfSoundProfile.IncrementCounter(CSoundProfile::PCI_MIXINGS, 1);
-  ResetMixer(_pSound->sl_pInterface->m_pslMixerBuffer, slDataToMix);
+  ResetMixer(_pSound->sl_pInterface->m_pslMixerBuffer, ctDataToMix);
 
   BOOL bGamePaused = _pNetwork->IsPaused() || (_pNetwork->IsServer() && _pNetwork->GetLocalPause());
 
@@ -620,7 +619,7 @@ void CSoundLibrary::MixSounds(void)
 
   // eventually normalize mixed sounds
   snd_fNormalizer = Clamp( snd_fNormalizer, 0.0f, 1.0f);
-  NormalizeMixerBuffer( snd_fNormalizer, slDataToMix, _fLastNormalizeValue);
+  NormalizeMixerBuffer( snd_fNormalizer, ctDataToMix, _fLastNormalizeValue);
 
   // TEMP! - write mixer buffer to file
   /*
@@ -628,12 +627,12 @@ void CSoundLibrary::MixSounds(void)
   static BOOL _bOpened = FALSE;
 
   if (!_bOpened) _filMixerBuffer = FileSystem::Open("d:\\MixerBufferDump.raw", "wb");
-  fwrite((void *)sl_pInterface->sl_pslMixerBuffer, 1, slDataToMix, _filMixerBuffer);
+  fwrite((void *)sl_pInterface->sl_pslMixerBuffer, 1, ctDataToMix, _filMixerBuffer);
   _bOpened = TRUE;
   */
 
   // copy mixer buffer to buffers buffer(s)
-  _pSound->sl_pInterface->CopyMixerBuffer(slDataToMix);
+  _pSound->sl_pInterface->CopyMixerBuffer(ctDataToMix);
 
   // all done
   _pfSoundProfile.StopTimer(CSoundProfile::PTI_MIXSOUNDS);

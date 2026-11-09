@@ -214,7 +214,7 @@ void CSoundAPI_OpenAL::ShutDown(void) {
   CAbstractSoundAPI::ShutDown();
 };
 
-SLONG CSoundAPI_OpenAL::PrepareSoundBuffer(void) {
+size_t CSoundAPI_OpenAL::PrepareSoundBuffer(void) {
   // Unqueue all processed buffers that are ready to receive new data
   ALint iProcessed;
   alGetSourcei(m_iSource, AL_BUFFERS_PROCESSED, &iProcessed);
@@ -233,7 +233,7 @@ SLONG CSoundAPI_OpenAL::PrepareSoundBuffer(void) {
   return slDataToMix;
 };
 
-void CSoundAPI_OpenAL::CopyMixerBuffer(SLONG slMixedSize) {
+void CSoundAPI_OpenAL::CopyMixerBuffer(size_t) {
   // Must have at least one free buffer to play sound through
   ASSERT(m_aiFreeBuffers.Count() != 0);
 
