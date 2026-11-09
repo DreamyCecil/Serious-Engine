@@ -41,7 +41,8 @@ static void *pvMixerBuffer;            // pointer to the start of the destinatio
 
 static CSoundData *psd;
 static SWORD *pswSrcBuffer;
-static SLONG slLeftVolume,  slRightVolume, slLeftFilter, slRightFilter;
+static ULONG ulLeftVolume, ulRightVolume; // [Cecil] Volume may only be positive
+static SLONG slLeftFilter, slRightFilter;
 static SLONG slLastLeftSample, slLastRightSample, slSoundBufferSize;
 static FLOAT fSoundSampleRate, fPhase;
 static FLOAT fOfsDelta, fStep, fLeftStep, fRightStep, fLeftOfs, fRightOfs;
@@ -184,17 +185,18 @@ inline void MixMono( CSoundObject *pso)
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_RAWMIXER);
 
   // Initialize some local vars
-  SLONG slLeftSample, slRightSample, slNextSample;
+  SLONG slLeftSample, slRightSample;
+  SLONG slNextLeftSample, slNextRightSample; // [Cecil]
   SLONG *pslDstBuffer = (SLONG *)pvMixerBuffer;
   fixLeftOfs = (SQUAD)(fLeftOfs * 65536.0f);
   fixRightOfs = (SQUAD)(fRightOfs * 65536.0f);
   SQUAD fixLeftStep = (SQUAD)(fLeftStep * 65536.0f);
   SQUAD fixRightStep = (SQUAD)(fRightStep * 65536.0f);
   SQUAD fixSoundBufferSize = ((SQUAD)slSoundBufferSize) << 16;
-  mmSurroundFactor = (SQUAD)(SWORD)mmSurroundFactor;
 
-  SLONG slLeftVolTmp = slLeftVolume >> 16;
-  SLONG slRightVolTmp = slRightVolume >> 16;
+  // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
+  const UWORD uwSurroundLeft  = UWORD((mmSurroundFactor >>  0) & 0xFFFF);
+  const UWORD uwSurroundRight = UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
   // Loop through source buffer
   INDEX iCt = slMixerBufferSize;
@@ -219,24 +221,34 @@ inline void MixMono( CSoundObject *pso)
 
     // Fetch one lineary interpolated sample on left channel
     slLeftSample = pswSrcBuffer[(fixLeftOfs >> 16) + 0];
-    slNextSample = pswSrcBuffer[(fixLeftOfs >> 16) + 1];
-    slLeftSample = (slLeftSample * (0xFFFF - (fixLeftOfs & 0xFFFF)) + slNextSample * (fixLeftOfs & 0xFFFF)) >> 16;
+    slNextLeftSample = pswSrcBuffer[(fixLeftOfs >> 16) + 1];
 
     // Fetch one lineary interpolated sample on right channel
     slRightSample = pswSrcBuffer[(fixRightOfs >> 16) + 0];
-    slNextSample  = pswSrcBuffer[(fixRightOfs >> 16) + 1];
-    slRightSample = (slRightSample * (0xFFFF - (fixRightOfs & 0xFFFF)) + slNextSample * (fixRightOfs & 0xFFFF)) >> 16;
+    slNextRightSample = pswSrcBuffer[(fixRightOfs >> 16) + 1];
+
+    // [Cecil] Shortcuts
+    const UWORD uwLOffset = UWORD(fixLeftOfs & 0xFFFF);
+    const UWORD uwROffset = UWORD(fixRightOfs & 0xFFFF);
+
+    slLeftSample = (slLeftSample * (0xFFFF - uwLOffset) + slNextLeftSample * uwLOffset) >> 16;
+    slRightSample = (slRightSample * (0xFFFF - uwROffset) + slNextRightSample * uwROffset) >> 16;
 
     // Filter samples
     slLastLeftSample += ((slLeftSample - slLastLeftSample) * slLeftFilter) >> 15;
     slLastRightSample += ((slRightSample - slLastRightSample) * slRightFilter) >> 15;
 
-    // Apply stereo volume to current sample
-    slLeftSample = (slLastLeftSample * slLeftVolTmp) >> 15;
-    slRightSample = (slLastRightSample * slRightVolTmp) >> 15;
+    // [Cecil] Use the current volume with each loop cycle
+    const ULONG ulLeftVolTmp  = ulLeftVolume  >> 16;
+    const ULONG ulRightVolTmp = ulRightVolume >> 16;
 
-    slLeftSample ^= (SLONG)((mmSurroundFactor >> 0) & 0xFFFFFFFF);
-    slRightSample ^= (SLONG)((mmSurroundFactor >> 32) & 0xFFFFFFFF);
+    // Apply stereo volume to current sample
+    slLeftSample  = (slLastLeftSample  * ulLeftVolTmp)  >> 15;
+    slRightSample = (slLastRightSample * ulRightVolTmp) >> 15;
+
+    // [Cecil] Properly XOR with the surround factor
+    slLeftSample  = SLONG((SWORD)slLeftSample  ^ (SWORD)uwSurroundLeft);
+    slRightSample = SLONG((SWORD)slRightSample ^ (SWORD)uwSurroundRight);
 
     // Mix in current sample
     slLeftSample += pslDstBuffer[0];
@@ -250,9 +262,9 @@ inline void MixMono( CSoundObject *pso)
     pslDstBuffer[0] = slLeftSample;
     pslDstBuffer[1] = slRightSample;
 
-    // Modify volume
-    slLeftVolume += (SWORD)((mmVolumeGain >>  0) & 0xFFFF);
-    slRightVolume += (SWORD)((mmVolumeGain >> 16) & 0xFFFF);
+    // [Cecil] Modify volume using 32-bit masks instead of 16-bit masks because that's how mmVolumeGain is set per channel
+    ulLeftVolume  += (ULONG)((mmVolumeGain >>  0) & 0xFFFFFFFF);
+    ulRightVolume += (ULONG)((mmVolumeGain >> 32) & 0xFFFFFFFF);
 
     // Advance to the next sample
     fixLeftOfs += fixLeftStep;
@@ -279,10 +291,10 @@ inline void MixStereo( CSoundObject *pso)
   SQUAD fixLeftStep = (SQUAD)(fLeftStep * 65536.0f);
   SQUAD fixRightStep = (SQUAD)(fRightStep * 65536.0f);
   SQUAD fixSoundBufferSize = ((SQUAD)slSoundBufferSize) << 16;
-  mmSurroundFactor = (SQUAD)(SWORD)mmSurroundFactor;
 
-  SLONG slLeftVolTmp = slLeftVolume >> 16;
-  SLONG slRightVolTmp = slRightVolume >> 16;
+  // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
+  const UWORD uwSurroundLeft  = UWORD((mmSurroundFactor >>  0) & 0xFFFF);
+  const UWORD uwSurroundRight = UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
   // Loop through source buffer
   INDEX iCt = slMixerBufferSize;
@@ -318,22 +330,27 @@ inline void MixStereo( CSoundObject *pso)
     slNextRightSample = pswSrcBuffer[fixRightShift + 3];
 
     // [Cecil] Shortcuts
-    const SWORD swLOffset = fixLeftOfs & 0xFFFF;
-    const SWORD swROffset = fixRightOfs & 0xFFFF;
+    const UWORD uwLOffset = UWORD(fixLeftOfs & 0xFFFF);
+    const UWORD uwROffset = UWORD(fixRightOfs & 0xFFFF);
 
-    slLeftSample = (slLeftSample * (0xFFFF - swLOffset) + slNextLeftSample * swLOffset) >> 16;
-    slRightSample = (slRightSample * (0xFFFF - swROffset) + slNextRightSample * swROffset) >> 16;
+    slLeftSample = (slLeftSample * (0xFFFF - uwLOffset) + slNextLeftSample * uwLOffset) >> 16;
+    slRightSample = (slRightSample * (0xFFFF - uwROffset) + slNextRightSample * uwROffset) >> 16;
 
     // Filter samples
     slLastLeftSample += ((slLeftSample - slLastLeftSample) * slLeftFilter) >> 15;
     slLastRightSample += ((slRightSample - slLastRightSample) * slRightFilter) >> 15;
 
-    // Apply stereo volume to current sample
-    slLeftSample = (slLastLeftSample * slLeftVolTmp) >> 15;
-    slRightSample = (slLastRightSample * slRightVolTmp) >> 15;
+    // [Cecil] Use the current volume with each loop cycle
+    const ULONG ulLeftVolTmp  = ulLeftVolume  >> 16;
+    const ULONG ulRightVolTmp = ulRightVolume >> 16;
 
-    slLeftSample ^= (SLONG)((mmSurroundFactor >> 0) & 0xFFFFFFFF);
-    slRightSample ^= (SLONG)((mmSurroundFactor >> 32) & 0xFFFFFFFF);
+    // Apply stereo volume to current sample
+    slLeftSample  = (slLastLeftSample  * ulLeftVolTmp)  >> 15;
+    slRightSample = (slLastRightSample * ulRightVolTmp) >> 15;
+
+    // [Cecil] Properly XOR with the surround factor
+    slLeftSample  = SLONG((SWORD)slLeftSample  ^ (SWORD)uwSurroundLeft);
+    slRightSample = SLONG((SWORD)slRightSample ^ (SWORD)uwSurroundRight);
 
     // Mix in current sample
     slLeftSample += pslDstBuffer[0];
@@ -347,9 +364,9 @@ inline void MixStereo( CSoundObject *pso)
     pslDstBuffer[0] = slLeftSample;
     pslDstBuffer[1] = slRightSample;
 
-    // Modify volume
-    slLeftVolume += (SWORD)((mmVolumeGain >> 0) & 0xFFFF);
-    slRightVolume += (SWORD)((mmVolumeGain >> 16) & 0xFFFF);
+    // [Cecil] Modify volume using 32-bit masks instead of 16-bit masks because that's how mmVolumeGain is set per channel
+    ulLeftVolume  += (ULONG)((mmVolumeGain >>  0) & 0xFFFFFFFF);
+    ulRightVolume += (ULONG)((mmVolumeGain >> 32) & 0xFFFFFFFF);
 
     // Advance to the next sample
     fixLeftOfs += fixLeftStep;
@@ -401,10 +418,10 @@ void MixSound( CSoundObject *pso)
   if( !(pso->so_slFlags&SOF_LOOP) && slSoundBufferSize>1) slSoundBufferSize--;
 
   // get old and new volumes
-  FLOAT fLeftVolume     = ClampDn( pso->so_fLastLeftVolume,  0.0f);
-  FLOAT fRightVolume    = ClampDn( pso->so_fLastRightVolume, 0.0f);
-  FLOAT fNewLeftVolume  = ClampDn( pso->so_sp.sp_fLeftVolume,  0.0f);
-  FLOAT fNewRightVolume = ClampDn( pso->so_sp.sp_fRightVolume, 0.0f);
+  const FLOAT fLeftVolume  = ClampDn(pso->so_fLastLeftVolume,  0.0f);
+  const FLOAT fRightVolume = ClampDn(pso->so_fLastRightVolume, 0.0f);
+  FLOAT fNewLeftVolume  = ClampDn(pso->so_sp.sp_fLeftVolume,  0.0f);
+  FLOAT fNewRightVolume = ClampDn(pso->so_sp.sp_fRightVolume, 0.0f);
 
   // adjust for master volume
   if(pso->so_slFlags&SOF_MUSIC) {
@@ -467,16 +484,20 @@ void MixSound( CSoundObject *pso)
   fLeftOfs  = pso->so_fLeftOffset;
   fRightOfs = pso->so_fRightOffset;
   fOfsDelta = pso->so_fOffsetDelta;
-  slLeftVolume  = FloatToInt(fLeftVolume  * 65536*32767.0f);
-  slRightVolume = FloatToInt(fRightVolume * 65536*32767.0f);
-  const FLOAT fMixBufSize = 65536*32767.0f / slMixerBufferSize;
-  const SLONG slLeftGain  = FloatToInt( (fNewLeftVolume -fLeftVolume)  *fMixBufSize);
-  const SLONG slRightGain = FloatToInt( (fNewRightVolume-fRightVolume) *fMixBufSize);
-  mmVolumeGain  = ((SQUAD)(slRightGain)<<32) | ((SQUAD)(slLeftGain)&0xFFFFFFFF);
+
+  const FLOAT fVolumeMul = 65536 * 32767.0f;
+  ulLeftVolume  = FloatToInt(fLeftVolume  * fVolumeMul);
+  ulRightVolume = FloatToInt(fRightVolume * fVolumeMul);
+
+  const FLOAT fMixBufSize = fVolumeMul / slMixerBufferSize;
+  const SLONG slLeftGain  = FloatToInt((fNewLeftVolume  - fLeftVolume)  * fMixBufSize);
+  const SLONG slRightGain = FloatToInt((fNewRightVolume - fRightVolume) * fMixBufSize);
+  mmVolumeGain = ((SQUAD)(slRightGain)<<32) | ((SQUAD)(slLeftGain)&0xFFFFFFFF);
+
   // extrapolate back new volumes because of not enough precision in interpolation!
   // (otherwise we might hear occasional pucks)
-  if( fNewLeftVolume >0.001f) fNewLeftVolume  = (slLeftVolume  + slLeftGain *slMixerBufferSize) /(65536*32767.0f);
-  if( fNewRightVolume>0.001f) fNewRightVolume = (slRightVolume + slRightGain*slMixerBufferSize) /(65536*32767.0f);
+  if (fNewLeftVolume  > 0.001f) fNewLeftVolume  = (ulLeftVolume  + slLeftGain  * slMixerBufferSize) / fVolumeMul;
+  if (fNewRightVolume > 0.001f) fNewRightVolume = (ulRightVolume + slRightGain * slMixerBufferSize) / fVolumeMul;
   //ASSERT( fNewLeftVolume>=0 && fNewRightVolume>=0);
   //CPrintF( "NV: %.4f / %.4f, GV: %.4f / %.4f\n", fNewLeftVolume,fNewRightVolume, fLeftGainedVolume,fRightGainedVolume); 
 
@@ -581,8 +602,8 @@ void MixSound( CSoundObject *pso)
       fRightOfs = fLeftOfs;
       fLeftStep  = (fLeftStep+fRightStep)/2;
       fRightStep = fLeftStep;
-      slLeftVolume  = (slLeftVolume+slRightVolume)/2;
-      slRightVolume = slLeftVolume;
+      ulLeftVolume  = (ulLeftVolume+ulRightVolume)/2;
+      ulRightVolume = ulLeftVolume;
       slLeftFilter  = (slLeftFilter+slRightFilter)/2;
       slRightFilter = slLeftFilter;
     }
