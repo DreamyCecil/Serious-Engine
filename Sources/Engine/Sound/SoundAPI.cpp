@@ -31,10 +31,10 @@ const int CAbstractSoundAPI::ctBufferBlockSize = 1024;
 
 CAbstractSoundAPI::CAbstractSoundAPI() {
   m_pslMixerBuffer = NULL;
-  m_slMixerBufferSize = 0;
+  m_ctMixerBufferSize = 0;
 
   m_pswDecodeBuffer = NULL;
-  m_slDecodeBufferSize = 0;
+  m_ctDecodeBufferSize = 0;
 };
 
 CAbstractSoundAPI::~CAbstractSoundAPI() {
@@ -42,19 +42,19 @@ CAbstractSoundAPI::~CAbstractSoundAPI() {
 };
 
 // Calculate mixer buffer size
-SLONG CAbstractSoundAPI::CalculateMixerSize(void) {
+size_t CAbstractSoundAPI::CalculateMixerSize(void) {
   const SEAudioFormat &af = _pSound->sl_afFormat;
-  return SLONG(ceil(snd_tmMixAhead * af.iSampleRate) * af.GetBytesPerFrame());
+  return size_t(ceil(snd_tmMixAhead * af.iSampleRate) * af.GetBytesPerFrame());
 };
 
 // Calculate decoder buffer size (only after mixer size)
-SLONG CAbstractSoundAPI::CalculateDecoderSize(SLONG slMixerSize) {
+size_t CAbstractSoundAPI::CalculateDecoderSize(size_t ctMixerSize) {
   // [Cecil] FIXME: If the sound decoder decodes audio with the sample rate higher than
   // CSoundLibrary::sl_ulMaxSampleRate, it may write data outside the buffer boundaries!
 
   // Decoder buffer always works at maximum sample rate
   const SEAudioFormat &af = _pSound->sl_afFormat;
-  return slMixerSize * ((CSoundLibrary::sl_ulMaxSampleRate + af.iSampleRate - 1) / af.iSampleRate);
+  return ctMixerSize * ((CSoundLibrary::sl_ulMaxSampleRate + af.iSampleRate - 1) / af.iSampleRate);
 };
 
 // Allocate new buffer memory
@@ -63,34 +63,34 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
   ASSERT(m_pswDecodeBuffer == NULL);
 
   // Determine initial buffer sizes
-  m_slMixerBufferSize = CalculateMixerSize();
+  m_ctMixerBufferSize = CalculateMixerSize();
 
   // Align mixer size to be the next multiple of the block size
   if (bAlignToBlockSize) {
-    m_slMixerBufferSize += ctBufferBlockSize - (m_slMixerBufferSize % ctBufferBlockSize);
+    m_ctMixerBufferSize += ctBufferBlockSize - (m_ctMixerBufferSize % ctBufferBlockSize);
   }
 
-  m_slDecodeBufferSize = CalculateDecoderSize(m_slMixerBufferSize);
+  m_ctDecodeBufferSize = CalculateDecoderSize(m_ctMixerBufferSize);
 
   // Twice as much because of 32-bit buffer
-  m_pslMixerBuffer = (SLONG *)AllocMemory(m_slMixerBufferSize * 2);
+  m_pslMixerBuffer = (SLONG *)AllocMemory(m_ctMixerBufferSize * 2);
 
   // [Cecil] FIXME: Don't just use 4, do it based on the audio setup
   // Right now it's 4 because: 16-bit samples * 2 channels (stereo) = 32 bits = 4 bytes per sample
 
   // +4 because of linear interpolation of last samples
-  m_pswDecodeBuffer = (SWORD *)AllocMemory(m_slDecodeBufferSize + 4);
+  m_pswDecodeBuffer = (SWORD *)AllocMemory(m_ctDecodeBufferSize + 4);
 };
 
 // Free buffer memory
 void CAbstractSoundAPI::FreeBuffers(void) {
   if (m_pslMixerBuffer != NULL) FreeMemory(m_pslMixerBuffer);
   m_pslMixerBuffer = NULL;
-  m_slMixerBufferSize = 0;
+  m_ctMixerBufferSize = 0;
 
   if (m_pswDecodeBuffer != NULL) FreeMemory(m_pswDecodeBuffer);
   m_pswDecodeBuffer = NULL;
-  m_slDecodeBufferSize = 0;
+  m_ctDecodeBufferSize = 0;
 };
 
 // Report generic info about an interface
@@ -101,8 +101,8 @@ void CAbstractSoundAPI::ReportGenericInfo(void) {
   CPrintF(TRANS("  %u Hz, %u bit, %u channels, mix-ahead: %gs\n"),
     af.iSampleRate, af.iBytesPerSample * 8, af.iChannels, snd_tmMixAhead);
 
-  CPrintF(TRANS("  mixer buffer size:  %d bytes\n"), m_slMixerBufferSize);
-  CPrintF(TRANS("  decode buffer size: %d bytes\n"), m_slDecodeBufferSize);
+  CPrintF(TRANS("  mixer buffer size:  %u bytes\n"), (ULONG)m_ctMixerBufferSize);
+  CPrintF(TRANS("  decode buffer size: %u bytes\n"), (ULONG)m_ctDecodeBufferSize);
 };
 
 // Get API name from type

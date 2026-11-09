@@ -142,7 +142,7 @@ BOOL CSoundAPI_OpenAL::StartUp(BOOL bReport) {
   AllocBuffers(TRUE);
 
   // Determine number of OpenAL buffers
-  const INDEX ctBuffers = m_slMixerBufferSize / ctBufferBlockSize;
+  const INDEX ctBuffers = INDEX(m_ctMixerBufferSize / ctBufferBlockSize);
 
   if (bReport) {
     CPrintF(TRANS("  output buffers: %d x %d bytes\n"), ctBuffers, ctBufferBlockSize);
@@ -229,7 +229,7 @@ SLONG CSoundAPI_OpenAL::PrepareSoundBuffer(void) {
   // Mix as much data as current free buffers can handle
   const INDEX slDataToMix = m_aiFreeBuffers.Count() * ctBufferBlockSize;
 
-  ASSERT(slDataToMix <= m_slMixerBufferSize);
+  ASSERT(slDataToMix <= m_ctMixerBufferSize);
   return slDataToMix;
 };
 

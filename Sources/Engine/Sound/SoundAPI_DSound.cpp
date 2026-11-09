@@ -125,14 +125,14 @@ void CSoundAPI_DSound::PlayBuffers(void) {
   LPVOID lpData;
   DWORD	dwSize;
 
-  if (!LockBuffer(m_pDSSecondary, m_slMixerBufferSize, lpData, dwSize)) return;
+  if (!LockBuffer(m_pDSSecondary, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
   memset(lpData, 0, dwSize);
   m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
 
 #if SE1_SND_EAX
   if (m_bUsingEAX)
   {
-    if (!LockBuffer(m_pDSSecondary2, m_slMixerBufferSize, lpData, dwSize)) return;
+    if (!LockBuffer(m_pDSSecondary2, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
     memset(lpData, 0, dwSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);
 
@@ -180,11 +180,11 @@ void CSoundAPI_DSound::PlayBuffers(void) {
     m_iWriteOffsetEAX += m_iWriteOffsetEAX & 3;
 
     // Assure that first writing offsets are inside buffers
-    if (m_iWriteOffset >= m_slMixerBufferSize) m_iWriteOffset -= m_slMixerBufferSize;
-    if (m_iWriteOffsetEAX >= m_slMixerBufferSize) m_iWriteOffsetEAX -= m_slMixerBufferSize;
+    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= (INDEX)m_ctMixerBufferSize;
+    if (m_iWriteOffsetEAX >= m_ctMixerBufferSize) m_iWriteOffsetEAX -= (INDEX)m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_slMixerBufferSize);
-    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_slMixerBufferSize);
+    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_ctMixerBufferSize);
+    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_ctMixerBufferSize);
   }
 #endif // SE1_SND_EAX
 };
@@ -264,13 +264,13 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   AllocBuffers(FALSE);
 
   // Start up secondary sound buffers
-  if (!InitSecondary(m_pDSSecondary, m_slMixerBufferSize)) return FALSE;
+  if (!InitSecondary(m_pDSSecondary, (SLONG)m_ctMixerBufferSize)) return FALSE;
 
 #if SE1_SND_EAX
   // Set some additionals for EAX
   if (snd_iInterface == E_SND_EAX) {
     // 2nd secondary buffer
-    if (!InitSecondary(m_pDSSecondary2, m_slMixerBufferSize)) return FALSE;
+    if (!InitSecondary(m_pDSSecondary2, (SLONG)m_ctMixerBufferSize)) return FALSE;
 
     // Set 3D for all buffers
     HRESULT hr1, hr2, hr3, hr4;
@@ -394,9 +394,9 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
   // If EAX is in use
   if (m_bUsingEAX) {
     // Lock left buffer and copy first part of the 1st mono block
-    if (!LockBuffer(m_pDSSecondary, m_slMixerBufferSize, lpData, dwSize)) return;
+    if (!LockBuffer(m_pDSSecondary, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
 
-    slPart1Size = Min(m_slMixerBufferSize - m_iWriteOffset, slMixedSize);
+    slPart1Size = Min((SLONG)m_ctMixerBufferSize - m_iWriteOffset, slMixedSize);
     CopyMixerBuffer_mono(0, ((UBYTE *)lpData) + m_iWriteOffset / 2, slPart1Size);
 
     // Copy second part of the 1st mono block
@@ -404,15 +404,15 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
     CopyMixerBuffer_mono(slPart1Size, lpData, slPart2Size);
 
     m_iWriteOffset += slMixedSize;
-    if (m_iWriteOffset >= m_slMixerBufferSize) m_iWriteOffset -= m_slMixerBufferSize;
+    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= (INDEX)m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_slMixerBufferSize);
+    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_ctMixerBufferSize);
     m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
 
     // Lock right buffer and copy first part of the 2nd mono block
-    if (!LockBuffer(m_pDSSecondary2, m_slMixerBufferSize, lpData, dwSize)) return;
+    if (!LockBuffer(m_pDSSecondary2, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
 
-    slPart1Size = Min(m_slMixerBufferSize - m_iWriteOffsetEAX, slMixedSize);
+    slPart1Size = Min((SLONG)m_ctMixerBufferSize - m_iWriteOffsetEAX, slMixedSize);
     CopyMixerBuffer_mono(2, ((UBYTE *)lpData) + m_iWriteOffsetEAX / 2, slPart1Size);
 
     // Copy second part of the 2nd mono block
@@ -420,9 +420,9 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
     CopyMixerBuffer_mono(slPart1Size + 2, lpData, slPart2Size);
 
     m_iWriteOffsetEAX += slMixedSize;
-    if (m_iWriteOffsetEAX >= m_slMixerBufferSize) m_iWriteOffsetEAX -= m_slMixerBufferSize;
+    if (m_iWriteOffsetEAX >= m_ctMixerBufferSize) m_iWriteOffsetEAX -= (INDEX)m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_slMixerBufferSize);
+    ASSERT(m_iWriteOffsetEAX >= 0 && m_iWriteOffsetEAX < m_ctMixerBufferSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);
     return;
   }
@@ -431,9 +431,9 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
   // Only standard DirectSound (no EAX)
   {
     // Lock stereo buffer and copy first part of block
-    if (!LockBuffer(m_pDSSecondary, m_slMixerBufferSize, lpData, dwSize)) return;
+    if (!LockBuffer(m_pDSSecondary, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
 
-    slPart1Size = Min(m_slMixerBufferSize - m_iWriteOffset, slMixedSize);
+    slPart1Size = Min((SLONG)m_ctMixerBufferSize - m_iWriteOffset, slMixedSize);
     CopyMixerBuffer_stereo(0, ((UBYTE *)lpData) + m_iWriteOffset, slPart1Size);
 
     // Copy second part of block
@@ -441,9 +441,9 @@ void CSoundAPI_DSound::CopyMixerBuffer(SLONG slMixedSize) {
     CopyMixerBuffer_stereo(slPart1Size, lpData, slPart2Size);
 
     m_iWriteOffset += slMixedSize;
-    if (m_iWriteOffset >= m_slMixerBufferSize) m_iWriteOffset -= m_slMixerBufferSize;
+    if (m_iWriteOffset >= m_ctMixerBufferSize) m_iWriteOffset -= (INDEX)m_ctMixerBufferSize;
 
-    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_slMixerBufferSize);
+    ASSERT(m_iWriteOffset >= 0 && m_iWriteOffset < m_ctMixerBufferSize);
     m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
   }
 };
@@ -473,15 +473,15 @@ SLONG CSoundAPI_DSound::PrepareSoundBuffer(void)
 
     // Store pointers and wrapped block sizes
     SLONG slDataToMix1 = dwCurrentCursor - m_iWriteOffset;
-    if (slDataToMix1 < 0) slDataToMix1 += m_slMixerBufferSize;
+    if (slDataToMix1 < 0) slDataToMix1 += (SLONG)m_ctMixerBufferSize;
 
-    ASSERT(slDataToMix1 >= 0 && slDataToMix1 <= m_slMixerBufferSize);
-    slDataToMix1 = Min(slDataToMix1, m_slMixerBufferSize);
+    ASSERT(slDataToMix1 >= 0 && slDataToMix1 <= m_ctMixerBufferSize);
+    slDataToMix1 = Min(slDataToMix1, m_ctMixerBufferSize);
 
     SLONG slDataToMix2 = dwCurrentCursor2 - m_iWriteOffsetEAX;
-    if (slDataToMix2 < 0) slDataToMix2 += m_slMixerBufferSize;
+    if (slDataToMix2 < 0) slDataToMix2 += (SLONG)m_ctMixerBufferSize;
 
-    ASSERT(slDataToMix2 >= 0 && slDataToMix2 <= m_slMixerBufferSize);
+    ASSERT(slDataToMix2 >= 0 && slDataToMix2 <= m_ctMixerBufferSize);
     slDataToMix = Min(slDataToMix1, slDataToMix2);
 
     return slDataToMix;
@@ -498,10 +498,10 @@ SLONG CSoundAPI_DSound::PrepareSoundBuffer(void)
 
     // Store pointer and wrapped block size
     slDataToMix = dwCurrentCursor - m_iWriteOffset;
-    if (slDataToMix < 0) slDataToMix += m_slMixerBufferSize;
+    if (slDataToMix < 0) slDataToMix += (SLONG)m_ctMixerBufferSize;
 
-    ASSERT(slDataToMix >= 0 && slDataToMix <= m_slMixerBufferSize);
-    slDataToMix = Min(slDataToMix, m_slMixerBufferSize);
+    ASSERT(slDataToMix >= 0 && slDataToMix <= m_ctMixerBufferSize);
+    slDataToMix = Min(slDataToMix, m_ctMixerBufferSize);
   }
 
   //CPrintF("LP/LW: %5d / %5d,   RP/RW: %5d / %5d,    MIX: %5d\n", dwCurrentCursor, _iWriteOffset, dwCurrentCursor2, _iWriteOffset2, slDataToMix); // grgr
@@ -519,7 +519,7 @@ void CSoundAPI_DSound::Mute(BOOL &bSetSoundMuted) {
   DWORD dwSize;
 
   // Flush one secondary buffer
-  if (!LockBuffer(m_pDSSecondary, m_slMixerBufferSize, lpData, dwSize)) return;
+  if (!LockBuffer(m_pDSSecondary, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
 
   memset(lpData, 0, dwSize);
   m_pDSSecondary->Unlock(lpData, dwSize, NULL, 0);
@@ -527,7 +527,7 @@ void CSoundAPI_DSound::Mute(BOOL &bSetSoundMuted) {
 #if SE1_SND_EAX
   // Flush right buffer as well for EAX
   if (m_bUsingEAX) {
-    if (!LockBuffer(m_pDSSecondary2, m_slMixerBufferSize, lpData, dwSize)) return;
+    if (!LockBuffer(m_pDSSecondary2, (SLONG)m_ctMixerBufferSize, lpData, dwSize)) return;
 
     memset(lpData, 0, dwSize);
     m_pDSSecondary2->Unlock(lpData, dwSize, NULL, 0);

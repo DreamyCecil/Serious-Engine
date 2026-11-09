@@ -118,7 +118,7 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   res = waveOutGetDevCaps((UINT_PTR)m_hwoWaveOut, &woc, sizeof(woc));
 
   // Determine number of WaveOut buffers
-  const INDEX ctWOBuffers = m_slMixerBufferSize / ctBufferBlockSize;
+  const INDEX ctWOBuffers = INDEX(m_ctMixerBufferSize / ctBufferBlockSize);
 
   // Report success
   if (bReport) {
@@ -129,8 +129,8 @@ BOOL CSoundAPI_WaveOut::StartUp(BOOL bReport) {
   }
 
   // Initialize WaveOut sound buffers
-  m_pubBuffersMemory = (UBYTE *)AllocMemory(m_slMixerBufferSize);
-  memset(m_pubBuffersMemory, 0, m_slMixerBufferSize);
+  m_pubBuffersMemory = (UBYTE *)AllocMemory(m_ctMixerBufferSize);
+  memset(m_pubBuffersMemory, 0, m_ctMixerBufferSize);
 
   m_awhWOBuffers.New(ctWOBuffers);
 
@@ -237,7 +237,7 @@ SLONG CSoundAPI_WaveOut::PrepareSoundBuffer(void) {
   }
 
   // Done
-  ASSERT(slDataToMix <= m_slMixerBufferSize);
+  ASSERT(slDataToMix <= m_ctMixerBufferSize);
   return slDataToMix;
 };
 

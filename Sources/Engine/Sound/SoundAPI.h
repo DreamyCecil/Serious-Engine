@@ -58,10 +58,10 @@ class ENGINE_API CAbstractSoundAPI {
     static const int ctBufferBlockSize;
 
     SLONG *m_pslMixerBuffer;     // buffer for mixing sounds (32-bit!)
-    SLONG  m_slMixerBufferSize;  // mixer buffer size
+    size_t m_ctMixerBufferSize;  // mixer buffer size
 
     SWORD *m_pswDecodeBuffer;    // buffer for decoding encoded sounds (ogg, mpeg...)
-    SLONG  m_slDecodeBufferSize; // decoder buffer size
+    size_t m_ctDecodeBufferSize; // decoder buffer size
 
   public:
     // Constructor
@@ -71,10 +71,10 @@ class ENGINE_API CAbstractSoundAPI {
     virtual ~CAbstractSoundAPI();
 
     // Calculate mixer buffer size
-    SLONG CalculateMixerSize(void);
+    size_t CalculateMixerSize(void);
 
     // Calculate decoder buffer size (only after mixer size)
-    SLONG CalculateDecoderSize(SLONG slMixerSize);
+    size_t CalculateDecoderSize(size_t ctMixerSize);
 
     // Allocate new buffer memory
     // Must always be called from interface's StartUp() method

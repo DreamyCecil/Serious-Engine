@@ -156,7 +156,7 @@ BOOL CSoundAPI_SDL::StartUp(BOOL bReport) {
   AllocBuffers(TRUE);
 
   m_ubSilence = SDL_GetSilenceValueForFormat(formatSet);
-  m_slBackBufferAlloc = m_slMixerBufferSize;
+  m_slBackBufferAlloc = (SLONG)m_ctMixerBufferSize;
   m_pBackBuffer = (Uint8 *)AllocMemory(m_slBackBufferAlloc);
   m_slBackBufferRemain = 0;
   m_slBackBufferPos = 0;

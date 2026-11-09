@@ -848,7 +848,7 @@ void MixSound( CSoundObject *pso)
     const ULONG ulSampleSize = af.GetBytesPerFrame();
     const ULONG ulWantedSamples = FloatToInt(slMixerBufferSize * fStep);
     ASSERT(ulWantedSamples > 0);
-    ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_slDecodeBufferSize / ulSampleSize);
+    ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_ctDecodeBufferSize / ulSampleSize);
     UBYTE *pDecodeBuffer = (UBYTE *)_pSound->sl_pInterface->m_pswDecodeBuffer;
 
     ULONG ulDecodedSamples = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedSamples);
