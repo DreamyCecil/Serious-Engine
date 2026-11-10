@@ -322,7 +322,6 @@ template<class Type, int iDimensions> class Vector;
 template<class Type, int iDimensions> class Plane;
 template<class Type> class OBBox;
 template<class Type> class Quaternion;
-template<int iInt, int iFrac> class FixInt;
 
 class BSPVertex;
 class BSPVertexContainer;
@@ -331,8 +330,6 @@ class BSPNode;
 class BSPPolygon;
 class BSPTree;
 class BSPCutter;
-
-typedef FixInt<16,16>           FIX16_16;
 
 // vectors
 typedef Vector<PIX, 2>          PIX2D;

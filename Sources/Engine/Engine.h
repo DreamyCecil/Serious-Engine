@@ -123,7 +123,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Math/Geometry.inl>
 #include <Engine/Math/Clipping.inl>
-#include <Engine/Math/FixInt.h>
+#include <Engine/Math/FixedPoint.h> // [Cecil] New fixed-point class
 #include <Engine/Math/Float.h>
 #include <Engine/Math/Object3D.h>
 #include <Engine/Math/Functions.h>

@@ -873,7 +873,7 @@
     <ClInclude Include="Math\AABBox.h">
       <Filter>Header Files\Math Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Math\FixInt.h">
+    <ClInclude Include="Math\FixedPoint.h">
       <Filter>Header Files\Math Headers</Filter>
     </ClInclude>
     <ClInclude Include="Math\Float.h">

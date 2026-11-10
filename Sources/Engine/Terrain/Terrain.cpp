@@ -17,7 +17,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Math/Projection.h>
-#include <Engine/Math/FixInt.h>
 #include <Engine/Graphics/DrawPort.h>
 #include <Engine/Graphics/ImageInfo.h>
 #include <Engine/Graphics/GfxLibrary.h>
@@ -1051,8 +1050,8 @@ void CTerrain::UpdateTopMap(INDEX iTileIndex, Rect *prcDest/*=NULL*/)
     FIX16_16 fiHMaskStep = FIX16_16(iMaskWidth-1) / FIX16_16(ptdDest->GetWidth()-1) / fiMaskDiv;
     FIX16_16 fiVMaskStep = FIX16_16(iMaskWidth-1) / FIX16_16(ptdDest->GetWidth()-1) / fiMaskDiv;
 
-    SLONG xHMaskStep = fiHMaskStep.slHolder;
-    SLONG xVMaskStep = fiVMaskStep.slHolder;
+    SLONG xHMaskStep = fiHMaskStep.holder;
+    SLONG xVMaskStep = fiVMaskStep.holder;
     SLONG xMaskVPos=0;
     
     // get first byte in destination texture

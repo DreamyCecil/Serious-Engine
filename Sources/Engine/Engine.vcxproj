@@ -1100,7 +1100,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)GenerateCommitHash.ps
     <ClInclude Include="Graphics\Gfx_wrapper_Null.h" />
     <ClInclude Include="Graphics\Gfx_wrapper_OpenGL.h" />
     <ClInclude Include="Math\AABBox.h" />
-    <ClInclude Include="Math\FixInt.h" />
+    <ClInclude Include="Math\FixedPoint.h" />
     <ClInclude Include="Math\Float.h" />
     <ClInclude Include="Math\Functions.h" />
     <ClInclude Include="Math\Geometry.h" />

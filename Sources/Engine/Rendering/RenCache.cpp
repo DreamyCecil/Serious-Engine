@@ -315,17 +315,16 @@ void CRenderer::AddEdgeToAddAndRemoveLists(CScreenEdge &sed)
   INDEX iTopLine = sed.sed_pixTopJ-re_pixTopScanLineJ;
   CListNode *plnInList = re_alhAddLists[iTopLine].lh_Head;
   re_actAddCounts[iTopLine]++;
-  SLONG slIThis = sed.sed_xI.slHolder;
+  const FIX16_16 fixIThis = sed.sed_xI;
 
   ASSERT(sed.sed_xI > FIX16_16(re_fbbClipBox.Min()(1)-SENTINELEDGE_EPSILON));
   ASSERT(sed.sed_xI < FIX16_16(re_fbbClipBox.Max()(1)+SENTINELEDGE_EPSILON));
 
-  SLONG slIInList;
   while(plnInList->ln_Succ!=NULL) {
-    slIInList = 
-      ((CAddEdge*)((UBYTE*)plnInList-offsetof(CAddEdge, ade_lnInAdd))) -> ade_xI.slHolder;
+    CAddEdge *adeCheck = ((CAddEdge *)((UBYTE *)plnInList - offsetof(CAddEdge, ade_lnInAdd)));
+
     // if the edge in list is right of the one to add
-    if (slIInList>slIThis) {
+    if (adeCheck->ade_xI > fixIThis) {
       // stop searching
       break;
     }

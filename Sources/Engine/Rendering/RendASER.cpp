@@ -77,7 +77,7 @@ void CRenderer::AddAddListToActiveList(INDEX iScanLine)
     CAddEdge &ade = *itadeAdd;
 
     // while the edge in active list is left of the edge in add list
-    while (paceSrc->ace_xI.slHolder < itadeAdd->ade_xI.slHolder) {
+    while (paceSrc->ace_xI < itadeAdd->ade_xI) {
       // copy the active edge
       ASSERT(paceSrc<=&re_aaceActiveEdges[ctActiveEdges-1]);
       *paceDst++=*paceSrc++;
@@ -86,8 +86,8 @@ void CRenderer::AddAddListToActiveList(INDEX iScanLine)
 
     // copy the add edge
     ASSERT(paceDst > &re_aaceActiveEdgesTmp[0]);
-    ASSERT(ade.ade_xI.slHolder == ade.ade_psedEdge->sed_xI.slHolder);
-    ASSERT(paceDst[-1].ace_xI.slHolder <= ade.ade_xI.slHolder);
+    ASSERT(ade.ade_xI == ade.ade_psedEdge->sed_xI);
+    ASSERT(paceDst[-1].ace_xI <= ade.ade_xI);
 
     *paceDst++=CActiveEdge(itadeAdd->ade_psedEdge);
     IFDEBUG(ctNewActive++);
@@ -149,7 +149,7 @@ void CRenderer::RemRemoveListFromActiveList(CScreenEdge *psedFirst)
   CScreenEdge *psed = psedFirst;
   do {
     // mark it as removed
-    psed->sed_xI.slHolder = ACE_REMOVED;
+    psed->sed_xI.holder = ACE_REMOVED;
     psed = psed->sed_psedNextRemove;
   } while (psed!=NULL);
 
@@ -159,7 +159,7 @@ void CRenderer::RemRemoveListFromActiveList(CScreenEdge *psedFirst)
   CActiveEdge *paceDst = paceSrc;
   do {
     // if it is not removed
-    if (paceSrc->ace_psedEdge->sed_xI.slHolder!=ACE_REMOVED) {
+    if (paceSrc->ace_psedEdge->sed_xI.holder != ACE_REMOVED) {
       // copy it
       *paceDst = *paceSrc;
       paceDst++;
@@ -198,10 +198,10 @@ void CRenderer::StepAndResortActiveList(void)
   do {
 
     // step the edge by one scan line
-    pace->ace_xI.slHolder += pace->ace_xIStep.slHolder;
+    pace->ace_xI += pace->ace_xIStep;
 
     // if the previous is right of the current
-    if (pace[-1].ace_xI.slHolder > pace->ace_xI.slHolder) {
+    if (pace[-1].ace_xI > pace->ace_xI) {
       // mark that scan-line coherence is lost
       re_bCoherentScanLine = 0;
 
@@ -209,7 +209,7 @@ void CRenderer::StepAndResortActiveList(void)
       CActiveEdge *pacePred = pace;
       do {
         pacePred--;
-      } while(pacePred->ace_xI.slHolder > pace->ace_xI.slHolder);
+      } while(pacePred->ace_xI > pace->ace_xI);
 
       // remember the current one
       CActiveEdge aceCurrent = *pace;
@@ -248,7 +248,7 @@ void CRenderer::CopyActiveCoordinates(void)
   CActiveEdge *pace = &re_aaceActiveEdges[1];
   do {
     // copy active coordinates
-    pace->ace_psedEdge->sed_xI.slHolder = pace->ace_xI.slHolder;
+    pace->ace_psedEdge->sed_xI = pace->ace_xI;
     pace++;
   } while (pace<=paceEnd);
 }
@@ -740,7 +740,7 @@ CScreenPolygon *CRenderer::ScanOneLine(void)
     // if this edge has no active polygon
     } else {
       // mark it for removal
-      sed.sed_xI.slHolder = ACE_REMOVED;
+      sed.sed_xI.holder = ACE_REMOVED;
     }
 
     pace++;

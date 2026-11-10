@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <Engine/Base/Lists.h>
-#include <Engine/Math/FixInt.h>
 #include <Engine/Graphics/RenderScene.h>
 #include <Engine/Templates/DynamicStackArray.h>
 #include <Engine/Templates/DynamicContainer.h>

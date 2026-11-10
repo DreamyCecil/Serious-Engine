@@ -26,7 +26,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/ListIterator.inl>
 #include <Engine/Base/Statistics_internal.h>
 #include <Engine/Graphics/Color.h>
-#include <Engine/Math/FixInt.h>
 #include <Engine/Entities/Entity.h>
 #include <Engine/Graphics/GfxLibrary.h>
 #include <Engine/Math/Clipping.inl>
