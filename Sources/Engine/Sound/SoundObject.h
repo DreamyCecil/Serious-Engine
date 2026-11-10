@@ -78,9 +78,10 @@ public: //private:
   FLOAT so_fLastRightVolume;
   SWORD so_swLastLeftSample; // samples from previous mixing (for filtering purposes)
   SWORD so_swLastRightSample;
-  FLOAT so_fLeftOffset;    // current playing offset of left channel
-  FLOAT so_fRightOffset;   // current playing offset of right channel
-  FLOAT so_fOffsetDelta;   // difference between offsets in samples (for seamless transition between phases)
+  // [Cecil] Replaced floating-point offsets with fixed-point offsets
+  ufix16_t so_fixLeftOffset;  // Current playing offset of left channel
+  ufix16_t so_fixRightOffset; // Current playing offset of right channel
+  ufix16_t so_fixOffsetDelta; // Difference between offsets in samples (for seamless transition between phases)
 
   // sound parameters
   CEntity *so_penEntity;        // entity that owns this sound (may be null)

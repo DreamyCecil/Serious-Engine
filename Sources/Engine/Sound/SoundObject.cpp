@@ -93,9 +93,9 @@ CSoundObject::CSoundObject()
 
   so_sp = so_spNew;
 
-  so_fLeftOffset   = 0.0f;
-  so_fRightOffset  = 0.0f;
-  so_fOffsetDelta  = 0.0f;
+  so_fixLeftOffset  = 0;
+  so_fixRightOffset = 0;
+  so_fixOffsetDelta = 0;
   so_fDelayed      = 0.0f;
   so_fLastLeftVolume   = 1.0f;
   so_fLastRightVolume  = 1.0f;
@@ -278,9 +278,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
   if (!(slFlags&SOF_LOADED)) {
     so_fLastLeftVolume  = so_sp.sp_fLeftVolume;
     so_fLastRightVolume = so_sp.sp_fRightVolume;
-    so_fLeftOffset  = 0.0f;
-    so_fRightOffset = 0.0f;
-    so_fOffsetDelta = 0.0f;
+    so_fixLeftOffset  = 0;
+    so_fixRightOffset = 0;
+    so_fixOffsetDelta = 0;
     so_fDelayed     = 0.0f;
     if (!bContinue) {
       so_swLastLeftSample  = 0;
@@ -332,7 +332,7 @@ void CSoundObject::SetOffset( FLOAT fOffset)
   
   // update sound offsets
   CPrintF("Setting offset: %g\n", fOffset);
-  psoTail->so_fLeftOffset = psoTail->so_fRightOffset = psoTail->so_pCsdLink->sd_afFormat.iSampleRate * fOffset;
+  psoTail->so_fixLeftOffset = psoTail->so_fixRightOffset = psoTail->so_pCsdLink->sd_afFormat.iSampleRate * fOffset;
 }
 
 
@@ -658,9 +658,15 @@ void CSoundObject::Read_t(CTStream *pistr)  // throw char *
   *pistr >> so_fLastRightVolume;
   *pistr >> so_swLastLeftSample;
   *pistr >> so_swLastRightSample;
-  *pistr >> so_fLeftOffset;
-  *pistr >> so_fRightOffset;
-  *pistr >> so_fOffsetDelta;
+
+  // [Cecil] Read offsets as FLOAT
+  FLOAT fOffset;
+  *pistr >> fOffset;
+  so_fixLeftOffset = ClampDn(fOffset, 0.0f);
+  *pistr >> fOffset;
+  so_fixRightOffset = ClampDn(fOffset, 0.0f);
+  *pistr >> fOffset;
+  so_fixOffsetDelta = fOffset;
 
   // load 3D parameters
   so_penEntity = NULL;
@@ -702,9 +708,10 @@ void CSoundObject::Write_t(CTStream *pistr) // throw char *
   *pistr << so_fLastRightVolume;
   *pistr << so_swLastLeftSample;
   *pistr << so_swLastRightSample;
-  *pistr << so_fLeftOffset;
-  *pistr << so_fRightOffset;
-  *pistr << so_fOffsetDelta;
+  // [Cecil] Write these as FLOAT for compatibility
+  *pistr << (FLOAT)so_fixLeftOffset;
+  *pistr << (FLOAT)so_fixRightOffset;
+  *pistr << (FLOAT)so_fixOffsetDelta;
 
   // save 3D parameters
   *pistr << so_sp3.sp3_fFalloff;

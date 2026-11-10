@@ -148,6 +148,10 @@ class FixedPoint {
     friend __forceinline IntType Round(MyType x) { return x.Round(); };
 };
 
+// Common types
+typedef FixedPoint<SQUAD, 16> sfix16_t;
+typedef FixedPoint<UQUAD, 16> ufix16_t;
+
 // [Cecil] TEMP: Old definition for compatibility
 typedef FixedPoint<SLONG, 16> FIX16_16;
 
