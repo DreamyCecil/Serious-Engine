@@ -171,8 +171,8 @@ void CResourceStock<Type>::DumpMemoryUsage_t(CTStream &strm)
     }
 
     // Print out memory usage of this object
-    strLine.PrintF("%7.1fk %s(%llu) %s", slUsedByObject / 1024.0f,
-      itt->GetName().ConstData(), (UQUAD)itt->GetUsedCount(), itt->GetDescription().ConstData());
+    strLine.PrintF("%7.1fk %s(%u) %s", slUsedByObject / 1024.0f,
+      itt->GetName().ConstData(), (ULONG)itt->GetUsedCount(), itt->GetDescription().ConstData());
 
     strm.PutLine_t(strLine.ConstData());
   }

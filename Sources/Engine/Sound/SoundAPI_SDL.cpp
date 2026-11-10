@@ -33,7 +33,7 @@ void CSoundAPI_SDL::WriteAudioData(UBYTE *pubStream, size_t ctStreamSize) {
   size_t iLength = ctStreamSize;
 
   // How many bytes can actually be copied
-  size_t ctToCopy = (iLength < m_ctBackBufferRemain) ? iLength : m_ctBackBufferRemain;
+  size_t ctToCopy = (iLength < (size_t)m_ctBackBufferRemain) ? iLength : (size_t)m_ctBackBufferRemain;
 
   // Cap at the end of the ring buffer
   const size_t ctBytesLeft = m_ctBackBufferAlloc - m_ctBackBufferPos;
@@ -65,7 +65,7 @@ void CSoundAPI_SDL::WriteAudioData(UBYTE *pubStream, size_t ctStreamSize) {
 
     // Feed more data to the stream
     if (iLength > 0) {
-      ctToCopy = (iLength < m_ctBackBufferRemain) ? iLength : m_ctBackBufferRemain;
+      ctToCopy = (iLength < (size_t)m_ctBackBufferRemain) ? iLength : (size_t)m_ctBackBufferRemain;
 
       if (ctToCopy != 0) {
         // Move the second block to the stream

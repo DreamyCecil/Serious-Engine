@@ -267,13 +267,13 @@ BOOL CSoundAPI_DSound::StartUp(BOOL bReport) {
   AllocBuffers(FALSE);
 
   // Start up secondary sound buffers
-  if (!InitSecondary(m_pDSSecondary, (SLONG)m_ctMixerBufferSize)) return FALSE;
+  if (!InitSecondary(m_pDSSecondary, m_ctMixerBufferSize)) return FALSE;
 
 #if SE1_SND_EAX
   // Set some additionals for EAX
   if (snd_iInterface == E_SND_EAX) {
     // 2nd secondary buffer
-    if (!InitSecondary(m_pDSSecondary2, (SLONG)m_ctMixerBufferSize)) return FALSE;
+    if (!InitSecondary(m_pDSSecondary2, m_ctMixerBufferSize)) return FALSE;
 
     // Set 3D for all buffers
     HRESULT hr1, hr2, hr3, hr4;
@@ -487,6 +487,7 @@ size_t CSoundAPI_DSound::PrepareSoundBuffer(void)
     ASSERT(slDataToMix2 >= 0 && slDataToMix2 <= m_ctMixerBufferSize);
     slDataToMix = Min(slDataToMix1, slDataToMix2);
 
+    ASSERT(slDataToMix >= 0);
     return slDataToMix;
   }
 #endif // SE1_SND_EAX
@@ -496,7 +497,8 @@ size_t CSoundAPI_DSound::PrepareSoundBuffer(void)
     hr1 = m_pDSSecondary->GetCurrentPosition(&dwCurrentCursor, NULL);
 
     if (hr1 != DS_OK) {
-      return Fail(TRANS("  ! DirectSound error: Cannot obtain sound buffer write position.\n"));
+      Fail(TRANS("  ! DirectSound error: Cannot obtain sound buffer write position.\n"));
+      return 0;
     }
 
     // Store pointer and wrapped block size
@@ -508,6 +510,7 @@ size_t CSoundAPI_DSound::PrepareSoundBuffer(void)
   }
 
   //CPrintF("LP/LW: %5d / %5d,   RP/RW: %5d / %5d,    MIX: %5d\n", dwCurrentCursor, _iWriteOffset, dwCurrentCursor2, _iWriteOffset2, slDataToMix); // grgr
+  ASSERT(slDataToMix >= 0);
   return slDataToMix;
 };
 
