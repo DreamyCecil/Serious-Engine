@@ -81,7 +81,7 @@ public: //private:
   // [Cecil] Replaced floating-point offsets with fixed-point offsets
   ufix16_t so_fixLeftOffset;  // Current playing offset of left channel
   ufix16_t so_fixRightOffset; // Current playing offset of right channel
-  ufix16_t so_fixOffsetDelta; // Difference between offsets in samples (for seamless transition between phases)
+  sfix16_t so_fixOffsetDelta; // Difference between offsets in samples (for seamless transition between phases)
 
   // sound parameters
   CEntity *so_penEntity;        // entity that owns this sound (may be null)

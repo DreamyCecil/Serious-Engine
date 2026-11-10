@@ -442,7 +442,7 @@ void MixSound( CSoundObject *pso)
   DOUBLE fPhase = pso->so_sp.sp_fPhaseShift;
   fixLeftOfs  = pso->so_fixLeftOffset;
   fixRightOfs = pso->so_fixRightOffset;
-  const ufix16_t fixOfsDelta = pso->so_fixOffsetDelta;
+  const sfix16_t fixOfsDelta = pso->so_fixOffsetDelta;
 
   const FLOAT fVolumeMul = 65536 * 32767.0f;
   ulLeftVolume  = FloatToInt(fLeftVolume  * fVolumeMul);
@@ -522,29 +522,35 @@ void MixSound( CSoundObject *pso)
 
   // [Cecil] For divisions by 2
   static const ufix16_t fixHalf(0.5);
+  static const sfix16_t fixHalfS(0.5);
 
   // calculate eventual new offsets from phase shift
-  const ufix16_t fixLastPhase = fixOfsDelta / fixSoundSampleRate;
-  const DOUBLE fPhaseDelta = fPhase - (DOUBLE)fixLastPhase; // [Cecil] NOTE: Keep DOUBLE because it may be negative
-  ufix16_t fixStepDelta = Abs(fPhaseDelta * (DOUBLE)fixSoundSampleRate / ctMixerBufferSize);
+  const DOUBLE fLastPhase = (DOUBLE)fixOfsDelta / (DOUBLE)fixSoundSampleRate;
+  const DOUBLE fPhaseDelta = fPhase - fLastPhase; // [Cecil] NOTE: Keep DOUBLE because it may be negative
+  sfix16_t fixStepDelta = Abs(fPhaseDelta * (DOUBLE)fixSoundSampleRate / ctMixerBufferSize);
 
-  ufix16_t fixStepDeltaL, fixStepDeltaR;
+  sfix16_t fixStepDeltaL, fixStepDeltaR;
+
+  // [Cecil] Whatever
+  sfix16_t fixSignedHalfStep;
+  fixSignedHalfStep.holder = (fixLeftStep * fixHalf).holder;
 
   if (fPhaseDelta > 0) {
-    fixStepDeltaL = fixStepDelta * fixHalf;
-    if (fixStepDeltaL > fixLeftStep * fixHalf) fixStepDeltaL = fixLeftStep * fixHalf;
+    fixStepDeltaL = fixStepDelta * fixHalfS;
+    if (fixStepDeltaL > fixSignedHalfStep) fixStepDeltaL = fixSignedHalfStep;
     fixStepDeltaL = -fixStepDeltaL;
     fixStepDeltaR = fixStepDelta + fixStepDeltaL;
 
   } else {
-    fixStepDeltaR = fixStepDelta * fixHalf;
-    if (fixStepDeltaR > fixLeftStep * fixHalf) fixStepDeltaR = fixLeftStep * fixHalf;
+    fixStepDeltaR = fixStepDelta * fixHalfS;
+    if (fixStepDeltaR > fixSignedHalfStep) fixStepDeltaR = fixSignedHalfStep;
     fixStepDeltaR = -fixStepDeltaR;
     fixStepDeltaL = fixStepDelta + fixStepDeltaR;
   }
 
-  fixLeftStep  += fixStepDeltaL;
-  fixRightStep += fixStepDeltaR;
+  // [Cecil] Whatever 2
+  ((SQUAD &)fixLeftStep.holder)  += fixStepDeltaL.holder;
+  ((SQUAD &)fixRightStep.holder) += fixStepDeltaR.holder;
   fixStepDelta = fixStepDeltaR - fixStepDeltaL;
 
   // if there is anything to mix (could be nothing when encoded file just finished)
@@ -597,7 +603,7 @@ void MixSound( CSoundObject *pso)
   pso->so_swLastLeftSample  = (SWORD)slLastLeftSample;
   pso->so_swLastRightSample = (SWORD)slLastRightSample;
   // determine new phase shift offset
-  pso->so_fixOffsetDelta += fixStepDelta * ufix16_t(ctMixerBufferSize);
+  pso->so_fixOffsetDelta += fixStepDelta * sfix16_t(ctMixerBufferSize);
   // update play offset for the next mix iteration
   pso->so_fixLeftOffset  = fixLeftOfs;
   pso->so_fixRightOffset = fixRightOfs;
