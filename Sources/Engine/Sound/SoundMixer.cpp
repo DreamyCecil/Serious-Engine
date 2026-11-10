@@ -177,8 +177,58 @@ void NormalizeMixerBuffer(const FLOAT fNormStrength, const size_t ctBytes, FLOAT
   // remember normalization value
   fLastNormValue = fCurrentNormValue;
 }
- 
 
+// [Cecil] Common structure for representing a mixed sample per channel
+struct MixedSample {
+  SLONG slCur; // Current sample value
+  SLONG slNext; // Next sample value
+  SWORD swSurround; // Surround factor
+};
+
+// [Cecil] Common function for mixing one sample for both channels
+__forceinline void MixOneSample(MixedSample left, MixedSample right, SLONG *pslDstBuffer) {
+  SLONG &slLeftSample  = left.slCur;
+  SLONG &slRightSample = right.slCur;
+
+  const UWORD uwLFactor = UWORD(fixLeftOfs  & 0xFFFF);
+  const UWORD uwRFactor = UWORD(fixRightOfs & 0xFFFF);
+
+  // Interpolate between samples
+  slLeftSample  = (slLeftSample  * (0xFFFF - uwLFactor) + left.slNext  * uwLFactor) >> 16;
+  slRightSample = (slRightSample * (0xFFFF - uwRFactor) + right.slNext * uwRFactor) >> 16;
+
+  // Filter samples
+  slLastLeftSample  += ((slLeftSample  - slLastLeftSample)  * slLeftFilter)  >> 15;
+  slLastRightSample += ((slRightSample - slLastRightSample) * slRightFilter) >> 15;
+
+  // Use the current volume with each loop cycle
+  const ULONG ulLeftVolTmp  = ulLeftVolume  >> 16;
+  const ULONG ulRightVolTmp = ulRightVolume >> 16;
+
+  // Apply stereo volume to current sample
+  slLeftSample  = (slLastLeftSample  * ulLeftVolTmp)  >> 15;
+  slRightSample = (slLastRightSample * ulRightVolTmp) >> 15;
+
+  // Properly XOR with the surround factor
+  slLeftSample  = SLONG((SWORD)slLeftSample  ^ left.swSurround);
+  slRightSample = SLONG((SWORD)slRightSample ^ right.swSurround);
+
+  // Mix in current sample
+  slLeftSample  += pslDstBuffer[0];
+  slRightSample += pslDstBuffer[1];
+
+  // Limit samples
+  slLeftSample  = Clamp(slLeftSample,  (SLONG)MIN_SWORD, (SLONG)MAX_SWORD);
+  slRightSample = Clamp(slRightSample, (SLONG)MIN_SWORD, (SLONG)MAX_SWORD);
+
+  // Store samples (both channels)
+  pslDstBuffer[0] = slLeftSample;
+  pslDstBuffer[1] = slRightSample;
+
+  // Modify volume using 32-bit masks because that's how mmVolumeGain is set per channel
+  ulLeftVolume  += (ULONG)((mmVolumeGain >>  0) & 0xFFFFFFFF);
+  ulRightVolume += (ULONG)((mmVolumeGain >> 32) & 0xFFFFFFFF);
+};
 
 // mixes one mono 16-bit signed sound to destination buffer
 inline void MixMono( CSoundObject *pso)
@@ -186,8 +236,7 @@ inline void MixMono( CSoundObject *pso)
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_RAWMIXER);
 
   // Initialize some local vars
-  SLONG slLeftSample, slRightSample;
-  SLONG slNextLeftSample, slNextRightSample; // [Cecil]
+  MixedSample left, right; // [Cecil]
   SLONG *pslDstBuffer = (SLONG *)pvMixerBuffer;
   fixLeftOfs = (UQUAD)(fLeftOfs * 65536.0f);
   fixRightOfs = (UQUAD)(fRightOfs * 65536.0f);
@@ -196,76 +245,38 @@ inline void MixMono( CSoundObject *pso)
   const UQUAD fixSoundBufferSize = ((UQUAD)ctSoundBufferSize) << 16;
 
   // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
-  const UWORD uwSurroundLeft  = UWORD((mmSurroundFactor >>  0) & 0xFFFF);
-  const UWORD uwSurroundRight = UWORD((mmSurroundFactor >> 16) & 0xFFFF);
+  left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
+  right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
   // Loop through source buffer
   size_t iCt = ctMixerBufferSize;
 
   FOREVER {
-    // If left channel source sample came to end of sample buffer
+    // If left channel reached the end of the sample buffer
     if (fixLeftOfs >= fixSoundBufferSize) {
       fixLeftOfs -= fixSoundBufferSize;
-      // If has no loop, end it
-      bEndOfSound = bNotLoop;
+      bEndOfSound = bNotLoop; // If it's not looped, end it
     }
 
-    // If right channel source sample came to end of sample buffer
+    // If right channel reached the end of the sample buffer
     if (fixRightOfs >= fixSoundBufferSize) {
       fixRightOfs -= fixSoundBufferSize;
-      // If has no loop, end it
-      bEndOfSound = bNotLoop;
+      bEndOfSound = bNotLoop; // If it's not looped, end it
     }
 
     // End of buffer
     if (iCt == 0 || bEndOfSound) break;
 
     // Fetch one lineary interpolated sample on left channel
-    slLeftSample = pswSrcBuffer[(fixLeftOfs >> 16) + 0];
-    slNextLeftSample = pswSrcBuffer[(fixLeftOfs >> 16) + 1];
+    left.slCur  = pswSrcBuffer[(fixLeftOfs >> 16) + 0];
+    left.slNext = pswSrcBuffer[(fixLeftOfs >> 16) + 1];
 
     // Fetch one lineary interpolated sample on right channel
-    slRightSample = pswSrcBuffer[(fixRightOfs >> 16) + 0];
-    slNextRightSample = pswSrcBuffer[(fixRightOfs >> 16) + 1];
+    right.slCur  = pswSrcBuffer[(fixRightOfs >> 16) + 0];
+    right.slNext = pswSrcBuffer[(fixRightOfs >> 16) + 1];
 
-    // [Cecil] Shortcuts
-    const UWORD uwLOffset = UWORD(fixLeftOfs & 0xFFFF);
-    const UWORD uwROffset = UWORD(fixRightOfs & 0xFFFF);
-
-    slLeftSample = (slLeftSample * (0xFFFF - uwLOffset) + slNextLeftSample * uwLOffset) >> 16;
-    slRightSample = (slRightSample * (0xFFFF - uwROffset) + slNextRightSample * uwROffset) >> 16;
-
-    // Filter samples
-    slLastLeftSample += ((slLeftSample - slLastLeftSample) * slLeftFilter) >> 15;
-    slLastRightSample += ((slRightSample - slLastRightSample) * slRightFilter) >> 15;
-
-    // [Cecil] Use the current volume with each loop cycle
-    const ULONG ulLeftVolTmp  = ulLeftVolume  >> 16;
-    const ULONG ulRightVolTmp = ulRightVolume >> 16;
-
-    // Apply stereo volume to current sample
-    slLeftSample  = (slLastLeftSample  * ulLeftVolTmp)  >> 15;
-    slRightSample = (slLastRightSample * ulRightVolTmp) >> 15;
-
-    // [Cecil] Properly XOR with the surround factor
-    slLeftSample  = SLONG((SWORD)slLeftSample  ^ (SWORD)uwSurroundLeft);
-    slRightSample = SLONG((SWORD)slRightSample ^ (SWORD)uwSurroundRight);
-
-    // Mix in current sample
-    slLeftSample += pslDstBuffer[0];
-    slRightSample += pslDstBuffer[1];
-
-    // [Cecil] Faster clamping
-    slLeftSample = Clamp(slLeftSample, (SLONG)MIN_SWORD, (SLONG)MAX_SWORD);
-    slRightSample = Clamp(slRightSample, (SLONG)MIN_SWORD, (SLONG)MAX_SWORD);
-
-    // Store samples (both channels)
-    pslDstBuffer[0] = slLeftSample;
-    pslDstBuffer[1] = slRightSample;
-
-    // [Cecil] Modify volume using 32-bit masks instead of 16-bit masks because that's how mmVolumeGain is set per channel
-    ulLeftVolume  += (ULONG)((mmVolumeGain >>  0) & 0xFFFFFFFF);
-    ulRightVolume += (ULONG)((mmVolumeGain >> 32) & 0xFFFFFFFF);
+    // [Cecil] Common function for mixing one sample for both channels
+    MixOneSample(left, right, pslDstBuffer);
 
     // Advance to the next sample
     fixLeftOfs += fixLeftStep;
@@ -284,8 +295,7 @@ inline void MixStereo( CSoundObject *pso)
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_RAWMIXER);
 
   // Initialize some local vars
-  SLONG slLeftSample, slRightSample;
-  SLONG slNextLeftSample, slNextRightSample; // [Cecil]
+  MixedSample left, right; // [Cecil]
   SLONG *pslDstBuffer = (SLONG *)pvMixerBuffer;
   fixLeftOfs = (UQUAD)(fLeftOfs * 65536.0f);
   fixRightOfs = (UQUAD)(fRightOfs * 65536.0f);
@@ -294,80 +304,42 @@ inline void MixStereo( CSoundObject *pso)
   const UQUAD fixSoundBufferSize = ((UQUAD)ctSoundBufferSize) << 16;
 
   // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
-  const UWORD uwSurroundLeft  = UWORD((mmSurroundFactor >>  0) & 0xFFFF);
-  const UWORD uwSurroundRight = UWORD((mmSurroundFactor >> 16) & 0xFFFF);
+  left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
+  right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
   // Loop through source buffer
   size_t iCt = ctMixerBufferSize;
 
   FOREVER {
-    // If left channel source sample came to end of sample buffer
+    // If left channel reached the end of the sample buffer
     if (fixLeftOfs >= fixSoundBufferSize) {
       fixLeftOfs -= fixSoundBufferSize;
-      // If has no loop, end it
-      bEndOfSound = bNotLoop;
+      bEndOfSound = bNotLoop; // If it's not looped, end it
     }
 
-    // If right channel source sample came to end of sample buffer
+    // If right channel reached the end of the sample buffer
     if (fixRightOfs >= fixSoundBufferSize) {
       fixRightOfs -= fixSoundBufferSize;
-      // If has no loop, end it
-      bEndOfSound = bNotLoop;
+      bEndOfSound = bNotLoop; // If it's not looped, end it
     }
 
     // End of buffer
     if (iCt == 0 || bEndOfSound) break;
 
-    // [Cecil] These nullify the lowest bit and fix distortion during doppler
-    const UQUAD fixLeftShift = (fixLeftOfs >> 16) << 1;
-    const UQUAD fixRightShift = (fixRightOfs >> 16) << 1;
+    // [Cecil] Samples go in pairs, so they should be offset as such
+    const size_t iLeftOffset  = (fixLeftOfs  >> 16) * 2;
+    const size_t iRightOffset = (fixRightOfs >> 16) * 2;
 
     // Fetch one lineary interpolated sample on left channel
-    slLeftSample = pswSrcBuffer[fixLeftShift + 0];
-    slNextLeftSample = pswSrcBuffer[fixLeftShift + 2];
+    left.slCur  = pswSrcBuffer[iLeftOffset + 0];
+    left.slNext = pswSrcBuffer[iLeftOffset + 2];
 
     // Fetch one lineary interpolated sample on right channel
-    slRightSample = pswSrcBuffer[fixRightShift + 1];
-    slNextRightSample = pswSrcBuffer[fixRightShift + 3];
+    right.slCur  = pswSrcBuffer[iRightOffset + 1];
+    right.slNext = pswSrcBuffer[iRightOffset + 3];
 
-    // [Cecil] Shortcuts
-    const UWORD uwLOffset = UWORD(fixLeftOfs & 0xFFFF);
-    const UWORD uwROffset = UWORD(fixRightOfs & 0xFFFF);
-
-    slLeftSample = (slLeftSample * (0xFFFF - uwLOffset) + slNextLeftSample * uwLOffset) >> 16;
-    slRightSample = (slRightSample * (0xFFFF - uwROffset) + slNextRightSample * uwROffset) >> 16;
-
-    // Filter samples
-    slLastLeftSample += ((slLeftSample - slLastLeftSample) * slLeftFilter) >> 15;
-    slLastRightSample += ((slRightSample - slLastRightSample) * slRightFilter) >> 15;
-
-    // [Cecil] Use the current volume with each loop cycle
-    const ULONG ulLeftVolTmp  = ulLeftVolume  >> 16;
-    const ULONG ulRightVolTmp = ulRightVolume >> 16;
-
-    // Apply stereo volume to current sample
-    slLeftSample  = (slLastLeftSample  * ulLeftVolTmp)  >> 15;
-    slRightSample = (slLastRightSample * ulRightVolTmp) >> 15;
-
-    // [Cecil] Properly XOR with the surround factor
-    slLeftSample  = SLONG((SWORD)slLeftSample  ^ (SWORD)uwSurroundLeft);
-    slRightSample = SLONG((SWORD)slRightSample ^ (SWORD)uwSurroundRight);
-
-    // Mix in current sample
-    slLeftSample += pslDstBuffer[0];
-    slRightSample += pslDstBuffer[1];
-
-    // [Cecil] Faster clamping
-    slLeftSample = Clamp(slLeftSample, (SLONG)MIN_SWORD, (SLONG)MAX_SWORD);
-    slRightSample = Clamp(slRightSample, (SLONG)MIN_SWORD, (SLONG)MAX_SWORD);
-
-    // Store samples (both channels)
-    pslDstBuffer[0] = slLeftSample;
-    pslDstBuffer[1] = slRightSample;
-
-    // [Cecil] Modify volume using 32-bit masks instead of 16-bit masks because that's how mmVolumeGain is set per channel
-    ulLeftVolume  += (ULONG)((mmVolumeGain >>  0) & 0xFFFFFFFF);
-    ulRightVolume += (ULONG)((mmVolumeGain >> 32) & 0xFFFFFFFF);
+    // [Cecil] Common function for mixing one sample for both channels
+    MixOneSample(left, right, pslDstBuffer);
 
     // Advance to the next sample
     fixLeftOfs += fixLeftStep;
