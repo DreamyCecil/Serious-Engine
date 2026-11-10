@@ -62,6 +62,8 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
   ASSERT(m_pslMixerBuffer == NULL);
   ASSERT(m_pswDecodeBuffer == NULL);
 
+  const SEAudioFormat &af = _pSound->sl_afFormat;
+
   // Determine initial buffer sizes
   m_ctMixerBufferSize = CalculateMixerSize();
 
@@ -72,14 +74,12 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
 
   m_ctDecodeBufferSize = CalculateDecoderSize(m_ctMixerBufferSize);
 
-  // Twice as much because of 32-bit buffer
-  m_pslMixerBuffer = (SLONG *)AllocMemory(m_ctMixerBufferSize * 2);
+  // At 16-bit samples, this will create twice as many bytes because of the 32-bit buffer
+  const size_t ctBufferSizeMul = sizeof(*m_pslMixerBuffer) / af.iBytesPerSample;
+  m_pslMixerBuffer = (SLONG *)AllocMemory(m_ctMixerBufferSize * ctBufferSizeMul);
 
-  // [Cecil] FIXME: Don't just use 4, do it based on the audio setup
-  // Right now it's 4 because: 16-bit samples * 2 channels (stereo) = 32 bits = 4 bytes per sample
-
-  // +4 because of linear interpolation of last samples
-  m_pswDecodeBuffer = (SWORD *)AllocMemory(m_ctDecodeBufferSize + 4);
+  // Add an extra sample at the end because of linear interpolation of last samples
+  m_pswDecodeBuffer = (SWORD *)AllocMemory(m_ctDecodeBufferSize + af.GetBytesPerFrame());
 };
 
 // Free buffer memory
