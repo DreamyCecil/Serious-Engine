@@ -51,6 +51,7 @@ class FixedPoint {
     __forceinline FixedPoint(UQUAD i) : holder(IntType(i) << iFracSize) {};
   #if SE1_WIN
     __forceinline FixedPoint(int   i) : holder(IntType(i) << iFracSize) {};
+    __forceinline FixedPoint(UINT  i) : holder(IntType(i) << iFracSize) {};
   #endif
 
     // Constructors from floats
@@ -129,23 +130,48 @@ class FixedPoint {
     __forceinline bool operator==(MyType x) const { return holder == x.holder; };
     __forceinline bool operator!=(MyType x) const { return holder != x.holder; };
 
-    // Rounding and truncation
-    __forceinline IntType Floor(void) {
-      return holder >> iFracSize;
+  // Rounding and truncation (returns fixed-point with zeroed fraction)
+  public:
+
+    __forceinline MyType Floor(void) const {
+      return MyType(holder & ~iFracMask, true);
     };
 
-    __forceinline IntType Ceil(void) {
-      return (holder >> iFracSize) + IntType((holder & iFracMask) != 0);
+    __forceinline MyType Ceil(void) const {
+      bool bAnyFrac = (holder & iFracMask) != 0;
+      return MyType((holder & ~iFracMask) + (bAnyFrac ? iOne : IntType(0)), true);
     };
 
-    __forceinline IntType Round(void) {
-      return (holder >> iFracSize) + IntType((holder & iFracMask) >= iHalf);
+    __forceinline MyType Round(void) const {
+      bool bFracPastHalf = (holder & iFracMask) >= iHalf;
+      return MyType((holder & ~iFracMask) + (bFracPastHalf ? iOne : IntType(0)), true);
     };
 
-    // Compatibility with regular math functions
-    friend __forceinline IntType Floor(MyType x) { return x.Floor(); };
-    friend __forceinline IntType Ceil(MyType x) { return x.Ceil(); };
-    friend __forceinline IntType Round(MyType x) { return x.Round(); };
+    // Return fixed-point fraction
+    __forceinline MyType GetFraction(void) const {
+      return MyType(holder & iFracMask, true);
+    };
+
+  // Rounding and truncation (returns underlying integer type shifted by the fraction size)
+  public:
+
+    friend __forceinline IntType Floor(MyType x) {
+      return x.holder >> iFracSize;
+    };
+
+    friend __forceinline IntType Ceil(MyType x) {
+      return (x.holder >> iFracSize) + IntType((x.holder & iFracMask) != 0);
+    };
+
+    friend __forceinline IntType Round(MyType x) {
+      return (x.holder >> iFracSize) + IntType((x.holder & iFracMask) >= iHalf);
+    };
+
+    // Retrieve the integer part and the fractional part (either may be NULL if not needed)
+    __forceinline void Decompose(IntType *pIntPart, DOUBLE *pFracPart) const {
+      if (pIntPart  != NULL) *pIntPart  = holder >> iFracSize;
+      if (pFracPart != NULL) *pFracPart = DOUBLE(holder & iFracMask) / (DOUBLE)iOne;
+    };
 };
 
 // Common types

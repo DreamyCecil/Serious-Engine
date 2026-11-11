@@ -190,13 +190,13 @@ __forceinline void MixOneSample(MixedSample left, MixedSample right, SLONG *pslD
   SLONG &slLeftSample  = left.slCur;
   SLONG &slRightSample = right.slCur;
 
-  const ufix16_t::Type iMask = ufix16_t::iFracMask;
-  const ufix16_t::Type iLFactor = fixLeftOfs.holder  & iMask;
-  const ufix16_t::Type iRFactor = fixRightOfs.holder & iMask;
+  static const sfix16_t fixOne(1);
+  const sfix16_t fixLFactor(fixLeftOfs.GetFraction().holder, true);
+  const sfix16_t fixRFactor(fixRightOfs.GetFraction().holder, true);
 
   // Interpolate between samples
-  slLeftSample  = (slLeftSample  * (iMask - iLFactor) + left.slNext  * iLFactor) >> ufix16_t::iFracSize;
-  slRightSample = (slRightSample * (iMask - iRFactor) + right.slNext * iRFactor) >> ufix16_t::iFracSize;
+  slLeftSample  = (SQUAD)(sfix16_t(slLeftSample)  * (fixOne - fixLFactor) + sfix16_t(left.slNext)  * fixLFactor);
+  slRightSample = (SQUAD)(sfix16_t(slRightSample) * (fixOne - fixRFactor) + sfix16_t(right.slNext) * fixRFactor);
 
   // Filter samples
   slLastLeftSample  += ((slLeftSample  - slLastLeftSample)  * slLeftFilter)  >> 15;
@@ -264,12 +264,12 @@ inline void MixMono( CSoundObject *pso)
     if (iCt == 0 || bEndOfSound) break;
 
     // Fetch one lineary interpolated sample on left channel
-    left.slCur  = pswSrcBuffer[fixLeftOfs.Floor() + 0];
-    left.slNext = pswSrcBuffer[fixLeftOfs.Floor() + 1];
+    left.slCur  = pswSrcBuffer[(UQUAD)fixLeftOfs + 0];
+    left.slNext = pswSrcBuffer[(UQUAD)fixLeftOfs + 1];
 
     // Fetch one lineary interpolated sample on right channel
-    right.slCur  = pswSrcBuffer[fixRightOfs.Floor() + 0];
-    right.slNext = pswSrcBuffer[fixRightOfs.Floor() + 1];
+    right.slCur  = pswSrcBuffer[(UQUAD)fixRightOfs + 0];
+    right.slNext = pswSrcBuffer[(UQUAD)fixRightOfs + 1];
 
     // [Cecil] Common function for mixing one sample for both channels
     MixOneSample(left, right, pslDstBuffer);
@@ -318,8 +318,8 @@ inline void MixStereo( CSoundObject *pso)
     if (iCt == 0 || bEndOfSound) break;
 
     // [Cecil] Samples go in pairs, so they should be offset as such
-    const size_t iLeftOffset  = fixLeftOfs.Floor()  * 2;
-    const size_t iRightOffset = fixRightOfs.Floor() * 2;
+    const UQUAD iLeftOffset  = (UQUAD)fixLeftOfs  * 2;
+    const UQUAD iRightOffset = (UQUAD)fixRightOfs * 2;
 
     // Fetch one lineary interpolated sample on left channel
     left.slCur  = pswSrcBuffer[iLeftOffset + 0];
