@@ -267,19 +267,28 @@ DOUBLE CSoundDecoder::GetSoundLength(void) const {
   return 0;
 };
 
-// [Cecil] Decode a block of samples and return amount of read samples
-ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctSamplesToDecode) {
+// [Cecil] Retrieve length of the encoded audio in frames (samples * channels)
+ULONG CSoundDecoder::GetLengthInFrames(void) const {
+  if (!IsOpen()) return 0;
+
+  ma_uint64 ctFrames;
+  ma_data_source_get_length_in_pcm_frames(sdc_pData->pDecoder, &ctFrames);
+  return ctFrames;
+};
+
+// [Cecil] Decode a block of frames and return amount of read frames
+ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctFramesToDecode) {
   // Play all zeroes if no decoder
   if (!IsOpen()) {
-    memset(pvDestBuffer, 0, ctSamplesToDecode * sdc_pData->afFormat.GetBytesPerFrame());
-    return ctSamplesToDecode;
+    memset(pvDestBuffer, 0, ctFramesToDecode * sdc_pData->afFormat.GetBytesPerFrame());
+    return ctFramesToDecode;
   }
 
-  // [Cecil] NOTE: Allow it to return 0 samples (e.g. with MA_AT_END as the result)
+  // [Cecil] NOTE: Allow it to return 0 frames (e.g. with MA_AT_END as the result)
   // because it may need to do this in order to determine the end of the audio
-  ma_uint64 iSamplesRead;
-  ma_data_source_read_pcm_frames(sdc_pData->pDecoder, pvDestBuffer, ctSamplesToDecode, &iSamplesRead);
-  return iSamplesRead;
+  ma_uint64 ctFramesRead;
+  ma_data_source_read_pcm_frames(sdc_pData->pDecoder, pvDestBuffer, ctFramesToDecode, &ctFramesRead);
+  return ctFramesRead;
 };
 
 // reset decoder to start of sample

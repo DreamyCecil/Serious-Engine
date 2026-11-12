@@ -32,6 +32,12 @@ extern FLOAT snd_fSoundVolume;
 extern FLOAT snd_fMusicVolume;
 extern INDEX snd_bMono;
 
+// [Cecil] Some useful fixed-point constants
+static const ufix16_t fixZero(0);
+static const ufix16_t fixHalf(0.5);
+static const sfix16_t fixHalfS(0.5);
+static const ufix16_t fixOne(1);
+static const sfix16_t fixOneS(1);
 
 // a bunch of local vars coming up
 
@@ -45,7 +51,7 @@ static SLONG slLeftFilter, slRightFilter;
 static SLONG slLastLeftSample, slLastRightSample;
 
 static ufix16_t fixSoundBufferSize;
-static ufix16_t fixLeftStep, fixRightStep, fixLeftOfs, fixRightOfs;
+static ufix16_t fixLeftStep, fixRightStep, fixLeftOfs, fixRightOfs, fixRelLeftOfs, fixRelRightOfs;
 
 static ULONG mmSurroundFactor;
 static UQUAD mmVolumeGain;
@@ -190,13 +196,12 @@ __forceinline void MixOneSample(MixedSample left, MixedSample right, SLONG *pslD
   SLONG &slLeftSample  = left.slCur;
   SLONG &slRightSample = right.slCur;
 
-  static const sfix16_t fixOne(1);
-  const sfix16_t fixLFactor(fixLeftOfs.GetFraction().holder, true);
-  const sfix16_t fixRFactor(fixRightOfs.GetFraction().holder, true);
+  const sfix16_t fixLFactor(fixRelLeftOfs.GetFraction().holder, true);
+  const sfix16_t fixRFactor(fixRelRightOfs.GetFraction().holder, true);
 
   // Interpolate between samples
-  slLeftSample  = (SQUAD)(sfix16_t(slLeftSample)  * (fixOne - fixLFactor) + sfix16_t(left.slNext)  * fixLFactor);
-  slRightSample = (SQUAD)(sfix16_t(slRightSample) * (fixOne - fixRFactor) + sfix16_t(right.slNext) * fixRFactor);
+  slLeftSample  = (SQUAD)(sfix16_t(slLeftSample)  * (fixOneS - fixLFactor) + sfix16_t(left.slNext)  * fixLFactor);
+  slRightSample = (SQUAD)(sfix16_t(slRightSample) * (fixOneS - fixRFactor) + sfix16_t(right.slNext) * fixRFactor);
 
   // Filter samples
   slLastLeftSample  += ((slLeftSample  - slLastLeftSample)  * slLeftFilter)  >> 15;
@@ -232,7 +237,7 @@ __forceinline void MixOneSample(MixedSample left, MixedSample right, SLONG *pslD
 };
 
 // [Cecil] Mixes one signed 16-bit chunk of audio to destination buffer for the specified amount of channels
-inline void MixAudioChunk(CSoundObject *pso, const UWORD iChannels) {
+inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_RAWMIXER);
 
   // [Cecil] Currently supported amounts of channels
@@ -246,19 +251,28 @@ inline void MixAudioChunk(CSoundObject *pso, const UWORD iChannels) {
   left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
   right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
+  // [Cecil] Set relative offsets to zero for currently decoded chunk
+  if (psd->IsEncoded()) {
+    fixRelLeftOfs  = fixZero;
+    fixRelRightOfs = fixZero;
+
+  // Otherwise continue from absolute offsets
+  } else {
+    fixRelLeftOfs  = fixLeftOfs;
+    fixRelRightOfs = fixRightOfs;
+  }
+
   // Loop through the source buffer
   size_t ct = ctMixerBufferSize;
 
   FOREVER {
     // If left channel reached the end of the sample buffer
-    if (fixLeftOfs >= fixSoundBufferSize) {
-      fixLeftOfs -= fixSoundBufferSize;
+    if (fixRelLeftOfs >= fixSoundBufferSize) {
       bEndOfSound = bNotLoop; // If it's not looped, end it
     }
 
     // If right channel reached the end of the sample buffer
-    if (fixRightOfs >= fixSoundBufferSize) {
-      fixRightOfs -= fixSoundBufferSize;
+    if (fixRelRightOfs >= fixSoundBufferSize) {
       bEndOfSound = bNotLoop; // If it's not looped, end it
     }
 
@@ -266,8 +280,8 @@ inline void MixAudioChunk(CSoundObject *pso, const UWORD iChannels) {
     if (ct == 0 || bEndOfSound) break;
 
     // [Cecil] Samples go in order of channels, so they should be offset as such
-    const UQUAD iFrameL = (UQUAD)fixLeftOfs  * iChannels;
-    const UQUAD iFrameR = (UQUAD)fixRightOfs * iChannels;
+    const UQUAD iFrameL = (UQUAD)fixRelLeftOfs  * iChannels;
+    const UQUAD iFrameR = (UQUAD)fixRelRightOfs * iChannels;
 
     // Mono: 0 1, 0 1 / Stereo: 0 2, 1 3
     const UQUAD iCurL  = iFrameL;                                         // First sample of current frame
@@ -289,6 +303,8 @@ inline void MixAudioChunk(CSoundObject *pso, const UWORD iChannels) {
     // Advance to the next sample
     fixLeftOfs  += fixLeftStep;
     fixRightOfs += fixRightStep;
+    fixRelLeftOfs  += fixLeftStep;
+    fixRelRightOfs += fixRightStep;
     pslDstBuffer += 2;
 
     --ct;
@@ -426,42 +442,81 @@ void MixSound( CSoundObject *pso)
   if (bEncoded) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
 
-    // Decode some samples from it
-    const ULONG ulSampleSize = af.GetBytesPerFrame();
-    const ULONG ulWantedSamples = FloatToInt(ctMixerBufferSize * (DOUBLE)fixStep);
-    ASSERT(ulWantedSamples > 0);
-    ASSERT(ulWantedSamples <= _pSound->sl_pInterface->m_ctDecodeBufferSize / ulSampleSize);
-    UBYTE *pDecodeBuffer = (UBYTE *)_pSound->sl_pInterface->m_pswDecodeBuffer;
+    // Decode some frames from it
+    const ULONG ulFrameSize = af.GetBytesPerFrame();
+    ULONG ulWantedFrames = Ceil(ufix16_t(ctMixerBufferSize) * fixStep);
+    ASSERT(ulWantedFrames != 0);
 
-    ULONG ulDecodedSamples = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedSamples);
-    ASSERT(ulDecodedSamples <= ulWantedSamples);
+    // [Cecil] Reallocate decoder buffer if wanted frames don't fit (+1 extra frame for interpolation)
+    if (ulWantedFrames + 1 > _pSound->sl_pInterface->m_ctDecodeBufferSize / ulFrameSize) {
+      // Allocate another second of frames on top, just in case
+      _pSound->sl_pInterface->ReallocDecoderBuffer((ulWantedFrames + af.iSampleRate) * ulFrameSize);
+    }
+
+    // Start at the beginning of the decode buffer
+    SWORD *pDecodeBuffer = _pSound->sl_pInterface->m_pswDecodeBuffer;
+    SLONG slAddFrames = 0;
+
+    // [Cecil] If just started decoding
+    if (pso->so_bStartDecoding) {
+      // Decode one extra frame for interpolation at the end
+      ulWantedFrames++;
+      slAddFrames = -1; // But don't play it
+
+      pso->so_bStartDecoding = FALSE;
+
+    // [Cecil] Otherwise, if in the middle of decoding
+    } else {
+      // Place last remembered frame in the beginning
+      if (af.iChannels == 1) {
+        pDecodeBuffer[0] = pso->so_swLastDecodedSampleL;
+      } else {
+        pDecodeBuffer[0] = pso->so_swLastDecodedSampleL;
+        pDecodeBuffer[1] = pso->so_swLastDecodedSampleR;
+      }
+
+      // Then start decoding new frames after the first one
+      pDecodeBuffer += af.iChannels;
+    }
+
+    ULONG ulDecodedFrames = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedFrames);
+    ASSERT(ulDecodedFrames <= ulWantedFrames);
 
     // If it's looped
     if (!bNotLoop) {
-      // Decode the buffer until it decodes enough samples
-      while (ulDecodedSamples < ulWantedSamples) {
+      // Keep decoding until it reads enough frames
+      while (ulDecodedFrames < ulWantedFrames) {
         pso->so_psdcDecoder->Reset();
 
-        const ULONG ulBytesOffset = ulDecodedSamples * ulSampleSize;
-        ulDecodedSamples += pso->so_psdcDecoder->Decode(pDecodeBuffer + ulBytesOffset, ulWantedSamples - ulDecodedSamples);
+        const ULONG ulSamplesOffset = ulDecodedFrames * af.iChannels;
+        ulDecodedFrames += pso->so_psdcDecoder->Decode(pDecodeBuffer + ulSamplesOffset, ulWantedFrames - ulDecodedFrames);
       }
 
-    // If it's not looped and the decoded samples are less than the buffer
-    } else if (ulDecodedSamples < ulWantedSamples) {
+    // If it's not looped and the decoded frames are less than the buffer
+    } else if (ulDecodedFrames < ulWantedFrames) {
       // Mark it as finished
       bDecodingFinished = TRUE;
     }
 
-    // copy first sample to the last one (this is needed for linear interpolation)
-    const ULONG ulBytesEnd = ulDecodedSamples * ulSampleSize;
-    memcpy(pDecodeBuffer + ulBytesEnd, pDecodeBuffer, ulSampleSize);
+    // [Cecil] Remember last decoded frame of this chunk to be used as the first one next time
+    if (ulDecodedFrames != 0) {
+      const ULONG ulDecodedSamples = ulDecodedFrames * af.iChannels;
 
-    // fix some mixer variables to play temporary decode buffer instead of real sound
-    pswSrcBuffer = (SWORD *)pDecodeBuffer;
-    fixSoundBufferSize = ulDecodedSamples;
-    fixLeftOfs  = 0;
-    fixRightOfs = 0;
-    fPhase = 0.0f;
+      if (af.iChannels == 1) {
+        pso->so_swLastDecodedSampleL = pDecodeBuffer[ulDecodedSamples - 1];
+        pso->so_swLastDecodedSampleR = pso->so_swLastDecodedSampleL; // Just in case
+      } else {
+        pso->so_swLastDecodedSampleL = pDecodeBuffer[ulDecodedSamples - 2];
+        pso->so_swLastDecodedSampleR = pDecodeBuffer[ulDecodedSamples - 1];
+      }
+    }
+
+    // Use freshly acquired data from the decoder instead of the static buffer from sound data
+    pswSrcBuffer = _pSound->sl_pInterface->m_pswDecodeBuffer; // Not pDecodeBuffer because it may have been shifted
+    fixSoundBufferSize = ulDecodedFrames + slAddFrames; // Amount of frames to mix, minus the last one used for interpolation
+
+    // [Cecil] TEMP: Really not sure about this one, needs more specific testing regarding phase shift
+    //fPhase = 0.0f;
 
     _pfSoundProfile.StopTimer(CSoundProfile::PTI_DECODESOUND);
   }
@@ -473,10 +528,6 @@ void MixSound( CSoundObject *pso)
 
   slLastLeftSample  = pso->so_swLastLeftSample;
   slLastRightSample = pso->so_swLastRightSample;
-
-  // [Cecil] For divisions by 2
-  static const ufix16_t fixHalf(0.5);
-  static const sfix16_t fixHalfS(0.5);
 
   // calculate eventual new offsets from phase shift
   const DOUBLE fLastPhase = (DOUBLE)fixOfsDelta / (DOUBLE)fixSoundSampleRate;
@@ -509,9 +560,10 @@ void MixSound( CSoundObject *pso)
 
   // if there is anything to mix (could be nothing when encoded file just finished)
   if (fixSoundBufferSize != ufix16_t(0)) {
-    // adjust offset ptrs inside sound to match those of phase shift
-    while (fixLeftOfs  >= fixSoundBufferSize) fixLeftOfs  -= fixSoundBufferSize;
-    while (fixRightOfs >= fixSoundBufferSize) fixRightOfs -= fixSoundBufferSize;
+    // [Cecil] Wrap offsets around based on the absolute audio length (and not the current chunk)
+    const ufix16_t fixAudioSize = (bEncoded ? pso->so_psdcDecoder->GetLengthInFrames() : fixSoundBufferSize);
+    while (fixLeftOfs  >= fixAudioSize) fixLeftOfs  -= fixAudioSize;
+    while (fixRightOfs >= fixAudioSize) fixRightOfs -= fixAudioSize;
 
     // if mono output is required
     if( snd_bMono) {
@@ -530,7 +582,11 @@ void MixSound( CSoundObject *pso)
     bEndOfSound = FALSE;
 
     // [Cecil] Mix this audio chunk for the requested amount of channels
-    MixAudioChunk(pso, af.iChannels);
+    MixAudioChunk(psd, af.iChannels);
+
+    // [Cecil] Wrap offsets around if they ended up going past the absolute audio length (and not the current chunk)
+    while (fixLeftOfs  >= fixAudioSize) fixLeftOfs  -= fixAudioSize;
+    while (fixRightOfs >= fixAudioSize) fixRightOfs -= fixAudioSize;
   }
 
   // Use decoding finished flag instead of the mixer flag if it's encoded

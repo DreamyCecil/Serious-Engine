@@ -72,14 +72,12 @@ void CAbstractSoundAPI::AllocBuffers(BOOL bAlignToBlockSize) {
     m_ctMixerBufferSize += ctBufferBlockSize - (m_ctMixerBufferSize % ctBufferBlockSize);
   }
 
-  m_ctDecodeBufferSize = CalculateDecoderSize(m_ctMixerBufferSize);
-
   // At 16-bit samples, this will create twice as many bytes because of the 32-bit buffer
   const size_t ctBufferSizeMul = sizeof(*m_pslMixerBuffer) / af.iBytesPerSample;
   m_pslMixerBuffer = (SLONG *)AllocMemory(m_ctMixerBufferSize * ctBufferSizeMul);
 
-  // Add an extra sample at the end because of linear interpolation of last samples
-  m_pswDecodeBuffer = (SWORD *)AllocMemory(m_ctDecodeBufferSize + af.GetBytesPerFrame());
+  // Allocate initial decoder buffer based on the size relative to the mixer buffer
+  ReallocDecoderBuffer(CalculateDecoderSize(m_ctMixerBufferSize));
 };
 
 // Free buffer memory
@@ -91,6 +89,17 @@ void CAbstractSoundAPI::FreeBuffers(void) {
   if (m_pswDecodeBuffer != NULL) FreeMemory(m_pswDecodeBuffer);
   m_pswDecodeBuffer = NULL;
   m_ctDecodeBufferSize = 0;
+};
+
+// Recreate the decoder buffer with new size, if needed
+void CAbstractSoundAPI::ReallocDecoderBuffer(size_t ctDecoderSize) {
+  // Free old buffer
+  if (m_pswDecodeBuffer != NULL) FreeMemory(m_pswDecodeBuffer);
+
+  m_ctDecodeBufferSize = ctDecoderSize;
+
+  // Add an extra sample at the end because of linear interpolation of last samples
+  m_pswDecodeBuffer = (SWORD *)AllocMemory(m_ctDecodeBufferSize + _pSound->sl_afFormat.GetBytesPerFrame());
 };
 
 // Report generic info about an interface

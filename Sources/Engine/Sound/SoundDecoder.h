@@ -43,8 +43,11 @@ public:
   // [Cecil] Retrieve length of the encoded audio in seconds
   SECOND GetSoundLength(void) const;
 
-  // [Cecil] Decode a block of samples and return amount of read samples
-  ULONG Decode(void *pvDestBuffer, ULONG ctSamplesToDecode);
+  // [Cecil] Retrieve length of the encoded audio in frames (samples * channels)
+  ULONG GetLengthInFrames(void) const;
+
+  // [Cecil] Decode a block of frames and return amount of read frames
+  ULONG Decode(void *pvDestBuffer, ULONG ctFramesToDecode);
 
   // Reset decoder to the first sample
   void Reset(void);

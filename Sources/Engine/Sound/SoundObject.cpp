@@ -101,6 +101,10 @@ CSoundObject::CSoundObject()
   so_fLastRightVolume  = 1.0f;
   so_swLastLeftSample  = 0;
   so_swLastRightSample = 0;
+  // [Cecil]
+  so_swLastDecodedSampleL = 0;
+  so_swLastDecodedSampleR = 0;
+  so_bStartDecoding = FALSE;
 
   // 3d effects
   so_sp3.sp3_fFalloff = 0.0f;
@@ -269,6 +273,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     } else {
       ASSERT(FALSE);  // nonstreaming not supported anymore
     }
+
+    // [Cecil] Begin decoding this audio
+    so_bStartDecoding = TRUE;
   }
 
   // remember starting parameters
@@ -282,9 +289,14 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     so_fixRightOffset = 0;
     so_fixOffsetDelta = 0;
     so_fDelayed     = 0.0f;
+
     if (!bContinue) {
       so_swLastLeftSample  = 0;
       so_swLastRightSample = 0;
+      // [Cecil] Last frame from previous mixing of a decoded chunk
+      so_swLastDecodedSampleL = 0;
+      so_swLastDecodedSampleR = 0;
+
     } else {
       // adjust for master volume
       if(so_slFlags&SOF_MUSIC) {
@@ -658,6 +670,10 @@ void CSoundObject::Read_t(CTStream *pistr)  // throw char *
   *pistr >> so_fLastRightVolume;
   *pistr >> so_swLastLeftSample;
   *pistr >> so_swLastRightSample;
+  // [Cecil] TEMP: Not written, so simply reset
+  so_swLastDecodedSampleL = 0;
+  so_swLastDecodedSampleR = 0;
+  so_bStartDecoding = FALSE;
 
   // [Cecil] Read offsets as FLOAT
   FLOAT fOffset;

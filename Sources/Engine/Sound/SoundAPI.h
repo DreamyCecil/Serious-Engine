@@ -83,6 +83,9 @@ class ENGINE_API CAbstractSoundAPI {
     // Free buffer memory
     void FreeBuffers(void);
 
+    // Recreate the decoder buffer with new size, if needed
+    void ReallocDecoderBuffer(size_t ctDecoderSize);
+
     // Report generic info about an interface
     void ReportGenericInfo(void);
 
