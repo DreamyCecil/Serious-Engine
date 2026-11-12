@@ -231,10 +231,12 @@ __forceinline void MixOneSample(MixedSample left, MixedSample right, SLONG *pslD
   ulRightVolume += (ULONG)((mmVolumeGain >> 32) & 0xFFFFFFFF);
 };
 
-// mixes one mono 16-bit signed sound to destination buffer
-inline void MixMono( CSoundObject *pso)
-{
+// [Cecil] Mixes one signed 16-bit chunk of audio to destination buffer for the specified amount of channels
+inline void MixAudioChunk(CSoundObject *pso, const UWORD iChannels) {
   _pfSoundProfile.StartTimer(CSoundProfile::PTI_RAWMIXER);
+
+  // [Cecil] Currently supported amounts of channels
+  ASSERT(iChannels == 1 || iChannels == 2);
 
   // Initialize some local vars
   MixedSample left, right; // [Cecil]
@@ -244,8 +246,8 @@ inline void MixMono( CSoundObject *pso)
   left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
   right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
-  // Loop through source buffer
-  size_t iCt = ctMixerBufferSize;
+  // Loop through the source buffer
+  size_t ct = ctMixerBufferSize;
 
   FOREVER {
     // If left channel reached the end of the sample buffer
@@ -261,87 +263,39 @@ inline void MixMono( CSoundObject *pso)
     }
 
     // End of buffer
-    if (iCt == 0 || bEndOfSound) break;
+    if (ct == 0 || bEndOfSound) break;
+
+    // [Cecil] Samples go in order of channels, so they should be offset as such
+    const UQUAD iFrameL = (UQUAD)fixLeftOfs  * iChannels;
+    const UQUAD iFrameR = (UQUAD)fixRightOfs * iChannels;
+
+    // Mono: 0 1, 0 1 / Stereo: 0 2, 1 3
+    const UQUAD iCurL  = iFrameL;                                         // First sample of current frame
+    const UQUAD iNextL = iFrameL + iChannels;                             // First sample of next frame
+    const UQUAD iCurR  = iFrameR + ClampUp(iChannels - 1, 1);             // Second sample of current frame
+    const UQUAD iNextR = iFrameR + ClampUp(iChannels - 1, 1) + iChannels; // Second sample of next frame
 
     // Fetch one lineary interpolated sample on left channel
-    left.slCur  = pswSrcBuffer[(UQUAD)fixLeftOfs + 0];
-    left.slNext = pswSrcBuffer[(UQUAD)fixLeftOfs + 1];
+    left.slCur  = pswSrcBuffer[iCurL];
+    left.slNext = pswSrcBuffer[iNextL];
 
     // Fetch one lineary interpolated sample on right channel
-    right.slCur  = pswSrcBuffer[(UQUAD)fixRightOfs + 0];
-    right.slNext = pswSrcBuffer[(UQUAD)fixRightOfs + 1];
+    right.slCur  = pswSrcBuffer[iCurR];
+    right.slNext = pswSrcBuffer[iNextR];
 
     // [Cecil] Common function for mixing one sample for both channels
     MixOneSample(left, right, pslDstBuffer);
 
     // Advance to the next sample
-    fixLeftOfs += fixLeftStep;
+    fixLeftOfs  += fixLeftStep;
     fixRightOfs += fixRightStep;
     pslDstBuffer += 2;
-    iCt--;
+
+    --ct;
   }
 
   _pfSoundProfile.StopTimer(CSoundProfile::PTI_RAWMIXER);
-}
-
-
-// mixes one stereo 16-bit signed sound to destination buffer
-inline void MixStereo( CSoundObject *pso)
-{
-  _pfSoundProfile.StartTimer(CSoundProfile::PTI_RAWMIXER);
-
-  // Initialize some local vars
-  MixedSample left, right; // [Cecil]
-  SLONG *pslDstBuffer = (SLONG *)pvMixerBuffer;
-
-  // [Cecil] Appropriate words of the surround factor for XOR'ing each channel
-  left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
-  right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
-
-  // Loop through source buffer
-  size_t iCt = ctMixerBufferSize;
-
-  FOREVER {
-    // If left channel reached the end of the sample buffer
-    if (fixLeftOfs >= fixSoundBufferSize) {
-      fixLeftOfs -= fixSoundBufferSize;
-      bEndOfSound = bNotLoop; // If it's not looped, end it
-    }
-
-    // If right channel reached the end of the sample buffer
-    if (fixRightOfs >= fixSoundBufferSize) {
-      fixRightOfs -= fixSoundBufferSize;
-      bEndOfSound = bNotLoop; // If it's not looped, end it
-    }
-
-    // End of buffer
-    if (iCt == 0 || bEndOfSound) break;
-
-    // [Cecil] Samples go in pairs, so they should be offset as such
-    const UQUAD iLeftOffset  = (UQUAD)fixLeftOfs  * 2;
-    const UQUAD iRightOffset = (UQUAD)fixRightOfs * 2;
-
-    // Fetch one lineary interpolated sample on left channel
-    left.slCur  = pswSrcBuffer[iLeftOffset + 0];
-    left.slNext = pswSrcBuffer[iLeftOffset + 2];
-
-    // Fetch one lineary interpolated sample on right channel
-    right.slCur  = pswSrcBuffer[iRightOffset + 1];
-    right.slNext = pswSrcBuffer[iRightOffset + 3];
-
-    // [Cecil] Common function for mixing one sample for both channels
-    MixOneSample(left, right, pslDstBuffer);
-
-    // Advance to the next sample
-    fixLeftOfs += fixLeftStep;
-    fixRightOfs += fixRightStep;
-    pslDstBuffer += 2;
-    iCt--;
-  }
-
-  _pfSoundProfile.StopTimer(CSoundProfile::PTI_RAWMIXER);
-}
-
+};
 
 // mixes one sound to destination buffer
 void MixSound( CSoundObject *pso)
@@ -575,13 +529,8 @@ void MixSound( CSoundObject *pso)
     // call corresponding mixer routine for current sound format
     bEndOfSound = FALSE;
 
-    if (af.iChannels == 2) {
-      // mix as 16-bit stereo
-      MixStereo(pso);
-    } else {
-      // mix as 16-bit mono
-      MixMono(pso);
-    }
+    // [Cecil] Mix this audio chunk for the requested amount of channels
+    MixAudioChunk(pso, af.iChannels);
   }
 
   // Use decoding finished flag instead of the mixer flag if it's encoded
