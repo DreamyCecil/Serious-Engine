@@ -291,6 +291,13 @@ ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctFramesToDecode) {
   return ctFramesRead;
 };
 
+// [Cecil] Set next decoding position to a specific frame
+BOOL CSoundDecoder::SeekToFrame(ULONG iFrame) {
+  if (!IsOpen()) return FALSE;
+
+  return (ma_data_source_seek_to_pcm_frame(sdc_pData->pDecoder, iFrame) == MA_SUCCESS);
+};
+
 // reset decoder to start of sample
 void CSoundDecoder::Reset(void) {
   if (!IsOpen()) return;

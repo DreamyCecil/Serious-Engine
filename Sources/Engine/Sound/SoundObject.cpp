@@ -102,8 +102,6 @@ CSoundObject::CSoundObject()
   so_swLastLeftSample  = 0;
   so_swLastRightSample = 0;
   // [Cecil]
-  so_aswLastDecodedL[0] = so_aswLastDecodedL[1] = 0;
-  so_aswLastDecodedR[0] = so_aswLastDecodedR[1] = 0;
   so_fixDecodedFrames = 0;
 
   // 3d effects
@@ -293,9 +291,6 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     if (!bContinue) {
       so_swLastLeftSample  = 0;
       so_swLastRightSample = 0;
-      // [Cecil] Last frames from previous mixing of a decoded chunk
-      so_aswLastDecodedL[0] = so_aswLastDecodedL[1] = 0;
-      so_aswLastDecodedR[0] = so_aswLastDecodedR[1] = 0;
 
     } else {
       // adjust for master volume
@@ -339,6 +334,7 @@ void CSoundObject::SetOffset( FLOAT fOffset)
     fOffset = 0.0f;
   }
 
+  // [Cecil] FIXME: I suspect that this is done because encoded/streamed sounds could not set absolute playback offset
   // on the other hand, don't set offset for real - might be source for some bugs!
   return;
   
@@ -671,8 +667,6 @@ void CSoundObject::Read_t(CTStream *pistr)  // throw char *
   *pistr >> so_swLastLeftSample;
   *pistr >> so_swLastRightSample;
   // [Cecil] TEMP: Not written, so simply reset
-  so_aswLastDecodedL[0] = so_aswLastDecodedL[1] = 0;
-  so_aswLastDecodedR[0] = so_aswLastDecodedR[1] = 0;
   so_fixDecodedFrames = 0;
 
   // [Cecil] Read offsets as FLOAT

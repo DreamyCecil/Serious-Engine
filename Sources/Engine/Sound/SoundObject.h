@@ -82,9 +82,6 @@ public: //private:
   ufix16_t so_fixLeftOffset;  // Current playing offset of left channel
   ufix16_t so_fixRightOffset; // Current playing offset of right channel
   sfix16_t so_fixOffsetDelta; // Difference between offsets in samples (for seamless transition between phases)
-  // [Cecil] Last frames from previous mixing of a decoded chunk
-  SWORD so_aswLastDecodedL[2];
-  SWORD so_aswLastDecodedR[2];
   ufix16_t so_fixDecodedFrames; // [Cecil] Amount of decoded frames so far, including fractioned frames (0 = just started decoding)
 
   // sound parameters

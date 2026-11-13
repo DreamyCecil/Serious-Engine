@@ -49,6 +49,9 @@ public:
   // [Cecil] Decode a block of frames and return amount of read frames
   ULONG Decode(void *pvDestBuffer, ULONG ctFramesToDecode);
 
+  // [Cecil] Set next decoding position to a specific frame
+  BOOL SeekToFrame(ULONG iFrame);
+
   // Reset decoder to the first sample
   void Reset(void);
 };
