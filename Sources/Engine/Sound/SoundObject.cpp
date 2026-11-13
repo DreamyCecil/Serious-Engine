@@ -102,9 +102,9 @@ CSoundObject::CSoundObject()
   so_swLastLeftSample  = 0;
   so_swLastRightSample = 0;
   // [Cecil]
-  so_swLastDecodedSampleL = 0;
-  so_swLastDecodedSampleR = 0;
-  so_bStartDecoding = FALSE;
+  so_aswLastDecodedL[0] = so_aswLastDecodedL[1] = 0;
+  so_aswLastDecodedR[0] = so_aswLastDecodedR[1] = 0;
+  so_fixDecodedFrames = 0;
 
   // 3d effects
   so_sp3.sp3_fFalloff = 0.0f;
@@ -275,7 +275,7 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     }
 
     // [Cecil] Begin decoding this audio
-    so_bStartDecoding = TRUE;
+    so_fixDecodedFrames = 0;
   }
 
   // remember starting parameters
@@ -293,9 +293,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     if (!bContinue) {
       so_swLastLeftSample  = 0;
       so_swLastRightSample = 0;
-      // [Cecil] Last frame from previous mixing of a decoded chunk
-      so_swLastDecodedSampleL = 0;
-      so_swLastDecodedSampleR = 0;
+      // [Cecil] Last frames from previous mixing of a decoded chunk
+      so_aswLastDecodedL[0] = so_aswLastDecodedL[1] = 0;
+      so_aswLastDecodedR[0] = so_aswLastDecodedR[1] = 0;
 
     } else {
       // adjust for master volume
@@ -671,9 +671,9 @@ void CSoundObject::Read_t(CTStream *pistr)  // throw char *
   *pistr >> so_swLastLeftSample;
   *pistr >> so_swLastRightSample;
   // [Cecil] TEMP: Not written, so simply reset
-  so_swLastDecodedSampleL = 0;
-  so_swLastDecodedSampleR = 0;
-  so_bStartDecoding = FALSE;
+  so_aswLastDecodedL[0] = so_aswLastDecodedL[1] = 0;
+  so_aswLastDecodedR[0] = so_aswLastDecodedR[1] = 0;
+  so_fixDecodedFrames = 0;
 
   // [Cecil] Read offsets as FLOAT
   FLOAT fOffset;

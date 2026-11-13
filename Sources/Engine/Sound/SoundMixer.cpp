@@ -251,10 +251,11 @@ inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
   left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
   right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
-  // [Cecil] Set relative offsets to zero for currently decoded chunk
+  // [Cecil] Set relative offsets to the fraction between the first two frames for the current decoded chunk
   if (psd->IsEncoded()) {
-    fixRelLeftOfs  = fixZero;
-    fixRelRightOfs = fixZero;
+    // [Cecil] FIXME: Add phase difference to the channel that's ahead
+    fixRelLeftOfs  = fixLeftOfs.GetFraction();
+    fixRelRightOfs = fixRightOfs.GetFraction();
 
   // Otherwise continue from absolute offsets
   } else {
@@ -442,12 +443,17 @@ void MixSound( CSoundObject *pso)
   if (bEncoded) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
 
-    // Decode some frames from it
-    const ULONG ulFrameSize = af.GetBytesPerFrame();
-    ULONG ulWantedFrames = Ceil(ufix16_t(ctMixerBufferSize) * fixStep);
+    // [Cecil] Retrieve decoded frames so far and add [non-rounded amount that needs to be decoded right now] to it
+    const ufix16_t fixReadSoFar = pso->so_fixDecodedFrames;
+    pso->so_fixDecodedFrames += ufix16_t(ctMixerBufferSize) * fixStep;
+
+    // [Cecil] Take into account all non-integer amounts of frames read so far instead of rounding up wanted amount each time
+    ULONG ulWantedFrames = Ceil(pso->so_fixDecodedFrames.Ceil() - fixReadSoFar);
     ASSERT(ulWantedFrames != 0);
 
     // [Cecil] Reallocate decoder buffer if wanted frames don't fit (+1 extra frame for interpolation)
+    const ULONG ulFrameSize = af.GetBytesPerFrame();
+
     if (ulWantedFrames + 1 > _pSound->sl_pInterface->m_ctDecodeBufferSize / ulFrameSize) {
       // Allocate another second of frames on top, just in case
       _pSound->sl_pInterface->ReallocDecoderBuffer((ulWantedFrames + af.iSampleRate) * ulFrameSize);
@@ -458,27 +464,47 @@ void MixSound( CSoundObject *pso)
     SLONG slAddFrames = 0;
 
     // [Cecil] If just started decoding
-    if (pso->so_bStartDecoding) {
+    if (fixReadSoFar == fixZero) {
       // Decode one extra frame for interpolation at the end
       ulWantedFrames++;
       slAddFrames = -1; // But don't play it
 
-      pso->so_bStartDecoding = FALSE;
-
-    // [Cecil] Otherwise, if in the middle of decoding
-    } else {
-      // Place last remembered frame in the beginning
+    // [Cecil] If starting from a new sample in the middle
+    // [Cecil] FIXME: Offsets per channel may not always be equal
+    } else if (fixLeftOfs.GetFraction() == fixZero || fixRightOfs.GetFraction() == fixZero) {
+      // Just push the last frame
       if (af.iChannels == 1) {
-        pDecodeBuffer[0] = pso->so_swLastDecodedSampleL;
+        pDecodeBuffer[0] = pso->so_aswLastDecodedL[1];
       } else {
-        pDecodeBuffer[0] = pso->so_swLastDecodedSampleL;
-        pDecodeBuffer[1] = pso->so_swLastDecodedSampleR;
+        pDecodeBuffer[0] = pso->so_aswLastDecodedL[1];
+        pDecodeBuffer[1] = pso->so_aswLastDecodedR[1];
       }
 
       // Then start decoding new frames after the first one
       pDecodeBuffer += af.iChannels;
+
+    // [Cecil] If starting from an interpolated position
+    } else {
+      // Push both of the last frames
+      if (af.iChannels == 1) {
+        pDecodeBuffer[0] = pso->so_aswLastDecodedL[0];
+        pDecodeBuffer[1] = pso->so_aswLastDecodedL[1];
+      } else {
+        pDecodeBuffer[0] = pso->so_aswLastDecodedL[0];
+        pDecodeBuffer[1] = pso->so_aswLastDecodedR[0];
+        pDecodeBuffer[2] = pso->so_aswLastDecodedL[1];
+        pDecodeBuffer[3] = pso->so_aswLastDecodedR[1];
+      }
+
+      // Then start decoding new frames after the first two
+      pDecodeBuffer += af.iChannels * 2;
+
+      // Decode one less frame because there is an extra one in the beginning
+      ulWantedFrames--;
+      slAddFrames = 1;
     }
 
+    // Decode some frames of audio
     ULONG ulDecodedFrames = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedFrames);
     ASSERT(ulDecodedFrames <= ulWantedFrames);
 
@@ -498,22 +524,32 @@ void MixSound( CSoundObject *pso)
       bDecodingFinished = TRUE;
     }
 
-    // [Cecil] Remember last decoded frame of this chunk to be used as the first one next time
+    // [Cecil] Remember the last two decoded frames of this chunk to be reused in the beginning next time
     if (ulDecodedFrames != 0) {
+      const bool bAtLeastTwo = (ulDecodedFrames > 1);
       const ULONG ulDecodedSamples = ulDecodedFrames * af.iChannels;
 
       if (af.iChannels == 1) {
-        pso->so_swLastDecodedSampleL = pDecodeBuffer[ulDecodedSamples - 1];
-        pso->so_swLastDecodedSampleR = pso->so_swLastDecodedSampleL; // Just in case
+        // Shift last frames by one if there's only one frame decoded this chunk
+        pso->so_aswLastDecodedL[0] = bAtLeastTwo ? pDecodeBuffer[ulDecodedSamples - 2] : pso->so_aswLastDecodedL[1];
+        pso->so_aswLastDecodedL[1] =               pDecodeBuffer[ulDecodedSamples - 1];
+        // Just in case
+        pso->so_aswLastDecodedR[0] = pso->so_aswLastDecodedL[0];
+        pso->so_aswLastDecodedR[1] = pso->so_aswLastDecodedL[1];
       } else {
-        pso->so_swLastDecodedSampleL = pDecodeBuffer[ulDecodedSamples - 2];
-        pso->so_swLastDecodedSampleR = pDecodeBuffer[ulDecodedSamples - 1];
+        // Shift last frames by one if there's only one frame decoded this chunk
+        pso->so_aswLastDecodedL[0] = bAtLeastTwo ? pDecodeBuffer[ulDecodedSamples - 4] : pso->so_aswLastDecodedL[1];
+        pso->so_aswLastDecodedR[0] = bAtLeastTwo ? pDecodeBuffer[ulDecodedSamples - 3] : pso->so_aswLastDecodedR[1];
+        pso->so_aswLastDecodedL[1] =               pDecodeBuffer[ulDecodedSamples - 2];
+        pso->so_aswLastDecodedR[1] =               pDecodeBuffer[ulDecodedSamples - 1];
       }
     }
 
     // Use freshly acquired data from the decoder instead of the static buffer from sound data
     pswSrcBuffer = _pSound->sl_pInterface->m_pswDecodeBuffer; // Not pDecodeBuffer because it may have been shifted
-    fixSoundBufferSize = ulDecodedFrames + slAddFrames; // Amount of frames to mix, minus the last one used for interpolation
+
+    // Amount of frames to mix, plus some from the end of the previous chunk, minus one used for interpolation (very last one)
+    fixSoundBufferSize = ulDecodedFrames + slAddFrames;
 
     // [Cecil] TEMP: Really not sure about this one, needs more specific testing regarding phase shift
     //fPhase = 0.0f;
