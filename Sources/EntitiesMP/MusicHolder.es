@@ -218,12 +218,12 @@ functions:
     CSoundObject &soMusic = (&m_soMusic0a)[mtType*2+iSubChannel];
     FLOAT &fCurrentVolume = (&m_fCurrentVolume0a)[mtType*2+iSubChannel];
 
-    // setup looping/non looping flags
-    ULONG ulFlags;
-    if (mtType==MT_EVENT) {
-      ulFlags = SOF_MUSIC;
-    } else {
-      ulFlags = SOF_MUSIC|SOF_LOOP|SOF_NONGAME;
+    // [Cecil] Mandatory SOF_MUSIC flag + SOF_VOLUMETRIC because of reworked encoded sounds
+    ULONG ulFlags = SOF_MUSIC | SOF_VOLUMETRIC;
+
+    // [Cecil] Add flags for continuous music instead of setting new ones
+    if (mtType != MT_EVENT) {
+      ulFlags |= SOF_LOOP | SOF_NONGAME;
     }
 
     // remember volumes

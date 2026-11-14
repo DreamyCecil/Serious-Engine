@@ -475,10 +475,11 @@ void CSoundObject::Update3DEffects(void)
     ASSERT(fDistanceFactor>=0 && fDistanceFactor<=+1);
 
     // calculate volumetric influence
-    // NOTE: decoded sounds must be treated as volumetric
     FLOAT fNonVolumetric = 1.0f;
     FLOAT fNonVolumetricAdvanced = 1.0f;
-    if( (so_slFlags & SOF_VOLUMETRIC) || so_psdcDecoder!=NULL) {
+
+    // [Cecil] No longer forcing volumetric flag on audio that uses a decoder
+    if (so_slFlags & SOF_VOLUMETRIC) {
       fNonVolumetric = 1.0f-fDistanceFactor;
       fNonVolumetricAdvanced = 0.0f;
     }
