@@ -491,7 +491,8 @@ void MixSound( CSoundObject *pso)
     if (!bNotLoop) {
       // Keep decoding until it reads enough frames
       while (ulDecodedFrames < ulWantedFrames) {
-        pso->so_psdcDecoder->Reset();
+        // [Cecil] Reset decoder to the beginning
+        pso->so_psdcDecoder->SeekToFrame(0);
 
         const ULONG ulSamplesOffset = ulDecodedFrames * af.iChannels;
         ulDecodedFrames += pso->so_psdcDecoder->Decode(pDecodeBuffer + ulSamplesOffset, ulWantedFrames - ulDecodedFrames);

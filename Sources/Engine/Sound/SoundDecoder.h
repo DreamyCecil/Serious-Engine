@@ -50,8 +50,5 @@ public:
   ULONG Decode(void *pvDestBuffer, ULONG ctFramesToDecode);
 
   // [Cecil] Set next decoding position to a specific frame
-  BOOL SeekToFrame(ULONG iFrame);
-
-  // Reset decoder to the first sample
-  void Reset(void);
+  void SeekToFrame(ULONG iFrame);
 };

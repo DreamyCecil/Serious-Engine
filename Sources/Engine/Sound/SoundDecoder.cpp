@@ -363,21 +363,13 @@ ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctFramesToDecode) {
 };
 
 // [Cecil] Set next decoding position to a specific frame
-BOOL CSoundDecoder::SeekToFrame(ULONG iFrame) {
-  if (!IsOpen()) return FALSE;
-
-  return (ma_data_source_seek_to_pcm_frame(sdc_pData->pDecoder, iFrame) == MA_SUCCESS);
-};
-
-// reset decoder to start of sample
-void CSoundDecoder::Reset(void) {
+void CSoundDecoder::SeekToFrame(ULONG iFrame) {
   if (!IsOpen()) return;
 
-  // [Cecil] Seek to the first sample
-  ma_result result = ma_data_source_seek_to_pcm_frame(sdc_pData->pDecoder, 0);
+  ma_result result = ma_data_source_seek_to_pcm_frame(sdc_pData->pDecoder, iFrame);
 
   if (result != MA_SUCCESS) {
-    ASSERTALWAYS("Failed to seek decoder to the beginning");
-    CPrintF(TRANS("Failed to seek decoder to the beginning: %s\n"), ma_result_description(result));
+    ASSERTALWAYS("Failed to seek decoder");
+    CPrintF(TRANS("Failed to seek decoder to frame %u: %s\n"), iFrame, ma_result_description(result));
   }
 };
