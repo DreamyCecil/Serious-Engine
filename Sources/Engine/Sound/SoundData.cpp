@@ -134,9 +134,12 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 
   // [Cecil] If it's an encoded file of any supported format
   if (strExt == ".ogg" || strExt == ".mp3" || strExt == ".flac") {
-    // [Cecil] Initialize decoder with a separate method
+    // [Cecil] TODO: When short audio needs to be loaded into memory like WAV (without SDF_STREAMING flag),
+    // prevent it from being read again inside CSoundObject::Play_internal() by reusing data loaded here
+
+    // [Cecil] Initialize decoder with a separate method to load from an existing stream
     CSoundDecoder sdc;
-    sdc.Initialize(fnm);
+    sdc.Initialize(fnm, inFile);
 
     if (sdc.IsOpen()) {
       sdc.GetFormat(sd_afFormat);

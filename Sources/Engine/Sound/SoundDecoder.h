@@ -28,8 +28,8 @@ public:
   CSoundDecoder() : sdc_pData(NULL) {};
   ~CSoundDecoder(void) { Clear(); };
 
-  // [Cecil] Initialize the decoder for a specific file
-  void Initialize(const CTString &fnmStream);
+  // [Cecil] Initialize the decoder for a specific file or for an optional stream to immediately read data from
+  void Initialize(const CTString &fnmFile, CTStream *istrReadFrom);
 
   // Clear the decoder
   void Clear(void);

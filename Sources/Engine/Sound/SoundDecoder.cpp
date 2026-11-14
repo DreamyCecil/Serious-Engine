@@ -34,21 +34,34 @@ struct DecodeData {
   // ma_vfs that always expects ma_vfs_callbacks in the beginning
   ma_vfs_callbacks vfs;
 
+  enum DecodeMode {
+    E_NONE,
+    E_MEMORY, // Decoded after being fully loaded into memory (i.e. not streamed)
+    E_FILE,   // Decoded from a physical file (streamed from OGG, MP3 etc.)
+    E_VFS,    // Decoded by the custom VFS (e.g. streamed from OGG or from an uncompressed archive entry)
+  } eMode;
+
   static ma_decoder_config dcConfig; // Common config for loading any audio
   ma_decoder *pDecoder; // Actual decoder for specific audio
 
-  CTString fnmStreamed; // Absolute path to the file on disk to stream audio from
-  size_t iDataOffset; // Where the encoded audio starts inside loaded data (e.g. uncompressed file inside an archive)
-  size_t iDataSize; // Size of the encoded audio (setting it to -1 figures out the size upon decoder initialization)
-
+  // Common information about encoded audio
+  size_t iDataSize; // Size of encoded audio in bytes (setting it to -1 figures out the size upon decoder initialization)
   SEAudioFormat afFormat; // Format of the loaded audio
   FLOAT fLength; // Audio length in seconds
 
-  DecodeData() : pDecoder(NULL), fnmStreamed(""), iDataOffset(0), iDataSize(0), fLength(0) {};
+  // eMode == E_MEMORY
+  UBYTE *pubData; // Buffer that holds encoded audio in memory with the length of iDataSize
+
+  // eMode == E_VFS
+  CTString fnmStreamed; // Absolute path to the file on disk to stream audio from
+  size_t iDataOffset; // Where the encoded audio starts inside loaded data (e.g. uncompressed file inside an archive)
+
+  DecodeData() : eMode(E_NONE), pDecoder(NULL), pubData(NULL), fnmStreamed(""), iDataOffset(0), iDataSize(0), fLength(0) {};
 };
 
 ma_decoder_config DecodeData::dcConfig;
 
+// Decoder functions used by DecodeData::vfs
 static ma_result DecoderOpen(ma_vfs *pVFS, const char *pFilePath, ma_uint32 iOpenMode, ma_vfs_file *pFile) {
   ASSERT(iOpenMode & MA_OPEN_MODE_READ);
 
@@ -143,25 +156,26 @@ void CSoundDecoder::EndPlugins(void)
 {
 };
 
-// [Cecil] Initialize the decoder for a specific file
-void CSoundDecoder::Initialize(const CTString &fnm) {
+// [Cecil] Initialize the decoder for a specific file or for an optional stream to immediately read data from
+void CSoundDecoder::Initialize(const CTString &fnmFile, CTStream *istrReadFrom) {
   // Ignore sounds on a dedicated server
   if (_SE1Setup.IsAppServer()) return;
 
-  // [Cecil] FIXME: The sound file has already been located and opened and now the decoder tries
-  // opening it again for its own handle, which does an additional expensive lookup of the ZIP entry
+  // [Cecil] Locate a new file with the audio if there's no open stream to read existing data from
   ExpandPath expath;
 
-  // No file to read
-  if (!expath.ForReading(fnm, 0)) {
-    CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnm.ConstData(), TRANS("file not found"));
-    return;
+  if (istrReadFrom == NULL) {
+    // No file to read
+    if (!expath.ForReading(fnmFile, 0)) {
+      CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnmFile.ConstData(), TRANS("file not found"));
+      return;
+    }
   }
-
-  const CTString &fnmExpanded = expath.fnmExpanded;
 
   // Set up decode data for this decoder
   sdc_pData = new DecodeData;
+
+  // Set up VFS for streaming from disk
   sdc_pData->vfs.onOpen  = DecoderOpen;
   sdc_pData->vfs.onOpenW = NULL;
   sdc_pData->vfs.onClose = DecoderClose;
@@ -172,33 +186,85 @@ void CSoundDecoder::Initialize(const CTString &fnm) {
   sdc_pData->vfs.onInfo  = NULL;
 
   try {
-    if (expath.IsFromArchive()) {
+    // Load data into memory from a stream
+    if (istrReadFrom != NULL) {
+      sdc_pData->iDataSize = istrReadFrom->GetStreamSize();
+      sdc_pData->pubData = (UBYTE *)AllocMemory(sdc_pData->iDataSize);
+      istrReadFrom->Read_t(sdc_pData->pubData, sdc_pData->iDataSize);
+
+      sdc_pData->eMode = DecodeData::E_MEMORY;
+
+    // Load data from an archive
+    } else if (expath.IsFromArchive()) {
+      const SLONG slDataSize = expath.pZipEntry->GetUncompressedSize();
+
+      // Make sure it's not an empty file
+      if (slDataSize <= 0) ThrowF_t(TRANS("Archived file is empty"));
+
+      // If the entry is compressed, uncompress it into memory instead
       if (!expath.pZipEntry->IsStored()) {
-        ThrowF_t(TRANS("Encoded audio in archives must be uncompressed!"));
+        IZip::Handle_t pZipHandle = IZip::Open_t(expath.pZipEntry);
+
+        sdc_pData->iDataSize = slDataSize;
+        sdc_pData->pubData = (UBYTE *)AllocMemory(slDataSize);
+        IZip::ReadBlock_t(pZipHandle, sdc_pData->pubData, 0, slDataSize);
+        IZip::Close(pZipHandle);
+
+        sdc_pData->eMode = DecodeData::E_MEMORY;
+
+      // Otherwise, remember path to the archive to stream an uncompressed entry from
+      } else {
+        sdc_pData->fnmStreamed = expath.pZipEntry->GetArchive();
+        sdc_pData->iDataOffset = expath.pZipEntry->GetDataOffset();
+        sdc_pData->iDataSize = slDataSize;
+
+        sdc_pData->eMode = DecodeData::E_VFS;
       }
 
-      // Remember path to the archive to stream an uncompressed entry from
-      sdc_pData->fnmStreamed = expath.pZipEntry->GetArchive();
-      sdc_pData->iDataOffset = expath.pZipEntry->GetDataOffset();
-      sdc_pData->iDataSize = expath.pZipEntry->GetUncompressedSize();
-
+    // Load data from a physical file
     } else {
       // Remember path to the file to stream from the beginning
-      sdc_pData->fnmStreamed = fnmExpanded;
+      sdc_pData->fnmStreamed = expath.fnmExpanded;
       sdc_pData->iDataOffset = 0;
       sdc_pData->iDataSize = -1; // Calculated upon decoder opening
+
+      sdc_pData->eMode = DecodeData::E_FILE; // May also be set to E_VFS but it's not necessary
     }
 
+    // Initialize the decoder for specific mode
     sdc_pData->pDecoder = new ma_decoder;
+    ma_result result;
 
-    // [Cecil] NOTE: Passing the original filename because miniaudio may utilize its extension to determine the format and sometimes
-    // the game needs to stream audio files from archives, which will have to use the archive itself in place of the audio file.
-    // The original filename will pick the appropriate decoder, whereas the provided VFS will open the appropriate file from the
-    // DecodeData::fnmStreamed field, which may either be the audio file itself or an archive that contains it at specific offset.
-    ma_result result = ma_decoder_init_vfs(sdc_pData, fnmExpanded.NoDir().ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
+    switch (sdc_pData->eMode) {
+      case DecodeData::E_MEMORY: {
+        result = ma_decoder_init_memory(sdc_pData->pubData, sdc_pData->iDataSize, &DecodeData::dcConfig, sdc_pData->pDecoder);
 
-    if (result != MA_SUCCESS) {
-      ThrowF_t(TRANS("Cannot open audio decoder: %s"), ma_result_description(result));
+        if (result != MA_SUCCESS) {
+          ThrowF_t(TRANS("Cannot initialize audio decoder for memory: %s"), ma_result_description(result));
+        }
+      } break;
+
+      case DecodeData::E_FILE: {
+        result = ma_decoder_init_file(sdc_pData->fnmStreamed.ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
+
+        if (result != MA_SUCCESS) {
+          ThrowF_t(TRANS("Cannot initialize audio decoder for a file: %s"), ma_result_description(result));
+        }
+      } break;
+
+      case DecodeData::E_VFS: {
+        // [Cecil] NOTE: Passing the original filename because miniaudio may utilize its extension to determine the format and sometimes
+        // the game needs to stream audio files from archives, which will have to use the archive itself in place of the audio file.
+        // The original filename will pick the appropriate decoder, whereas the provided VFS will open the appropriate file from the
+        // DecodeData::fnmStreamed field, which may either be the audio file itself or an archive that contains it at specific offset.
+        result = ma_decoder_init_vfs(sdc_pData, expath.fnmExpanded.NoDir().ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
+
+        if (result != MA_SUCCESS) {
+          ThrowF_t(TRANS("Cannot initialize audio decoder for VFS: %s"), ma_result_description(result));
+        }
+      } break;
+
+      default: ThrowF_t(TRANS("Unknown mode %d for the audio decoder"), sdc_pData->eMode);
     }
 
     // Retrieve format
@@ -229,7 +295,7 @@ void CSoundDecoder::Initialize(const CTString &fnm) {
     }
 
   } catch (char *strError) {
-    CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnm.ConstData(), strError);
+    CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnmFile.ConstData(), strError);
     Clear();
   }
 };
@@ -241,6 +307,11 @@ void CSoundDecoder::Clear(void) {
   if (sdc_pData->pDecoder != NULL) {
     ma_decoder_uninit(sdc_pData->pDecoder);
     delete sdc_pData->pDecoder;
+  }
+
+  if (sdc_pData->pubData != NULL) {
+    FreeMemory(sdc_pData->pubData);
+    sdc_pData->pubData = NULL;
   }
 
   delete sdc_pData;

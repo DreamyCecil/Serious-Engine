@@ -231,6 +231,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
 {
   ASSERT(so_penEntity==NULL || !so_penEntity->IsPredictor());
 
+  // [Cecil] Must have sound data to play
+  ASSERT(pCsdLink != NULL);
+
   // check if should continue with new sound
   BOOL bContinue = 
     ((slFlags&SOF_SMOOTHCHANGE) &&
@@ -240,7 +243,7 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
   Stop_internal();
 
   // mark new data as referenced once more
-  if (pCsdLink != NULL) pCsdLink->AddReference();
+  pCsdLink->AddReference();
   // mark old data as referenced once less
   if (so_pCsdLink != NULL) so_pCsdLink->RemReference();
 
@@ -265,9 +268,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
   if (so_pCsdLink->IsEncoded()) {
     // create decoder
     if (so_pCsdLink->IsStreamed()) {
-      // [Cecil] Initialize decoder with a separate method
+      // [Cecil] Initialize decoder with a separate method to load new audio from a file
       so_psdcDecoder = new CSoundDecoder();
-      so_psdcDecoder->Initialize(so_pCsdLink->GetName());
+      so_psdcDecoder->Initialize(so_pCsdLink->GetName(), NULL);
     } else {
       ASSERT(FALSE);  // nonstreaming not supported anymore
     }
