@@ -1,5 +1,5 @@
 /* Copyright (c) 2002-2012 Croteam Ltd. 
-   Copyright (c) 2023 Dreamy Cecil
+   Copyright (c) 2023-2026 Dreamy Cecil
 This program is free software; you can redistribute it and/or modify
 it under the terms of version 2 of the GNU General Public License as published by
 the Free Software Foundation
@@ -14,7 +14,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-// [Cecil] ASM code translation:
+// [Cecil] Initial ASM code translation:
 // https://gitlab.com/TwilightWingsStudio/SSE/SeriousEngineE/-/blob/master/Engine/Sound/SoundMixer.cpp
 
 #include "StdH.h"
@@ -34,6 +34,7 @@ extern INDEX snd_bMono;
 
 // [Cecil] Some useful fixed-point constants
 static const ufix16_t fixZero(0);
+static const sfix16_t fixZeroS(0);
 static const ufix16_t fixHalf(0.5);
 static const sfix16_t fixHalfS(0.5);
 static const ufix16_t fixOne(1);
@@ -252,14 +253,9 @@ inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
   left.swSurround  = (SWORD)UWORD((mmSurroundFactor >>  0) & 0xFFFF);
   right.swSurround = (SWORD)UWORD((mmSurroundFactor >> 16) & 0xFFFF);
 
-  // [Cecil] Set relative offsets to the fraction between the first two frames for the current decoded chunk
-  if (bEncoded) {
-    // [Cecil] FIXME: Add phase difference to the channel that's ahead
-    fixRelLeftOfs  = fixLeftOfs.GetFraction();
-    fixRelRightOfs = fixRightOfs.GetFraction();
-
-  // Otherwise continue from absolute offsets
-  } else {
+  // [Cecil] Relative offsets are already calculated for encoded audio upon decoding,
+  // whereas non-encoded audio simply walks through its fully preloaded sound buffer
+  if (!bEncoded) {
     fixRelLeftOfs  = fixLeftOfs;
     fixRelRightOfs = fixRightOfs;
   }
@@ -268,6 +264,11 @@ inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
   size_t ct = ctMixerBufferSize;
 
   FOREVER {
+    if (ct == 0) break;
+
+    bool bLeftValid = true;
+    bool bRightValid = true;
+
     // [Cecil] NOTE: If non-encoded sounds reach the end of the static sound buffer, they must wrap offsets around
     // to prevent them from reading samples out of bounds. This isn't the case for encoded sounds for two reasons:
     // 1. Encoded sounds are processed one chunk at a time, so wrapping around would mean returning to the beginning
@@ -275,26 +276,38 @@ inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
     // 2. Looped encoded sounds decode as much data as the mixer can take at a time, so it decodes audio in a loop
     // from the beginning inside the chunks themselves, which makes these offset loops unnecessary during mixing.
 
-    // If left channel reached the end of the sample buffer
-    if (fixRelLeftOfs >= fixSoundBufferSize) {
-      // [Cecil] Only wrap it around if it's mixing a fully preloaded sound
-      if (!bEncoded) fixRelLeftOfs -= fixSoundBufferSize;
+    if (bEncoded) {
+      // [Cecil] If offsets aren't synced, one of the channels may finish mixing before the other one,
+      // which isn't really valid for encoded audio, so it should only exit the mixing loop preemptively
+      // when both channels finish mixing
+      bLeftValid  = (fixRelLeftOfs  < fixSoundBufferSize);
+      bRightValid = (fixRelRightOfs < fixSoundBufferSize);
 
-      // Looped sounds will keep getting mixed until the end of the mixer buffer instead of exiting preemptively
-      bEndOfSound = bNotLoop;
+      if (!bLeftValid && !bRightValid) {
+        bEndOfSound = bNotLoop;
+        break;
+      }
+
+    } else {
+      // If left channel reached the end of the sample buffer
+      if (fixRelLeftOfs >= fixSoundBufferSize) {
+        fixRelLeftOfs -= fixSoundBufferSize;
+
+        // Looped sounds will keep getting mixed until the end of the mixer buffer instead of exiting preemptively
+        bEndOfSound = bNotLoop;
+      }
+
+      // If right channel reached the end of the sample buffer
+      if (fixRelRightOfs >= fixSoundBufferSize) {
+        fixRelRightOfs -= fixSoundBufferSize;
+
+        // Looped sounds will keep getting mixed until the end of the mixer buffer instead of exiting preemptively
+        bEndOfSound = bNotLoop;
+      }
+
+      // End of sample buffer
+      if (bEndOfSound) break;
     }
-
-    // If right channel reached the end of the sample buffer
-    if (fixRelRightOfs >= fixSoundBufferSize) {
-      // [Cecil] Only wrap it around if it's mixing a fully preloaded sound
-      if (!bEncoded) fixRelRightOfs -= fixSoundBufferSize;
-
-      // Looped sounds will keep getting mixed until the end of the mixer buffer instead of exiting preemptively
-      bEndOfSound = bNotLoop;
-    }
-
-    // End of buffer
-    if (ct == 0 || bEndOfSound) break;
 
     // [Cecil] Samples go in order of channels, so they should be offset as such
     const UQUAD iFrameL = Floor(fixRelLeftOfs)  * iChannels;
@@ -306,13 +319,27 @@ inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
     const UQUAD iCurR  = iFrameR + ClampUp(iChannels - 1, 1);             // Second sample of current frame
     const UQUAD iNextR = iFrameR + ClampUp(iChannels - 1, 1) + iChannels; // Second sample of next frame
 
+    // [Cecil] Mix silence on the left channel if it has finished mixing its decoded part
+    if (bEncoded && !bLeftValid) {
+      left.slCur  = 0;
+      left.slNext = 0;
+
     // Fetch one lineary interpolated sample on left channel
-    left.slCur  = pswSrcBuffer[iCurL];
-    left.slNext = pswSrcBuffer[iNextL];
+    } else {
+      left.slCur  = pswSrcBuffer[iCurL];
+      left.slNext = pswSrcBuffer[iNextL];
+    }
+
+    // [Cecil] Mix silence on the right channel if it has finished mixing its decoded part
+    if (bEncoded && !bRightValid) {
+      right.slCur  = 0;
+      right.slNext = 0;
 
     // Fetch one lineary interpolated sample on right channel
-    right.slCur  = pswSrcBuffer[iCurR];
-    right.slNext = pswSrcBuffer[iNextR];
+    } else {
+      right.slCur  = pswSrcBuffer[iCurR];
+      right.slNext = pswSrcBuffer[iNextR];
+    }
 
     // [Cecil] Common function for mixing one sample for both channels
     MixOneSample(left, right, pslDstBuffer);
@@ -456,19 +483,76 @@ void MixSound( CSoundObject *pso)
   bNotLoop = !(pso->so_slFlags & SOF_LOOP);
   mmSurroundFactor = (pso->so_slFlags & SOF_SURROUND) ? 0x0000FFFF : 0x00000000;
 
+  // [Cecil] Moved here from phase processing because it's needed during decoding
+  const DOUBLE fLastPhase = (DOUBLE)fixOfsDelta / (DOUBLE)fixSoundSampleRate;
+  const DOUBLE fPhaseDelta = fPhase - fLastPhase; // [Cecil] NOTE: Keep DOUBLE because it may be negative
+  sfix16_t fixStepDelta = Abs(fPhaseDelta * (DOUBLE)fixSoundSampleRate / ctMixerBufferSize);
+
   BOOL bDecodingFinished = FALSE;
 
   // If it's encoded audio
   if (bEncoded) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
 
-    // [Cecil] Retrieve decoded frames so far and add [non-rounded amount that needs to be decoded right now] to it
-    const ufix16_t fixReadSoFar = pso->so_fixDecodedFrames;
-    pso->so_fixDecodedFrames += ufix16_t(ctMixerBufferSize) * fixStep;
+    // [Cecil] Retrieve encoded length immediately
+    fixTotalAudioLength = pso->so_psdcDecoder->GetLengthInFrames();
+    const sfix16_t fixTotalLenS(fixTotalAudioLength.holder, true);
 
-    // [Cecil] Take into account all non-integer amounts of frames read so far instead of rounding up wanted amount each time
-    ULONG ulWantedFrames = Ceil(pso->so_fixDecodedFrames.Ceil() - fixReadSoFar) + 1; // +1 extra frame for interpolation in the end
-    ASSERT(ulWantedFrames != 0);
+    // [Cecil] The following block is responsible for calculating relative channel offsets for encoded audio in advance and
+    // figuring out the frame to start decoding from, taking phase shift (and otherwise desynced channel offsets) into account
+    ufix16_t fixSeekFrame;
+    {
+      // Get the real difference between two offsets (positive = right is ahead; negative = left is ahead)
+      sfix16_t fixOffsetDiff((SQUAD)fixRightOfs.holder - (SQUAD)fixLeftOfs.holder, true);
+
+      // If audio is looped, one of the offsets may cross the loop boundary before the other one and appear in the beginning,
+      // resulting in an unnecessarily huge frame difference. Instead of getting the real distance between the two, calculate
+      // the shortest distance between the real one and across the loop boundary.
+      //
+      // Consider this example with dashes representing real frames and dots representing "ghost frames" past the loop boundary:
+      //   -----R-----------------------L--.....R
+      // The right channel is ahead and crossed the loop boundary into the beginning. The real frame difference is 24
+      // but the difference in playback order is only 8, which is way lower. This '8' is what's being calculated here.
+      if (!bNotLoop) {
+        const sfix16_t fixHalfLen = fixTotalLenS * fixHalfS;
+
+        // E.g. if audio length is 32 frames and the difference is +24 frames (right is ahead), this becomes -8 frames (left is ahead)
+        if (fixOffsetDiff > fixHalfLen) fixOffsetDiff -= fixTotalLenS;
+        // E.g. if audio length is 32 frames and the difference is -24 frames (left is ahead), this becomes +8 frames (right is ahead)
+        if (fixOffsetDiff < -fixHalfLen) fixOffsetDiff += fixTotalLenS;
+      }
+
+      // Now pick the offset that's actually behind based on the offset difference instead of simply doing Min(fixLeftOfs, fixRightOfs)
+      fixSeekFrame = ((fixOffsetDiff >= fixZeroS) ? fixLeftOfs : fixRightOfs).Floor(); // Flooring because seeking happens in full frames
+      ASSERT(fixSeekFrame < fixTotalAudioLength);
+
+      // These are actual relative offsets that will be used during mixing, where at least one of the offsets
+      // is interpolated between frames 0 and 1 and the other offset is ahead by the difference between the two
+      sfix16_t fixSignedRelL((fixLeftOfs  - fixSeekFrame).holder, true);
+      sfix16_t fixSignedRelR((fixRightOfs - fixSeekFrame).holder, true);
+
+      // Since looped audio may result in any of the offsets crossing the boundary to the beginning, it may
+      // appear physically behind the other one that is actually behind playback-wise, so one of them needs
+      // to be adjusted back into the range of audio frames (past the offset that's actually behind)
+      if (!bNotLoop) {
+        while (fixSignedRelL < fixZeroS) fixSignedRelL += fixTotalLenS;
+        while (fixSignedRelR < fixZeroS) fixSignedRelR += fixTotalLenS;
+      }
+
+      // Just in case
+      if (fixSignedRelL < fixZeroS) fixSignedRelL = fixZeroS;
+      if (fixSignedRelR < fixZeroS) fixSignedRelR = fixZeroS;
+
+      // Both offsets should now be positive
+      fixRelLeftOfs.holder  = fixSignedRelL.holder;
+      fixRelRightOfs.holder = fixSignedRelR.holder;
+    }
+
+    // [Cecil] Decode maximum possible amount of frames to cover both channels at once if their offsets aren't synced
+    const ufix16_t fixMaxStep = fixStep + ufix16_t(Abs(fixStepDelta.holder), true);
+    const ufix16_t fixFurthest = Max(fixRelLeftOfs, fixRelRightOfs);
+    const ufix16_t fixWantedFrames = ufix16_t(ctMixerBufferSize) * fixMaxStep;
+    const ULONG ulWantedFrames = Ceil(fixFurthest + fixWantedFrames) + 1; // +1 extra frame for interpolation in the end
 
     // [Cecil] Reallocate decoder buffer if wanted frames don't fit
     const ULONG ulFrameSize = af.GetBytesPerFrame();
@@ -478,9 +562,8 @@ void MixSound( CSoundObject *pso)
       _pSound->sl_pInterface->ReallocDecoderBuffer((ulWantedFrames + af.iSampleRate) * ulFrameSize);
     }
 
-    // [Cecil] Seek decoder to the current frame regardless of how much has been decoded last time
-    // [Cecil] FIXME: Offsets per channel may not always be equal
-    pso->so_psdcDecoder->SeekToFrame(Floor(fixLeftOfs));
+    // [Cecil] Start decoding from the offset that's behind the other one playback-wise
+    pso->so_psdcDecoder->SeekToFrame((UQUAD)fixSeekFrame);
 
     // Decode some frames of audio
     SWORD *pDecodeBuffer = _pSound->sl_pInterface->m_pswDecodeBuffer;
@@ -509,10 +592,6 @@ void MixSound( CSoundObject *pso)
 
     // Amount of frames to mix, minus one used for interpolation (very last one)
     fixSoundBufferSize = ulDecodedFrames - 1;
-    fixTotalAudioLength = pso->so_psdcDecoder->GetLengthInFrames();
-
-    // [Cecil] TEMP: Really not sure about this one, needs more specific testing regarding phase shift
-    //fPhase = 0.0f;
 
     _pfSoundProfile.StopTimer(CSoundProfile::PTI_DECODESOUND);
   }
@@ -526,10 +605,6 @@ void MixSound( CSoundObject *pso)
   slLastRightSample = pso->so_swLastRightSample;
 
   // calculate eventual new offsets from phase shift
-  const DOUBLE fLastPhase = (DOUBLE)fixOfsDelta / (DOUBLE)fixSoundSampleRate;
-  const DOUBLE fPhaseDelta = fPhase - fLastPhase; // [Cecil] NOTE: Keep DOUBLE because it may be negative
-  sfix16_t fixStepDelta = Abs(fPhaseDelta * (DOUBLE)fixSoundSampleRate / ctMixerBufferSize);
-
   sfix16_t fixStepDeltaL, fixStepDeltaR;
 
   // [Cecil] Whatever
@@ -550,8 +625,8 @@ void MixSound( CSoundObject *pso)
   }
 
   // [Cecil] Whatever 2
-  ((SQUAD &)fixLeftStep.holder)  += fixStepDeltaL.holder;
-  ((SQUAD &)fixRightStep.holder) += fixStepDeltaR.holder;
+  fixLeftStep.holder  += fixStepDeltaL.holder;
+  fixRightStep.holder += fixStepDeltaR.holder;
   fixStepDelta = fixStepDeltaR - fixStepDeltaL;
 
   // if there is anything to mix (could be nothing when encoded file just finished)
@@ -571,6 +646,12 @@ void MixSound( CSoundObject *pso)
       ulRightVolume = ulLeftVolume;
       slLeftFilter = (slLeftFilter + slRightFilter) / 2;
       slRightFilter = slLeftFilter;
+
+      // [Cecil] Monomize relative offsets for encoded audio that have been calculated in advance
+      if (bEncoded) {
+        fixRelLeftOfs = (fixRelLeftOfs + fixRelRightOfs) * fixHalf;
+        fixRelRightOfs = fixRelLeftOfs;
+      }
     }
 
     // call corresponding mixer routine for current sound format
