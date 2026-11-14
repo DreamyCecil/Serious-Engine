@@ -184,7 +184,10 @@ public:
   virtual BOOL AtEOF(void);
 
   /* Get description of this stream (e.g. filename for a CFileStream). */
-  inline CTString &GetDescription(void) { return strm_strStreamDescription; };
+  inline const CTString &GetDescription(void) const { return strm_strStreamDescription; };
+
+  // [Cecil] Get path to the file opened with this stream
+  virtual const CTString &GetFilePath(void) const = 0;
 
   /* Read an object from stream. */
   inline CTStream &operator>>(UQUAD &ull) { Read_t(&ull, sizeof(ull)); return *this; } // [Cecil]
@@ -283,6 +286,7 @@ private:
   FILE *fstrm_pFile;    // ptr to opened file
   IZip::Handle_t fstrm_pZipHandle; // handle of zip-file entry
   BOOL fstrm_bReadOnly;  // set if file is opened in read-only mode
+  CTString fstrm_strOriginalPath; // [Cecil] Original path to the file that was used to open the stream (may be relative)
 
 public:
   /* Default constructor. */
@@ -338,6 +342,11 @@ public:
   /* Check if file position points to the EOF */
   virtual BOOL AtEOF(void);
 
+  // [Cecil] Get path to the file opened with this stream
+  virtual const CTString &GetFilePath(void) const {
+    return fstrm_strOriginalPath;
+  };
+
   // whether or not the given pointer is coming from this stream (mainly used for exception handling)
   virtual BOOL PointerInStream(void* pPointer);
 
@@ -367,6 +376,9 @@ public:
   void LockBuffer(void **ppvBuffer, SLONG *pslSize);
     /* Unlock buffer. */
   void UnlockBuffer(void);
+
+  // [Cecil] Get path to the file opened with this stream
+  virtual const CTString &GetFilePath(void) const;
 
   // whether or not the given pointer is coming from this stream (mainly used for exception handling)
   virtual BOOL PointerInStream(void* pPointer);

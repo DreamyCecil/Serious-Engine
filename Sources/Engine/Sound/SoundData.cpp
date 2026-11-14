@@ -129,7 +129,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   sd_ulFlags = NONE;
 
   // get filename
-  CTFileName fnm = inFile->GetDescription();
+  const CTString &fnm = inFile->GetFilePath(); // [Cecil] Relative file path
   const CTString strExt = fnm.FileExt();
 
   // [Cecil] If it's an encoded file of any supported format

@@ -1635,14 +1635,12 @@ void CSessionState::ReadWorldAndState_t(CTStream *pstr)   // throw char *
 
   // read world filename from stream
   pstr->ReadFileName(_pNetwork->ga_fnmWorld);
+  const CTString &fnmLoadingFrom = pstr->GetDescription();
 
-  if (pstr->GetDescription().FileExt() == ".dem" &&
-    GetFileTimeStamp_t(pstr->GetDescription())<=GetFileTimeStamp_t(_pNetwork->ga_fnmWorld)) {
-    ThrowF_t(
-      TRANS("Cannot play demo because file '%s'\n"
-      "is older than file '%s'!\n"),
-      pstr->GetDescription().ConstData(),
-      _pNetwork->ga_fnmWorld.ConstData());
+  // If loading from a demo file, make sure the demo is not older than the world itself
+  if (fnmLoadingFrom.FileExt() == ".dem" && GetFileTimeStamp_t(fnmLoadingFrom) <= GetFileTimeStamp_t(_pNetwork->ga_fnmWorld)) {
+    ThrowF_t(TRANS("Cannot play demo because file '%s'\nis older than file '%s'!\n"),
+      fnmLoadingFrom.ConstData(), _pNetwork->ga_fnmWorld.ConstData());
   }
 
   // prepare the world for loading

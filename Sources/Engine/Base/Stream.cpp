@@ -1092,7 +1092,7 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
       if (expath.IsFromArchive()) {
         // open from zip
         fstrm_pZipHandle = IZip::Open_t(expath.pZipEntry);
-        SLONG slFileSize = IZip::GetEntry(fstrm_pZipHandle)->GetUncompressedSize();
+        const SLONG slFileSize = expath.pZipEntry->GetUncompressedSize();
 
         // [Cecil] Create a dummy buffer if it's an empty file
         if (slFileSize <= 0) {
@@ -1136,6 +1136,9 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
 
   // if file opening was successfull, set stream description to file name
   strm_strStreamDescription = expath.fnmExpanded;
+  // [Cecil] Set file path as provided, to replicate fnmExpanded that used to be relative in vanilla 1.10 when found inside archives
+  fstrm_strOriginalPath = fnm;
+
   // add this newly opened file into opened stream list
   _plhOpenedStreams->AddTail( strm_lnListNode);
 }
@@ -1175,9 +1178,12 @@ void CTFileStream::CreateEx_t(const CTFileName &fnm, ULONG ulFlags)
   }
 
   // if file creation was successfull, set stream description to file name
-  strm_strStreamDescription = fnm; // [Cecil] NOTE: Not 'expath.fnmExpanded' in order to remember the exact used path
+  strm_strStreamDescription = expath.fnmExpanded;
+  // [Cecil] Set file path as provided, to replicate fnmExpanded that used to be relative in vanilla 1.10 when found inside archives
+  fstrm_strOriginalPath = fnm;
   // mark that file is created for writing
   fstrm_bReadOnly = FALSE;
+
   // add this newly created file into opened stream list
   _plhOpenedStreams->AddTail( strm_lnListNode);
 }
@@ -1465,6 +1471,14 @@ BOOL CTMemoryStream::IsWriteable(void)
 {
   return mstrm_bWriteable && (mstrm_ctLocked==0);
 }
+
+// [Cecil] Get path to the file opened with this stream
+const CTString &CTMemoryStream::GetFilePath(void) const {
+  // Not applicable
+  ASSERTALWAYS("CTMemoryStream can't have a file path!");
+  static const CTString strDummy("");
+  return strDummy;
+};
 
 // whether or not the given pointer is coming from this stream (mainly used for exception handling)
 BOOL CTMemoryStream::PointerInStream(void* pPointer)

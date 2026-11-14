@@ -673,8 +673,6 @@ static BOOL IsGray( ULONG *pulMipmap, INDEX pixMipSize)
 // reads 32/24-bit texture from file and eventually converts it to 8-bit pixel format
 void CTextureData::Read_t( CTStream *inFile)
 {
-  //ASSERT( inFile->GetDescription() != "Textures\\Test\\BetterQuality\\FloorWS08.tex");
-
   // reset texture (blank all except some flags)
   Clear();
 
@@ -787,7 +785,7 @@ void CTextureData::Read_t( CTStream *inFile)
       // if there is base texture, obtain it
       if( fnBaseTexture != "") {
         // must not be the same as base texture
-        CTFileName fnTex = inFile->GetDescription();
+        CTFileName fnTex = inFile->GetFilePath(); // [Cecil] Relative file path
         if( fnTex == fnBaseTexture) {
           // generate exception
           ThrowF_t(TRANS("Texture \"%s\" has same name as its base texture."), fnTex.ConstData());
@@ -1003,7 +1001,7 @@ void CTextureData::Write_t( CTStream *outFile)   // throw char *
 
   // must not have base texture with same name
   if( td_ptdBaseTexture != NULL) {
-    CTFileName fnTex = outFile->GetDescription();
+    CTFileName fnTex = outFile->GetFilePath(); // [Cecil] Relative file path
     if( fnTex == td_ptdBaseTexture->GetName()) {
       ThrowF_t(TRANS("Texture \"%s\" has same name as its base texture."), fnTex.ConstData());
     }
