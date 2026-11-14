@@ -329,6 +329,13 @@ void CSoundDecoder::GetFormat(SEAudioFormat &af) const {
   if (sdc_pData != NULL) af = sdc_pData->afFormat;
 };
 
+// [Cecil] Check whether the sound is decoded from memory instead of streamed from disk
+BOOL CSoundDecoder::IsInMemory(void) const {
+  if (!IsOpen()) return FALSE;
+
+  return (sdc_pData->eMode == DecodeData::E_MEMORY);
+};
+
 // [Cecil] Retrieve length of the encoded audio in seconds
 DOUBLE CSoundDecoder::GetSoundLength(void) const {
   if (sdc_pData != NULL) {

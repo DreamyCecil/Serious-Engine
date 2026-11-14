@@ -262,15 +262,17 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     so_slFlags = (so_slFlags & ~(SOF_PREPARE|SOF_PAUSED)) | SOF_PLAY;
   }
 
-  // if the sound data is encoded
+  // Acquire a decoder if sound data is encoded
   if (so_pCsdLink->IsEncoded()) {
-    // create decoder
+    // Create a personal decoder if it needs to be streamed
     if (so_pCsdLink->IsStreamed()) {
       // [Cecil] Initialize decoder with a separate method to load new audio from a file
       so_psdcDecoder = new CSoundDecoder();
       so_psdcDecoder->Initialize(so_pCsdLink->GetName(), NULL);
+
+    // [Cecil] Otherwise utilize the common decoder for static data in memory
     } else {
-      ASSERT(FALSE);  // nonstreaming not supported anymore
+      so_psdcDecoder = so_pCsdLink->sd_psdcStaticDecoder;
     }
   }
 
@@ -371,9 +373,11 @@ void CSoundObject::Stop_internal(void)
   // sound is stopped
   so_slFlags &= ~(SOF_PLAY|SOF_PREPARE|SOF_PAUSED);
 
-  // destroy decoder if exists
-  if( so_psdcDecoder!=NULL) {
-    delete so_psdcDecoder;
+  // Remove decoder if it exists
+  if (so_psdcDecoder != NULL) {
+    // [Cecil] But only if it's owned by this sound object for individual streaming
+    if (so_pCsdLink->IsStreamed()) delete so_psdcDecoder;
+
     so_psdcDecoder = NULL;
   }
 

@@ -56,6 +56,9 @@ public:
   SLONG  sd_slBufferSampleSize;  // buffer sample size
   SECOND sd_dSecondsLength;      // sound length in seconds
 
+  // [Cecil] Static decoder for any sound object for decoding audio from memory instead of streaming it from disk
+  class CSoundDecoder *sd_psdcStaticDecoder;
+
   // free Buffer (and all linked Objects)
   void ClearBuffer(void);
   // Add object in sound aware list
