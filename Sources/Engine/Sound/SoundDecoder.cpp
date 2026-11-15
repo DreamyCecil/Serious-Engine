@@ -144,8 +144,8 @@ void CSoundDecoder::InitPlugins(void)
     ma_decoding_backend_libvorbis, // OGG
   };
 
-  // Force-load everything in [signed 16-bit, stereo, max sample rate] format that the engine mixer expects
-  DecodeData::dcConfig = ma_decoder_config_init(ma_format_s16, 2, CSoundLibrary::sl_ulMaxSampleRate);
+  // Force-load everything in signed 16-bit format that the engine mixer expects (channels and sample rate don't matter)
+  DecodeData::dcConfig = ma_decoder_config_init(ma_format_s16, 0, 0);
   DecodeData::dcConfig.pCustomBackendUserData = NULL;
   DecodeData::dcConfig.ppCustomBackendVTables = aCustomBackends;
   DecodeData::dcConfig.customBackendCount = ARRAYCOUNT(aCustomBackends);
@@ -321,8 +321,8 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
     }
 
     // Must be in a very specific format
-    if (eFormat != ma_format_s16 || iChannels != 2 || iSampleRate != CSoundLibrary::sl_ulMaxSampleRate) {
-      ThrowF_t(TRANS("Encoded audio must be signed 16-bit, stereo, %u Hz!"), CSoundLibrary::sl_ulMaxSampleRate);
+    if (eFormat != ma_format_s16 || iChannels > 2) {
+      ThrowF_t(TRANS("Encoded audio must be signed 16-bit and with no more than 2 channels!"));
     }
 
     SEAudioFormat &af = sdc_pData->afFormat;
