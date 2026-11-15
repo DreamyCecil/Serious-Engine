@@ -361,10 +361,11 @@ inline void MixAudioChunk(const CSoundData *psd, const UWORD iChannels) {
 void MixSound( CSoundObject *pso)
 {
   const CSoundData *psd = pso->so_pCsdLink;
-  const BOOL bEncoded = psd->IsEncoded();
+  const bool bEncoded = psd->IsEncoded();
+  CSoundDecoder *psdcDecoder = psd->sd_psdcDecoder;
 
-  // if don't mix encoded sounds if they are not opened properly
-  if (bEncoded && (pso->so_psdcDecoder == NULL || !pso->so_psdcDecoder->IsOpen())) {
+  // Don't mix encoded audio if the decoder for it haven't been opened properly
+  if (bEncoded && (psdcDecoder == NULL || !psdcDecoder->IsOpen())) {
     return;
   }
 
@@ -495,7 +496,7 @@ void MixSound( CSoundObject *pso)
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
 
     // [Cecil] Retrieve encoded length immediately
-    fixTotalAudioLength = pso->so_psdcDecoder->GetLengthInFrames();
+    fixTotalAudioLength = psdcDecoder->GetLengthInFrames();
     const sfix16_t fixTotalLenS(fixTotalAudioLength.holder, true);
 
     // [Cecil] The following block is responsible for calculating relative channel offsets for encoded audio in advance and
@@ -563,11 +564,11 @@ void MixSound( CSoundObject *pso)
     }
 
     // [Cecil] Start decoding from the offset that's behind the other one playback-wise
-    pso->so_psdcDecoder->SeekToFrame((UQUAD)fixSeekFrame);
+    psdcDecoder->SeekToFrame((UQUAD)fixSeekFrame);
 
     // Decode some frames of audio
     SWORD *pDecodeBuffer = _pSound->sl_pInterface->m_pswDecodeBuffer;
-    ULONG ulDecodedFrames = pso->so_psdcDecoder->Decode(pDecodeBuffer, ulWantedFrames);
+    ULONG ulDecodedFrames = psdcDecoder->Decode(pDecodeBuffer, ulWantedFrames);
     ASSERT(ulDecodedFrames <= ulWantedFrames);
 
     // If it's looped
@@ -575,10 +576,10 @@ void MixSound( CSoundObject *pso)
       // Keep decoding until it reads enough frames
       while (ulDecodedFrames < ulWantedFrames) {
         // [Cecil] Reset decoder to the beginning
-        pso->so_psdcDecoder->SeekToFrame(0);
+        psdcDecoder->SeekToFrame(0);
 
         const ULONG ulSamplesOffset = ulDecodedFrames * af.iChannels;
-        ulDecodedFrames += pso->so_psdcDecoder->Decode(pDecodeBuffer + ulSamplesOffset, ulWantedFrames - ulDecodedFrames);
+        ulDecodedFrames += psdcDecoder->Decode(pDecodeBuffer + ulSamplesOffset, ulWantedFrames - ulDecodedFrames);
       }
 
     // If it's not looped and the decoded frames are less than the buffer

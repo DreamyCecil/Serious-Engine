@@ -78,7 +78,6 @@ static CTString GetPred(CEntity*pen)
 CSoundObject::CSoundObject()
 {
   so_pCsdLink = NULL;
-  so_psdcDecoder = NULL;
   so_penEntity = NULL;
   so_slFlags = SOF_NONE;
 
@@ -262,18 +261,9 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     so_slFlags = (so_slFlags & ~(SOF_PREPARE|SOF_PAUSED)) | SOF_PLAY;
   }
 
-  // Acquire a decoder if sound data is encoded
-  if (so_pCsdLink->IsEncoded()) {
-    // Create a personal decoder if it needs to be streamed
-    if (so_pCsdLink->IsStreamed()) {
-      // [Cecil] Initialize decoder with a separate method to load new audio from a file
-      so_psdcDecoder = new CSoundDecoder();
-      so_psdcDecoder->Initialize(so_pCsdLink->GetName(), false);
-
-    // [Cecil] Otherwise utilize the common decoder for static data in memory
-    } else {
-      so_psdcDecoder = so_pCsdLink->sd_psdcStaticDecoder;
-    }
+  // [Cecil] If audio is supposed to be encoded, simply display an error about a missing decoder instead of throwing
+  if (so_pCsdLink->IsEncoded() && so_pCsdLink->sd_psdcDecoder == NULL) {
+    CPrintF(TRANS("Cannot play encoded audio '%s': %s\n"), so_pCsdLink->GetName().ConstData(), TRANS("Decoder is missing"));
   }
 
   // remember starting parameters
@@ -373,14 +363,6 @@ void CSoundObject::Stop_internal(void)
 {
   // sound is stopped
   so_slFlags &= ~(SOF_PLAY|SOF_PREPARE|SOF_PAUSED);
-
-  // Remove decoder if it exists
-  if (so_psdcDecoder != NULL) {
-    // [Cecil] But only if it's owned by this sound object for individual streaming
-    if (so_pCsdLink->IsStreamed()) delete so_psdcDecoder;
-
-    so_psdcDecoder = NULL;
-  }
 
   // if added in link list, remove it from list
   if( IsHooked()) {

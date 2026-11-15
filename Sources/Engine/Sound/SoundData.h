@@ -25,13 +25,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class ENGINE_API CSoundData : public CSerial {
 public:
   enum ESoundDataFlags {
-    // Indicates an encoded sound that requires a dedicated decoder to play. When CSoundData is marked with this flag,
-    // CSoundObject will create and utilize its own decoder for the specified file using CSoundObject::so_psdcDecoder
-    SDF_ENCODED   = (1UL << 0),
+    // Indicates encoded audio that requires a dedicated decoder that resides in sd_psdcDecoder
+    // and is used for decoding audio in chunks instead of playing it from the preloaded buffer
+    SDF_ENCODED = (1UL << 0),
 
-    // Indicates that a sound is being played directly from disk instead of being fully loaded into memory
-    // Currently, only used by encoded files, if needed. Regular unencoded sounds don't support streaming
-    SDF_STREAMING = (1UL << 1),
+    // [Cecil] Used to indicate streamed audio (SDF_STREAMING)
+    SDF_OBSOLETE1 = (1UL << 1),
   };
 
 public:
@@ -56,8 +55,8 @@ public:
   SLONG  sd_slBufferSampleSize;  // buffer sample size
   SECOND sd_dSecondsLength;      // sound length in seconds
 
-  // [Cecil] Static decoder for any sound object for decoding audio from memory instead of streaming it from disk
-  class CSoundDecoder *sd_psdcStaticDecoder;
+  // [Cecil] Decoder shared between all sound objects for playing the same encoded audio
+  class CSoundDecoder *sd_psdcDecoder;
 
   // free Buffer (and all linked Objects)
   void ClearBuffer(void);
@@ -76,10 +75,6 @@ public:
 
   inline bool IsEncoded(void) const {
     return !!(sd_ulFlags & SDF_ENCODED);
-  };
-
-  inline bool IsStreamed(void) const {
-    return !!(sd_ulFlags & SDF_STREAMING);
   };
 
   // get sound length in seconds

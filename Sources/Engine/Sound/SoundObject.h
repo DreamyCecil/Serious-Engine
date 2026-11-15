@@ -66,7 +66,6 @@ class ENGINE_API CSoundObject {
 public:
   // Sound Object Aware class (notify class when direct sound pointer is not valid)
   CListNode so_Node;        // for linking in list
-  class CSoundDecoder *so_psdcDecoder; // only for sounds that are mpx/ogg
 
 public: //private:
   CSoundData *so_pCsdLink;   // linked on SoundData

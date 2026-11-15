@@ -85,7 +85,7 @@ void CSoundData::RemoveObjectLink(CSoundObject &CsoRemove)
 CSoundData::CSoundData()
 {
   sd_pswBuffer = NULL;
-  sd_psdcStaticDecoder = NULL;
+  sd_psdcDecoder = NULL;
 }
 
 // Destructor
@@ -106,9 +106,9 @@ void CSoundData::ClearBuffer(void)
   }
 
   // [Cecil] Destroy the decoder
-  if (sd_psdcStaticDecoder != NULL) {
-    delete sd_psdcStaticDecoder;
-    sd_psdcStaticDecoder = NULL;
+  if (sd_psdcDecoder != NULL) {
+    delete sd_psdcDecoder;
+    sd_psdcDecoder = NULL;
   }
 }
 
@@ -147,8 +147,8 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 
     // [Cecil] If decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound
     if (!psdc->IsOpen()) {
-      // Let CSoundObject instances attempt to stream audio later on their own
-      sd_ulFlags = SDF_ENCODED | SDF_STREAMING;
+      // Sound mixer won't attempt to play encoded sounds if there's no decoder
+      sd_ulFlags = SDF_ENCODED;
       delete psdc;
 
     // If decoder has been successully initialized
@@ -171,16 +171,10 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 
         delete psdc; // Not needed anymore
 
-      // [Cecil] If audio is loaded into memory
-      } else if (psdc->IsInMemory()) {
-        // Let CSoundObject instances reuse this static decoder instead of creating a personal one
-        sd_ulFlags = SDF_ENCODED;
-        sd_psdcStaticDecoder = psdc;
-
+      // [Cecil] Otherwise remember the decoder to let CSoundObject instances use it
       } else {
-        // Otherwise let CSoundObject instances stream audio using their own decoders
-        sd_ulFlags = SDF_ENCODED | SDF_STREAMING;
-        delete psdc;
+        sd_ulFlags = SDF_ENCODED;
+        sd_psdcDecoder = psdc;
       }
     }
 
@@ -294,8 +288,8 @@ SLONG CSoundData::GetUsedMemory(void)
   }
 
   // [Cecil] Decoder memory (total bytes of fully decoded audio)
-  if (sd_psdcStaticDecoder != NULL) {
-    slUsed += sd_psdcStaticDecoder->GetLengthInFrames() * sd_afFormat.GetBytesPerFrame();
+  if (sd_psdcDecoder != NULL) {
+    slUsed += sd_psdcDecoder->GetLengthInFrames() * sd_afFormat.GetBytesPerFrame();
   }
 
   return slUsed;
