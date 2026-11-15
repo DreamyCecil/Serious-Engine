@@ -64,6 +64,9 @@ public:
   // [Cecil] Decode a block of frames and return amount of read frames
   ULONG Decode(void *pvDestBuffer, ULONG ctFramesToDecode);
 
+  // [Cecil] Decode as many frames as there are left, up to GetLengthInFrames(), and return amount of read frames
+  ULONG DecodeAll(void *pvDestBuffer);
+
   // [Cecil] Set next decoding position to a specific frame
   void SeekToFrame(ULONG iFrame);
 };

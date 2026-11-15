@@ -637,6 +637,10 @@ void MixSound( CSoundObject *pso)
 
     // if mono output is required
     if( snd_bMono) {
+      // [Cecil] FIXME: Monomizing offsets completely eliminates the phase shift effect (or any effect from desynced offsets)
+      // and reenabling stereo mixing again results in no phase shift effect in the same place, meanwhile if the audio source
+      // shifts its position to the opposite ear, it results in doubled phase shift effect (for both encoded & non-encoded audio)
+
       // monomize channels (cool word:)
       fixLeftOfs = (fixLeftOfs + fixRightOfs) * fixHalf;
       fixRightOfs = fixLeftOfs;

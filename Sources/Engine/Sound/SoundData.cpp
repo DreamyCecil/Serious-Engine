@@ -142,37 +142,46 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   // [Cecil] If it's an encoded file of any supported format
   if (strExt == ".ogg" || strExt == ".mp3" || strExt == ".flac") {
     // [Cecil] Initialize decoder with a separate method to load from an existing stream
-    sd_psdcStaticDecoder = new CSoundDecoder;
-    sd_psdcStaticDecoder->Initialize(inFile, false); // Will only load it into memory if it can't be streamed
+    CSoundDecoder *psdc = new CSoundDecoder;
+    psdc->Initialize(inFile, false); // Will only load it into memory if it can't be streamed
 
-    // [Cecil] If sound decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound.
-    // Failure to initialize and open also means that it wasn't loaded into memory, which results in this dynamically created
-    // class being freed from memory and this sound data getting marked with SDF_STREAMING to let subsequent instances of
-    // CSoundObject instances to try loading audio individually instead of crashing by reusing a decoder with no data.
-    BOOL bGiveUpOnStaticDecoder = TRUE;
-
-    if (sd_psdcStaticDecoder->IsOpen()) {
-      sd_psdcStaticDecoder->GetFormat(sd_afFormat);
-
-      // [Cecil] Remember length of the decoded sound
-      sd_dSecondsLength = sd_psdcStaticDecoder->GetSoundLength();
-
-      // [Cecil] If audio is loaded into memory, make CSoundObject reuse the static decoder
-      // from this sound data instead of creating a personal decoder to stream audio from disk
-      if (sd_psdcStaticDecoder->IsInMemory()) {
-        // Mark as encoded audio and preserve this static decoder
-        sd_ulFlags = SDF_ENCODED;
-        bGiveUpOnStaticDecoder = FALSE;
-      }
-    }
-
-    // [Cecil] Let CSoundObject instances stream audio using their own decoders
-    if (bGiveUpOnStaticDecoder) {
-      delete sd_psdcStaticDecoder;
-      sd_psdcStaticDecoder = NULL;
-
-      // Mark as streaming encoded audio
+    // [Cecil] If decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound
+    if (!psdc->IsOpen()) {
+      // Let CSoundObject instances attempt to stream audio later on their own
       sd_ulFlags = SDF_ENCODED | SDF_STREAMING;
+      delete psdc;
+
+    // If decoder has been successully initialized
+    } else {
+      // [Cecil] Retrieve its audio format and length of the encoded audio
+      psdc->GetFormat(sd_afFormat);
+      sd_dSecondsLength = psdc->GetSoundLength();
+
+      // [Cecil] If audio is short enough, decode all of it into memory immediately, just like WAV files
+      if (sd_dSecondsLength < 30.0) {
+        // Create buffer for holding all decoded frames
+        sd_slBufferSampleSize = psdc->GetLengthInFrames();
+        const ULONG ulFrameSize = sd_afFormat.GetBytesPerFrame();
+        const size_t ctBufferSize = sd_slBufferSampleSize * ulFrameSize;
+        sd_pswBuffer = (SWORD *)AllocMemory(ctBufferSize + ulFrameSize * 2); // Two extra frames for interpolation
+
+        // Decode all audio frames and copy the first frame to the end for interpolation
+        psdc->DecodeAll(sd_pswBuffer);
+        memcpy(((UBYTE *)sd_pswBuffer) + ctBufferSize, sd_pswBuffer, ulFrameSize);
+
+        delete psdc; // Not needed anymore
+
+      // [Cecil] If audio is loaded into memory
+      } else if (psdc->IsInMemory()) {
+        // Let CSoundObject instances reuse this static decoder instead of creating a personal one
+        sd_ulFlags = SDF_ENCODED;
+        sd_psdcStaticDecoder = psdc;
+
+      } else {
+        // Otherwise let CSoundObject instances stream audio using their own decoders
+        sd_ulFlags = SDF_ENCODED | SDF_STREAMING;
+        delete psdc;
+      }
     }
 
     // add to sound aware list

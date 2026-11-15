@@ -421,6 +421,16 @@ ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctFramesToDecode) {
   return ctFramesRead;
 };
 
+// [Cecil] Decode as many frames as there are left, up to GetLengthInFrames(), and return amount of read frames
+ULONG CSoundDecoder::DecodeAll(void *pvDestBuffer) {
+  if (!IsOpen()) return 0;
+
+  ma_uint64 ctFrames, ctFramesRead;
+  ma_data_source_get_length_in_pcm_frames(sdc_pData->pDecoder, &ctFrames);
+  ma_data_source_read_pcm_frames(sdc_pData->pDecoder, pvDestBuffer, ctFrames, &ctFramesRead);
+  return ctFramesRead;
+};
+
 // [Cecil] Set next decoding position to a specific frame
 void CSoundDecoder::SeekToFrame(ULONG iFrame) {
   if (!IsOpen()) return;
