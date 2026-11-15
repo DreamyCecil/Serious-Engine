@@ -28,8 +28,20 @@ public:
   CSoundDecoder() : sdc_pData(NULL) {};
   ~CSoundDecoder(void) { Clear(); };
 
-  // [Cecil] Initialize the decoder for a specific file or for an optional stream to immediately read data from
-  void Initialize(const CTString &fnmFile, CTStream *istrReadFrom);
+  // [Cecil] Initialize the decoder for a specific file
+  // If bLoadIntoMemory is set to true, always reads encoded audio directly
+  // into memory to decode from there instead of streaming it from disk
+  void Initialize(const CTString &fnmFile, bool bLoadIntoMemory);
+
+  // [Cecil] Initialize the decoder for a stream to immediately read data from
+  // If bLoadIntoMemory is set to true, always reads encoded audio directly
+  // into memory to decode from there instead of streaming it from disk
+  void Initialize(CTStream *istrReadFrom, bool bLoadIntoMemory);
+
+  // [Cecil] Internal initialization routine that sets up the decoder for streaming from a file on disk
+  // or inside an archive only if an expanded path to the file has been provided (otherwise falling back
+  // to loading audio into memory if the file needs to be decompressed or only the stream is provided)
+  void Initialize_internal(CTStream *istrReadFrom, const ExpandPath *pExpath);
 
   // Clear the decoder
   void Clear(void);

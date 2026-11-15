@@ -268,7 +268,7 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     if (so_pCsdLink->IsStreamed()) {
       // [Cecil] Initialize decoder with a separate method to load new audio from a file
       so_psdcDecoder = new CSoundDecoder();
-      so_psdcDecoder->Initialize(so_pCsdLink->GetName(), NULL);
+      so_psdcDecoder->Initialize(so_pCsdLink->GetName(), false);
 
     // [Cecil] Otherwise utilize the common decoder for static data in memory
     } else {

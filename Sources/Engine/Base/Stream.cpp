@@ -1079,20 +1079,20 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL && fstrm_pZipHandle == NULL);
 
-  // expand the filename to full path
-  ExpandPath expath;
+  // [Cecil] Reset expanded path
+  fstrm_expath = ExpandPath();
 
   // initially, no physical file
   fstrm_pFile = NULL;
 
   // if read only mode requested
   if (om == OM_READ) {
-    if (expath.ForReading(fnm, ulFlags)) {
+    if (fstrm_expath.ForReading(fnm, ulFlags)) {
       // if zip file
-      if (expath.IsFromArchive()) {
+      if (fstrm_expath.IsFromArchive()) {
         // open from zip
-        fstrm_pZipHandle = IZip::Open_t(expath.pZipEntry);
-        const SLONG slFileSize = expath.pZipEntry->GetUncompressedSize();
+        fstrm_pZipHandle = IZip::Open_t(fstrm_expath.pZipEntry);
+        const SLONG slFileSize = fstrm_expath.pZipEntry->GetUncompressedSize();
 
         // [Cecil] Create a dummy buffer if it's an empty file
         if (slFileSize <= 0) {
@@ -1108,7 +1108,7 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
       // if it is a physical file
       } else {
         // open file in read only mode
-        fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "rb");
+        fstrm_pFile = FileSystem::Open(fstrm_expath.fnmExpanded, "rb");
       }
     }
 
@@ -1117,8 +1117,8 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
   // if write mode requested
   } else if (om == OM_WRITE) {
     // open file for reading and writing
-    if (expath.ForWriting(fnm, ulFlags)) {
-      fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "rb+");
+    if (fstrm_expath.ForWriting(fnm, ulFlags)) {
+      fstrm_pFile = FileSystem::Open(fstrm_expath.fnmExpanded, "rb+");
     }
 
     fstrm_bReadOnly = FALSE;
@@ -1131,11 +1131,11 @@ void CTFileStream::OpenEx_t(const CTFileName &fnm, ULONG ulFlags, CTStream::Open
   // if openning operation was not successfull
   if (fstrm_pFile == NULL && fstrm_pZipHandle == NULL) {
     // throw exception
-    Throw_t(TRANS("Cannot open file `%s' (%s)"), expath.fnmExpanded.ConstData(), strerror(errno));
+    Throw_t(TRANS("Cannot open file `%s' (%s)"), fstrm_expath.fnmExpanded.ConstData(), strerror(errno));
   }
 
   // if file opening was successfull, set stream description to file name
-  strm_strStreamDescription = expath.fnmExpanded;
+  strm_strStreamDescription = fstrm_expath.fnmExpanded;
   // [Cecil] Set file path as provided, to replicate fnmExpanded that used to be relative in vanilla 1.10 when found inside archives
   fstrm_strOriginalPath = fnm;
 
@@ -1154,31 +1154,32 @@ void CTFileStream::CreateEx_t(const CTFileName &fnm, ULONG ulFlags)
     ::ThrowF_t(TRANS("Cannot create file `%s', stream handling is not enabled for this thread"), fnm.ConstData());
   }
 
-  ExpandPath expath;
+  // [Cecil] Reset expanded path
+  fstrm_expath = ExpandPath();
 
   // No path for writing a file
-  if (!expath.ForWriting(fnm, ulFlags)) {
+  if (!fstrm_expath.ForWriting(fnm, ulFlags)) {
     ASSERTALWAYS("No suitable path for creating a file");
     Throw_t(TRANS("Cannot create file `%s' (%s)"), fnm.ConstData(), TRANS("No suitable path found"));
   }
 
   // [Cecil] Create necessary directories for the new file if they don't exist yet
-  CreateAllDirectories(expath.fnmExpanded);
+  CreateAllDirectories(fstrm_expath.fnmExpanded);
 
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL);
 
   // open file stream for writing (destroy file context if file existed before)
-  fstrm_pFile = FileSystem::Open(expath.fnmExpanded, "wb+");
+  fstrm_pFile = FileSystem::Open(fstrm_expath.fnmExpanded, "wb+");
 
   // if not successfull
   if (fstrm_pFile == NULL) {
     // throw exception
-    Throw_t(TRANS("Cannot create file `%s' (%s)"), expath.fnmExpanded.ConstData(), strerror(errno));
+    Throw_t(TRANS("Cannot create file `%s' (%s)"), fstrm_expath.fnmExpanded.ConstData(), strerror(errno));
   }
 
   // if file creation was successfull, set stream description to file name
-  strm_strStreamDescription = expath.fnmExpanded;
+  strm_strStreamDescription = fstrm_expath.fnmExpanded;
   // [Cecil] Set file path as provided, to replicate fnmExpanded that used to be relative in vanilla 1.10 when found inside archives
   fstrm_strOriginalPath = fnm;
   // mark that file is created for writing

@@ -143,8 +143,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   if (strExt == ".ogg" || strExt == ".mp3" || strExt == ".flac") {
     // [Cecil] Initialize decoder with a separate method to load from an existing stream
     sd_psdcStaticDecoder = new CSoundDecoder;
-    // [Cecil] FIXME: If this is loaded from a physical file on disk, it will simply read it into memory instead of streaming it
-    sd_psdcStaticDecoder->Initialize(fnm, inFile);
+    sd_psdcStaticDecoder->Initialize(inFile, false); // Will only load it into memory if it can't be streamed
 
     // [Cecil] If sound decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound.
     // Failure to initialize and open also means that it wasn't loaded into memory, which results in this dynamically created

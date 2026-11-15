@@ -76,6 +76,52 @@ inline int CChunkID::operator!=(const CChunkID &cidOther) const {
   return (*((ULONG *)&cid_ID[0]) != *((ULONG *)&cidOther.cid_ID[0]));
 };
 
+// [Cecil] Structure that expands a relative path to the absolute path for writing/reading files
+struct ENGINE_API ExpandPath {
+  CTString fnmExpanded; // Absolute path to the file
+
+  enum EType {
+    E_PATH_INVALID = 0,
+    E_PATH_ABSOLUTE, // Already an absolute path that can be inside any directory (including other types)
+    E_PATH_GAME,     // Path inside any game directory
+    E_PATH_MOD,      // Path inside the current mod directory
+  };
+
+  EType eType; // Inside which directory this path is
+  const IZip::CEntry *pZipEntry; // File from an archive
+
+  __forceinline ExpandPath() : eType(E_PATH_INVALID), pZipEntry(NULL) {};
+
+  // Get a potential substitution for some file
+  static BOOL GetSub(CTString &fnm);
+
+  // Get full path on disk from any relative/absolute path
+  static CTString OnDisk(CTString fnmFile);
+
+  // Expand some path to the directory for temporary files
+  static CTString ToTemp(const CTString &fnmRelative);
+
+  // Expand some path to the directory for personal user data
+  static CTString ToUser(const CTString &fnmRelative, BOOL bMod = FALSE);
+
+  // Get full path for writing a file on disk
+  // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
+  BOOL ForWriting(const CTString &fnmFile, ULONG ulFlags);
+
+  // Get full path for reading a file from disk or from some archive
+  // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
+  BOOL ForReading(const CTString &fnmFile, ULONG ulFlags);
+
+  // Like ForReading() but without any substitutions for non-existing files
+  // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
+  BOOL ForReading_internal(const CTString &fnmFile, ULONG ulFlags);
+
+  // Checks whether the expanded path points to a file inside an archive
+  inline BOOL IsFromArchive(void) const {
+    return pZipEntry != NULL;
+  };
+};
+
 /*
  * CroTeam stream class -- abstract base class
  */
@@ -189,6 +235,9 @@ public:
   // [Cecil] Get path to the file opened with this stream
   virtual const CTString &GetFilePath(void) const = 0;
 
+  // [Cecil] Get information about the expanded path to the file, if possible
+  virtual const ExpandPath *GetExpandedPath(void) const { return NULL; };
+
   /* Read an object from stream. */
   inline CTStream &operator>>(UQUAD &ull) { Read_t(&ull, sizeof(ull)); return *this; } // [Cecil]
   inline CTStream &operator>>(SQUAD &sll) { Read_t(&sll, sizeof(sll)); return *this; } // [Cecil]
@@ -287,6 +336,7 @@ private:
   IZip::Handle_t fstrm_pZipHandle; // handle of zip-file entry
   BOOL fstrm_bReadOnly;  // set if file is opened in read-only mode
   CTString fstrm_strOriginalPath; // [Cecil] Original path to the file that was used to open the stream (may be relative)
+  ExpandPath fstrm_expath; // [Cecil] Information about the expanded path to some file for reading or for writing
 
 public:
   /* Default constructor. */
@@ -345,6 +395,11 @@ public:
   // [Cecil] Get path to the file opened with this stream
   virtual const CTString &GetFilePath(void) const {
     return fstrm_strOriginalPath;
+  };
+
+  // [Cecil] Get information about the expanded path to the file
+  virtual const ExpandPath *GetExpandedPath(void) const {
+    return &fstrm_expath;
   };
 
   // whether or not the given pointer is coming from this stream (mainly used for exception handling)
@@ -448,52 +503,6 @@ ENGINE_API void MakeDirList(
   const CTString &strPattern,   // pattern for each file to match ("" matches all)
   ULONG ulFlags                 // additional flags
 );
-
-// [Cecil] Structure that expands a relative path to the absolute path for writing/reading files
-struct ENGINE_API ExpandPath {
-  CTString fnmExpanded; // Absolute path to the file
-
-  enum EType {
-    E_PATH_INVALID = 0,
-    E_PATH_ABSOLUTE, // Already an absolute path that can be inside any directory (including other types)
-    E_PATH_GAME,     // Path inside any game directory
-    E_PATH_MOD,      // Path inside the current mod directory
-  };
-
-  EType eType; // Inside which directory this path is
-  const IZip::CEntry *pZipEntry; // File from an archive
-
-  __forceinline ExpandPath() : eType(E_PATH_INVALID), pZipEntry(NULL) {};
-
-  // Get a potential substitution for some file
-  static BOOL GetSub(CTString &fnm);
-
-  // Get full path on disk from any relative/absolute path
-  static CTString OnDisk(CTString fnmFile);
-
-  // Expand some path to the directory for temporary files
-  static CTString ToTemp(const CTString &fnmRelative);
-
-  // Expand some path to the directory for personal user data
-  static CTString ToUser(const CTString &fnmRelative, BOOL bMod = FALSE);
-
-  // Get full path for writing a file on disk
-  // Accepted flags: DLI_ONLYMOD/DLI_IGNOREMOD, DLI_IGNORELISTS
-  BOOL ForWriting(const CTString &fnmFile, ULONG ulFlags);
-
-  // Get full path for reading a file from disk or from some archive
-  // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
-  BOOL ForReading(const CTString &fnmFile, ULONG ulFlags);
-
-  // Like ForReading() but without any substitutions for non-existing files
-  // Accepted flags: DLI_SEARCHGAMES, DLI_ONLYMOD/DLI_IGNOREMOD, DLI_ONLYGRO/DLI_IGNOREGRO
-  BOOL ForReading_internal(const CTString &fnmFile, ULONG ulFlags);
-
-  // Checks whether the expanded path points to a file inside an archive
-  inline BOOL IsFromArchive(void) {
-    return pZipEntry != NULL;
-  };
-};
 
 // [Cecil] Turned paths into constant references to internal variables
 // global string with application path

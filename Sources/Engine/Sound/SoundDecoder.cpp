@@ -156,21 +156,64 @@ void CSoundDecoder::EndPlugins(void)
 {
 };
 
-// [Cecil] Initialize the decoder for a specific file or for an optional stream to immediately read data from
-void CSoundDecoder::Initialize(const CTString &fnmFile, CTStream *istrReadFrom) {
+// [Cecil] Initialize the decoder for a specific file
+void CSoundDecoder::Initialize(const CTString &fnmFile, bool bLoadIntoMemory) {
   // Ignore sounds on a dedicated server
   if (_SE1Setup.IsAppServer()) return;
 
-  // [Cecil] Locate a new file with the audio if there's no open stream to read existing data from
+  // Load audio from a file directly into memory
+  if (bLoadIntoMemory) {
+    try {
+      CTFileStream strm;
+      strm.Open_t(fnmFile);
+
+      // Don't provide expanded path because it needs to be loaded into memory
+      Initialize_internal(&strm, NULL);
+
+    } catch (char *strError) {
+      CPrintF(TRANS("Cannot open encoded audio '%s': %s\n"), fnmFile.ConstData(), strError);
+    }
+    return;
+  }
+
+  // Locate a new file with the audio
   ExpandPath expath;
 
-  if (istrReadFrom == NULL) {
+  if (!expath.ForReading(fnmFile, 0)) {
     // No file to read
-    if (!expath.ForReading(fnmFile, 0)) {
-      CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnmFile.ConstData(), TRANS("file not found"));
-      return;
-    }
+    CPrintF(TRANS("Cannot open encoded audio '%s': %s\n"), fnmFile.ConstData(), TRANS("file not found"));
+    return;
   }
+
+  Initialize_internal(NULL, &expath);
+};
+
+// [Cecil] Initialize the decoder for a stream to immediately read data from
+void CSoundDecoder::Initialize(CTStream *istrReadFrom, bool bLoadIntoMemory) {
+  // Ignore sounds on a dedicated server
+  if (_SE1Setup.IsAppServer()) return;
+
+  // No expanded path by default to load audio into memory
+  const ExpandPath *pExpath = NULL;
+
+  // Reuse expanded path from an already opened file, if it needs to be streamed
+  if (!bLoadIntoMemory) {
+    pExpath = istrReadFrom->GetExpandedPath(); // Falls back to loading into memory if it returns NULL
+  }
+
+  Initialize_internal(istrReadFrom, pExpath);
+};
+
+// [Cecil] Internal initialization routine
+void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath *pExpath) {
+  // Ignore sounds on a dedicated server
+  if (_SE1Setup.IsAppServer()) return;
+
+  // Must have at least one of the sources specified
+  ASSERT(istrReadFrom != NULL || pExpath != NULL);
+
+  // If expanded path has been specified, prioritize streaming over loading into memory
+  if (pExpath != NULL) istrReadFrom = NULL;
 
   // Set up decode data for this decoder
   sdc_pData = new DecodeData;
@@ -194,16 +237,16 @@ void CSoundDecoder::Initialize(const CTString &fnmFile, CTStream *istrReadFrom) 
 
       sdc_pData->eMode = DecodeData::E_MEMORY;
 
-    // Load data from an archive
-    } else if (expath.IsFromArchive()) {
-      const SLONG slDataSize = expath.pZipEntry->GetUncompressedSize();
+    // Stream data from an archive
+    } else if (pExpath->IsFromArchive()) {
+      const SLONG slDataSize = pExpath->pZipEntry->GetUncompressedSize();
 
       // Make sure it's not an empty file
       if (slDataSize <= 0) ThrowF_t(TRANS("Archived file is empty"));
 
-      // If the entry is compressed, uncompress it into memory instead
-      if (!expath.pZipEntry->IsStored()) {
-        IZip::Handle_t pZipHandle = IZip::Open_t(expath.pZipEntry);
+      // If the entry is compressed, decompress it into memory instead
+      if (!pExpath->pZipEntry->IsStored()) {
+        IZip::Handle_t pZipHandle = IZip::Open_t(pExpath->pZipEntry);
 
         sdc_pData->iDataSize = slDataSize;
         sdc_pData->pubData = (UBYTE *)AllocMemory(slDataSize);
@@ -214,17 +257,17 @@ void CSoundDecoder::Initialize(const CTString &fnmFile, CTStream *istrReadFrom) 
 
       // Otherwise, remember path to the archive to stream an uncompressed entry from
       } else {
-        sdc_pData->fnmStreamed = expath.pZipEntry->GetArchive();
-        sdc_pData->iDataOffset = expath.pZipEntry->GetDataOffset();
+        sdc_pData->fnmStreamed = pExpath->pZipEntry->GetArchive();
+        sdc_pData->iDataOffset = pExpath->pZipEntry->GetDataOffset();
         sdc_pData->iDataSize = slDataSize;
 
         sdc_pData->eMode = DecodeData::E_VFS;
       }
 
-    // Load data from a physical file
+    // Stream data from a physical file
     } else {
       // Remember path to the file to stream from the beginning
-      sdc_pData->fnmStreamed = expath.fnmExpanded;
+      sdc_pData->fnmStreamed = pExpath->fnmExpanded;
       sdc_pData->iDataOffset = 0;
       sdc_pData->iDataSize = -1; // Calculated upon decoder opening
 
@@ -257,7 +300,7 @@ void CSoundDecoder::Initialize(const CTString &fnmFile, CTStream *istrReadFrom) 
         // the game needs to stream audio files from archives, which will have to use the archive itself in place of the audio file.
         // The original filename will pick the appropriate decoder, whereas the provided VFS will open the appropriate file from the
         // DecodeData::fnmStreamed field, which may either be the audio file itself or an archive that contains it at specific offset.
-        result = ma_decoder_init_vfs(sdc_pData, expath.fnmExpanded.NoDir().ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
+        result = ma_decoder_init_vfs(sdc_pData, pExpath->fnmExpanded.NoDir().ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
 
         if (result != MA_SUCCESS) {
           ThrowF_t(TRANS("Cannot initialize audio decoder for VFS: %s"), ma_result_description(result));
@@ -295,7 +338,16 @@ void CSoundDecoder::Initialize(const CTString &fnmFile, CTStream *istrReadFrom) 
     }
 
   } catch (char *strError) {
-    CPrintF(TRANS("Cannot open encoded audio '%s' for streaming: %s\n"), fnmFile.ConstData(), strError);
+    // [Cecil] Get absolute filename for reference
+    CTString fnmFile;
+
+    if (istrReadFrom != NULL) {
+      fnmFile = istrReadFrom->GetDescription();
+    } else if (pExpath != NULL) {
+      fnmFile = pExpath->fnmExpanded;
+    }
+
+    CPrintF(TRANS("Cannot open encoded audio '%s': %s\n"), fnmFile.ConstData(), strError);
     Clear();
   }
 };
