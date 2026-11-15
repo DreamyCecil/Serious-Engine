@@ -312,35 +312,36 @@ void CSoundObject::SetOffset( FLOAT fOffset)
   // synchronize access to sounds
   CTSingleLock slSounds( &_pSound->sl_csSound, TRUE);
 
-  // get prediction tail
-  //CPrintF("SETOFF: ");
+  // Ignore predicted events
   CSoundObject *psoTail = GetPredictionTail(EVENT_SOUNDSETOFFSET, 0);
-  // if the event is predicted
-  if (psoTail==NULL) {
-    // do nothing;
-    return;
+  if (psoTail == NULL) return;
+
+  // No sound playing
+  CSoundData *psd = psoTail->so_pCsdLink;
+  if (psd == NULL) return;
+
+  // Safety check
+  ASSERT(fOffset >= 0);
+  if (fOffset < 0) {
+    CPrintF("BUG: Trying to set negative offset (%.2g) in sound '%s'!\n", fOffset, psd->GetName().ConstData());
+    fOffset = 0;
   }
 
-  // if sound not playing
-  if (psoTail->so_pCsdLink==NULL) {
-    // do nothing
-    return;
+  const ufix16_t fixSampleRate(psd->sd_afFormat.iSampleRate);
+  const ufix16_t fixLength = ufix16_t(psd->GetSecondsLength()) * fixSampleRate;
+  ufix16_t fixOffset = ufix16_t(fOffset) * fixSampleRate;
+
+  // [Cecil] If audio is looped, wrap offset around if it's past the end
+  if (psoTail->so_slFlags & SOF_LOOP) {
+    while (fixOffset >= fixLength) fixOffset -= fixLength;
+
+  // [Cecil] Otherwise limit it to the last frame to skip it
+  } else if (fixOffset >= fixLength) {
+    fixOffset = fixLength - ufix16_t(1);
   }
 
-  // safety check
-  ASSERT( fOffset>=0);
-  if( fOffset<0) {
-    CPrintF("BUG: Trying to set negative offset (%.2g) in sound '%s' !\n", fOffset, psoTail->so_pCsdLink->GetName().ConstData());
-    fOffset = 0.0f;
-  }
-
-  // [Cecil] FIXME: I suspect that this is done because encoded/streamed sounds could not set absolute playback offset
-  // on the other hand, don't set offset for real - might be source for some bugs!
-  return;
-  
-  // update sound offsets
-  CPrintF("Setting offset: %g\n", fOffset);
-  psoTail->so_fixLeftOffset = psoTail->so_fixRightOffset = psoTail->so_pCsdLink->sd_afFormat.iSampleRate * fOffset;
+  // [Cecil] Allowed setting offset again (works on encoded audio as well)
+  psoTail->so_fixLeftOffset = psoTail->so_fixRightOffset = fixOffset;
 }
 
 
