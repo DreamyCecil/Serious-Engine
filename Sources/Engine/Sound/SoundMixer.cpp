@@ -417,12 +417,9 @@ void MixSound( CSoundObject *pso)
   // if both channel volumes are too low
   if( fLeftVolume<0.001f && fRightVolume<0.001f && fNewLeftVolume<0.001f && fNewRightVolume<0.001f)
   {
-    // [Cecil] NOTE: This code is responsible for completely skipping playback of unencoded sounds if they aren't immediately
-    // audible because those sounds are usually used for momentary sound effects, whereas encoded sounds are used for music and
-    // therefore they simply get paused until they're audible again, at which point they continue playing from the paused point
-
-    // if this is not an encoded sound
-    if (!bEncoded) {
+    // [Cecil] The following block is responsible for completely skipping audio mixing if it becomes inaudible,
+    // which is now controlled with a new sound flag instead of always doing it exclusively for non-encoded audio
+    if (!(pso->so_slFlags & SOF_ONLYMIXAUDIBLE)) {
       // skip mixing of this sample segment
       const ufix16_t fixOfsDelta = fixStep * ufix16_t(ulMixerBufferSampleRate * fSecondsToMix);
       pso->so_fixLeftOffset  += fixOfsDelta;

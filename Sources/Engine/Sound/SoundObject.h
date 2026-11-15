@@ -23,23 +23,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Math/Vector.h>
 #include <Engine/Math/Functions.h>
 
+// [Cecil] Replaced macros with enum
+enum ESoundObjectFlags {
+  SOF_NONE           = (0L),
+  SOF_LOOP           = (1L << 0),  // looping sound
+  SOF_3D             = (1L << 1),  // has 3d effects
+  SOF_VOLUMETRIC     = (1L << 2),  // no 3d effects inside hot-spot
+  SOF_SURROUND       = (1L << 3),  // surround effect
+  SOF_LOCAL          = (1L << 4),  // local to listener with same entity
+  SOF_SMOOTHCHANGE   = (1L << 5),  // for smooth transition from one sound to another on same channel
+  SOF_MUSIC          = (1L << 6),  // use music-volume master control instead of sound-volume
+  SOF_NONGAME        = (1L << 7),  // game sounds are not mixed while the game is paused
+  SOF_NOFILTER       = (1L << 8),  // used to disable listener-specific filters - i.e. underwater
+  SOF_ONLYMIXAUDIBLE = (1L << 9),  // [Cecil] Pauses audio mixing until it becomes audible again
 
-// sound control values
-#define SOF_NONE         (0L)
-#define SOF_LOOP         (1L<<0)   // looping sound
-#define SOF_3D           (1L<<1)   // has 3d effects
-#define SOF_VOLUMETRIC   (1L<<2)   // no 3d effects inside hot-spot
-#define SOF_SURROUND     (1L<<3)   // surround effect
-#define SOF_LOCAL        (1L<<4)   // local to listener with same entity
-#define SOF_SMOOTHCHANGE (1L<<5)   // for smooth transition from one sound to another on same channel
-#define SOF_MUSIC        (1L<<6)   // use music-volume master control instead of sound-volume
-#define SOF_NONGAME      (1L<<7)   // game sounds are not mixed while the game is paused
-#define SOF_NOFILTER     (1L<<8)   // used to disable listener-specific filters - i.e. underwater
-
-#define SOF_PAUSED       (1L<<28)  // playing, but paused (internal)
-#define SOF_LOADED       (1L<<29)  // sound just loaded (internal)
-#define SOF_PREPARE      (1L<<30)  // prepared for playing (internal)
-#define SOF_PLAY         (1L<<31)  // currently playing
+  SOF_PAUSED         = (1L << 28), // playing, but paused (internal)
+  SOF_LOADED         = (1L << 29), // sound just loaded (internal)
+  SOF_PREPARE        = (1L << 30), // prepared for playing (internal)
+  SOF_PLAY           = (1L << 31), // currently playing
+};
 
 // sound parameters       
 class CSoundParameters {
