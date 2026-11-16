@@ -42,7 +42,8 @@ struct DecodeData {
   } eMode;
 
   static ma_decoder_config dcConfig; // Common config for loading any audio
-  ma_decoder *pDecoder; // Actual decoder for specific audio
+  ma_decoder decoder; // Actual decoder for specific audio
+  bool bInitialized; // Whether the decoder has been initialized successfully
 
   // Common information about encoded audio
   size_t iDataSize; // Size of encoded audio in bytes (setting it to -1 figures out the size upon decoder initialization)
@@ -56,7 +57,7 @@ struct DecodeData {
   CTString fnmStreamed; // Absolute path to the file on disk to stream audio from
   size_t iDataOffset; // Where the encoded audio starts inside loaded data (e.g. uncompressed file inside an archive)
 
-  DecodeData() : eMode(E_NONE), pDecoder(NULL), pubData(NULL), fnmStreamed(""), iDataOffset(0), iDataSize(0), fLength(0) {};
+  DecodeData() : eMode(E_NONE), bInitialized(false), pubData(NULL), fnmStreamed(""), iDataOffset(0), iDataSize(0), fLength(0) {};
 };
 
 ma_decoder_config DecodeData::dcConfig;
@@ -275,12 +276,11 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
     }
 
     // Initialize the decoder for specific mode
-    sdc_pData->pDecoder = new ma_decoder;
     ma_result result;
 
     switch (sdc_pData->eMode) {
       case DecodeData::E_MEMORY: {
-        result = ma_decoder_init_memory(sdc_pData->pubData, sdc_pData->iDataSize, &DecodeData::dcConfig, sdc_pData->pDecoder);
+        result = ma_decoder_init_memory(sdc_pData->pubData, sdc_pData->iDataSize, &DecodeData::dcConfig, &sdc_pData->decoder);
 
         if (result != MA_SUCCESS) {
           ThrowF_t(TRANS("Cannot initialize audio decoder for memory: %s"), ma_result_description(result));
@@ -288,7 +288,7 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
       } break;
 
       case DecodeData::E_FILE: {
-        result = ma_decoder_init_file(sdc_pData->fnmStreamed.ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
+        result = ma_decoder_init_file(sdc_pData->fnmStreamed.ConstData(), &DecodeData::dcConfig, &sdc_pData->decoder);
 
         if (result != MA_SUCCESS) {
           ThrowF_t(TRANS("Cannot initialize audio decoder for a file: %s"), ma_result_description(result));
@@ -300,7 +300,7 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
         // the game needs to stream audio files from archives, which will have to use the archive itself in place of the audio file.
         // The original filename will pick the appropriate decoder, whereas the provided VFS will open the appropriate file from the
         // DecodeData::fnmStreamed field, which may either be the audio file itself or an archive that contains it at specific offset.
-        result = ma_decoder_init_vfs(sdc_pData, pExpath->fnmExpanded.NoDir().ConstData(), &DecodeData::dcConfig, sdc_pData->pDecoder);
+        result = ma_decoder_init_vfs(sdc_pData, pExpath->fnmExpanded.NoDir().ConstData(), &DecodeData::dcConfig, &sdc_pData->decoder);
 
         if (result != MA_SUCCESS) {
           ThrowF_t(TRANS("Cannot initialize audio decoder for VFS: %s"), ma_result_description(result));
@@ -310,11 +310,14 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
       default: ThrowF_t(TRANS("Unknown mode %d for the audio decoder"), sdc_pData->eMode);
     }
 
+    // Mark as initialized
+    sdc_pData->bInitialized = true;
+
     // Retrieve format
     ma_format eFormat;
     ma_uint32 iChannels;
     ma_uint32 iSampleRate;
-    result = ma_data_source_get_data_format(sdc_pData->pDecoder, &eFormat, &iChannels, &iSampleRate, NULL, 0);
+    result = ma_data_source_get_data_format(&sdc_pData->decoder, &eFormat, &iChannels, &iSampleRate, NULL, 0);
 
     if (result != MA_SUCCESS) {
       ThrowF_t(TRANS("Failed to retrieve data format"));
@@ -331,7 +334,7 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
     af.iBytesPerSample = ma_get_bytes_per_sample(eFormat);
 
     // Retrieve length
-    result = ma_data_source_get_length_in_seconds(sdc_pData->pDecoder, &sdc_pData->fLength);
+    result = ma_data_source_get_length_in_seconds(&sdc_pData->decoder, &sdc_pData->fLength);
 
     if (result != MA_SUCCESS) {
       ThrowF_t(TRANS("Failed to determine audio length"));
@@ -356,9 +359,9 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
 void CSoundDecoder::Clear(void) {
   if (sdc_pData == NULL) return;
 
-  if (sdc_pData->pDecoder != NULL) {
-    ma_decoder_uninit(sdc_pData->pDecoder);
-    delete sdc_pData->pDecoder;
+  if (sdc_pData->bInitialized) {
+    ma_decoder_uninit(&sdc_pData->decoder);
+    sdc_pData->bInitialized = false;
   }
 
   if (sdc_pData->pubData != NULL) {
@@ -372,7 +375,7 @@ void CSoundDecoder::Clear(void) {
 
 // Check if the decoder opened successfully
 BOOL CSoundDecoder::IsOpen(void) const {
-  return (sdc_pData != NULL && sdc_pData->pDecoder != NULL);
+  return (sdc_pData != NULL && sdc_pData->bInitialized);
 };
 
 // Get audio format from the decoder (only if it's open)
@@ -402,7 +405,7 @@ ULONG CSoundDecoder::GetLengthInFrames(void) const {
   if (!IsOpen()) return 0;
 
   ma_uint64 ctFrames;
-  ma_data_source_get_length_in_pcm_frames(sdc_pData->pDecoder, &ctFrames);
+  ma_data_source_get_length_in_pcm_frames(&sdc_pData->decoder, &ctFrames);
   return ctFrames;
 };
 
@@ -417,7 +420,7 @@ ULONG CSoundDecoder::Decode(void *pvDestBuffer, ULONG ctFramesToDecode) {
   // [Cecil] NOTE: Allow it to return 0 frames (e.g. with MA_AT_END as the result)
   // because it may need to do this in order to determine the end of the audio
   ma_uint64 ctFramesRead;
-  ma_data_source_read_pcm_frames(sdc_pData->pDecoder, pvDestBuffer, ctFramesToDecode, &ctFramesRead);
+  ma_data_source_read_pcm_frames(&sdc_pData->decoder, pvDestBuffer, ctFramesToDecode, &ctFramesRead);
   return ctFramesRead;
 };
 
@@ -426,8 +429,8 @@ ULONG CSoundDecoder::DecodeAll(void *pvDestBuffer) {
   if (!IsOpen()) return 0;
 
   ma_uint64 ctFrames, ctFramesRead;
-  ma_data_source_get_length_in_pcm_frames(sdc_pData->pDecoder, &ctFrames);
-  ma_data_source_read_pcm_frames(sdc_pData->pDecoder, pvDestBuffer, ctFrames, &ctFramesRead);
+  ma_data_source_get_length_in_pcm_frames(&sdc_pData->decoder, &ctFrames);
+  ma_data_source_read_pcm_frames(&sdc_pData->decoder, pvDestBuffer, ctFrames, &ctFramesRead);
   return ctFramesRead;
 };
 
@@ -435,7 +438,7 @@ ULONG CSoundDecoder::DecodeAll(void *pvDestBuffer) {
 void CSoundDecoder::SeekToFrame(ULONG iFrame) {
   if (!IsOpen()) return;
 
-  ma_result result = ma_data_source_seek_to_pcm_frame(sdc_pData->pDecoder, iFrame);
+  ma_result result = ma_data_source_seek_to_pcm_frame(&sdc_pData->decoder, iFrame);
 
   if (result != MA_SUCCESS) {
     ASSERTALWAYS("Failed to seek decoder");
