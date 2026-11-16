@@ -376,6 +376,8 @@ void CTStream::Read_t(void *pvBuffer, size_t slSize) {
   // Read data from the buffer and advance it
   memcpy(pvBuffer, strm_pubCurrentPos, slSize);
   strm_pubCurrentPos += slSize;
+
+  UpdateMaxPos();
 };
 
 void CTStream::Write_t(const void *pvBuffer, size_t slSize) {
@@ -387,12 +389,12 @@ void CTStream::Write_t(const void *pvBuffer, size_t slSize) {
   // Write data to the buffer and advance it
   memcpy(strm_pubCurrentPos, pvBuffer, slSize);
   strm_pubCurrentPos += slSize;
+
+  UpdateMaxPos();
 };
 
 void CTStream::Seek_t(SLONG slOffset, SeekDir sd) {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
-
-  UpdateMaxPos();
 
   switch (sd) {
     case SD_BEG: strm_pubCurrentPos = strm_pubBufferBegin + slOffset; break;
@@ -400,11 +402,15 @@ void CTStream::Seek_t(SLONG slOffset, SeekDir sd) {
     case SD_END: strm_pubCurrentPos = strm_pubBufferBegin + GetStreamSize() + slOffset; break;
     default: ASSERTALWAYS("Unknown seeking direction!");
   }
+
+  UpdateMaxPos();
 };
 
 void CTStream::SetPos_t(SLONG slPosition) {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
+
   strm_pubCurrentPos = strm_pubBufferBegin + slPosition;
+  UpdateMaxPos();
 };
 
 SLONG CTStream::GetPos_t(void) {
@@ -421,7 +427,6 @@ SLONG CTStream::GetStreamSize(void) {
   CTSingleLock slStrm(&_csStreams, TRUE); // [Cecil]
 
   if (IsWriteable()) {
-    UpdateMaxPos();
     return strm_pubMaxPos - strm_pubBufferBegin;
   }
 
