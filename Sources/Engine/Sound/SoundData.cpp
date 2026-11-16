@@ -26,6 +26,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <Engine/Templates/Stock_CSoundData.h>
 
+// [Cecil] New commands
+extern INDEX snd_bDecodeFromMemory;
+
 /* ====================================================
  *
  *  Sound data awareness functions
@@ -145,7 +148,10 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 
   // [Cecil] Initialize decoder with a separate method to load from an existing stream
   CSoundDecoder *psdc = new CSoundDecoder;
-  psdc->Initialize(inFile, false); // Will only load it into memory if it can't be streamed
+
+  // If false, it will only load it into memory if it can't be streamed from disk
+  bool bLoadIntoMemory = !!snd_bDecodeFromMemory;
+  psdc->Initialize(inFile, bLoadIntoMemory);
 
   // [Cecil] If decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound
   if (!psdc->IsOpen()) {

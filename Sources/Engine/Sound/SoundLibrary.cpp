@@ -73,6 +73,9 @@ INDEX snd_iMaxExtraChannels = 32;
 FLOAT snd_tmOpenFailDelay = 0.5f;
 FLOAT snd_fEAXPanning = 0.0f;
 
+// [Cecil] New commands
+INDEX snd_bDecodeFromMemory = FALSE;
+
 static FLOAT snd_fNormalizer = 0.9f;
 static FLOAT _fLastNormalizeValue = 1;
 
@@ -152,6 +155,39 @@ static void SndPostFunc(void *pArgs)
     // reinit sound format
     _pSound->SetFormat( (enum CSoundLibrary::SoundFormat)snd_iFormat, TRUE);
   }
+};
+
+// [Cecil] Reload every single CSoundData resource to load it in a different way depending on certain commands
+static void ReloadSounds(void) {
+  // Ignore sounds on a dedicated server
+  if (_SE1Setup.IsAppServer()) return;
+
+  // Access to the list of handlers must be locked
+  CTSingleLock slHooks(&_pTimer->tm_csHooks, TRUE);
+  // Synchronize access to sounds
+  CTSingleLock slSounds(&_pSound->sl_csSound, TRUE);
+
+  // Pause playing all sounds
+  FOREACHINLIST(CSoundData, sd_Node, _pSound->sl_ClhAwareList, itCsdStop) {
+    itCsdStop->PausePlayingObjects();
+  }
+
+  // Continue playing all sounds
+  CListHead lhToReload;
+  lhToReload.MoveList(_pSound->sl_ClhAwareList);
+
+  FORDELETELIST(CSoundData, sd_Node, lhToReload, itCsdContinue) {
+    CSoundData &sd = *itCsdContinue;
+    sd.Reload();
+    sd.ResumePlayingObjects();
+  }
+
+  CPrintF(TRANS("All sounds reloaded.\n"));
+};
+
+// [Cecil] Post-function wrapper
+static void ReloadSounds_post(void *) {
+  ReloadSounds();
 };
 
 // [Cecil] Display available audio devices for the current sound API
@@ -353,6 +389,13 @@ void CSoundLibrary::Init(void)
   _pShell->DeclareSymbol( "persistent user INDEX snd_iMaxOpenRetries;",   &snd_iMaxOpenRetries);
   _pShell->DeclareSymbol( "persistent user FLOAT snd_tmOpenFailDelay;",   &snd_tmOpenFailDelay);
   _pShell->DeclareSymbol( "persistent user FLOAT snd_fEAXPanning;", &snd_fEAXPanning);
+
+  // [Cecil] Reload all sound resources, akin to ReloadModels() and RefreshTextures()
+  _pShell->DeclareSymbol("user void ReloadSounds(void);",       &ReloadSounds);
+  _pShell->DeclareSymbol("     void ReloadSounds_post(INDEX);", &ReloadSounds_post);
+
+  // [Cecil] New commands
+  _pShell->DeclareSymbol("persistent user INDEX snd_bDecodeFromMemory post:ReloadSounds_post;", &snd_bDecodeFromMemory);
 
   // [Cecil] Display available audio devices for the current sound API
   _pShell->DeclareSymbol("user void snd_ListDevices(void);", &PrintAudioDevices);
