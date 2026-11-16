@@ -74,7 +74,8 @@ FLOAT snd_tmOpenFailDelay = 0.5f;
 FLOAT snd_fEAXPanning = 0.0f;
 
 // [Cecil] New commands
-INDEX snd_bDecodeFromMemory = FALSE;
+INDEX snd_bDecodeFromMemory = FALSE;    // Whether to load encoded audio into memory instead of streaming it from disk
+FLOAT snd_fShortAudioThreshold = 30.0f; // For fully preloading audio into memory if it's shorter than this amount of seconds
 
 static FLOAT snd_fNormalizer = 0.9f;
 static FLOAT _fLastNormalizeValue = 1;
@@ -396,6 +397,7 @@ void CSoundLibrary::Init(void)
 
   // [Cecil] New commands
   _pShell->DeclareSymbol("persistent user INDEX snd_bDecodeFromMemory post:ReloadSounds_post;", &snd_bDecodeFromMemory);
+  _pShell->DeclareSymbol("persistent user FLOAT snd_fShortAudioThreshold post:ReloadSounds_post;", &snd_fShortAudioThreshold);
 
   // [Cecil] Display available audio devices for the current sound API
   _pShell->DeclareSymbol("user void snd_ListDevices(void);", &PrintAudioDevices);

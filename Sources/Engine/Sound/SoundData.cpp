@@ -28,6 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // [Cecil] New commands
 extern INDEX snd_bDecodeFromMemory;
+extern FLOAT snd_fShortAudioThreshold;
 
 /* ====================================================
  *
@@ -179,7 +180,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   sd_dSecondsLength = psdc->GetSoundLength();
 
   // [Cecil] If audio needs to be preloaded or it's short enough, decode all of it into memory immediately
-  if (bPreloadFormat || sd_dSecondsLength < 30.0) {
+  if (bPreloadFormat || sd_dSecondsLength < (DOUBLE)snd_fShortAudioThreshold) {
     // Create buffer for holding all decoded frames
     sd_slBufferSampleSize = psdc->GetLengthInFrames();
     const ULONG ulFrameSize = sd_afFormat.GetBytesPerFrame();
