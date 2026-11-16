@@ -261,10 +261,8 @@ void CSoundObject::Play_internal( CSoundData *pCsdLink, SLONG slFlags)
     so_slFlags = (so_slFlags & ~(SOF_PREPARE|SOF_PAUSED)) | SOF_PLAY;
   }
 
-  // [Cecil] If audio is supposed to be encoded, simply display an error about a missing decoder instead of throwing
-  if (so_pCsdLink->IsEncoded() && so_pCsdLink->sd_psdcDecoder == NULL) {
-    CPrintF(TRANS("Cannot play encoded audio '%s': %s\n"), so_pCsdLink->GetName().ConstData(), TRANS("Decoder is missing"));
-  }
+  // [Cecil] Let sound data know that it's currently being used
+  so_pCsdLink->MarkCurrentUse();
 
   // remember starting parameters
   so_sp = so_spNew;
@@ -363,6 +361,9 @@ void CSoundObject::Stop_internal(void)
 {
   // sound is stopped
   so_slFlags &= ~(SOF_PLAY|SOF_PREPARE|SOF_PAUSED);
+
+  // [Cecil] Let sound data know that it's not used anymore
+  if (so_pCsdLink != NULL) so_pCsdLink->FreeCurrentUse();
 
   // if added in link list, remove it from list
   if( IsHooked()) {

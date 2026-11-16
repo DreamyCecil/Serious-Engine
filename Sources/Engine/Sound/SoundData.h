@@ -58,6 +58,9 @@ public:
   // [Cecil] Decoder shared between all sound objects for playing the same encoded audio
   class CSoundDecoder *sd_psdcDecoder;
 
+  // [Cecil] Reference counter for users of this sound data that are currently playing sound
+  size_t sd_ctActiveUsers;
+
   // free Buffer (and all linked Objects)
   void ClearBuffer(void);
   // Add object in sound aware list
@@ -76,6 +79,12 @@ public:
   inline bool IsEncoded(void) const {
     return !!(sd_ulFlags & SDF_ENCODED);
   };
+
+  // [Cecil] Add one use to this data, which dynamically creates a new decoder if this audio is encoded
+  void MarkCurrentUse(void);
+
+  // [Cecil] Remove one use from this data, which dynamically deletes the decoder if this audio is encoded
+  void FreeCurrentUse(void);
 
   // get sound length in seconds
   SECOND GetSecondsLength(void);

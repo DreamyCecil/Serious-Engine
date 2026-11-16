@@ -89,6 +89,7 @@ CSoundData::CSoundData()
 {
   sd_pswBuffer = NULL;
   sd_psdcDecoder = NULL;
+  sd_ctActiveUsers = 0;
 }
 
 // Destructor
@@ -108,13 +109,57 @@ void CSoundData::ClearBuffer(void)
     sd_pswBuffer = NULL;
   }
 
-  // [Cecil] Destroy the decoder
+  // [Cecil] NOTE: The decoder should always be destroyed as part of memory cleanup but it's VERY IMPORTANT to preserve
+  // the value inside 'sd_ctActiveUsers' in case the sound is being reloaded and needs to recreate the active decoder
+  // instead of discarding it and invalidating all sound objects that are currently playing some encoded audio.
+  // Even if the counter gets preserved but the decoder gets destroyed by some strange accident, it will get recreated
+  // upon any new MarkCurrentUse() call for this sound.
   if (sd_psdcDecoder != NULL) {
     delete sd_psdcDecoder;
     sd_psdcDecoder = NULL;
   }
 }
 
+// [Cecil] Add one use to this data, which dynamically creates a new decoder if this audio is encoded
+void CSoundData::MarkCurrentUse(void) {
+  // Add one use
+  sd_ctActiveUsers++;
+
+  // Decoder not needed or already created
+  if (!IsEncoded() || sd_psdcDecoder != NULL) return;
+
+  // Try to load new audio from a file
+  CSoundDecoder *psdc = new CSoundDecoder;
+
+  // If false, it will only load it into memory if it can't be streamed from disk
+  bool bLoadIntoMemory = !!snd_bDecodeFromMemory;
+  psdc->Initialize(GetName(), bLoadIntoMemory);
+
+  // Abort on error
+  if (!psdc->IsOpen()) {
+    CPrintF(TRANS("Cannot play encoded audio '%s': %s\n"), GetName().ConstData(), psdc->GetError().ConstData());
+    delete psdc;
+    return;
+  }
+
+  // Set new decoder
+  sd_psdcDecoder = psdc;
+};
+
+// [Cecil] Remove one use from this data, which dynamically deletes the decoder if this audio is encoded
+void CSoundData::FreeCurrentUse(void) {
+  // Remove one use
+  if (sd_ctActiveUsers != 0) sd_ctActiveUsers--;
+
+  // Decoder not needed or already deleted
+  if (!IsEncoded() || sd_psdcDecoder == NULL) return;
+
+  // Free this decoder if it doesn't have any more users and it's been streaming from disk
+  if (sd_ctActiveUsers == 0 && !sd_psdcDecoder->IsInMemory()) {
+    delete sd_psdcDecoder;
+    sd_psdcDecoder = NULL;
+  }
+};
 
 // Get Sound Length in seconds
 SECOND CSoundData::GetSecondsLength(void)
@@ -192,10 +237,21 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 
     delete psdc; // Not needed anymore
 
-  // [Cecil] Otherwise remember the decoder to let CSoundObject instances use it
-  } else {
+  // [Cecil] If audio is loaded into memory, reuse this decoder instead of creating a new one on each use
+  } else if (psdc->IsInMemory()) {
     sd_ulFlags = SDF_ENCODED;
     sd_psdcDecoder = psdc;
+
+  // [Cecil] Mark as encoded to make CSoundObject ask for a decoder upon playing
+  } else {
+    sd_ulFlags = SDF_ENCODED;
+
+    // Restore the decoder if it has been recreated with some existing users
+    if (sd_ctActiveUsers != 0) {
+      sd_psdcDecoder = psdc;
+    } else {
+      delete psdc; // Otherwise not needed right now
+    }
   }
 
   // Add to sound aware list
