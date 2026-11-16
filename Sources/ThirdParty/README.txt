@@ -6,7 +6,7 @@ Current module versions:
 
 ECC - 1.1.2
 glew - 2.1.0
-libogg - 1.3.5
+libogg - 1.3.6
 libvorbis - 1.3.7
 miniaudio - 0.11.26
 OpenAL Soft - 1.24.2
