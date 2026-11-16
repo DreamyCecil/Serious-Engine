@@ -394,7 +394,7 @@ void MixSound( CSoundObject *pso)
   fixSoundBufferSize = psd->sd_slBufferSampleSize;
 
   // [Cecil] Keep track of total audio length instead of the length of the sample buffer
-  ufix16_t fixTotalAudioLength = fixSoundBufferSize;
+  const ufix16_t fixTotalAudioLength = (bEncoded ? psdcDecoder->GetLengthInFrames() : fixSoundBufferSize);
 
   // eliminate potentional "puck" at the of sample that hasn't loop
   if (!(pso->so_slFlags & SOF_LOOP) && fixSoundBufferSize > fixOne) fixSoundBufferSize -= fixOne;
@@ -492,16 +492,13 @@ void MixSound( CSoundObject *pso)
   if (bEncoded) {
     _pfSoundProfile.StartTimer(CSoundProfile::PTI_DECODESOUND);
 
-    // [Cecil] Retrieve encoded length immediately
-    fixTotalAudioLength = psdcDecoder->GetLengthInFrames();
-    const sfix16_t fixTotalLenS(fixTotalAudioLength.holder, true);
-
     // [Cecil] The following block is responsible for calculating relative channel offsets for encoded audio in advance and
     // figuring out the frame to start decoding from, taking phase shift (and otherwise desynced channel offsets) into account
     ufix16_t fixSeekFrame;
     {
       // Get the real difference between two offsets (positive = right is ahead; negative = left is ahead)
       sfix16_t fixOffsetDiff((SQUAD)fixRightOfs.holder - (SQUAD)fixLeftOfs.holder, true);
+      const sfix16_t fixTotalLenS(fixTotalAudioLength.holder, true);
 
       // If audio is looped, one of the offsets may cross the loop boundary before the other one and appear in the beginning,
       // resulting in an unnecessarily huge frame difference. Instead of getting the real distance between the two, calculate
