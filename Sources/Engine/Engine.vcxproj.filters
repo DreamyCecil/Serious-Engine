@@ -370,9 +370,6 @@
     <ClCompile Include="Sound\SoundProfile.cpp">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="Sound\Wave.cpp">
-      <Filter>Source Files\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="Models\EditModel.cpp">
       <Filter>Source Files\Models</Filter>
     </ClCompile>
@@ -1012,9 +1009,6 @@
       <Filter>Header Files\Sound Headers</Filter>
     </ClInclude>
     <ClInclude Include="Sound\SoundProfile.h">
-      <Filter>Header Files\Sound Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Sound\Wave.h">
       <Filter>Header Files\Sound Headers</Filter>
     </ClInclude>
     <ClInclude Include="Models\EditModel.h">

@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class CSoundDecoder {
 private:
   struct DecodeData *sdc_pData;
+  CTString sdc_strError; // [Cecil] Contains error message upon failure to initialize
 
 public:
   // [Cecil] Initialize/clean up the new decoder
@@ -43,10 +44,15 @@ public:
   // to loading audio into memory if the file needs to be decompressed or only the stream is provided)
   void Initialize_internal(CTStream *istrReadFrom, const ExpandPath *pExpath);
 
+  // [Cecil] Get error message
+  inline const CTString &GetError(void) const {
+    return sdc_strError;
+  };
+
   // Clear the decoder
   void Clear(void);
 
-  // Check if the decoder opened successfully
+  // Check if the decoder opened successfully (if it returns FALSE, use GetError() to find out why)
   BOOL IsOpen(void) const;
 
   // Get audio format from the decoder (only if it's open)

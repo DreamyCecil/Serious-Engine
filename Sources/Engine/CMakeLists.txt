@@ -197,7 +197,6 @@ set(ENGINE_SRCS
   "Sound/SoundMixer.cpp"
   "Sound/SoundObject.cpp"
   "Sound/SoundProfile.cpp"
-  "Sound/Wave.cpp"
 
   "Templates/BSP.cpp"
   "Templates/StockPointers.cpp"

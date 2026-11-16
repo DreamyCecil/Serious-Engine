@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <Engine/Base/Memory.h>
 #include <Engine/Base/Stream.h>
 #include <Engine/Base/ListIterator.inl>
-#include <Engine/Sound/Wave.h>
 #include <Engine/Sound/SoundDecoder.h>
 #include <Engine/Sound/SoundLibrary.h>
 #include <Engine/Sound/SoundObject.h>
@@ -135,95 +134,66 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
   ASSERT( sd_pswBuffer==NULL);
   sd_ulFlags = NONE;
 
-  // get filename
-  const CTString &fnm = inFile->GetFilePath(); // [Cecil] Relative file path
+  // [Cecil] Get full path to the audio and its extension
+  const CTString &fnm = inFile->GetDescription();
   const CTString strExt = fnm.FileExt();
 
-  // [Cecil] If it's an encoded file of any supported format
-  if (strExt == ".ogg" || strExt == ".mp3" || strExt == ".flac") {
-    // [Cecil] Initialize decoder with a separate method to load from an existing stream
-    CSoundDecoder *psdc = new CSoundDecoder;
-    psdc->Initialize(inFile, false); // Will only load it into memory if it can't be streamed
+  // [Cecil] Completely removed the old PCM Wave decoder and replaced it with miniaudio-powered decoder of WAV, OGG, MP3 & FLAC
+  // This flag determines which formats should always be preloaded into memory for immediate access (e.g. sound effects as WAV)
+  // [Cecil] FIXME: Forcing preloading of MP3 because of an issue described in a comment in CSoundDecoder::SeekToFrame()
+  const bool bPreloadFormat = (strExt == ".wav" || strExt == ".mp3");
 
-    // [Cecil] If decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound
-    if (!psdc->IsOpen()) {
-      // Sound mixer won't attempt to play encoded sounds if there's no decoder
-      sd_ulFlags = SDF_ENCODED;
-      delete psdc;
+  // [Cecil] Initialize decoder with a separate method to load from an existing stream
+  CSoundDecoder *psdc = new CSoundDecoder;
+  psdc->Initialize(inFile, false); // Will only load it into memory if it can't be streamed
 
-    // If decoder has been successully initialized
+  // [Cecil] If decoder fails to initialize, it doesn't throw exceptions to allow the game to function without sound
+  if (!psdc->IsOpen()) {
+    const CTString strError = psdc->GetError();
+    delete psdc;
+
+    // [Cecil] TODO: May wanna always throw to make sure the game can always open required sound effects and music on levels
+    // [Cecil] If audio has to be preloaded, throw an error
+    if (bPreloadFormat) {
+      ThrowF_t(TRANS("Cannot open audio '%s': %s"), fnm.ConstData(), strError.ConstData());
     } else {
-      // [Cecil] Retrieve its audio format and length of the encoded audio
-      psdc->GetFormat(sd_afFormat);
-      sd_dSecondsLength = psdc->GetSoundLength();
-
-      // [Cecil] If audio is short enough, decode all of it into memory immediately, just like WAV files
-      if (sd_dSecondsLength < 30.0) {
-        // Create buffer for holding all decoded frames
-        sd_slBufferSampleSize = psdc->GetLengthInFrames();
-        const ULONG ulFrameSize = sd_afFormat.GetBytesPerFrame();
-        const size_t ctBufferSize = sd_slBufferSampleSize * ulFrameSize;
-        sd_pswBuffer = (SWORD *)AllocMemory(ctBufferSize + ulFrameSize * 2); // Two extra frames for interpolation
-
-        // Decode all audio frames and copy the first frame to the end for interpolation
-        psdc->DecodeAll(sd_pswBuffer);
-        memcpy(((UBYTE *)sd_pswBuffer) + ctBufferSize, sd_pswBuffer, ulFrameSize);
-
-        delete psdc; // Not needed anymore
-
-      // [Cecil] Otherwise remember the decoder to let CSoundObject instances use it
-      } else {
-        sd_ulFlags = SDF_ENCODED;
-        sd_psdcDecoder = psdc;
-      }
+      CPrintF(TRANS("Cannot open audio '%s': %s\n"), fnm.ConstData(), strError.ConstData());
     }
 
-    // add to sound aware list
+    // Sound mixer won't attempt to play encoded sounds if there's no decoder
+    sd_ulFlags = SDF_ENCODED;
+
+    // Add to sound aware list
     _pSound->AddSoundAware(*this);
     return;
   }
 
-  // [Cecil] Cached error message to avoid chained ThrowF_t() calls within catch blocks
-  CTString strWavError;
+  // [Cecil] Retrieve its audio format and length of the encoded audio
+  psdc->GetFormat(sd_afFormat);
+  sd_dSecondsLength = psdc->GetSoundLength();
 
-  // if this is wave file
-  try {
-    // load wave info
-    PCMWaveInput CpwiLoad;
-    CpwiLoad.LoadInfo_t(inFile, sd_afFormat);
-    // store sample length in seconds and average byte rate
-    sd_dSecondsLength = CpwiLoad.GetSecondsLength();
+  // [Cecil] If audio needs to be preloaded or it's short enough, decode all of it into memory immediately
+  if (bPreloadFormat || sd_dSecondsLength < 30.0) {
+    // Create buffer for holding all decoded frames
+    sd_slBufferSampleSize = psdc->GetLengthInFrames();
+    const ULONG ulFrameSize = sd_afFormat.GetBytesPerFrame();
+    const size_t ctBufferSize = sd_slBufferSampleSize * ulFrameSize;
+    sd_pswBuffer = (SWORD *)AllocMemory(ctBufferSize + ulFrameSize * 2); // Two extra frames for interpolation
 
-    // if sound library is in lower format convert sound to library format
-    if (_pSound->sl_afFormat.iSampleRate < sd_afFormat.iSampleRate) {
-      sd_afFormat.iSampleRate = _pSound->sl_afFormat.iSampleRate;
-    }
-    // same goes for bits per sample (must be 16)
-    sd_afFormat.iBytesPerSample = 2;
+    // Decode all audio frames and copy the first frame to the end for interpolation
+    psdc->DecodeAll(sd_pswBuffer);
+    memcpy(((UBYTE *)sd_pswBuffer) + ctBufferSize, sd_pswBuffer, ulFrameSize);
 
-    // if library is active create buffer and load sound data
-    if (_pSound->IsActive()) {
-      // create Buffer
-      sd_slBufferSampleSize = CpwiLoad.GetDataLength(sd_afFormat);
-      SLONG slBufferSize = CpwiLoad.DetermineBufferSize(sd_afFormat);
-      sd_pswBuffer = (SWORD*)AllocMemory( slBufferSize+8);
-      // load data into buffer
-      CpwiLoad.LoadData_t(inFile, sd_pswBuffer, sd_afFormat);
-      // copy first sample to the last one (this is needed for linear interpolation)
-      (ULONG&)(((UBYTE*)sd_pswBuffer)[slBufferSize]) = *(ULONG*)sd_pswBuffer;
-    }
+    delete psdc; // Not needed anymore
 
-    // add to sound aware list
-    _pSound->AddSoundAware(*this);
-    return;
-
-  // [Cecil] Avoid messing with the thrown message buffer by copying the error before another ThrowF_t()
-  } catch (char *strError) {
-    strWavError = strError;
+  // [Cecil] Otherwise remember the decoder to let CSoundObject instances use it
+  } else {
+    sd_ulFlags = SDF_ENCODED;
+    sd_psdcDecoder = psdc;
   }
 
-  // [Cecil] Report more detailed error
-  ThrowF_t(TRANS("Cannot open audio '%s': %s"), fnm.ConstData(), strWavError.ConstData());
+  // Add to sound aware list
+  _pSound->AddSoundAware(*this);
 }
 
 

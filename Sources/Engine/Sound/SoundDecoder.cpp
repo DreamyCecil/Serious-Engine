@@ -172,7 +172,7 @@ void CSoundDecoder::Initialize(const CTString &fnmFile, bool bLoadIntoMemory) {
       Initialize_internal(&strm, NULL);
 
     } catch (char *strError) {
-      CPrintF(TRANS("Cannot open encoded audio '%s': %s\n"), fnmFile.ConstData(), strError);
+      sdc_strError = strError;
     }
     return;
   }
@@ -181,8 +181,7 @@ void CSoundDecoder::Initialize(const CTString &fnmFile, bool bLoadIntoMemory) {
   ExpandPath expath;
 
   if (!expath.ForReading(fnmFile, 0)) {
-    // No file to read
-    CPrintF(TRANS("Cannot open encoded audio '%s': %s\n"), fnmFile.ConstData(), TRANS("file not found"));
+    sdc_strError = TRANS("File not found");
     return;
   }
 
@@ -341,16 +340,7 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
     }
 
   } catch (char *strError) {
-    // [Cecil] Get absolute filename for reference
-    CTString fnmFile;
-
-    if (istrReadFrom != NULL) {
-      fnmFile = istrReadFrom->GetDescription();
-    } else if (pExpath != NULL) {
-      fnmFile = pExpath->fnmExpanded;
-    }
-
-    CPrintF(TRANS("Cannot open encoded audio '%s': %s\n"), fnmFile.ConstData(), strError);
+    sdc_strError = strError;
     Clear();
   }
 };
@@ -438,6 +428,12 @@ ULONG CSoundDecoder::DecodeAll(void *pvDestBuffer) {
 void CSoundDecoder::SeekToFrame(ULONG iFrame) {
   if (!IsOpen()) return;
 
+  // [Cecil] FIXME: This becomes incredibly heavier on the CPU the further it seeks while decoding MP3 (noticeable stutter after 10-20 seconds
+  // of decoding, which becomes worse over time). This isn't a problem if an MP3 is continuously decoded by simply reading more frames in order,
+  // nor is it a problem when decoding other formats, which seem to be able to seek anywhere they need regardless of length.
+  // I can't really do anything about this right now because of various issues in the sound mixer if it doesn't explicitly decode from a very
+  // specific frame (crackles from misaligned frames between mixed chunks of decoded audio), also because the decoders are now shared between
+  // all instances of CSoundObject that decode the same audio that need to seek to their respective frame.
   ma_result result = ma_data_source_seek_to_pcm_frame(&sdc_pData->decoder, iFrame);
 
   if (result != MA_SUCCESS) {
