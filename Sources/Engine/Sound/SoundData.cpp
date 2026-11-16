@@ -144,8 +144,7 @@ void CSoundData::Read_t(CTStream *inFile)  // throw char *
 
   // [Cecil] Completely removed the old PCM Wave decoder and replaced it with miniaudio-powered decoder of WAV, OGG, MP3 & FLAC
   // This flag determines which formats should always be preloaded into memory for immediate access (e.g. sound effects as WAV)
-  // [Cecil] FIXME: Forcing preloading of MP3 because of an issue described in a comment in CSoundDecoder::SeekToFrame()
-  const bool bPreloadFormat = (strExt == ".wav" || strExt == ".mp3");
+  const bool bPreloadFormat = (strExt == ".wav");
 
   // [Cecil] Initialize decoder with a separate method to load from an existing stream
   CSoundDecoder *psdc = new CSoundDecoder;
