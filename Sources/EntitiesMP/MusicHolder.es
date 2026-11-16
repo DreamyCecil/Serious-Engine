@@ -218,8 +218,8 @@ functions:
     CSoundObject &soMusic = (&m_soMusic0a)[mtType*2+iSubChannel];
     FLOAT &fCurrentVolume = (&m_fCurrentVolume0a)[mtType*2+iSubChannel];
 
-    // [Cecil] Mandatory SOF_MUSIC flag + SOF_VOLUMETRIC because of reworked encoded sounds
-    ULONG ulFlags = SOF_MUSIC | SOF_VOLUMETRIC;
+    // [Cecil] Mandatory SOF_MUSIC flag + SOF_VOLUMETRIC and SOF_ONLYMIXAUDIBLE because of reworked encoded sounds
+    ULONG ulFlags = SOF_MUSIC | SOF_VOLUMETRIC | SOF_ONLYMIXAUDIBLE;
 
     // [Cecil] Add flags for continuous music instead of setting new ones
     if (mtType != MT_EVENT) {
