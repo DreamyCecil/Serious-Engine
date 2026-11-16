@@ -994,35 +994,42 @@ expression
       _shell_ast[_shell_ast[$3.istType].st_istBaseType].st_sttType = stResult.st_sttType;
       // if types are same
       if (ShellTypeIsSame($3.istType, $1->ss_istType)) {
+        // [Cecil] NOTE: PUSHPARAMS macro was used for pushing data from the parser stack data onto the actual memory
+        // stack using alloca(), which made that data available inside a subsequent function call as proper function
+        // arguments. This wasn't used in 1.10 anymore for functions that returned 'void', requiring all arguments to
+        // be accessed using a new NEXTARGUMENT() macro from a 'void *' argument instead of proper ones.
+        // For some reason, this wasn't the case for the rest of the functions that did return something (INDEX, FLOAT
+        // or CTString), which crashed the hell out of the game on call with any kind of arguments passed into them.
+        // This has since been removed and all arguments from the parser stack are now passed via a 'void *' argument,
+        // just like for the 'void' returning functions.
 
-#define PUSHPARAMS \
-  memcpy(alloca($3.ctBytes), _ubStack+_iStack-$3.ctBytes, $3.ctBytes);
+        //#define PUSHPARAMS memcpy(alloca($3.ctBytes), _ubStack+_iStack-$3.ctBytes, $3.ctBytes);
 
         // if void
         if (stResult.st_sttType==STT_VOID) {
           // just call the function
           $$.sttType = STT_VOID;
           //PUSHPARAMS;
-          ((void (*)(void*))$1->ss_pvValue)(_ubStack+_iStack-$3.ctBytes);
+          ((void (*)(void *))$1->ss_pvValue)(_ubStack+_iStack-$3.ctBytes);
         // if index
         } else if (stResult.st_sttType==STT_INDEX) {
           // call the function and return result
           $$.sttType = STT_INDEX;
-          PUSHPARAMS;
-          $$.iIndex = ((INDEX (*)(void))$1->ss_pvValue)();
+          //PUSHPARAMS;
+          $$.iIndex = ((INDEX (*)(void *))$1->ss_pvValue)(_ubStack+_iStack-$3.ctBytes);
         // if float
         } else if (stResult.st_sttType==STT_FLOAT) {
           // call the function and return result
           $$.sttType = STT_FLOAT;
-          PUSHPARAMS;
-          $$.fFloat = ((FLOAT (*)(void))$1->ss_pvValue)();
+          //PUSHPARAMS;
+          $$.fFloat = ((FLOAT (*)(void *))$1->ss_pvValue)(_ubStack+_iStack-$3.ctBytes);
         // if string
         } else if (stResult.st_sttType==STT_STRING) {
           // call the function and return result
           $$.sttType = STT_STRING;
           CTString &strNew = _shell_astrTempStrings.Push();
-          PUSHPARAMS;
-          strNew = ((CTString (*)(void))$1->ss_pvValue)();
+          //PUSHPARAMS;
+          strNew = ((CTString (*)(void *))$1->ss_pvValue)(_ubStack+_iStack-$3.ctBytes);
           $$.strString = strNew.ConstData();
         } else {
           ASSERT(FALSE);
