@@ -288,7 +288,12 @@ void CSoundDecoder::Initialize_internal(CTStream *istrReadFrom, const ExpandPath
       } break;
 
       case DecodeData::E_FILE: {
-        result = ma_decoder_init_file(sdc_pData->fnmStreamed.ConstData(), &DecodeData::dcConfig, &sdc_pData->decoder);
+        CTString fnmInit = sdc_pData->fnmStreamed;
+        #if !SE1_WIN
+          fnmInit.ReplaceChar('\\', '/'); // [Cecil] NOTE: For ma_decoder_init_file()
+        #endif
+
+        result = ma_decoder_init_file(fnmInit.ConstData(), &DecodeData::dcConfig, &sdc_pData->decoder);
 
         if (result != MA_SUCCESS) {
           ThrowF_t(TRANS("Cannot initialize audio decoder for a file: %s"), ma_result_description(result));
