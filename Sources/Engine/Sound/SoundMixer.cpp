@@ -394,7 +394,7 @@ void MixSound( CSoundObject *pso)
   fixSoundBufferSize = psd->sd_slBufferSampleSize;
 
   // [Cecil] Keep track of total audio length instead of the length of the sample buffer
-  const ufix16_t fixTotalAudioLength = (bEncoded ? psdcDecoder->GetLengthInFrames() : fixSoundBufferSize);
+  const ufix16_t fixTotalAudioLength = (bEncoded ? (ufix16_t)psdcDecoder->GetLengthInFrames() : fixSoundBufferSize);
 
   // eliminate potentional "puck" at the of sample that hasn't loop
   if (!(pso->so_slFlags & SOF_LOOP) && fixSoundBufferSize > fixOne) fixSoundBufferSize -= fixOne;
