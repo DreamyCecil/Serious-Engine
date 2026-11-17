@@ -44,7 +44,8 @@ See the list of the most notable fork features here: https://github.com/DreamyCe
 ### Other projects
 - `ECC` - Separate fork of Entity Class Compiler from Serious Engine 1 that is engine-agnostic
 - `GameAgent` - Custom master server emulator written in Python
-- `libogg`, `libvorbis` - Third party libraries for playing OGG-encoded in-game music
+- `libogg`, `libvorbis` - Third party libraries for decoding OGG audio format
+- `miniaudio` - Third party library for decoding common audio formats with support for custom decoders
 - `LWSkaExporter` - Exporter of SKA models in ASCII format for use in LightWave
 - `SDL3` - Third party library that helps with porting the engine to other platforms
 - `zlib` - Third party static library for working with ZIP archives
@@ -183,13 +184,6 @@ Support for this outdated driver for outdated graphics cards is still present bu
 </details>
 
 <details>
-<summary>MP3 playback</summary>
-
-Copy `amp11lib.dll` library that used to be distributed with older versions of **Serious Sam Classic: The First Encounter** near the executable files under the `Bin/` directory.
-
-</details>
-
-<details>
 <summary>3D Exploration</summary>
 
 Support is disabled due to copyright issues. If you need to create new models, either use editing tools from any of the original games or write your own code for 3D object import/export.
@@ -250,7 +244,8 @@ Some of the code included with the engine sources under `Sources/ThirdParty/` is
 
 - **GLEW** (`glew/`) from https://glew.sourceforge.net/
 - **libogg** & **libvorbis** (`libogg/`, `libvorbis/`) by Xiph.Org Foundation ( https://xiph.org/vorbis/ )
+- **miniaudio** (`miniaudio/`) by David Reid ( https://github.com/mackron/miniaudio )
 - **LightWave SDK** (`LWSkaExporter/SDK/`) by NewTek Inc.
-- **OpenAL Soft** (`OpenAL-Soft/`) by kcat ( https://github.com/kcat/openal-soft )
+- **OpenAL Soft** (`OpenAL-Soft/`) by Chris Robinson ( https://github.com/kcat/openal-soft )
 - **SDL** (`SDL/`) from https://libsdl.org/
 - **zlib** (`zlib/`) by Jean-loup Gailly and Mark Adler ( https://zlib.net/ )
